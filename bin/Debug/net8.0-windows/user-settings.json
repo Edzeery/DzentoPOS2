@@ -1,0 +1,17 @@
+{
+  "Language": "ar",
+  "RememberMe": true,
+  "LastUserName": "admin ",
+  "DarkMode": false,
+  "StoreName": "DzentoPOS2",
+  "StoreLogoPath": "",
+  "CurrencyCode": "SAR",
+  "CountryCode": "SA",
+  "TimeZoneId": "W. Central Africa Standard Time",
+  "PrinterName": "",
+  "PaperSize": "A4",
+  "Landscape": false,
+  "ReceiptWidthMm": 80,
+  "CameraBarcodeEnabled": true,
+  "BarcodeCameraDevice": ""
+}

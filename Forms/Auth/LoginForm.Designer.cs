@@ -76,9 +76,9 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             txtUserName.BorderRadius = 10;
             txtUserName.BorderSize = 2;
             txtUserName.Font = new Font("Segoe UI", 13F);
-            txtUserName.ForeColor = AppColors.SidebarSurface;
+            txtUserName.ForeColor = Color.FromArgb(0, 39, 49);
             txtUserName.ImeMode = ImeMode.NoControl;
-            txtUserName.Location = new Point(97, 444);
+            txtUserName.Location = new Point(397, 444);
             txtUserName.Margin = new Padding(4);
             txtUserName.Name = "txtUserName";
             txtUserName.Padding = new Padding(10, 6, 10, 6);
@@ -98,8 +98,8 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             txtPassword.BorderRadius = 10;
             txtPassword.BorderSize = 2;
             txtPassword.Font = new Font("Segoe UI", 13F);
-            txtPassword.ForeColor = AppColors.SidebarSurface;
-            txtPassword.Location = new Point(97, 546);
+            txtPassword.ForeColor = Color.FromArgb(0, 39, 49);
+            txtPassword.Location = new Point(397, 546);
             txtPassword.Margin = new Padding(4);
             txtPassword.Name = "txtPassword";
             txtPassword.Padding = new Padding(10, 6, 10, 6);
@@ -115,9 +115,9 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             lblCopyRight.BackColor = Color.Transparent;
             lblCopyRight.Dock = DockStyle.Bottom;
             lblCopyRight.ForeColor = Color.White;
-            lblCopyRight.Location = new Point(0, 898);
+            lblCopyRight.Location = new Point(0, 737);
             lblCopyRight.Name = "lblCopyRight";
-            lblCopyRight.Size = new Size(770, 63);
+            lblCopyRight.Size = new Size(600, 63);
             lblCopyRight.TabIndex = 3;
             lblCopyRight.Text = "مع تحيات شركة إدزيري كود © جميع الحقوق محفوظة 2026";
             lblCopyRight.TextAlign = ContentAlignment.MiddleCenter;
@@ -128,8 +128,8 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             ckbRememberMe.AutoSize = true;
             ckbRememberMe.BackColor = Color.White;
             ckbRememberMe.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            ckbRememberMe.ForeColor = AppColors.SidebarSurface;
-            ckbRememberMe.Location = new Point(97, 611);
+            ckbRememberMe.ForeColor = Color.FromArgb(0, 39, 49);
+            ckbRememberMe.Location = new Point(397, 611);
             ckbRememberMe.Name = "ckbRememberMe";
             ckbRememberMe.Size = new Size(140, 25);
             ckbRememberMe.TabIndex = 4;
@@ -143,7 +143,7 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             lblUserName.AutoSize = true;
             lblUserName.BackColor = Color.White;
             lblUserName.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            lblUserName.ForeColor = AppColors.SidebarSurface;
+            lblUserName.ForeColor = Color.FromArgb(0, 39, 49);
             lblUserName.Location = new Point(97, 407);
             lblUserName.Name = "lblUserName";
             lblUserName.Size = new Size(91, 21);
@@ -156,7 +156,7 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             lblPassword.AutoSize = true;
             lblPassword.BackColor = Color.White;
             lblPassword.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-            lblPassword.ForeColor = AppColors.SidebarSurface;
+            lblPassword.ForeColor = Color.FromArgb(0, 39, 49);
             lblPassword.Location = new Point(97, 509);
             lblPassword.Name = "lblPassword";
             lblPassword.Size = new Size(82, 21);
@@ -195,7 +195,7 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             labelWelcomeBack.AutoSize = true;
             labelWelcomeBack.BackColor = Color.WhiteSmoke;
             labelWelcomeBack.Font = new Font("Segoe UI", 20F, FontStyle.Bold);
-            labelWelcomeBack.ForeColor = AppColors.SidebarSurface;
+            labelWelcomeBack.ForeColor = Color.FromArgb(0, 39, 49);
             labelWelcomeBack.Location = new Point(255, 312);
             labelWelcomeBack.Name = "labelWelcomeBack";
             labelWelcomeBack.Size = new Size(203, 37);
@@ -209,14 +209,14 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
             pictureBox1.Location = new Point(303, 200);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(106, 93);
+            pictureBox1.Size = new Size(706, 93);
             pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBox1.TabIndex = 6;
             pictureBox1.TabStop = false;
             // 
             // pnlLeft
             // 
-            pnlLeft.BackColor = AppColors.SidebarSurface;
+            pnlLeft.BackColor = Color.FromArgb(0, 39, 49);
             pnlLeft.BackgroundImage = (Image)resources.GetObject("pnlLeft.BackgroundImage");
             pnlLeft.BackgroundImageLayout = ImageLayout.Stretch;
             pnlLeft.Controls.Add(label5);
@@ -282,9 +282,9 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             panel1.Controls.Add(lblUserName);
             panel1.Controls.Add(txtPassword);
             panel1.Dock = DockStyle.Fill;
-            panel1.Location = new Point(600, 0);
+            panel1.Location = new Point(0, 0);
             panel1.Name = "panel1";
-            panel1.Size = new Size(600, 800);
+            panel1.Size = new Size(1200, 800);
             panel1.TabIndex = 9;
             // 
             // comboBoxLang
@@ -295,7 +295,11 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             comboBoxLang.BorderRadius = 10;
             comboBoxLang.BorderSize = 2;
             comboBoxLang.DropDownBackColor = Color.WhiteSmoke;
+            comboBoxLang.DropDownBorderColor = Color.Gainsboro;
             comboBoxLang.DropDownForeColor = Color.FromArgb(0, 64, 64);
+            comboBoxLang.DropDownHoverBackColor = Color.FromArgb(245, 248, 250);
+            comboBoxLang.DropDownSelectedBackColor = Color.FromArgb(229, 246, 245);
+            comboBoxLang.DropDownSelectedForeColor = Color.DimGray;
             comboBoxLang.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxLang.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point, 178);
             comboBoxLang.ForeColor = Color.DimGray;
@@ -319,18 +323,18 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             // 
             // ButtonLogin
             // 
-            ButtonLogin.BackColor = AppColors.Primary;
-            ButtonLogin.BackgroundColor = AppColors.Primary;
+            ButtonLogin.BackColor = Color.FromArgb(0, 122, 116);
+            ButtonLogin.BackgroundColor = Color.FromArgb(0, 122, 116);
             ButtonLogin.BorderColor = Color.FromArgb(0, 64, 64);
             ButtonLogin.BorderRadius = 8;
             ButtonLogin.BorderSize = 2F;
             ButtonLogin.DisabledColor = Color.LightGray;
             ButtonLogin.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
             ButtonLogin.ForeColor = Color.White;
-            ButtonLogin.HoverColor = AppColors.PrimaryHover;
+            ButtonLogin.HoverColor = Color.FromArgb(0, 104, 99);
             ButtonLogin.Location = new Point(97, 651);
             ButtonLogin.Name = "ButtonLogin";
-            ButtonLogin.PressedColor = AppColors.PrimaryPressed;
+            ButtonLogin.PressedColor = Color.FromArgb(0, 86, 82);
             ButtonLogin.Size = new Size(518, 55);
             ButtonLogin.TabIndex = 14;
             ButtonLogin.Text = "Login";
@@ -346,7 +350,7 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             iconPictureBoxlanguage.IconColor = Color.FromArgb(0, 64, 64);
             iconPictureBoxlanguage.IconFont = FontAwesome.Sharp.IconFont.Auto;
             iconPictureBoxlanguage.IconSize = 38;
-            iconPictureBoxlanguage.Location = new Point(506, 26);
+            iconPictureBoxlanguage.Location = new Point(1106, 26);
             iconPictureBoxlanguage.Name = "iconPictureBoxlanguage";
             iconPictureBoxlanguage.Size = new Size(38, 38);
             iconPictureBoxlanguage.TabIndex = 11;
@@ -361,7 +365,7 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             btnIconThemMode.IconColor = Color.FromArgb(0, 64, 64);
             btnIconThemMode.IconFont = FontAwesome.Sharp.IconFont.Auto;
             btnIconThemMode.IconSize = 28;
-            btnIconThemMode.Location = new Point(680, 26);
+            btnIconThemMode.Location = new Point(1280, 26);
             btnIconThemMode.Name = "btnIconThemMode";
             btnIconThemMode.Size = new Size(38, 38);
             btnIconThemMode.TabIndex = 10;

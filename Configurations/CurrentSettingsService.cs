@@ -52,11 +52,11 @@ public sealed class CurrentSettingsService : ICurrentSettingsService
     private void Apply(AppSettings settings)
     {
         Regional.CurrencyCode = string.IsNullOrWhiteSpace(settings.CurrencyCode)
-            ? "SAR"
+            ? "DZD"
             : settings.CurrencyCode.Trim().ToUpperInvariant();
 
         Regional.CountryCode = string.IsNullOrWhiteSpace(settings.CountryCode)
-            ? "SA"
+            ? "DZ"
             : settings.CountryCode.Trim().ToUpperInvariant();
 
         if (!string.IsNullOrWhiteSpace(settings.TimeZoneId))

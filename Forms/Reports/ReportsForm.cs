@@ -71,6 +71,7 @@ public partial class ReportsForm : LocalizableFormBase
         }
 
         _tabs = new TabControl { Dock = DockStyle.Fill, Font = new Font("Segoe UI", 10F) };
+        DzentoPOS2.WinForms.Themes.TabsStyler.Apply(_tabs);
 
         _tabBestSelling = new TabPage();
         _tabCustomers = new TabPage();

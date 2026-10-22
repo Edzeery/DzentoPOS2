@@ -16,6 +16,7 @@ using DzentoPOS2.WinForms.Forms.Purchases;
 using DzentoPOS2.WinForms.Forms.Reports;
 using DzentoPOS2.WinForms.Forms.Sales;
 using DzentoPOS2.WinForms.Forms.Settings;
+using DzentoPOS2.WinForms.Forms.Suppliers;
 using DzentoPOS2.WinForms.Helpers;
 using DzentoPOS2.WinForms.Models;
 using DzentoPOS2.WinForms.Navigation;
@@ -23,6 +24,7 @@ using DzentoPOS2.WinForms.Services;
 using DzentoPOS2.WinForms.ServicesUI;
 using DzentoPOS2.WinForms.Themes;
 using FontAwesome.Sharp;
+using System.Globalization;
 using System.Runtime;
 using System.Runtime.InteropServices; 
 
@@ -47,8 +49,15 @@ namespace DzentoPOS2.WinForms.Forms.Layout
         private AppSettings _settings;
         private MainHeaderBar _mainHeaderBar = null!;
         private IconButton? _activeSidebarButton;
+        private IconButton _btnSuppliers = null!;
         private Label _storeNameLabel = null!;
         private Image? _defaultLogo;
+        private Panel? _userInfoAvatar;
+        private Panel? _userInfoTexts;
+        private Label _statusUserLabel = null!;
+        private Label _statusDateLabel = null!;
+        private Label _statusStoreLabel = null!;
+        private readonly System.Windows.Forms.Timer _statusTimer;
 
         public MainForm(
              ICurrentUserService currentUser,
@@ -64,7 +73,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             _languageService = languageService;
             _preferences = preferences;
             _currentSettings = currentSettings;
-            _settings = _preferences.Load();
+            _settings = _currentSettings.Current;
 
             Padding = new Padding(BorderSize);
 
@@ -73,7 +82,14 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             _collapseTimer = new System.Windows.Forms.Timer { Interval = AppStyle.AnimationInterval };
             _collapseTimer.Tick += AnimateCollapse;
 
+            _statusTimer = new System.Windows.Forms.Timer { Interval = 30000 };
+            _statusTimer.Tick += (_, _) => UpdateStatusClock();
+
             InitializeMainHeader();
+
+            InitializeSidebarLayout();
+
+            InitializeStatusBar();
 
             _navigation.SetHost(contentPanel, _mainHeaderBar.TitleLabel);
 
@@ -87,6 +103,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
 
             WireNavButtons();
             AddExpensesSidebarButton();
+            AddSuppliersSidebarButton();
 
             InitializeStoreBranding();
 
@@ -99,8 +116,19 @@ namespace DzentoPOS2.WinForms.Forms.Layout
         private void OnSettingsChanged(object? sender, EventArgs e)
         {
             if (IsDisposed) return;
-            if (InvokeRequired) { BeginInvoke(ApplyStoreBranding); return; }
+            if (InvokeRequired) { BeginInvoke(RefreshFromSettings); return; }
+            RefreshFromSettings();
+        }
+
+        /// <summary>
+        /// Re-reads the persisted preferences (single source of truth) and
+        /// refreshes every part of the shell that depends on them.
+        /// </summary>
+        private void RefreshFromSettings()
+        {
+            _settings = _currentSettings.Current;
             ApplyStoreBranding();
+            LoadText();
         }
 
         /// <summary>
@@ -164,6 +192,176 @@ namespace DzentoPOS2.WinForms.Forms.Layout
         }
 
         /// <summary>
+        /// Makes the sidebar usable on small screens: the button column scrolls
+        /// when it does not fit and the user block is rebuilt with a layout
+        /// that never clips the name, the role or the branch.
+        /// </summary>
+        private void InitializeSidebarLayout()
+        {
+            SidebarPanelM.AutoScroll = true;
+
+            var avatar = new Panel
+            {
+                Dock = DockStyle.Left,
+                Width = 58,
+                Margin = Padding.Empty,
+                Padding = Padding.Empty,
+                BackColor = Color.Transparent
+            };
+
+        iconPictureBox1.Dock = DockStyle.None;
+        iconPictureBox1.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+        iconPictureBox1.Size = new Size(44, 44);
+        iconPictureBox1.Location = new Point(6, 2);
+            iconPictureBox1.IconChar = IconChar.User;
+            iconPictureBox1.IconSize = 34;
+            iconPictureBox1.IconColor = Color.White;
+            iconPictureBox1.BackColor = Color.Transparent;
+            avatar.Controls.Add(iconPictureBox1);
+
+            var texts = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 3,
+                Margin = Padding.Empty,
+                Padding = new Padding(0, 2, 4, 2),
+                BackColor = Color.Transparent
+            };
+            texts.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            texts.RowStyles.Add(new RowStyle(SizeType.Percent, 40F));
+            texts.RowStyles.Add(new RowStyle(SizeType.Percent, 30F));
+            texts.RowStyles.Add(new RowStyle(SizeType.Percent, 30F));
+
+            ConfigureUserLabel(lblFullName, 10.5F, FontStyle.Bold);
+            ConfigureUserLabel(lblRole, 9.5F, FontStyle.Regular);
+            ConfigureUserLabel(lblBranch, 9.5F, FontStyle.Regular);
+
+            texts.Controls.Add(lblFullName, 0, 0);
+            texts.Controls.Add(lblRole, 0, 1);
+            texts.Controls.Add(lblBranch, 0, 2);
+
+            pnlUserInfo.SuspendLayout();
+            pnlUserInfo.Controls.Clear();
+            pnlUserInfo.Controls.Add(texts);
+            pnlUserInfo.Controls.Add(avatar);
+            pnlUserInfo.ResumeLayout();
+
+            _userInfoAvatar = avatar;
+            _userInfoTexts = texts;
+
+            ApplyUserInfoDirection();
+        }
+
+        private static void ConfigureUserLabel(Label label, float size, FontStyle style)
+        {
+            label.AutoSize = false;
+            label.Dock = DockStyle.Fill;
+            label.AutoEllipsis = true;
+            label.TextAlign = ContentAlignment.MiddleLeft;
+            label.Font = new Font("Segoe UI", size, style);
+            label.BackColor = Color.Transparent;
+            label.ForeColor = Color.White;
+            label.Margin = Padding.Empty;
+            label.Padding = Padding.Empty;
+        }
+
+        /// <summary>Mirrors the user block when the interface runs in Arabic.</summary>
+        private void ApplyUserInfoDirection()
+        {
+            if (_userInfoAvatar is null || _userInfoTexts is null) return;
+
+            bool rtl = _languageService.IsRightToLeft();
+
+            _userInfoAvatar.Dock = rtl ? DockStyle.Right : DockStyle.Left;
+
+            var align = rtl ? ContentAlignment.MiddleRight : ContentAlignment.MiddleLeft;
+
+            lblFullName.TextAlign = align;
+            lblRole.TextAlign = align;
+            lblBranch.TextAlign = align;
+        }
+
+        /// <summary>
+        /// Fills the (so far empty) status bar with the information the user
+        /// needs at a glance: who is signed in, the store and the clock.
+        /// </summary>
+        private void InitializeStatusBar()
+        {
+            var layout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 3,
+                RowCount = 1,
+                Margin = Padding.Empty,
+                Padding = new Padding(14, 0, 14, 0),
+                BackColor = Color.Transparent
+            };
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40F));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35F));
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+
+            _statusUserLabel = CreateStatusLabel(ContentAlignment.MiddleLeft);
+            _statusDateLabel = CreateStatusLabel(ContentAlignment.MiddleCenter);
+            _statusStoreLabel = CreateStatusLabel(ContentAlignment.MiddleRight);
+
+            layout.Controls.Add(_statusUserLabel, 0, 0);
+            layout.Controls.Add(_statusDateLabel, 1, 0);
+            layout.Controls.Add(_statusStoreLabel, 2, 0);
+
+            StatusBarPanel.Controls.Clear();
+            StatusBarPanel.Controls.Add(layout);
+        }
+
+        private static Label CreateStatusLabel(ContentAlignment alignment) => new()
+        {
+            Dock = DockStyle.Fill,
+            AutoSize = false,
+            AutoEllipsis = true,
+            TextAlign = alignment,
+            Font = new Font("Segoe UI", 9F),
+            BackColor = Color.Transparent,
+            ForeColor = Color.White,
+            Margin = Padding.Empty
+        };
+
+        /// <summary>Refreshes the clock of the status bar.</summary>
+        private void UpdateStatusClock()
+        {
+            if (IsDisposed || _statusDateLabel is null) return;
+
+            var regional = _currentSettings.Regional;
+
+            _statusDateLabel.Text = regional.Now.ToString("ddd, dd MMM yyyy  HH:mm", CultureInfo.CurrentCulture);
+        }
+
+        /// <summary>Writes the current session information in the status bar.</summary>
+        private void UpdateStatusBar()
+        {
+            if (IsDisposed) return;
+
+            var regional = _currentSettings.Regional;
+
+            string user = _currentUser.User?.FullName
+                          ?? _currentUser.User?.UserName
+                          ?? string.Empty;
+
+            string role = _currentUser.User?.RoleName ?? string.Empty;
+            string branch = _currentUser.User?.BranchName ?? string.Empty;
+
+            _statusUserLabel.Text = string.IsNullOrWhiteSpace(role)
+                ? user
+                : $"{user}  ·  {role}";
+
+            _statusStoreLabel.Text = string.IsNullOrWhiteSpace(branch)
+                ? $"{_currentSettings.Current.StoreName}  ·  {regional.CurrencySymbol}"
+                : $"{_currentSettings.Current.StoreName}  ·  {branch}  ·  {regional.CurrencySymbol}";
+
+            UpdateStatusClock();
+        }
+
+        /// <summary>
         /// Repaints the application shell (sidebar, top bar, status bar) so the
         /// whole window follows the active light/dark mode.
         /// </summary>
@@ -186,6 +384,17 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             labelVersion.BackColor = sidebar;
             labelVersion.ForeColor = AppColors.InkMuted;
             panel2.BackColor = accent;
+
+            lblFullName.ForeColor = Color.White;
+            lblRole.ForeColor = AppColors.SidebarMuted;
+            lblBranch.ForeColor = AppColors.SidebarMuted;
+
+            if (_statusUserLabel is not null)
+            {
+                _statusUserLabel.ForeColor = Color.White;
+                _statusDateLabel.ForeColor = AppColors.SidebarMuted;
+                _statusStoreLabel.ForeColor = AppColors.SidebarMuted;
+            }
 
             var isActive = _activeSidebarButton;
 
@@ -281,6 +490,47 @@ namespace DzentoPOS2.WinForms.Forms.Layout
 
             SidebarPanelM.Controls.Add(btnExpenses);
             SidebarPanelM.Controls.SetChildIndex(btnExpenses, SidebarPanelM.Controls.GetChildIndex(btnInventory) + 1);
+        }
+
+        private void AddSuppliersSidebarButton()
+        {
+            _btnSuppliers = new IconButton
+            {
+                IconChar = IconChar.Truck,
+                Text = "  " + AppStrings.Suppliers,
+                IconColor = Color.White,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 13F),
+                FlatStyle = FlatStyle.Flat,
+                FlatAppearance = { BorderSize = 0 },
+                Dock = DockStyle.Top,
+                Size = new Size(279, 55),
+                Padding = new Padding(13, 0, 13, 0),
+                TextImageRelation = TextImageRelation.ImageBeforeText,
+                ImageAlign = ContentAlignment.MiddleLeft,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Cursor = Cursors.Hand,
+                BackColor = AppColors.SidebarSurface,
+                IconSize = 35,
+                Name = "btnSuppliers"
+            };
+
+            _btnSuppliers.Click += (_, _) => NavigateTo<SuppliersForm>(_btnSuppliers);
+            _btnSuppliers.FlatAppearance.MouseOverBackColor = AppColors.Primary;
+            _btnSuppliers.FlatAppearance.MouseDownBackColor = AppColors.SidebarPressed;
+            _btnSuppliers.MouseEnter += (_, _) =>
+            {
+                if (_btnSuppliers.BackColor != AppColors.Primary)
+                    _btnSuppliers.BackColor = AppColors.SidebarHover;
+            };
+            _btnSuppliers.MouseLeave += (_, _) =>
+            {
+                if (_btnSuppliers.BackColor != AppColors.Primary && _btnSuppliers.BackColor != AppColors.SidebarSurface)
+                    _btnSuppliers.BackColor = AppColors.SidebarSurface;
+            };
+
+            SidebarPanelM.Controls.Add(_btnSuppliers);
+            SidebarPanelM.Controls.SetChildIndex(_btnSuppliers, SidebarPanelM.Controls.GetChildIndex(BtnCustomers) + 1);
         }
 
         private void WireNavButtons()
@@ -442,6 +692,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
 
             BtnSales.Text = AppStrings.Sales; 
             BtnCustomers.Text = AppStrings.Customers; 
+            _btnSuppliers.Text = "  " + AppStrings.Suppliers; 
 
             btnInventory.Text = AppStrings.Inventory; 
 
@@ -456,6 +707,9 @@ namespace DzentoPOS2.WinForms.Forms.Layout
 
             SetSidebarButtonTags();
 
+            ApplyUserInfoDirection();
+
+            UpdateStatusBar();
         }
         private void btnClose_Click(object sender, EventArgs e) => Close();
 
@@ -567,8 +821,12 @@ namespace DzentoPOS2.WinForms.Forms.Layout
         {
             _mainHeaderBar.SelectedLanguageIndex = LanguageToIndex(_settings.Language);
             labelVersion.Text = AppStrings.Version + " " + Application.ProductVersion;
-            // ✅ افتح Dashboard تلقائياً عند التحميل
-            NavigateTo<DashboardForm>(btnDashboard);
+
+            _statusTimer.Start();
+
+            // The sales screen (point of sale) is the working screen of the
+            // application: it is the page the user lands on after signing in.
+            NavigateTo<SalesForm>(BtnSales);
         }
 
         private void btnMenu_Click(object sender, EventArgs e)
@@ -589,10 +847,10 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             if (culture == _settings.Language)
                 return;
 
-            _settings.Language = culture;
-            _preferences.Save(_settings);
-
             _languageService.SetLanguage(culture);
+
+            _currentSettings.Update(s => s.Language = culture);
+            _settings = _currentSettings.Current;
 
             FormLocalizationHelper.ApplyDirection(this, _languageService);
             ConfigureSidebarSettingsButton();

@@ -8,6 +8,7 @@ using DzentoPOS2.Shared.Contracts.DTOs.Partners;
 using DzentoPOS2.Shared.Contracts.DTOs.Purchases;
 using DzentoPOS2.WinForms.Helpers;
 using DzentoPOS2.WinForms.Themes;
+using System.Reflection;
 
 namespace DzentoPOS2.WinForms.Forms.Purchases;
 
@@ -241,7 +242,11 @@ public class PurchaseEditDialog : Form
 
     private async Task SaveAsync()
     {
-        if (_cmbSupplier.SelectedValue is not Guid supplierId || supplierId == Guid.Empty)
+        // The drop-down is filled by hand, so SelectedValue is not bound to
+        // the entry and stays null even when an item is selected.
+        var supplierId = SelectedId(_cmbSupplier);
+
+        if (supplierId == Guid.Empty)
         {
             MessageBox.Show(AppStrings.SelectSupplier, AppStrings.Warning, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
@@ -274,6 +279,19 @@ public class PurchaseEditDialog : Form
         {
             AppMessageBox.Error(ex.Message);
         }
+    }
+
+    /// <summary>
+    /// Identifier of the selected entry of a drop-down that is filled by hand.
+    /// Such a combo has no data source, so the value is read from the item.
+    /// </summary>
+    private static Guid SelectedId(ComboBox combo)
+    {
+        object? item = combo.SelectedItem;
+        if (item == null) return Guid.Empty;
+
+        PropertyInfo? property = item.GetType().GetProperty("Id");
+        return property?.GetValue(item) is Guid id ? id : Guid.Empty;
     }
 
     private static Label MakeLabel(string text, int x, int y) => new()

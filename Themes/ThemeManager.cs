@@ -193,6 +193,14 @@ namespace DzentoPOS2.WinForms.Themes
                     control.BackColor = AppColors.Background;
                 }
                 // =========================
+                // SPLIT CONTAINER
+                // =========================
+                else if (control is SplitContainer split)
+                {
+                    // The splitter is the only visible part of the container.
+                    split.BackColor = AppColors.Border;
+                }
+                // =========================
                 // PANEL
                 // =========================
                 else if (control is Panel panel)
@@ -302,8 +310,9 @@ namespace DzentoPOS2.WinForms.Themes
                 }
                 else if (control is TabControl tc)
                 {
-                    tc.BackColor = AppColors.Surface;
                     tc.ForeColor = AppColors.Ink;
+                    tc.BackColor = AppColors.Background;
+                    TabsStyler.Apply(tc);
                 }
                 else if (control is TabPage tp)
                 {

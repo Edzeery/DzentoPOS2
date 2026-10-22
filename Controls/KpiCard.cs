@@ -195,12 +195,19 @@ namespace DzentoPOS2.WinForms.Controls
             if (_iconBox != null) _iconBox.IconColor = Color.White;
             if (_iconBadge != null)
             {
-                _iconBadge.BackColor = Color.FromArgb(
-                    (int)(color.R + (255 - color.R) * 0.85),
-                    (int)(color.G + (255 - color.G) * 0.85),
-                    (int)(color.B + (255 - color.B) * 0.85));
+                // A light pastel badge in light mode, a tinted dark badge in dark
+                // mode: a white pastel patch would glow on the dark card.
+                _iconBadge.BackColor = ThemeManager.IsDark
+                    ? Blend(AppColors.Surface, color, 0.30f)
+                    : Blend(Color.White, color, 0.15f);
             }
         }
+
+        private static Color Blend(Color background, Color accent, float accentShare)
+            => Color.FromArgb(
+                (int)(background.R + (accent.R - background.R) * accentShare),
+                (int)(background.G + (accent.G - background.G) * accentShare),
+                (int)(background.B + (accent.B - background.B) * accentShare));
 
         public void SetData(string value, string trend, bool isUp)
         {
@@ -302,15 +309,26 @@ namespace DzentoPOS2.WinForms.Controls
         private void ApplyRegion()
         {
             if (Width <= 0 || Height <= 0) return;
+
+            var r = Math.Min(12, Math.Min(Width, Height) / 2);
+            if (r <= 0)
+            {
+                // Still being laid out: GDI+ rejects a zero sized arc.
+                var stale = Region;
+                Region = null;
+                stale?.Dispose();
+                return;
+            }
+
             using var path = new System.Drawing.Drawing2D.GraphicsPath();
-            int radius = 12;
-            var r = Math.Min(radius, Math.Min(Width, Height) / 2);
             path.AddArc(0, 0, r, r, 180, 90);
             path.AddArc(Width - r, 0, r, r, 270, 90);
             path.AddArc(Width - r, Height - r, r, r, 0, 90);
             path.AddArc(0, Height - r, r, r, 90, 90);
             path.CloseFigure();
+            var oldRegion = Region;
             Region = new Region(path);
+            oldRegion?.Dispose();
         }
 
         protected override void Dispose(bool disposing)

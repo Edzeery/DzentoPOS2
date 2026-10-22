@@ -15,7 +15,18 @@ namespace DzentoPOS2.WinForms.Helpers
         {
             GraphicsPath path = new GraphicsPath();
 
-            int diameter = radius * 2;
+            // The radius is clamped to half of the smallest side: a zero sized
+            // arc is rejected by GDI+ with "Parameter is not valid.".
+            int r = Math.Min(radius, Math.Min(rect.Width, rect.Height) / 2);
+            if (r <= 0)
+            {
+                path.StartFigure();
+                path.AddRectangle(rect);
+                path.CloseFigure();
+                return path;
+            }
+
+            int diameter = r * 2;
 
             path.StartFigure();
 

@@ -28,6 +28,7 @@ namespace DzentoPOS2.WinForms.Forms.Auth
         private TableLayoutPanel? _rootSplit;
         private TableLayoutPanel? _loginContent;
         private Image? _defaultLoginLogo;
+        private bool _rememberedLoginRestored;
 
 
         public LoginForm(
@@ -56,6 +57,11 @@ namespace DzentoPOS2.WinForms.Forms.Auth
 
             btnIconThemMode.Click += (_, _) => ThemeManager.ToggleMode();
 
+            // Enter submits the form from either field (the custom button is not
+            // an IButtonControl, so Form.AcceptButton cannot be used).
+            txtUserName.KeyDown += OnLoginFieldKeyDown;
+            txtPassword.KeyDown += OnLoginFieldKeyDown;
+
             ThemeManager.ThemeChanged += OnThemeChanged;
             ApplyTheme();
         }
@@ -76,6 +82,14 @@ namespace DzentoPOS2.WinForms.Forms.Auth
                 pictureBox2.Image?.Dispose();
 
             pictureBox2.Image = custom;
+        }
+
+        /// <summary>Submits the login when Enter is pressed in a field.</summary>
+        private void OnLoginFieldKeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.KeyCode != Keys.Enter) return;
+            e.SuppressKeyPress = true;
+            ButtonLogin_Click(this, EventArgs.Empty);
         }
 
         private void OnThemeChanged(object? sender, EventArgs e)
@@ -106,7 +120,8 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             lblPassword.BackColor = Color.Transparent;
             lblPassword.ForeColor = AppColors.Ink;
             label5.ForeColor = AppColors.OnDark;
-            lblCopyRight.ForeColor = AppColors.OnDark;
+            lblCopyRight.BackColor = Color.Transparent;
+            lblCopyRight.ForeColor = AppColors.InkMuted;
 
             ckbRememberMe.BackColor = Color.Transparent;
             ckbRememberMe.ForeColor = AppColors.Ink;
@@ -150,18 +165,31 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 2,
-                RowCount = 1,
+                RowCount = 2,
                 Margin = Padding.Empty,
                 Padding = Padding.Empty
             };
             root.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 520F));
             root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
 
             pnlLeft.Dock = DockStyle.Fill;
             panel1.Dock = DockStyle.Fill;
             root.Controls.Add(pnlLeft, 0, 0);
             root.Controls.Add(panel1, 1, 0);
+
+            // The copyright lives in its own strip under both columns so it
+            // never floats inside the branding panel.
+            lblCopyRight.Dock = DockStyle.Fill;
+            lblCopyRight.AutoSize = false;
+            lblCopyRight.AutoEllipsis = true;
+            lblCopyRight.TextAlign = ContentAlignment.MiddleCenter;
+            lblCopyRight.Margin = Padding.Empty;
+            lblCopyRight.Padding = new Padding(8, 0, 8, 0);
+            lblCopyRight.Font = new Font("Segoe UI", 8.5F);
+            root.Controls.Add(lblCopyRight, 0, 1);
+            root.SetColumnSpan(lblCopyRight, 2);
 
             Controls.Clear();
             Controls.Add(root);
@@ -204,10 +232,6 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             label5.Margin = Padding.Empty;
             layout.Controls.Add(label5, 0, 3);
 
-            lblCopyRight.Dock = DockStyle.Fill;
-            lblCopyRight.Margin = Padding.Empty;
-            layout.Controls.Add(lblCopyRight, 0, 4);
-
             pnlLeft.Controls.Clear();
             pnlLeft.Controls.Add(layout);
         }
@@ -239,6 +263,10 @@ namespace DzentoPOS2.WinForms.Forms.Auth
                 BackColor = Color.Transparent,
                 Margin = Padding.Empty
             };
+            // A single column that fills the field area. Without an explicit
+            // style the column defaults to AutoSize and the controls (which
+            // carry their designer width) overflow the 518px centre column.
+            fields.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             fields.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             fields.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
             fields.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
@@ -386,11 +414,10 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             lblCopyRight.Text = AppStrings.CopyRight + Convert.ToString(DateTime.Now.Year);
             ckbRememberMe.Text = AppStrings.RememberMe;
 
-            txtPassword.Text = "Admin@123";
             labelVersion.Text = AppStrings.Version + " " + Application.ProductVersion;
             RadiusControl.Bind(ButtonLogin, AppStyle.RadiusMedium);
 
-            txtUserName.Text = _settings.LastUserName;
+            RestoreRememberedLogin();
 
             ckbRememberMe.Checked = _settings.RememberMe;
             comboBoxLang.SelectedIndex =
@@ -403,16 +430,36 @@ namespace DzentoPOS2.WinForms.Forms.Auth
                 };
         }
 
+        /// <summary>
+        /// Fills the login form with the credential kept in the Windows
+        /// credential manager. The password is never stored in a settings file.
+        /// </summary>
+        private void RestoreRememberedLogin()
+        {
+            if (_rememberedLoginRestored) return;
+            _rememberedLoginRestored = true;
 
+            txtPassword.Text = string.Empty;
+
+            if (_settings.RememberMe &&
+                CredentialStore.TryRead(out string savedUser, out string savedPassword))
+            {
+                txtUserName.Text = savedUser;
+                txtPassword.Text = savedPassword;
+                return;
+            }
+
+            txtUserName.Text = _settings.LastUserName;
+        }
+
+        /// <summary>
+        /// Keeps the stored credential in sync with the "remember me" box:
+        /// unchecking it removes the password from the credential manager.
+        /// </summary>
         private void ckbRememberMe_CheckedChanged(object sender, EventArgs e)
         {
-            //    CustomMessageBox.Show(
-            //     "تم الحفظ بنجاح",
-            //     "نجاح",
-            //     CustomDialogButtons.YesNo,
-            //     CustomDialogIcon.Warning);
-
-
+            if (!ckbRememberMe.Checked)
+                CredentialStore.Delete();
         }
          
 
@@ -465,6 +512,12 @@ namespace DzentoPOS2.WinForms.Forms.Auth
                         : "";
 
                 _preferences?.Save(_settings);
+
+                // The password only lives inside the Windows credential manager.
+                if (ckbRememberMe.Checked)
+                    CredentialStore.Save(txtUserName.Text ?? string.Empty, txtPassword.Text ?? string.Empty);
+                else
+                    CredentialStore.Delete();
 
                 // 🔥 إطلاق الحدث
                 LoginSuccess?.Invoke(this, session);

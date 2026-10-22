@@ -69,6 +69,7 @@ namespace DzentoPOS2.WinForms.Themes
         public static Color SidebarHover => ThemeManager.IsDark ? Color.FromArgb(21, 30, 48) : Color.FromArgb(1, 56, 55);
         public static Color SidebarPressed => ThemeManager.IsDark ? Color.FromArgb(30, 42, 64) : Color.FromArgb(14, 94, 93);
         public static Color SidebarAccentSoft => ThemeManager.IsDark ? ThemeManager.ChangeBrightness(Primary, -0.72) : Color.FromArgb(229, 246, 245);
+        public static Color SidebarMuted => ThemeManager.IsDark ? Color.FromArgb(163, 173, 189) : Color.FromArgb(186, 213, 213);
 
         // =========================
         // Grid / list

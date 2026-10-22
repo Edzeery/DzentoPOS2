@@ -123,19 +123,37 @@ public sealed class BarcodeCameraService : IDisposable
     {
         _running = false;
 
-        try
+        var device = _device;
+        _device = null;
+
+        if (device is not null)
         {
-            if (_device is not null)
+            device.NewFrame -= OnNewFrame;
+            device.VideoSourceError -= OnVideoSourceError;
+
+            // AForge's VideoCaptureDevice does not expose Dispose(); the
+            // documented way to release the underlying DirectShow graph (and its
+            // COM objects) is SignalToStop + WaitForStop.
+            try
             {
-                _device.NewFrame -= OnNewFrame;
-                _device.VideoSourceError -= OnVideoSourceError;
-                _device.Stop();
-                _device = null;
+                device.SignalToStop();
+                device.WaitForStop();
             }
-        }
-        catch
-        {
-            // The device may already be gone.
+            catch
+            {
+                try
+                {
+                    device.Stop();
+                }
+                catch
+                {
+                    // The device may already be gone.
+                }
+            }
+
+            // Defensive: release explicitly when the concrete type implements
+            // IDisposable (no leak if a future AForge build adds it).
+            (device as IDisposable)?.Dispose();
         }
 
         try

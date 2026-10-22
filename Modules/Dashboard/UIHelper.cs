@@ -8,23 +8,49 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
     {
         public static void SetRoundedRegion(this Control ctrl, int radius)
         {
-            if (ctrl.Width <= 0 || ctrl.Height <= 0) return;
+            if (ctrl.IsDisposed) return;
             ApplyRoundedRegion(ctrl, radius);
             ctrl.Resize += (_, _) => ApplyRoundedRegion(ctrl, radius);
         }
 
         private static void ApplyRoundedRegion(Control ctrl, int radius)
         {
-            if (ctrl.Width <= 0 || ctrl.Height <= 0) return;
-            using var path = new GraphicsPath();
+            if (ctrl.IsDisposed || ctrl.Width <= 0 || ctrl.Height <= 0) return;
+
             var r = Math.Min(radius, Math.Min(ctrl.Width, ctrl.Height) / 2);
-            path.AddArc(0, 0, r, r, 180, 90);
-            path.AddArc(ctrl.Width - r, 0, r, r, 270, 90);
-            path.AddArc(ctrl.Width - r, ctrl.Height - r, r, r, 0, 90);
-            path.AddArc(0, ctrl.Height - r, r, r, 90, 90);
-            path.CloseFigure();
+            if (r <= 0)
+            {
+                // The control is still being laid out (one of the sides is
+                // empty): a zero sized arc is rejected by GDI+, so the
+                // rectangular region is kept until the next resize.
+                ClearRegion(ctrl);
+                return;
+            }
+
+            try
+            {
+                using var path = new GraphicsPath();
+                path.AddArc(0, 0, r, r, 180, 90);
+                path.AddArc(ctrl.Width - r, 0, r, r, 270, 90);
+                path.AddArc(ctrl.Width - r, ctrl.Height - r, r, r, 0, 90);
+                path.AddArc(0, ctrl.Height - r, r, r, 90, 90);
+                path.CloseFigure();
+                var oldRegion = ctrl.Region;
+                ctrl.Region = new Region(path);
+                oldRegion?.Dispose();
+            }
+            catch (ArgumentException)
+            {
+                // A decoration must never break the page.
+                ClearRegion(ctrl);
+            }
+        }
+
+        private static void ClearRegion(Control ctrl)
+        {
+            if (ctrl.IsDisposed) return;
             var oldRegion = ctrl.Region;
-            ctrl.Region = new Region(path);
+            ctrl.Region = null;
             oldRegion?.Dispose();
         }
 

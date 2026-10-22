@@ -24,6 +24,9 @@ public class CustomerEditDialog : Form
     private readonly Button _btnSave;
     private readonly Button _btnCancel;
 
+    /// <summary>The customer created by this dialog (null when cancelled or edited).</summary>
+    public CustomerDto? CreatedCustomer { get; private set; }
+
     public CustomerEditDialog(ICustomerService customerService, ILanguageService languageService, CustomerDto? existing = null)
     {
         _customerService = customerService;
@@ -133,7 +136,7 @@ public class CustomerEditDialog : Form
         {
             if (_existing == null)
             {
-                await _customerService.CreateAsync(new CreateCustomerDto
+                CreatedCustomer = await _customerService.CreateAsync(new CreateCustomerDto
                 {
                     FullName = _txtName.Text.Trim(),
                     PhoneNumber = _txtPhone.Text.Trim(),

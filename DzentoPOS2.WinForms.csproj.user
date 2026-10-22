@@ -103,6 +103,12 @@
     <Compile Update="Forms\Settings\SettingsForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="Forms\Suppliers\SupplierEditDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\Suppliers\SuppliersForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Helpers\LocalizableFormBase.cs">
       <SubType>Form</SubType>
     </Compile>

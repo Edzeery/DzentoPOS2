@@ -72,55 +72,73 @@ namespace DzentoPOS2.WinForms.Navigation
             _activeButton.IconColor = ActiveFg;
         }
 
-        public void Navigate<TForm>() where TForm : Form
+public void Navigate<TForm>() where TForm : Form
         {
             if (_container == null)
                 throw new InvalidOperationException("Navigation host not set.");
 
-            // Dispose old form
-            if (_activeForm != null)
+            // Resolve the new page before touching the current one so a failure
+            // (missing DI registration) never leaves the shell with a blank page.
+            TForm form;
+            try
             {
-                _activeForm.Hide();
-                _activeForm.Dispose();
-                _activeForm = null;
+                form = _serviceProvider.GetRequiredService<TForm>();
+            }
+            catch (Exception ex)
+            {
+                AppMessageBox.Error(ex.Message);
+                return;
             }
 
-            // Clear container
-            _container.SuspendLayout();
-            foreach (Control ctrl in _container.Controls
-                         .OfType<Form>().ToList())
+            try
             {
-                _container.Controls.Remove(ctrl);
-                ctrl.Dispose();
+                // Dispose old form
+                if (_activeForm != null)
+                {
+                    _activeForm.Hide();
+                    _activeForm.Dispose();
+                    _activeForm = null;
+                }
+
+                // Clear container
+                _container.SuspendLayout();
+                foreach (Control ctrl in _container.Controls
+                             .OfType<Form>().ToList())
+                {
+                    _container.Controls.Remove(ctrl);
+                    ctrl.Dispose();
+                }
+
+                // Host new form
+                form.TopLevel = false;
+                form.FormBorderStyle = FormBorderStyle.None;
+                form.Dock = DockStyle.Fill;
+                form.Opacity = 0;
+
+                _container.Controls.Add(form);
+                _container.ResumeLayout();
+
+                form.Show();
+                form.BringToFront();
+
+                // Update title
+                if (_titleLabel != null && !form.IsDisposed)
+                    _titleLabel.Text = form.Text;
+
+                // Apply theme & animate
+                form.SuspendLayout();
+                ThemeManager.ApplyToControl(form);
+                form.ResumeLayout(true);
+                FormTransition.FadeIn(form);
+
+                _activeForm = form;
             }
-
-            // Create & host new form
-            var form = _serviceProvider.GetRequiredService<TForm>();
-            if (form == null)
-                throw new InvalidOperationException($"Unable to resolve {typeof(TForm).Name}.");
-
-            form.TopLevel = false;
-            form.FormBorderStyle = FormBorderStyle.None;
-            form.Dock = DockStyle.Fill;
-            form.Opacity = 0;
-
-            _container.Controls.Add(form);
-            _container.ResumeLayout();
-
-            form.Show();
-            form.BringToFront();
-
-            // Update title
-            if (_titleLabel != null && !form.IsDisposed)
-                _titleLabel.Text = form.Text;
-
-            // Apply theme & animate
-            form.SuspendLayout();
-            ThemeManager.ApplyToControl(form);
-            form.ResumeLayout(true);
-            FormTransition.FadeIn(form);
-
-            _activeForm = form;
+            catch (Exception ex)
+            {
+                if (_container != null && _container.IsHandleCreated)
+                    _container.ResumeLayout();
+                AppMessageBox.Error(ex.Message);
+            }
         }
     }
 }

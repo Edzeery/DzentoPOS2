@@ -21,14 +21,23 @@ namespace DzentoPOS2.WinForms.Controls
 
         public static void Apply(Control control, int radius)
         {
-            if (control.Width == 0 || control.Height == 0)
+            if (control.IsDisposed || control.Width <= 0 || control.Height <= 0)
                 return;
+
+            // The radius never exceeds half of the smallest side, otherwise the
+            // arcs would have a zero size and GDI+ would reject the path.
+            int r = Math.Min(radius, Math.Min(control.Width, control.Height) / 2);
+            if (r <= 0)
+            {
+                ClearRegion(control);
+                return;
+            }
+
+            int d = r * 2;
 
             GraphicsPath path = new GraphicsPath();
 
-            int d = radius * 2;
-
-            Rectangle r = new Rectangle(
+            Rectangle bounds = new Rectangle(
                 0,
                 0,
                 control.Width,
@@ -36,14 +45,24 @@ namespace DzentoPOS2.WinForms.Controls
 
             path.StartFigure();
 
-            path.AddArc(r.X, r.Y, d, d, 180, 90);
-            path.AddArc(r.Right - d, r.Y, d, d, 270, 90);
-            path.AddArc(r.Right - d, r.Bottom - d, d, d, 0, 90);
-            path.AddArc(r.X, r.Bottom - d, d, d, 90, 90);
+            path.AddArc(bounds.X, bounds.Y, d, d, 180, 90);
+            path.AddArc(bounds.Right - d, bounds.Y, d, d, 270, 90);
+            path.AddArc(bounds.Right - d, bounds.Bottom - d, d, d, 0, 90);
+            path.AddArc(bounds.X, bounds.Bottom - d, d, d, 90, 90);
 
             path.CloseFigure();
 
+            var oldRegion = control.Region;
             control.Region = new Region(path);
+            oldRegion?.Dispose();
+        }
+
+        private static void ClearRegion(Control control)
+        {
+            if (control.IsDisposed) return;
+            var oldRegion = control.Region;
+            control.Region = null;
+            oldRegion?.Dispose();
         }
     }
 }

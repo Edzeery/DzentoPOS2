@@ -22,7 +22,7 @@ public partial class ProductsForm : LocalizableFormBase
     private readonly ComboBox _cmbWarehouse;
     private readonly ComboBox _cmbCategoryFilter;
     private readonly ComboBox _cmbStatusFilter;
-    private readonly IconButton _btnAdd;
+    private readonly ThemedIconButton _btnAdd;
     private readonly Label _lblWarehouseFilter;
     private readonly Label _lblCategoryFilter;
     private readonly Label _lblStatusFilter;
@@ -90,25 +90,14 @@ public partial class ProductsForm : LocalizableFormBase
         _cmbCategoryFilter = CreateFilterCombo(480, 14, 140);
         _cmbStatusFilter = CreateFilterCombo(640, 14, 130);
 
-        _lblWarehouseFilter = new Label { Location = new Point(320, 2), Size = new Size(60, 15), Font = new Font("Segoe UI", 8F), ForeColor = Color.Gray };
-        _lblCategoryFilter = new Label { Location = new Point(480, 2), Size = new Size(60, 15), Font = new Font("Segoe UI", 8F), ForeColor = Color.Gray };
-        _lblStatusFilter = new Label { Location = new Point(640, 2), Size = new Size(60, 15), Font = new Font("Segoe UI", 8F), ForeColor = Color.Gray };
+        _lblWarehouseFilter = new Label { Location = new Point(320, 2), Size = new Size(60, 15), Font = new Font("Segoe UI", 8F), ForeColor = AppColors.InkMuted };
+        _lblCategoryFilter = new Label { Location = new Point(480, 2), Size = new Size(60, 15), Font = new Font("Segoe UI", 8F), ForeColor = AppColors.InkMuted };
+        _lblStatusFilter = new Label { Location = new Point(640, 2), Size = new Size(60, 15), Font = new Font("Segoe UI", 8F), ForeColor = AppColors.InkMuted };
 
-        _btnAdd = new IconButton
-        {
-            IconChar = IconChar.Plus,
-            IconColor = Color.White,
-            ForeColor = Color.White,
-            Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-            FlatStyle = FlatStyle.Flat,
-            BackColor = CardColor1,
-            Size = new Size(130, 36),
-            Location = new Point(800, 12),
-            Cursor = Cursors.Hand,
-            TextImageRelation = TextImageRelation.ImageBeforeText
-        };
+        _btnAdd = ButtonFactory.ToolSolid(IconChar.Plus, AppStrings.AddProduct, ButtonTone.Primary, ButtonFactory.ButtonSize.Medium);
+        _btnAdd.Size = new Size(130, 36);
+        _btnAdd.Location = new Point(800, 12);
         _btnAdd.Click += async (_, _) => await AddProduct();
-        _btnAdd.FlatAppearance.BorderSize = 0;
 
         _topBar.Controls.AddRange(new Control[]
         {
@@ -141,7 +130,7 @@ public partial class ProductsForm : LocalizableFormBase
             Dock = DockStyle.Fill,
             SplitterDistance = 780,
             SplitterWidth = 2,
-            BackColor = Color.FromArgb(230, 233, 238),
+            BackColor = AppColors.Border,
             Padding = new Padding(0)
         };
         _grid = new DataGridView { Dock = DockStyle.Fill };
@@ -182,6 +171,7 @@ public partial class ProductsForm : LocalizableFormBase
             Padding = new Point(12, 6),
             BackColor = AppColors.Surface
         };
+        DzentoPOS2.WinForms.Themes.TabsStyler.Apply(_detailTabs);
 
         _tabInfo = new TabPage();
         _tabPrices = new TabPage();

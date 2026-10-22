@@ -26,13 +26,13 @@ public class AppSettings
     // ---------------- Regional ----------------
 
     /// <summary>ISO-4217 code of the currency used by the store.</summary>
-    public string CurrencyCode { get; set; } = "SAR";
+    public string CurrencyCode { get; set; } = "DZD";
 
     /// <summary>ISO-3166-1 alpha-2 code of the country the store operates in.</summary>
-    public string CountryCode { get; set; } = "SA";
+    public string CountryCode { get; set; } = "DZ";
 
     /// <summary>IANA id of the time zone used for reports and date display.</summary>
-    public string TimeZoneId { get; set; } = "";
+    public string TimeZoneId { get; set; } = "Africa/Algiers";
 
     // ---------------- Printing ----------------
 

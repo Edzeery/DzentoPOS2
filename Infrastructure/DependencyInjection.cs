@@ -13,6 +13,7 @@ using DzentoPOS2.WinForms.Forms.Purchases;
 using DzentoPOS2.WinForms.Forms.Reports;
 using DzentoPOS2.WinForms.Forms.Sales;
 using DzentoPOS2.WinForms.Forms.Settings;
+using DzentoPOS2.WinForms.Forms.Suppliers;
 using DzentoPOS2.WinForms.Navigation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,6 +56,7 @@ public static class DependencyInjection
         services.AddTransient<PurchasesForm>();
         services.AddTransient<SalesForm>();
         services.AddTransient<CustomersForm>();
+        services.AddTransient<SuppliersForm>();
         services.AddTransient<InventoryForm>();
         services.AddTransient<ReportsForm>();
         services.AddTransient<SettingsForm>();

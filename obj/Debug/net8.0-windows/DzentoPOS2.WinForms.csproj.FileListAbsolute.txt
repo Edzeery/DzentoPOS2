@@ -222,3 +222,16 @@ C:\Users\PC-LB\source\repos\DzentoPOS2\DzentoPOS2\bin\Debug\net8.0-windows\AForg
 C:\Users\PC-LB\source\repos\DzentoPOS2\DzentoPOS2\bin\Debug\net8.0-windows\AForge.Video.dll
 C:\Users\PC-LB\source\repos\DzentoPOS2\DzentoPOS2\bin\Debug\net8.0-windows\AForge.Video.DirectShow.dll
 C:\Users\PC-LB\source\repos\DzentoPOS2\DzentoPOS2\bin\Debug\net8.0-windows\zxing.dll
+C:\Users\PC-LB\source\repos\DzentoPOS2\DzentoPOS2\obj\Debug\net8.0-windows\DzentoPOS2.WinForms.sourcelink.json
+C:\Users\PC-LB\AppData\Local\Temp\opencode\verify\bin\appsettings.json
+C:\Users\PC-LB\AppData\Local\Temp\opencode\verify\bin\DzentoPOS2.WinForms.exe
+C:\Users\PC-LB\AppData\Local\Temp\opencode\verify\bin\DzentoPOS2.WinForms.deps.json
+C:\Users\PC-LB\AppData\Local\Temp\opencode\verify\bin\DzentoPOS2.WinForms.runtimeconfig.json
+C:\Users\PC-LB\AppData\Local\Temp\opencode\verify\bin\DzentoPOS2.WinForms.dll
+C:\Users\PC-LB\AppData\Local\Temp\opencode\verify\bin\DzentoPOS2.WinForms.pdb
+C:\Users\PC-LB\AppData\Local\Temp\opencode\verify\host\appsettings.json
+C:\Users\PC-LB\AppData\Local\Temp\opencode\verify\host\DzentoPOS2.WinForms.exe
+C:\Users\PC-LB\AppData\Local\Temp\opencode\verify\host\DzentoPOS2.WinForms.deps.json
+C:\Users\PC-LB\AppData\Local\Temp\opencode\verify\host\DzentoPOS2.WinForms.runtimeconfig.json
+C:\Users\PC-LB\AppData\Local\Temp\opencode\verify\host\DzentoPOS2.WinForms.dll
+C:\Users\PC-LB\AppData\Local\Temp\opencode\verify\host\DzentoPOS2.WinForms.pdb

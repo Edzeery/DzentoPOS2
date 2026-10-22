@@ -59,27 +59,43 @@ namespace DzentoPOS2.WinForms.Themes
         // Outlined toolbar buttons (icon + label)
         // =========================
 
-        public static ThemedIconButton Tool(IconChar icon, string text, Color accent, ButtonSize size = ButtonSize.Small)
+        /// <summary>
+        /// Outlined toolbar button. The tone (not a raw color) drives the
+        /// colors, so the button keeps its identity in light and dark mode.
+        /// </summary>
+        public static ThemedIconButton Tool(IconChar icon, string text, ButtonTone tone = ButtonTone.Primary, ButtonSize size = ButtonSize.Small)
         {
             var button = new ThemedIconButton
             {
                 IconChar = icon,
                 IconSize = 18,
                 Text = $"  {text}",
-                Size = GetSize(size)
+                Size = GetSize(size),
+                Tone = tone
             };
 
             button.ApplyTheme();
             return button;
         }
 
+        /// <summary>
+        /// Filled toolbar button (primary action of a toolbar).
+        /// </summary>
+        public static ThemedIconButton ToolSolid(IconChar icon, string text, ButtonTone tone = ButtonTone.Primary, ButtonSize size = ButtonSize.Medium)
+        {
+            var button = Tool(icon, text, tone, size);
+            button.Solid = true;
+            button.ApplyTheme();
+            return button;
+        }
+
         public static ThemedIconButton ToolAdd(string text, ButtonSize size = ButtonSize.Small)
-            => Tool(IconChar.Plus, text, AppColors.Primary, size);
+            => Tool(IconChar.Plus, text, ButtonTone.Primary, size);
 
         public static ThemedIconButton ToolEdit(string text, ButtonSize size = ButtonSize.Small)
-            => Tool(IconChar.Edit, text, AppColors.Info, size);
+            => Tool(IconChar.Edit, text, ButtonTone.Info, size);
 
         public static ThemedIconButton ToolDelete(string text, ButtonSize size = ButtonSize.Small)
-            => Tool(IconChar.Trash, text, AppColors.Danger, size);
+            => Tool(IconChar.Trash, text, ButtonTone.Danger, size);
     }
 }

@@ -1,5 +1,6 @@
 using DzentoPOS2.Data.Seed;
 using DzentoPOS2.Localization.Services.Interfaces;
+using DzentoPOS2.WinForms.Configurations;
 using DzentoPOS2.WinForms.Infrastructure;
 using DzentoPOS2.WinForms.Themes;
 using Microsoft.Extensions.Configuration;
@@ -28,13 +29,25 @@ internal static class Program
 
         ServiceProvider = services.BuildServiceProvider();
 
-        // Language
+        // Language: the persisted user preference always wins, the
+        // appsettings value is only the fallback for a fresh installation.
         var languageService =
             ServiceProvider.GetRequiredService<ILanguageService>();
 
-        var defaultLanguage =  configuration["Localization:DefaultLanguage"] ?? "ar";
+        var currentSettings =
+            ServiceProvider.GetRequiredService<ICurrentSettingsService>();
 
-        languageService.SetLanguage(defaultLanguage);
+        var savedLanguage = currentSettings.Current.Language;
+
+        var defaultLanguage =
+            configuration["Localization:DefaultLanguage"] ?? "ar";
+
+        var startupLanguage =
+            string.IsNullOrWhiteSpace(savedLanguage)
+                ? defaultLanguage
+                : savedLanguage;
+
+        languageService.SetLanguage(startupLanguage);
 
         // Theme (persisted user preference)
         ThemeManager.LoadTheme();

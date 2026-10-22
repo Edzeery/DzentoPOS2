@@ -10,6 +10,12 @@ public class ThemedIconButton : IconButton, IThemeAware
 {
     public ButtonTone Tone { get; set; } = ButtonTone.Primary;
 
+    /// <summary>
+    /// Filled variant: the tone color becomes the background and the label
+    /// turns white. Used for the primary action of a toolbar.
+    /// </summary>
+    public bool Solid { get; set; }
+
     public ThemedIconButton()
     {
         FlatStyle = FlatStyle.Flat;
@@ -26,11 +32,23 @@ public class ThemedIconButton : IconButton, IThemeAware
 
         Color accent = ThemedButton.ResolveBack(Tone);
 
-        IconColor = accent;
-        ForeColor = accent;
-        BackColor = AppColors.Surface;
-        FlatAppearance.BorderColor = accent;
-        FlatAppearance.MouseOverBackColor = AppColors.Tint(accent, 0.90f);
-        FlatAppearance.MouseDownBackColor = AppColors.Tint(accent, 0.82f);
+        IconColor = Solid ? Color.White : accent;
+        ForeColor = Solid ? Color.White : accent;
+
+        if (Solid)
+        {
+            BackColor = accent;
+            FlatAppearance.BorderSize = 0;
+            FlatAppearance.MouseOverBackColor = ThemedButton.ResolveHover(Tone);
+            FlatAppearance.MouseDownBackColor = ThemedButton.ResolvePressed(Tone);
+        }
+        else
+        {
+            BackColor = AppColors.Surface;
+            FlatAppearance.BorderSize = 1;
+            FlatAppearance.BorderColor = accent;
+            FlatAppearance.MouseOverBackColor = AppColors.Tint(accent, 0.90f);
+            FlatAppearance.MouseDownBackColor = AppColors.Tint(accent, 0.82f);
+        }
     }
 }

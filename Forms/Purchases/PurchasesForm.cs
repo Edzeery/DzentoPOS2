@@ -6,6 +6,7 @@ using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
 using DzentoPOS2.Shared.Contracts.DTOs.Partners;
 using DzentoPOS2.Shared.Contracts.DTOs.Purchases;
+using DzentoPOS2.WinForms.Controls;
 using DzentoPOS2.WinForms.Helpers;
 using DzentoPOS2.WinForms.Themes;
 using FontAwesome.Sharp;
@@ -51,7 +52,7 @@ public partial class PurchasesForm : LocalizableFormBase
             Padding = new Padding(16, 10, 16, 10)
         };
 
-        _btnNewPurchase = ButtonFactory.Tool(IconChar.Plus, AppStrings.NewPurchase, AppColors.Primary, ButtonFactory.ButtonSize.Medium);
+        _btnNewPurchase = ButtonFactory.Tool(IconChar.Plus, AppStrings.NewPurchase, ButtonTone.Primary, ButtonFactory.ButtonSize.Medium);
         _btnNewPurchase.Location = new Point(16, 12);
         _btnNewPurchase.Click += async (_, _) => await AddPurchase();
 

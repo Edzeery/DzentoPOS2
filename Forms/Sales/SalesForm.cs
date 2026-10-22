@@ -7,8 +7,10 @@ using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
 using DzentoPOS2.Shared.Contracts.DTOs.Partners;
 using DzentoPOS2.Shared.Contracts.DTOs.Sales;
 using DzentoPOS2.WinForms.Configurations;
-using DzentoPOS2.WinForms.Helpers;
+using DzentoPOS2.WinForms.Controls;
 using DzentoPOS2.WinForms.Themes;
+using DzentoPOS2.WinForms.Helpers;
+using DzentoPOS2.WinForms.Forms.Customers;
 using EZControls.Controls.Inputs;
 using FontAwesome.Sharp;
 
@@ -16,6 +18,9 @@ namespace DzentoPOS2.WinForms.Forms.Sales;
 
 public partial class SalesForm : LocalizableFormBase
 {
+    /// <summary>Top gap kept above the totals block of the basket.</summary>
+    private const int TotalsPadding = 6;
+
     private readonly ISaleService _saleService;
     private readonly IProductService _productService;
     private readonly ICustomerService _customerService;
@@ -23,9 +28,17 @@ public partial class SalesForm : LocalizableFormBase
 
     private readonly Panel _leftPanel;
     private readonly Panel _rightPanel;
+    private readonly TableLayoutPanel _saleLayout;
+    private readonly TableLayoutPanel _cartLayout;
+    private readonly TableLayoutPanel _totalsLayout;
     private readonly EZTextBox _productSearch;
-    private readonly IconButton _btnScanBarcode;
+    private readonly EZTextBox _invoiceSearch;
+    private readonly ThemedIconButton _btnScanBarcode;
+    private readonly ThemedIconButton _btnCalculator;
+    private readonly ThemedIconButton _btnAddCustomer;
     private readonly ComboBox _cmbCustomer;
+    private readonly Label _lblCustomer;
+    private readonly Label _lblCart;
     private readonly DataGridView _productGrid;
     private readonly DataGridView _cartGrid;
     private readonly DataGridView _invoiceGrid;
@@ -39,10 +52,10 @@ public partial class SalesForm : LocalizableFormBase
     private readonly Label _lblTotalValue;
     private readonly Label _lblPaid;
     private readonly NumericUpDown _numPaid;
-    private readonly IconButton _btnCompleteSale;
-    private readonly IconButton _btnRemoveFromCart;
-    private readonly IconButton _btnNewSale;
-    private readonly IconButton _btnDeleteInvoice;
+    private readonly ThemedIconButton _btnCompleteSale;
+    private readonly ThemedIconButton _btnRemoveFromCart;
+    private readonly ThemedIconButton _btnNewSale;
+    private readonly ThemedIconButton _btnDeleteInvoice;
     private readonly TabControl _tabs;
     private readonly TabPage _tabNewSale;
     private readonly TabPage _tabInvoices;
@@ -51,6 +64,12 @@ public partial class SalesForm : LocalizableFormBase
     private List<CustomerDto> _customers = new();
     private List<CreateSaleItemDto> _cart = new();
     private List<SaleDto> _invoices = new();
+    private bool _paidTouched;
+    private bool _updatingTotals;
+    private bool _saleStacked;
+    private int _saleCartSize;
+    private int _saleCartHeight;
+    private bool _layoutPending;
 
     public SalesForm(
         ISaleService saleService,
@@ -69,6 +88,7 @@ public partial class SalesForm : LocalizableFormBase
         BackColor = AppColors.Background;
 
         _tabs = new TabControl { Dock = DockStyle.Fill, Font = new Font("Segoe UI", 10F) };
+        DzentoPOS2.WinForms.Themes.TabsStyler.Apply(_tabs);
         _tabNewSale = new TabPage { Text = AppStrings.NewSale, BackColor = AppColors.Background };
         _tabInvoices = new TabPage { Text = AppStrings.Sales, BackColor = AppColors.Background };
 
@@ -78,6 +98,7 @@ public partial class SalesForm : LocalizableFormBase
         _productSearch = new EZTextBox
         {
             Dock = DockStyle.Top,
+
             Height = 36,
             Font = new Font("Segoe UI", 11F),
             PlaceholderText = AppStrings.SearchProducts
@@ -92,21 +113,10 @@ public partial class SalesForm : LocalizableFormBase
             }
         };
 
-        _btnScanBarcode = new IconButton
-        {
-            IconChar = IconChar.Barcode,
-            Text = "  " + AppStrings.ScanBarcode,
-            IconColor = AppColors.Primary,
-            ForeColor = AppColors.Primary,
-            Font = AppStyle.ButtonFont,
-            FlatStyle = FlatStyle.Flat,
-            FlatAppearance = { BorderSize = 1, BorderColor = AppColors.Primary },
-            BackColor = AppColors.Surface,
-            Dock = DockStyle.Right,
-            Width = 150,
-            TextImageRelation = TextImageRelation.ImageBeforeText,
-            Cursor = Cursors.Hand
-        };
+        _btnScanBarcode = ButtonFactory.Tool(IconChar.Barcode, AppStrings.ScanBarcode, ButtonTone.Primary, ButtonFactory.ButtonSize.Medium);
+        _btnScanBarcode.Size = new Size(150, 36);
+        _btnScanBarcode.Dock = DockStyle.Right;
+        _btnScanBarcode.Margin = Padding.Empty;
         _btnScanBarcode.Click += (_, _) => ScanBarcode();
 
         var searchBar = new Panel
@@ -133,9 +143,9 @@ public partial class SalesForm : LocalizableFormBase
         _leftPanel.Controls.Add(searchBar);
 
         // RIGHT PANEL - Cart + totals
-        _rightPanel = new Panel { Dock = DockStyle.Right, Width = 420, Padding = new Padding(8) };
+        _rightPanel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(8) };
 
-        var lblCustomer = new Label
+        _lblCustomer = new Label
         {
             Text = AppStrings.CustomerName + ":",
             Location = new Point(8, 8),
@@ -145,133 +155,242 @@ public partial class SalesForm : LocalizableFormBase
 
         _cmbCustomer = new ComboBox
         {
-            Location = new Point(110, 6),
-            Size = new Size(290, 28),
+            Location = new Point(110, 4),
+            Size = new Size(246, 28),
             Font = new Font("Segoe UI", 10F),
             DropDownStyle = ComboBoxStyle.DropDownList
         };
 
+        _btnAddCustomer = new ThemedIconButton
+        {
+            IconChar = IconChar.UserPlus,
+            Tone = ButtonTone.Primary,
+            Dock = DockStyle.Fill,
+            Margin = Padding.Empty
+        };
+        _btnAddCustomer.Click += (_, _) => AddCustomer();
+
+        var customerRow = new TableLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            Height = 34,
+            ColumnCount = 3,
+            RowCount = 1,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
+        };
+        customerRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38F));
+        customerRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 62F));
+        customerRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 38F));
+        customerRow.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+
+        _lblCustomer.Dock = DockStyle.Fill;
+        _lblCustomer.Location = Point.Empty;
+        _lblCustomer.Size = new Size(100, 22);
+        _lblCustomer.TextAlign = ContentAlignment.MiddleLeft;
+        _lblCustomer.Margin = Padding.Empty;
+
+        _cmbCustomer.Dock = DockStyle.Fill;
+        _cmbCustomer.Location = Point.Empty;
+        _cmbCustomer.Size = new Size(246, 28);
+        _cmbCustomer.Margin = Padding.Empty;
+
+        _btnAddCustomer.Dock = DockStyle.Fill;
+        _btnAddCustomer.Location = Point.Empty;
+        _btnAddCustomer.Size = new Size(36, 30);
+        _btnAddCustomer.Margin = Padding.Empty;
+
+        customerRow.Controls.Add(_lblCustomer, 0, 0);
+        customerRow.Controls.Add(_cmbCustomer, 1, 0);
+        customerRow.Controls.Add(_btnAddCustomer, 2, 0);
+
         _cartGrid = new DataGridView
         {
-            Location = new Point(8, 42),
-            Size = new Size(400, 250),
+            Dock = DockStyle.Fill,
             ReadOnly = true,
             MultiSelect = false
         };
         DataGridViewStyleHelper.ApplyModernStyle(_cartGrid);
 
-        _btnRemoveFromCart = new IconButton
+        _btnRemoveFromCart = new ThemedIconButton
         {
             IconChar = IconChar.Minus,
-            IconColor = AppColors.Danger,
-            ForeColor = AppColors.Danger,
-            FlatStyle = FlatStyle.Flat,
-            FlatAppearance = { BorderSize = 1, BorderColor = AppColors.Danger },
-            BackColor = AppColors.Surface,
-            Size = new Size(36, 30),
-            Location = new Point(372, 42),
-            Cursor = Cursors.Hand
+            Tone = ButtonTone.Danger,
+            Dock = DockStyle.Right,
+            Size = new Size(36, 28),
+            Margin = Padding.Empty
         };
         _btnRemoveFromCart.Click += (_, _) => RemoveFromCart();
 
-        int y = 305;
-        _lblSubtotal = MakeLabel(AppStrings.Subtotal + ":", 8, y);
-        _lblSubtotalValue = MakeValueLabel("0.00", 310, y);
-        y += 30;
-        _lblDiscount = MakeLabel(AppStrings.Discount + " (%):", 8, y);
-        _numDiscount = MakeNumeric(310, y - 2, 0, 100);
+        // Cart header: title on the leading edge, remove button on the trailing one.
+        var cartHeader = new Panel { Dock = DockStyle.Top, Height = 34, Padding = new Padding(0, 0, 0, 6) };
+        _lblCart = new Label
+        {
+            Text = AppStrings.Cart,
+            Dock = DockStyle.Fill,
+            Margin = Padding.Empty,
+            Font = new Font("Segoe UI", 10.5F, FontStyle.Bold),
+            ForeColor = AppColors.Ink,
+            TextAlign = ContentAlignment.MiddleLeft
+        };
+        cartHeader.Controls.Add(_lblCart);
+        cartHeader.Controls.Add(_btnRemoveFromCart);
+
+        // The grid is added first so the header keeps the top edge.
+        var cartArea = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 4, 0, 0) };
+        cartArea.Controls.Add(_cartGrid);
+        cartArea.Controls.Add(cartHeader);
+
+        // Totals: label column grows, value column keeps a fixed width.
+        var totals = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 5,
+            Margin = Padding.Empty,
+            Padding = new Padding(0, TotalsPadding, 0, 0)
+        };
+        _totalsLayout = totals;
+        totals.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        totals.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 110F));
+        for (int i = 0; i < 5; i++)
+            totals.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+
+        _lblSubtotal = MakeLabel(AppStrings.Subtotal + ":");
+        _lblSubtotalValue = MakeValueLabel("0.00");
+        _lblDiscount = MakeLabel(AppStrings.Discount + " (%):");
+        _numDiscount = MakeNumeric(0, 100);
         _numDiscount.ValueChanged += (_, _) => UpdateTotals();
-        y += 30;
-        _lblTax = MakeLabel(AppStrings.TaxRate + " (%):", 8, y);
-        _numTax = MakeNumeric(310, y - 2, 0, 100);
+        _lblTax = MakeLabel(AppStrings.TaxRate + " (%):");
+        _numTax = MakeNumeric(0, 100);
         _numTax.ValueChanged += (_, _) => UpdateTotals();
-        y += 30;
-        _lblTotal = MakeLabel(AppStrings.GrandTotal + ":", 8, y);
-        _lblTotalValue = MakeValueLabel("0.00", 310, y);
+        _lblTotal = MakeLabel(AppStrings.GrandTotal + ":");
+        _lblTotalValue = MakeValueLabel("0.00");
         _lblTotalValue.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
         _lblTotalValue.ForeColor = AppColors.Primary;
-        y += 35;
-        _lblPaid = MakeLabel(AppStrings.PaidAmount + ":", 8, y);
-        _numPaid = MakeNumeric(310, y - 2, 0, 99999999);
-        _numPaid.ValueChanged += (_, _) => UpdateTotals();
-        y += 40;
+        _lblPaid = MakeLabel(AppStrings.PaidAmount + ":");
+        _numPaid = MakeNumeric(0, 99999999);
+        _numPaid.ValueChanged += (_, _) => OnPaidChanged();
 
-        _btnCompleteSale = new IconButton
-        {
-            IconChar = IconChar.CheckCircle,
-            Text = "  " + AppStrings.CompleteSale,
-            IconColor = Color.White,
-            ForeColor = Color.White,
-            Font = new Font("Segoe UI", 12F, FontStyle.Bold),
-            FlatStyle = FlatStyle.Flat,
-            FlatAppearance = { BorderSize = 0, MouseOverBackColor = AppColors.PrimaryHover, MouseDownBackColor = AppColors.PrimaryPressed },
-            BackColor = AppColors.Primary,
-            Size = new Size(400, 45),
-            Location = new Point(8, y),
-            TextImageRelation = TextImageRelation.ImageBeforeText,
-            Cursor = Cursors.Hand
-        };
+        totals.Controls.Add(_lblSubtotal, 0, 0);
+        totals.Controls.Add(_lblSubtotalValue, 1, 0);
+        totals.Controls.Add(_lblDiscount, 0, 1);
+        totals.Controls.Add(_numDiscount, 1, 1);
+        totals.Controls.Add(_lblTax, 0, 2);
+        totals.Controls.Add(_numTax, 1, 2);
+        totals.Controls.Add(_lblTotal, 0, 3);
+        totals.Controls.Add(_lblTotalValue, 1, 3);
+        totals.Controls.Add(_lblPaid, 0, 4);
+        totals.Controls.Add(_numPaid, 1, 4);
+
+        _btnCalculator = ButtonFactory.Tool(IconChar.Calculator, AppStrings.Calculator, ButtonTone.Primary, ButtonFactory.ButtonSize.Medium);
+        _btnCalculator.Dock = DockStyle.Fill;
+        _btnCalculator.Margin = new Padding(0, 0, 6, 0);
+        _btnCalculator.Click += (_, _) => OpenCalculator();
+
+        _btnCompleteSale = ButtonFactory.ToolSolid(IconChar.CheckCircle, AppStrings.CompleteSale, ButtonTone.Primary, ButtonFactory.ButtonSize.Large);
+        _btnCompleteSale.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+        _btnCompleteSale.Dock = DockStyle.Fill;
+        _btnCompleteSale.Margin = Padding.Empty;
         _btnCompleteSale.Click += async (_, _) => await CompleteSaleAsync();
 
-        _rightPanel.Controls.AddRange(new Control[]
+        var actions = new TableLayoutPanel
         {
-            lblCustomer, _cmbCustomer,
-            _cartGrid, _btnRemoveFromCart,
-            _lblSubtotal, _lblSubtotalValue,
-            _lblDiscount, _numDiscount,
-            _lblTax, _numTax,
-            _lblTotal, _lblTotalValue,
-            _lblPaid, _numPaid,
-            _btnCompleteSale
-        });
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 1,
+            Margin = Padding.Empty,
+            Padding = new Padding(0, 6, 0, 0)
+        };
+        actions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40F));
+        actions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 60F));
+        actions.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        actions.Controls.Add(_btnCalculator, 0, 0);
+        actions.Controls.Add(_btnCompleteSale, 1, 0);
 
-        _tabNewSale.Controls.Add(_rightPanel);
-        _tabNewSale.Controls.Add(_leftPanel);
+        // Basket layout: customer row, cart grid, totals, actions.
+        _cartLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 4,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
+        };
+        _cartLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        _cartLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+        _cartLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        _cartLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 156F));
+        _cartLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 54F));
+
+        customerRow.Dock = DockStyle.Fill;
+        _cartLayout.Controls.Add(customerRow, 0, 0);
+        _cartLayout.Controls.Add(cartArea, 0, 1);
+        _cartLayout.Controls.Add(totals, 0, 2);
+        _cartLayout.Controls.Add(actions, 0, 3);
+        _rightPanel.Controls.Add(_cartLayout);
+
+        // Sale layout: products and basket side by side, stacked when narrow.
+        _saleLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 1,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
+        };
+        _tabNewSale.Controls.Add(_saleLayout);
+        ApplySaleLayout();
+        _tabNewSale.Resize += OnSaleTabResized;
 
         // INVOICES TAB
         _invoiceGrid = new DataGridView { Dock = DockStyle.Fill, ReadOnly = true, MultiSelect = false };
         DataGridViewStyleHelper.ApplyModernStyle(_invoiceGrid);
 
-        var invoiceTopPanel = new Panel { Dock = DockStyle.Top, Height = 50, BackColor = AppColors.Surface, Padding = new Padding(12, 8, 12, 8) };
-
-        _btnNewSale = new IconButton
+        _invoiceSearch = new EZTextBox
         {
-            IconChar = IconChar.Plus,
-            Text = "  " + AppStrings.NewSale,
-            IconColor = AppColors.Primary,
-            ForeColor = AppColors.Primary,
-            Font = AppStyle.ButtonFont,
-            FlatStyle = FlatStyle.Flat,
-            FlatAppearance = { BorderSize = 1, BorderColor = AppColors.Primary },
-            BackColor = AppColors.Surface,
-            Size = new Size(130, 34),
-            Location = new Point(12, 8),
-            TextImageRelation = TextImageRelation.ImageBeforeText,
-            Cursor = Cursors.Hand
+            Dock = DockStyle.Fill,
+            Height = 36,
+            Font = new Font("Segoe UI", 11F),
+            PlaceholderText = AppStrings.SearchInvoices
         };
+        _invoiceSearch.TextChanged += (_, _) => FilterInvoices();
+
+        _btnNewSale = ButtonFactory.Tool(IconChar.Plus, AppStrings.NewSale, ButtonTone.Primary, ButtonFactory.ButtonSize.Medium);
+        _btnNewSale.Dock = DockStyle.Fill;
+        _btnNewSale.Margin = new Padding(0, 0, 8, 0);
         _btnNewSale.Click += (_, _) => _tabs.SelectedIndex = 0;
 
-        _btnDeleteInvoice = new IconButton
-        {
-            IconChar = IconChar.Trash,
-            Text = "  " + AppStrings.Delete,
-            IconColor = AppColors.Danger,
-            ForeColor = AppColors.Danger,
-            Font = AppStyle.ButtonFont,
-            FlatStyle = FlatStyle.Flat,
-            FlatAppearance = { BorderSize = 1, BorderColor = AppColors.Danger },
-            BackColor = AppColors.Surface,
-            Size = new Size(100, 34),
-            Location = new Point(154, 8),
-            TextImageRelation = TextImageRelation.ImageBeforeText,
-            Cursor = Cursors.Hand
-        };
+        _btnDeleteInvoice = ButtonFactory.ToolDelete(AppStrings.Delete, ButtonFactory.ButtonSize.Medium);
+        _btnDeleteInvoice.Dock = DockStyle.Fill;
+        _btnDeleteInvoice.Margin = Padding.Empty;
         _btnDeleteInvoice.Click += async (_, _) => await DeleteInvoiceAsync();
 
-        invoiceTopPanel.Controls.AddRange(new Control[] { _btnNewSale, _btnDeleteInvoice });
+        // Toolbar: the search field grows, the actions keep a fixed width.
+        // A table layout mirrors itself in RTL, so the actions stay on the
+        // trailing edge in both languages.
+        var invoiceToolbar = new TableLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            Height = 58,
+            ColumnCount = 3,
+            RowCount = 1,
+            BackColor = AppColors.Surface,
+            Padding = new Padding(12, 10, 12, 10),
+            Margin = Padding.Empty
+        };
+        invoiceToolbar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        invoiceToolbar.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 140F));
+        invoiceToolbar.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
+        invoiceToolbar.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+
+        _invoiceSearch.Margin = new Padding(0, 0, 8, 0);
+        invoiceToolbar.Controls.Add(_invoiceSearch, 0, 0);
+        invoiceToolbar.Controls.Add(_btnNewSale, 1, 0);
+        invoiceToolbar.Controls.Add(_btnDeleteInvoice, 2, 0);
 
         _tabInvoices.Controls.Add(_invoiceGrid);
-        _tabInvoices.Controls.Add(invoiceTopPanel);
+        _tabInvoices.Controls.Add(invoiceToolbar);
 
         _tabs.TabPages.AddRange(new[] { _tabNewSale, _tabInvoices });
         Controls.Add(_tabs);
@@ -280,18 +399,111 @@ public partial class SalesForm : LocalizableFormBase
     protected override async void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
+        ApplySaleLayout();
         await LoadProductsAsync();
         await LoadCustomersAsync();
         await LoadInvoicesAsync();
     }
 
+    /// <summary>
+    /// Places the product list and the basket next to each other, and stacks them
+    /// when the page gets too narrow. The grid never slides under the basket
+    /// panel any more, which used to hide the product search field.
+    /// </summary>
+    private void ApplySaleLayout()
+    {
+        int available = _tabNewSale.ClientSize.Width;
+        if (available <= 0) return;
+
+        bool stacked = available < 780;
+        int cartSize = Math.Clamp((int)(available * 0.38), 300, 420);
+        int cartHeight = stacked
+            ? Math.Clamp((int)(_tabNewSale.ClientSize.Height * 0.55), 300, 380)
+            : 0;
+
+        if (stacked == _saleStacked && cartSize == _saleCartSize && cartHeight == _saleCartHeight) return;
+
+        _saleStacked = stacked;
+        _saleCartSize = cartSize;
+        _saleCartHeight = cartHeight;
+
+        ApplyCartLayout(stacked);
+
+        _saleLayout.SuspendLayout();
+        _saleLayout.Controls.Clear();
+        _saleLayout.ColumnStyles.Clear();
+        _saleLayout.RowStyles.Clear();
+
+        if (stacked)
+        {
+            _saleLayout.ColumnCount = 1;
+            _saleLayout.RowCount = 2;
+            _saleLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            _saleLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            _saleLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, cartHeight));
+            _saleLayout.Controls.Add(_leftPanel, 0, 0);
+            _saleLayout.Controls.Add(_rightPanel, 0, 1);
+        }
+        else
+        {
+            _saleLayout.ColumnCount = 2;
+            _saleLayout.RowCount = 1;
+            _saleLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            _saleLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, cartSize));
+            _saleLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            _saleLayout.Controls.Add(_leftPanel, 0, 0);
+            _saleLayout.Controls.Add(_rightPanel, 1, 0);
+        }
+
+        _saleLayout.ResumeLayout(true);
+    }
+
+    /// <summary>
+    /// Keeps the basket usable when it is stacked under the product list: the
+    /// totals rows shrink so the cart grid always keeps a visible height.
+    /// </summary>
+    private void ApplyCartLayout(bool compact)
+    {
+        int totalsBlock = compact ? 136 : 156;
+        int totalsRow = (totalsBlock - TotalsPadding) / 5;
+        int actionsBlock = compact ? 52 : 60;
+
+        for (int i = 0; i < _totalsLayout.RowStyles.Count; i++)
+            _totalsLayout.RowStyles[i] = new RowStyle(SizeType.Absolute, totalsRow);
+
+        _cartLayout.RowStyles[2] = new RowStyle(SizeType.Absolute, totalsBlock);
+        _cartLayout.RowStyles[3] = new RowStyle(SizeType.Absolute, actionsBlock);
+    }
+
+    /// <summary>
+    /// The resize event fires before the new size is applied, so the layout is
+    /// recomputed on the next message loop pass with the settled measurements.
+    /// </summary>
+    private void OnSaleTabResized(object? sender, EventArgs e)
+    {
+        if (_layoutPending) return;
+
+        _layoutPending = true;
+        BeginInvoke(new Action(() =>
+        {
+            _layoutPending = false;
+            ApplySaleLayout();
+        }));
+    }
+
     protected override void LoadText()
     {
-        Text = AppStrings.Sales;
+        Text = AppStrings.PointOfSale;
         _tabNewSale.Text = AppStrings.NewSale;
         _tabInvoices.Text = AppStrings.Sales;
         _productSearch.PlaceholderText = AppStrings.SearchProducts;
+        _invoiceSearch.PlaceholderText = AppStrings.SearchInvoices;
         _btnScanBarcode.Text = "  " + AppStrings.ScanBarcode;
+        _lblCustomer.Text = AppStrings.CustomerName + ":";
+        _lblCart.Text = AppStrings.Cart;
+        _btnAddCustomer.Text = "  " + AppStrings.AddCustomer;
+        _btnAddCustomer.AccessibleDescription = AppStrings.AddCustomer;
+        _btnCalculator.Text = "  " + AppStrings.Calculator;
         _lblSubtotal.Text = AppStrings.Subtotal + ":";
         _lblDiscount.Text = AppStrings.Discount + " (%):";
         _lblTax.Text = AppStrings.TaxRate + " (%):";
@@ -312,12 +524,31 @@ public partial class SalesForm : LocalizableFormBase
     {
         _customers = await _customerService.GetAllAsync();
         _cmbCustomer.Items.Clear();
-        _cmbCustomer.Items.Add(new { Id = Guid.Empty, FullName = AppStrings.SelectCustomer });
+        _cmbCustomer.Items.Add(new CustomerItem(Guid.Empty, AppStrings.SelectCustomer));
         foreach (var c in _customers)
-            _cmbCustomer.Items.Add(c);
-        _cmbCustomer.DisplayMember = "FullName";
-        _cmbCustomer.ValueMember = "Id";
+            _cmbCustomer.Items.Add(new CustomerItem(c.Id, c.FullName));
+        _cmbCustomer.DisplayMember = nameof(CustomerItem.FullName);
+        _cmbCustomer.ValueMember = nameof(CustomerItem.Id);
         _cmbCustomer.SelectedIndex = 0;
+    }
+
+    /// <summary>Creates a customer from the sales screen and selects it right away.</summary>
+    private void AddCustomer()
+    {
+        using var dialog = new CustomerEditDialog(_customerService, _languageService);
+
+        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+
+        var created = dialog.CreatedCustomer;
+        if (created is null) return;
+
+        _customers.Add(created);
+
+        var item = new CustomerItem(created.Id, created.FullName);
+        _cmbCustomer.Items.Add(item);
+        _cmbCustomer.SelectedItem = item;
+
+        AppMessageBox.Success(AppStrings.CustomerAdded);
     }
 
     private async Task LoadInvoicesAsync()
@@ -336,6 +567,24 @@ public partial class SalesForm : LocalizableFormBase
             new DataGridViewTextBoxColumn { HeaderText = AppStrings.Date, DataPropertyName = "CreatedAt", Width = 120, DefaultCellStyle = { Format = "yyyy/MM/dd HH:mm" } }
         });
         _invoiceGrid.DataSource = _invoices;
+        FilterInvoices();
+    }
+
+    /// <summary>
+    /// Filters the invoices list by invoice number, customer name or date.
+    /// The filter runs on the loaded rows, so it reacts immediately.
+    /// </summary>
+    private void FilterInvoices()
+    {
+        var term = _invoiceSearch.Text?.Trim();
+        var filtered = string.IsNullOrWhiteSpace(term)
+            ? _invoices
+            : _invoices.Where(i =>
+                (i.InvoiceNumber?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
+                || (i.CustomerName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
+                || i.CreatedAt.ToString("yyyy/MM/dd").Contains(term, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        _invoiceGrid.DataSource = filtered;
     }
 
     private void FilterProducts()
@@ -355,7 +604,7 @@ public partial class SalesForm : LocalizableFormBase
         _productGrid.AutoGenerateColumns = false;
         _productGrid.Columns.AddRange(new[]
         {
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.ProductLabel, DataPropertyName = "Name", Width = 200 },
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.ProductLabel, DataPropertyName = "Name", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, MinimumWidth = 120 },
             new DataGridViewTextBoxColumn { HeaderText = "SKU", DataPropertyName = "SKU", Width = 100 },
             new DataGridViewTextBoxColumn { HeaderText = AppStrings.SalePrice + " (" + CurrencyCode + ")", DataPropertyName = "SalePrice", Width = 100, DefaultCellStyle = { Format = "N2", Alignment = DataGridViewContentAlignment.MiddleRight } }
         });
@@ -383,6 +632,7 @@ public partial class SalesForm : LocalizableFormBase
         if (string.IsNullOrWhiteSpace(scanned)) return;
 
         var product = _products.FirstOrDefault(p =>
+            string.Equals(p.Barcode, scanned, StringComparison.OrdinalIgnoreCase) ||
             string.Equals(p.SKU, scanned, StringComparison.OrdinalIgnoreCase));
 
         if (product is null)
@@ -430,7 +680,7 @@ public partial class SalesForm : LocalizableFormBase
             var product = _products.FirstOrDefault(p => p.Id == i.ProductId);
             return new
             {
-                ProductName = product?.Name ?? "",
+                ProductName = product?.Name ?? (string.IsNullOrWhiteSpace(i.Description) ? "-" : i.Description),
                 i.Quantity,
                 i.Price,
                 Total = i.Quantity * i.Price
@@ -442,7 +692,7 @@ public partial class SalesForm : LocalizableFormBase
         _cartGrid.AutoGenerateColumns = false;
         _cartGrid.Columns.AddRange(new[]
         {
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.ProductLabel, DataPropertyName = "ProductName", Width = 150 },
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.ProductLabel, DataPropertyName = "ProductName", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, MinimumWidth = 90 },
             new DataGridViewTextBoxColumn { HeaderText = AppStrings.Quantity, DataPropertyName = "Quantity", Width = 60 },
             new DataGridViewTextBoxColumn { HeaderText = AppStrings.Price + " (" + CurrencyCode + ")", DataPropertyName = "Price", Width = 80, DefaultCellStyle = { Format = "N2" } },
             new DataGridViewTextBoxColumn { HeaderText = AppStrings.Total + " (" + CurrencyCode + ")", DataPropertyName = "Total", Width = 90, DefaultCellStyle = { Format = "N2" } }
@@ -463,8 +713,106 @@ public partial class SalesForm : LocalizableFormBase
         _lblSubtotalValue.Text = FormatMoney(subtotal);
         _lblTotalValue.Text = FormatMoney(total);
 
-        if (_numPaid.Value == 0)
-            _numPaid.Value = (decimal)Math.Round(total, 2);
+        // the paid amount follows the total until the cashier types his own value
+        if (!_paidTouched)
+        {
+            _updatingTotals = true;
+            try
+            {
+                _numPaid.Value = (decimal)Math.Round(total, 2);
+            }
+            finally
+            {
+                _updatingTotals = false;
+            }
+        }
+    }
+
+    private void OnPaidChanged()
+    {
+        if (_updatingTotals) return;
+
+        _paidTouched = true;
+        UpdateTotals();
+    }
+
+    /// <summary>Opens the calculator and routes its result to the sales screen.</summary>
+    private void OpenCalculator()
+    {
+        var cartTotal = _cart.Sum(i => i.Quantity * i.Price);
+
+        using var dialog = new SalesCalculatorDialog(
+            _languageService,
+            _products,
+            cartTotal,
+            _currentSettings.Regional.CurrencySymbol);
+
+        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+
+        var outcome = dialog.Outcome;
+        if (outcome is null) return;
+
+        ApplyCalculatorOutcome(outcome);
+    }
+
+    private void ApplyCalculatorOutcome(CalculatorOutcome outcome)
+    {
+        switch (outcome.Target)
+        {
+            case CalculatorTarget.ProductLine:
+                if (outcome.ProductId is Guid productId)
+                {
+                    var product = _products.FirstOrDefault(p => p.Id == productId);
+                    if (product is not null)
+                    {
+                        decimal price = outcome.UnitPrice > 0 ? outcome.UnitPrice : product.SalePrice;
+                        decimal quantity = price > 0 ? Math.Round(outcome.Value / price, 3) : 1m;
+                        if (quantity <= 0) quantity = 1m;
+
+                        var existing = _cart.FirstOrDefault(i => i.ProductId == productId);
+                        if (existing is not null)
+                        {
+                            existing.Quantity += quantity;
+                            existing.Price = price;
+                        }
+                        else
+                        {
+                            _cart.Add(new CreateSaleItemDto
+                            {
+                                ProductId = productId,
+                                Quantity = quantity,
+                                Price = price
+                            });
+                        }
+                    }
+                }
+                break;
+
+            case CalculatorTarget.CustomLine:
+                _cart.Add(new CreateSaleItemDto
+                {
+                    ProductId = Guid.Empty,
+                    Quantity = 1,
+                    Price = outcome.Value,
+                    Description = outcome.Description
+                });
+                break;
+
+            case CalculatorTarget.SetPaid:
+                _numPaid.Value = Math.Min(outcome.Value, _numPaid.Maximum);
+                _paidTouched = true;
+                break;
+
+            case CalculatorTarget.SetDiscount:
+                _numDiscount.Value = Math.Clamp(outcome.Value, _numDiscount.Minimum, _numDiscount.Maximum);
+                break;
+
+            case CalculatorTarget.SetTax:
+                _numTax.Value = Math.Clamp(outcome.Value, _numTax.Minimum, _numTax.Maximum);
+                break;
+        }
+
+        RefreshCart();
     }
 
     private string CurrencyCode => _currentSettings.Regional.CurrencyCode;
@@ -479,7 +827,12 @@ public partial class SalesForm : LocalizableFormBase
             return;
         }
 
-        var customerId = _cmbCustomer.SelectedValue as Guid? ?? Guid.Empty;
+        // The combo is filled by hand, so SelectedValue is not bound to the
+        // item (it stays null even with a selected entry). The identifier is
+        // therefore read from the selected item itself.
+        var customerId = _cmbCustomer.SelectedItem is CustomerItem selectedCustomer
+            ? selectedCustomer.Id
+            : Guid.Empty;
 
         try
         {
@@ -498,6 +851,7 @@ public partial class SalesForm : LocalizableFormBase
             _numDiscount.Value = 0;
             _numTax.Value = 0;
             _numPaid.Value = 0;
+            _paidTouched = false;
             RefreshCart();
             await LoadInvoicesAsync();
             _tabs.SelectedIndex = 1;
@@ -522,32 +876,35 @@ public partial class SalesForm : LocalizableFormBase
         }
     }
 
-    private static Label MakeLabel(string text, int x, int y) => new()
+    private static Label MakeLabel(string text) => new()
     {
         Text = text,
-        Location = new Point(x, y),
-        Size = new Size(150, 22),
+        Dock = DockStyle.Fill,
+        Margin = Padding.Empty,
         Font = new Font("Segoe UI", 9F),
         TextAlign = ContentAlignment.MiddleLeft
     };
 
-    private static Label MakeValueLabel(string text, int x, int y) => new()
+    private static Label MakeValueLabel(string text) => new()
     {
         Text = text,
-        Location = new Point(x, y),
-        Size = new Size(90, 22),
+        Dock = DockStyle.Fill,
+        Margin = Padding.Empty,
         Font = new Font("Segoe UI", 10F, FontStyle.Bold),
         TextAlign = ContentAlignment.MiddleRight
     };
 
-    private static NumericUpDown MakeNumeric(int x, int y, decimal min, decimal max) => new()
+    private static NumericUpDown MakeNumeric(decimal min, decimal max) => new()
     {
-        Location = new Point(x, y),
-        Size = new Size(90, 28),
+        Dock = DockStyle.Fill,
+        Margin = Padding.Empty,
         Font = new Font("Segoe UI", 10F),
         DecimalPlaces = 2,
         Minimum = min,
         Maximum = max,
         Value = 0
     };
+
+    /// <summary>Uniform customer entry so the combo always exposes a Guid value.</summary>
+    private sealed record CustomerItem(Guid Id, string FullName);
 }

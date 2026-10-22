@@ -15,7 +15,9 @@ public partial class SettingsForm : LocalizableFormBase
     private readonly ICurrentSettingsService _currentSettings;
 
     private readonly TableLayoutPanel _root;
-    private readonly FlowLayoutPanel _page;
+    private readonly TableLayoutPanel _page;
+    private readonly List<SettingsCard> _cards = new();
+    private int _layoutColumns;
 
     private readonly SettingsCard _brandingCard;
     private readonly SettingsCard _regionalCard;
@@ -74,7 +76,9 @@ public partial class SettingsForm : LocalizableFormBase
 
         BackColor = AppColors.Background;
         Size = new Size(940, 720);
-        MinimumSize = new Size(720, 520);
+        // The page is responsive, so the window can also be hosted inside a
+        // narrow shell (375px) without forcing the shell to grow.
+        MinimumSize = new Size(320, 420);
 
         _root = new TableLayoutPanel
         {
@@ -88,11 +92,12 @@ public partial class SettingsForm : LocalizableFormBase
         _root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         _root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-        _page = new FlowLayoutPanel
+        _page = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            FlowDirection = FlowDirection.TopDown,
-            WrapContents = false,
+            ColumnCount = 1,
+            RowCount = 0,
+            GrowStyle = TableLayoutPanelGrowStyle.AddRows,
             AutoScroll = true,
             BackColor = AppColors.Background,
             Margin = Padding.Empty,
@@ -133,9 +138,8 @@ public partial class SettingsForm : LocalizableFormBase
         {
             Dock = DockStyle.Fill,
             FlowDirection = FlowDirection.LeftToRight,
-            WrapContents = false,
-            AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            WrapContents = true,
+            AutoSize = false,
             BackColor = Color.Transparent,
             Margin = Padding.Empty
         };
@@ -148,12 +152,12 @@ public partial class SettingsForm : LocalizableFormBase
             ColumnCount = 1,
             RowCount = 2,
             BackColor = Color.Transparent,
-            AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            AutoSize = false,
             Margin = Padding.Empty
         };
         logoInfo.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        logoInfo.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        logoInfo.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        logoInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         logoInfo.Controls.Add(_lblLogoCaption, 0, 0);
         logoInfo.Controls.Add(logoButtons, 0, 1);
 
@@ -163,15 +167,16 @@ public partial class SettingsForm : LocalizableFormBase
             ColumnCount = 2,
             RowCount = 1,
             BackColor = Color.Transparent,
-            AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            AutoSize = false,
+            Height = 96,
             Margin = new Padding(0, 0, 0, 8)
         };
         logoRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 112));
         logoRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        logoRow.RowStyles.Add(new RowStyle(SizeType.Absolute, 96));
         logoRow.Controls.Add(_picLogo, 0, 0);
         logoRow.Controls.Add(logoInfo, 1, 0);
-        _brandingCard.AddControl(logoRow);
+        _brandingCard.AddControl(logoRow, 96);
 
         _txtStoreName = new TextBox
         {
@@ -273,12 +278,12 @@ public partial class SettingsForm : LocalizableFormBase
         };
         _aboutCard.AddControl(_lblVersion);
 
-        _page.Controls.Add(_brandingCard);
-        _page.Controls.Add(_regionalCard);
-        _page.Controls.Add(_appearanceCard);
-        _page.Controls.Add(_printingCard);
-        _page.Controls.Add(_barcodeCard);
-        _page.Controls.Add(_aboutCard);
+        _cards.Add(_brandingCard);
+        _cards.Add(_regionalCard);
+        _cards.Add(_appearanceCard);
+        _cards.Add(_printingCard);
+        _cards.Add(_barcodeCard);
+        _cards.Add(_aboutCard);
 
         // ── Footer ─────────────────────────────────────────────────────────
         var footer = new Panel
@@ -316,6 +321,7 @@ public partial class SettingsForm : LocalizableFormBase
         Controls.Add(_root);
 
         _page.Resize += (_, _) => LayoutCards();
+        LayoutCards();
     }
 
     protected override void OnLoad(EventArgs e)
@@ -609,16 +615,20 @@ public partial class SettingsForm : LocalizableFormBase
         settings.StoreName = _txtStoreName.Text.Trim();
         settings.RememberMe = _chkRememberMe.Checked;
         settings.DarkMode = _chkDarkMode.Checked;
-        settings.PrinterName = _cmbPrinter.SelectedItem is PrinterItem printer ? printer.Name : string.Empty;
-        settings.PaperSize = _cmbPaperSize.SelectedItem is PaperItem paper ? paper.Name : string.Empty;
+        settings.PrinterName = _cmbPrinter.SelectedItem is PrinterItem printer ? printer.Name : _settings.PrinterName;
+        settings.PaperSize = _cmbPaperSize.SelectedItem is PaperItem paper ? paper.Name : _settings.PaperSize;
         settings.Landscape = _cmbOrientation.SelectedItem is OrientationItem orientation && orientation.Code == "L";
-        settings.ReceiptWidthMm = int.TryParse(_cmbReceiptWidth.SelectedItem is ReceiptItem receipt ? receipt.Value : "80", out int width) ? width : 80;
+        settings.ReceiptWidthMm = int.TryParse(_cmbReceiptWidth.SelectedItem is ReceiptItem receipt ? receipt.Value : _settings.ReceiptWidthMm.ToString(), out int width) ? width : _settings.ReceiptWidthMm;
         settings.CameraBarcodeEnabled = _chkCameraBarcode.Checked;
-        settings.BarcodeCameraDevice = _cmbCamera.SelectedItem is CameraItem camera ? camera.Moniker : string.Empty;
+        settings.BarcodeCameraDevice = _cmbCamera.SelectedItem is CameraItem camera ? camera.Moniker : _settings.BarcodeCameraDevice;
 
         var desiredMode = _chkDarkMode.Checked ? ThemeMode.Dark : ThemeMode.Light;
         if (ThemeManager.Mode != desiredMode)
             ThemeManager.SetMode(desiredMode);
+
+        // Turning "remember me" off must also drop the stored password.
+        if (!settings.RememberMe)
+            CredentialStore.Delete();
 
         _currentSettings.Save(settings);
         _settings = settings;
@@ -636,11 +646,13 @@ public partial class SettingsForm : LocalizableFormBase
             RememberMe = false,
             DarkMode = ThemeManager.Mode == ThemeMode.Dark,
             StoreName = "DzentoPOS2",
-            CurrencyCode = "SAR",
-            CountryCode = "SA",
-            TimeZoneId = RegionalContext.ResolveTimeZone(null).Id,
+            CurrencyCode = "DZD",
+            CountryCode = "DZ",
+            TimeZoneId = "Africa/Algiers",
             ReceiptWidthMm = 80
         };
+
+        CredentialStore.Delete();
 
         _currentSettings.Save(defaults);
         _settings = defaults;
@@ -663,14 +675,70 @@ public partial class SettingsForm : LocalizableFormBase
 
     private void LayoutCards()
     {
-        int width = _page.DisplayRectangle.Width - _page.Padding.Horizontal - 4;
-        if (width < 420) width = 420;
+        int available = _page.ClientSize.Width - _page.Padding.Horizontal;
+        if (available <= 0) return;
 
-        foreach (Control control in _page.Controls)
+        // Responsive grid: two columns on a wide window, one column on a
+        // narrow one. The grid owns the width of the cards, the cards only
+        // report the height their content needs.
+        int columns = available >= 980 ? 2 : 1;
+
+        if (columns != _layoutColumns)
         {
-            if (control is SettingsCard card)
-                card.Width = width;
+            _layoutColumns = columns;
+            RebuildGrid(columns);
         }
+
+        int columnWidth = (available - (columns - 1) * 16) / columns;
+        int innerWidth = Math.Max(120, columnWidth - 40 - 16);
+
+        // Every card of a row shares the height of the tallest one.
+        var heights = new int[(_cards.Count + columns - 1) / columns];
+
+        for (int i = 0; i < _cards.Count; i++)
+        {
+            SettingsCard card = _cards[i];
+            card.Dock = DockStyle.Fill;
+            card.Margin = new Padding(0, 0, 16, 16);
+
+            int height = card.ApplyWidth(innerWidth);
+            int row = i / columns;
+            heights[row] = Math.Max(heights[row], height);
+        }
+
+        for (int row = 0; row < heights.Length; row++)
+        {
+            if (_page.RowStyles.Count <= row) continue;
+            _page.RowStyles[row] = new RowStyle(SizeType.Absolute, heights[row] + 16);
+        }
+    }
+
+    private void RebuildGrid(int columns)
+    {
+        _page.SuspendLayout();
+        _page.Controls.Clear();
+        _page.RowStyles.Clear();
+        _page.ColumnStyles.Clear();
+        _page.ColumnCount = columns;
+
+        for (int i = 0; i < columns; i++)
+            _page.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / columns));
+
+        for (int i = 0; i < _cards.Count; i++)
+        {
+            int row = i / columns;
+            int column = i % columns;
+
+            while (_page.RowStyles.Count <= row)
+                _page.RowStyles.Add(new RowStyle(SizeType.Absolute, 200));
+
+            SettingsCard card = _cards[i];
+            card.Dock = DockStyle.Fill;
+            card.Margin = new Padding(0, 0, 16, 16);
+            _page.Controls.Add(card, column, row);
+        }
+
+        _page.ResumeLayout();
     }
 
     private static void SelectValue<T>(
@@ -689,6 +757,12 @@ public partial class SettingsForm : LocalizableFormBase
             combo.SelectedItem = item;
             return;
         }
+
+        // The stored value is not part of the catalog (an unknown language, a
+        // printer that is not installed any more, ...). Clearing the selection
+        // keeps it visible as "not available" instead of silently replacing it
+        // with the first entry of the list when the page is saved.
+        combo.SelectedIndex = -1;
     }
 
     private static string FormatTimeZone(TimeZoneInfo zone)

@@ -32,6 +32,7 @@ internal sealed class SettingsCard : Panel
     private readonly Label _hintLabel;
     private readonly Dictionary<string, Label> _fieldLabels = new();
     private readonly List<FieldRow> _fieldRows = new();
+    private readonly List<ControlRow> _controlRows = new();
 
     private bool _stacked;
     private int _innerWidth = -1;
@@ -43,6 +44,15 @@ internal sealed class SettingsCard : Panel
         public SettingsField[] Fields { get; init; } = Array.Empty<SettingsField>();
         public TableLayoutPanel Panel { get; init; } = new();
         public int RowIndex { get; init; }
+        public int Height { get; set; } = RowHeight;
+    }
+
+    /// <summary>A row that holds one control spanning the whole card.</summary>
+    private sealed class ControlRow
+    {
+        public Control Control { get; init; } = new();
+        public int RowIndex { get; init; }
+        public int Height { get; init; }
     }
 
     public SettingsCard(string title, string hint)
@@ -83,7 +93,8 @@ internal sealed class SettingsCard : Panel
             RowCount = 0,
             AutoSize = false,
             BackColor = Color.Transparent,
-            GrowStyle = TableLayoutPanelGrowStyle.AddRows
+            GrowStyle = TableLayoutPanelGrowStyle.AddRows,
+            Margin = Padding.Empty
         };
         _stack.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
 
@@ -129,10 +140,10 @@ internal sealed class SettingsCard : Panel
         var fieldRow = new FieldRow { Fields = fields, Panel = row, RowIndex = rowIndex };
         _fieldRows.Add(fieldRow);
 
-        _stack.Controls.Add(row, 0, rowIndex);
-        _stack.RowStyles.Add(new RowStyle(SizeType.Absolute, RowHeight + RowGap));
-
         BuildFieldRow(fieldRow);
+
+        _stack.Controls.Add(row, 0, rowIndex);
+        _stack.RowStyles.Add(new RowStyle(SizeType.Absolute, fieldRow.Height + RowGap));
     }
 
     /// <summary>Adds a control that spans the whole card width.</summary>
@@ -145,16 +156,14 @@ internal sealed class SettingsCard : Panel
 
         int rowIndex = _nextRow++;
         _stack.Controls.Add(control, 0, rowIndex);
+        _stack.RowStyles.Add(new RowStyle(SizeType.Absolute, height > 0 ? height + 8 : 40));
 
-        if (height > 0)
+        _controlRows.Add(new ControlRow
         {
-            control.Height = height;
-            _stack.RowStyles.Add(new RowStyle(SizeType.Absolute, height + 8));
-        }
-        else
-        {
-            _stack.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        }
+            Control = control,
+            RowIndex = rowIndex,
+            Height = height
+        });
     }
 
     /// <summary>Refreshes the caption of a field after a language change.</summary>
@@ -172,25 +181,21 @@ internal sealed class SettingsCard : Panel
     {
         innerWidth = Math.Max(120, innerWidth);
 
-        if (_innerWidth != innerWidth)
+        bool widthChanged = _innerWidth != innerWidth;
+        if (widthChanged)
         {
             _innerWidth = innerWidth;
-
-            bool stacked = innerWidth < 560;
-            if (stacked != _stacked)
-            {
-                _stacked = stacked;
-                foreach (FieldRow row in _fieldRows)
-                {
-                    BuildFieldRow(row);
-                    _stack.RowStyles[row.RowIndex] = new RowStyle(SizeType.Absolute, RowHeightOf(row));
-                }
-            }
+            _stacked = innerWidth < 560;
 
             // The title and the hint wrap inside the available width.
             _titleLabel.MaximumSize = new Size(innerWidth, 0);
             _hintLabel.MaximumSize = new Size(innerWidth, 0);
         }
+
+        // A width change needs the labels to be re-created (their measured
+        // width changed); a text change only needs the heights to be measured
+        // again. Both happen when the language changes.
+        RefreshRows(rebuild: widthChanged);
 
         return RequiredHeight();
     }
@@ -198,8 +203,125 @@ internal sealed class SettingsCard : Panel
     /// <summary>Height needed by the content of the card.</summary>
     public int RequiredHeight()
     {
+        // Every row is absolute after RefreshRows, so the real height of the
+        // stack is the sum of its rows: relying on GetPreferredSize left the
+        // wrapped captions a couple of pixels short and clipped the last field.
+        int total = 0;
+        foreach (RowStyle style in _stack.RowStyles)
+            total += (int)Math.Ceiling(style.Height);
+
+        return Padding.Vertical + _stack.Margin.Vertical + total;
+    }
+
+    private void RefreshRows(bool rebuild)
+    {
+        UpdateHeaderStyles();
+        UpdateControlRows();
+
+        foreach (FieldRow fieldRow in _fieldRows)
+        {
+            if (rebuild)
+                BuildFieldRow(fieldRow);
+            else
+                UpdateRowStyles(fieldRow);
+
+            fieldRow.Panel.Height = fieldRow.Height;
+
+            if (fieldRow.RowIndex < _stack.RowStyles.Count)
+                _stack.RowStyles[fieldRow.RowIndex] =
+                    new RowStyle(SizeType.Absolute, fieldRow.Height + RowGap);
+        }
+    }
+
+    private void UpdateHeaderStyles()
+    {
         int inner = Math.Max(120, _innerWidth);
-        return Padding.Vertical + _stack.GetPreferredSize(new Size(inner, 0)).Height;
+
+        int title = TextRenderer.MeasureText(
+            _titleLabel.Text, _titleLabel.Font,
+            new Size(inner, int.MaxValue), TextFormatFlags.WordBreak).Height;
+
+        int hint = TextRenderer.MeasureText(
+            _hintLabel.Text, _hintLabel.Font,
+            new Size(inner, int.MaxValue), TextFormatFlags.WordBreak).Height;
+
+        SetRowStyle(_stack, 0, title + _titleLabel.Margin.Vertical + 2);
+        SetRowStyle(_stack, 1, hint + _hintLabel.Margin.Vertical + 2);
+    }
+
+    private void UpdateControlRows()
+    {
+        int inner = Math.Max(120, _innerWidth);
+
+        foreach (ControlRow controlRow in _controlRows)
+        {
+            int height = controlRow.Height > 0
+                ? controlRow.Height
+                : controlRow.Control.GetPreferredSize(new Size(inner, 0)).Height;
+
+            controlRow.Control.Height = height;
+            SetRowStyle(_stack, controlRow.RowIndex, height + 8);
+        }
+    }
+
+    private void UpdateRowStyles(FieldRow fieldRow)
+    {
+        fieldRow.Height = MeasureRow(fieldRow);
+
+        if (_stacked)
+        {
+            for (int i = 0; i < fieldRow.Fields.Length; i++)
+            {
+                SetRowStyle(fieldRow.Panel, i * 2,
+                    LabelHeight(fieldRow.Fields[i], StackedLabelWidth));
+                SetRowStyle(fieldRow.Panel, i * 2 + 1, StackedInputHeight);
+            }
+        }
+        else
+        {
+            SetRowStyle(fieldRow.Panel, 0, fieldRow.Height);
+        }
+    }
+
+    private static void SetRowStyle(TableLayoutPanel panel, int index, int height)
+    {
+        if (index < panel.RowStyles.Count)
+            panel.RowStyles[index] = new RowStyle(SizeType.Absolute, height);
+    }
+
+    private int MeasureRow(FieldRow fieldRow)
+    {
+        if (_stacked)
+        {
+            int height = 0;
+            foreach (SettingsField field in fieldRow.Fields)
+                height += LabelHeight(field, StackedLabelWidth) + StackedInputHeight;
+            return height;
+        }
+
+        int rowHeight = RowHeight;
+        foreach (SettingsField field in fieldRow.Fields)
+            rowHeight = Math.Max(rowHeight, LabelHeight(field, LabelWidth - 12));
+
+        return rowHeight;
+    }
+
+    /// <summary>
+    /// Height the caption needs at the given width. The measurement uses the
+    /// live text (it changes with the language) and the font of the real label.
+    /// </summary>
+    private int LabelHeight(SettingsField field, int width)
+    {
+        _fieldLabels.TryGetValue(field.Key, out Label? label);
+        string text = label?.Text ?? field.Label;
+        Font font = label?.Font ?? AppStyle.BodyFont;
+
+        Size measured = TextRenderer.MeasureText(
+            text, font,
+            new Size(Math.Max(40, width), int.MaxValue),
+            TextFormatFlags.WordBreak);
+
+        return Math.Max(StackedLabelHeight, measured.Height + 2);
     }
 
     private void BuildFieldRow(FieldRow fieldRow)
@@ -213,11 +335,10 @@ internal sealed class SettingsCard : Panel
         if (_stacked)
         {
             // Narrow card: every field gets its own line, the caption above
-            // the input.
+            // the input. The caption row grows when the text wraps.
             row.ColumnCount = 1;
             row.RowCount = fieldRow.Fields.Length * 2;
             row.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            row.Height = fieldRow.Fields.Length * (StackedLabelHeight + StackedInputHeight);
 
             for (int i = 0; i < fieldRow.Fields.Length; i++)
             {
@@ -225,7 +346,8 @@ internal sealed class SettingsCard : Panel
 
                 Label label = MakeLabel(field, StackedLabelWidth);
                 row.Controls.Add(label, 0, i * 2);
-                row.RowStyles.Add(new RowStyle(SizeType.Absolute, StackedLabelHeight));
+                row.RowStyles.Add(new RowStyle(
+                    SizeType.Absolute, LabelHeight(field, StackedLabelWidth)));
 
                 field.Control.Dock = DockStyle.Fill;
                 field.Control.Margin = Padding.Empty;
@@ -238,8 +360,6 @@ internal sealed class SettingsCard : Panel
             // Wide card: the caption and the input share the line.
             row.ColumnCount = fieldRow.Fields.Length * 2;
             row.RowCount = 1;
-            row.Height = RowHeight;
-            row.RowStyles.Add(new RowStyle(SizeType.Absolute, RowHeight));
 
             for (int i = 0; i < fieldRow.Fields.Length; i++)
             {
@@ -248,7 +368,7 @@ internal sealed class SettingsCard : Panel
                 row.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, LabelWidth));
                 row.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f / fieldRow.Fields.Length));
 
-                Label label = MakeLabel(field, LabelWidth);
+                Label label = MakeLabel(field, LabelWidth - 12);
                 row.Controls.Add(label, i * 2, 0);
 
                 field.Control.Dock = DockStyle.Fill;
@@ -257,13 +377,13 @@ internal sealed class SettingsCard : Panel
             }
         }
 
+        fieldRow.Height = MeasureRow(fieldRow);
+        row.Height = fieldRow.Height;
+        if (!_stacked)
+            row.RowStyles.Add(new RowStyle(SizeType.Absolute, fieldRow.Height));
+
         row.ResumeLayout();
     }
-
-    private int RowHeightOf(FieldRow fieldRow) =>
-        (_stacked
-            ? fieldRow.Fields.Length * (StackedLabelHeight + StackedInputHeight)
-            : RowHeight) + RowGap;
 
     private Label MakeLabel(SettingsField field, int width)
     {

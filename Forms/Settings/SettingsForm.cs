@@ -410,12 +410,17 @@ public partial class SettingsForm : LocalizableFormBase
 
         SelectValue(_cmbLanguage, _languages, l => l.Code, _settings.Language);
         SelectValue(_cmbCountry, _countries, c => c.Code, _settings.CountryCode);
+
+        // Captions can wrap differently in the new language, so the cards have
+        // to be measured again or the fields below them get clipped.
+        LayoutCards();
     }
 
     protected override void OnLanguageChangedAfterLoadText()
     {
         SelectValue(_cmbLanguage, _languages, l => l.Code, _settings.Language);
         SelectValue(_cmbCountry, _countries, c => c.Code, _settings.CountryCode);
+        LayoutCards();
     }
 
     // ── Data loading ───────────────────────────────────────────────────────

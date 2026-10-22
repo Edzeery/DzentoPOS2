@@ -313,7 +313,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             // 
             // btnDashboard
             // 
-            btnDashboard.BackColor = AppColors.Primary;
+            btnDashboard.BackColor = AppColors.SidebarSurface;
             btnDashboard.Cursor = Cursors.Hand;
             btnDashboard.Dock = DockStyle.Top;
             btnDashboard.FlatAppearance.BorderSize = 0;

@@ -448,7 +448,6 @@ namespace DzentoPOS2.WinForms.Forms.Layout
                         btn.BackColor = dark;
                 };
             });
-            btnDashboard.BackColor = accent;
         }
 
         private void AddExpensesSidebarButton()
@@ -827,6 +826,10 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             // The sales screen (point of sale) is the working screen of the
             // application: it is the page the user lands on after signing in.
             NavigateTo<SalesForm>(BtnSales);
+
+            // Repaint the whole sidebar from the single active-button state, so
+            // no other button keeps the accent color it had in the designer.
+            ApplyShellTheme();
         }
 
         private void btnMenu_Click(object sender, EventArgs e)

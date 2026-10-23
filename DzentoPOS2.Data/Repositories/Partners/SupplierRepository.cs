@@ -1,0 +1,45 @@
+﻿using DzentoPOS2.Core.Entities.Partners;
+using DzentoPOS2.Core.ValueObjects.Identity;
+using DzentoPOS2.Data.Context;
+using DzentoPOS2.Data.Repositories.Common;
+using DzentoPOS2.Data.Repositories.Partners.Interfaces;
+
+using Microsoft.EntityFrameworkCore;
+
+namespace DzentoPOS2.Data.Repositories.Partners
+{
+    public class SupplierRepository
+        : Repository<Supplier>,
+          ISupplierRepository
+    {
+        public SupplierRepository(AppDbContext context)
+            : base(context)
+        {
+        }
+
+        public async Task<Supplier?> GetByPhoneAsync(PhoneNumber phoneNumber)
+        {
+            return await _dbSet
+                .FirstOrDefaultAsync(x =>
+                    x.PhoneNumber == phoneNumber &&
+                    !x.IsDeleted);
+        }
+
+        public async Task<IEnumerable<Supplier>> GetActiveSuppliersAsync()
+        {
+            return await _dbSet
+                .Where(x =>
+                    x.IsActive &&
+                    !x.IsDeleted)
+                .ToListAsync();
+        }
+
+        public async Task<bool> ExistsByPhoneAsync(PhoneNumber phoneNumber)
+        {
+            return await _dbSet
+                .AnyAsync(x =>
+                    x.PhoneNumber == phoneNumber &&
+                    !x.IsDeleted);
+        }
+    }
+}

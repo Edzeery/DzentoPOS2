@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk"> 
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DzentoPOS2.Core\DzentoPOS2.Core.csproj" />
+    <ProjectReference Include="..\DzentoPOS2.Data\DzentoPOS2.Data.csproj" />
+    <ProjectReference Include="..\DzentoPOS2.Shared\DzentoPOS2.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Caching\" />
+    <Folder Include="Logging\" />
+    <Folder Include="Services\Accounting\" />
+    <Folder Include="Services\Businesses\" />
+    <Folder Include="Services\Inventory\" />
+    <Folder Include="Services\Licensing\" />
+    <Folder Include="Services\Partners\" />
+    <Folder Include="Services\Purchases\" />
+    <Folder Include="Services\Reports\" />
+    <Folder Include="Services\Sales\" />
+    <Folder Include="Services\Systems\" />
+    <Folder Include="Validators\Accounting\" />
+    <Folder Include="Validators\Businesses\" />
+    <Folder Include="Validators\Inventory\" />
+    <Folder Include="Validators\Licensing\" />
+    <Folder Include="Validators\Partners\" />
+    <Folder Include="Validators\Purchases\" />
+    <Folder Include="Validators\Reports\" />
+    <Folder Include="Validators\Sales\" />
+    <Folder Include="Validators\Systems\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="16.1.1" />
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+  </ItemGroup>
+
+</Project>

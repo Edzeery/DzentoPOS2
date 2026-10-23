@@ -1,0 +1,55 @@
+## .NET
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+build/
+bld/
+[Ll]og/
+[Ll]ogs/
+
+## Visual Studio
+.vs/
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+## Rider
+.idea/
+
+## Build results
+[Dd]ebugPublic/
+[Rr]eleases/
+*.dll
+*.exe
+*.pdb
+*.cache
+
+## NuGet
+*.nupkg
+*.nuspec
+packages/
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+
+## Test results
+[Tt]est[Rr]esult*/
+TestResults/
+
+## Database & runtime data
+*.db
+*.db-shm
+*.db-wal
+Database/
+theme.config
+user-settings.json
+
+## OS files
+.DS_Store
+Thumbs.db

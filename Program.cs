@@ -58,7 +58,6 @@ internal static class Program
             .GetAwaiter()
             .GetResult();
 
-        Application.Run(
-            ServiceProvider.GetRequiredService<AppApplicationContext>());
+        Application.Run(ServiceProvider.GetRequiredService<AppApplicationContext>());
     }
 }

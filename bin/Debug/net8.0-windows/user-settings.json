@@ -1,5 +1,5 @@
 {
-  "Language": "ar",
+  "Language": "fr",
   "RememberMe": true,
   "LastUserName": "admin",
   "DarkMode": false,
@@ -12,6 +12,6 @@
   "PaperSize": "A4",
   "Landscape": false,
   "ReceiptWidthMm": 80,
-  "CameraBarcodeEnabled": true,
+  "CameraBarcodeEnabled": false,
   "BarcodeCameraDevice": ""
 }

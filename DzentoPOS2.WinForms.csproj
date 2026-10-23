@@ -55,7 +55,6 @@
 
 	<ItemGroup>
 		<Folder Include="Database\" />
-		<Folder Include="Forms\Accounting\" />
 		<Folder Include="Forms\Shared\" />
 		<Folder Include="Extensions\" />
 		<Folder Include="Constants\" />

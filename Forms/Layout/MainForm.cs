@@ -50,6 +50,8 @@ namespace DzentoPOS2.WinForms.Forms.Layout
         private MainHeaderBar _mainHeaderBar = null!;
         private IconButton? _activeSidebarButton;
         private IconButton _btnSuppliers = null!;
+        private IconButton _btnCategories = null!;
+        private IconButton _btnUnits = null!;
         private Label _storeNameLabel = null!;
         private Image? _defaultLogo;
         private Panel? _userInfoAvatar;
@@ -104,6 +106,8 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             WireNavButtons();
             AddExpensesSidebarButton();
             AddSuppliersSidebarButton();
+            AddCategoriesSidebarButton();
+            AddUnitsSidebarButton();
 
             InitializeStoreBranding();
 
@@ -532,6 +536,88 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             SidebarPanelM.Controls.SetChildIndex(_btnSuppliers, SidebarPanelM.Controls.GetChildIndex(BtnCustomers) + 1);
         }
 
+        private void AddCategoriesSidebarButton()
+        {
+            _btnCategories = new IconButton
+            {
+                IconChar = IconChar.Tags,
+                Text = "  " + AppStrings.Categories,
+                IconColor = Color.White,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 13F),
+                FlatStyle = FlatStyle.Flat,
+                FlatAppearance = { BorderSize = 0 },
+                Dock = DockStyle.Top,
+                Size = new Size(279, 55),
+                Padding = new Padding(13, 0, 13, 0),
+                TextImageRelation = TextImageRelation.ImageBeforeText,
+                ImageAlign = ContentAlignment.MiddleLeft,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Cursor = Cursors.Hand,
+                BackColor = AppColors.SidebarSurface,
+                IconSize = 35,
+                Name = "btnCategories"
+            };
+
+            _btnCategories.Click += (_, _) => NavigateTo<ProductCategoriesForm>(_btnCategories);
+            _btnCategories.FlatAppearance.MouseOverBackColor = AppColors.Primary;
+            _btnCategories.FlatAppearance.MouseDownBackColor = AppColors.SidebarPressed;
+            _btnCategories.MouseEnter += (_, _) =>
+            {
+                if (_btnCategories.BackColor != AppColors.Primary)
+                    _btnCategories.BackColor = AppColors.SidebarHover;
+            };
+            _btnCategories.MouseLeave += (_, _) =>
+            {
+                if (_btnCategories.BackColor != AppColors.Primary && _btnCategories.BackColor != AppColors.SidebarSurface)
+                    _btnCategories.BackColor = AppColors.SidebarSurface;
+            };
+
+            SidebarPanelM.Controls.Add(_btnCategories);
+            SidebarPanelM.Controls.SetChildIndex(_btnCategories, SidebarPanelM.Controls.GetChildIndex(_btnSuppliers) + 1);
+        }
+
+        private void AddUnitsSidebarButton()
+        {
+            _btnUnits = new IconButton
+            {
+                IconChar = IconChar.Ruler,
+                Text = "  " + AppStrings.Units,
+                IconColor = Color.White,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 13F),
+                FlatStyle = FlatStyle.Flat,
+                FlatAppearance = { BorderSize = 0 },
+                Dock = DockStyle.Top,
+                Size = new Size(279, 55),
+                Padding = new Padding(13, 0, 13, 0),
+                TextImageRelation = TextImageRelation.ImageBeforeText,
+                ImageAlign = ContentAlignment.MiddleLeft,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Cursor = Cursors.Hand,
+                BackColor = AppColors.SidebarSurface,
+                IconSize = 35,
+                Name = "btnUnits"
+            };
+
+            _btnUnits.Click += (_, _) => NavigateTo<ProductUnitsForm>(_btnUnits);
+            _btnUnits.FlatAppearance.MouseOverBackColor = AppColors.Primary;
+            _btnUnits.FlatAppearance.MouseDownBackColor = AppColors.SidebarPressed;
+            _btnUnits.MouseEnter += (_, _) =>
+            {
+                if (_btnUnits.BackColor != AppColors.Primary)
+                    _btnUnits.BackColor = AppColors.SidebarHover;
+            };
+            _btnUnits.MouseLeave += (_, _) =>
+            {
+                if (_btnUnits.BackColor != AppColors.Primary && _btnUnits.BackColor != AppColors.SidebarSurface)
+                    _btnUnits.BackColor = AppColors.SidebarSurface;
+            };
+
+            SidebarPanelM.Controls.Add(_btnUnits);
+            SidebarPanelM.Controls.SetChildIndex(_btnUnits, SidebarPanelM.Controls.GetChildIndex(_btnCategories) + 1);
+        }
+
         private void WireNavButtons()
         {
             btnDashboard.Click += (s, e) => NavigateTo<DashboardForm>(btnDashboard);
@@ -543,6 +629,8 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             btnReports.Click += (s, e) => NavigateTo<ReportsForm>(btnReports);
             btnUsersRoles.Click += (s, e) => NavigateTo<UsersForm>(btnUsersRoles);
             btnSettings.Click += (s, e) => NavigateTo<SettingsForm>(btnSettings);
+          //  _btnCategories.Click += (s, e) => NavigateTo<ProductCategoriesForm>(_btnCategories);
+          //  _btnUnits.Click += (s, e) => NavigateTo<ProductUnitsForm>(_btnUnits);
         }
 
         private void NavigateTo<TForm>(IconButton button)
@@ -692,6 +780,8 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             BtnSales.Text = AppStrings.Sales; 
             BtnCustomers.Text = AppStrings.Customers; 
             _btnSuppliers.Text = "  " + AppStrings.Suppliers; 
+            _btnCategories.Text = "  " + AppStrings.Categories;
+            _btnUnits.Text = "  " + AppStrings.Units;
 
             btnInventory.Text = AppStrings.Inventory; 
 

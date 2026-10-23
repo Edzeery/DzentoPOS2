@@ -73,10 +73,22 @@
     <Compile Update="Forms\Inventory\InventoryForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="Forms\Inventory\ProductCategoriesForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\Inventory\ProductCategoryEditDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="Forms\Inventory\ProductEditDialog.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Forms\Inventory\ProductsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\Inventory\ProductUnitEditDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="Forms\Inventory\ProductUnitsForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="Forms\Layout\MainForm.cs">

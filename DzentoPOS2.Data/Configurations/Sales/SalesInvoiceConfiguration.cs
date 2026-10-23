@@ -110,6 +110,11 @@ namespace DzentoPOS2.Data.Configurations.Sales
 
             builder.HasIndex(x => x.CashSessionId);
 
+            builder.HasOne<DzentoPOS2.Core.Entities.Accounting.CashSession>()
+                .WithMany()
+                .HasForeignKey(x => x.CashSessionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.HasMany(x => x.Items)
                 .WithOne()
                 .HasForeignKey(x => x.SalesInvoiceId)

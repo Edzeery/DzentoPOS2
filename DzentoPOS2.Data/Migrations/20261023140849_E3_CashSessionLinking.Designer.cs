@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DzentoPOS2.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261023131151_E3_CashSessionLinking")]
+    [Migration("20261023140849_E3_CashSessionLinking")]
     partial class E3_CashSessionLinking
     {
         /// <inheritdoc />
@@ -2739,6 +2739,14 @@ namespace DzentoPOS2.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("DzentoPOS2.Core.Entities.Accounting.CashTransaction", b =>
+                {
+                    b.HasOne("DzentoPOS2.Core.Entities.Accounting.CashSession", null)
+                        .WithMany()
+                        .HasForeignKey("CashSessionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
             modelBuilder.Entity("DzentoPOS2.Core.Entities.Businesses.Branch", b =>
                 {
                     b.OwnsOne("DzentoPOS2.Core.ValueObjects.Business.Address", "Address", b1 =>
@@ -3419,6 +3427,11 @@ namespace DzentoPOS2.Data.Migrations
 
             modelBuilder.Entity("DzentoPOS2.Core.Entities.Sales.SalesInvoice", b =>
                 {
+                    b.HasOne("DzentoPOS2.Core.Entities.Accounting.CashSession", null)
+                        .WithMany()
+                        .HasForeignKey("CashSessionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.OwnsOne("DzentoPOS2.Core.ValueObjects.Common.Money", "DiscountAmount", b1 =>
                         {
                             b1.Property<Guid>("SalesInvoiceId")

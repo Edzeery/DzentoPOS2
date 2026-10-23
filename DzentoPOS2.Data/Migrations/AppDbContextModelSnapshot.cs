@@ -2736,6 +2736,14 @@ namespace DzentoPOS2.Data.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("DzentoPOS2.Core.Entities.Accounting.CashTransaction", b =>
+                {
+                    b.HasOne("DzentoPOS2.Core.Entities.Accounting.CashSession", null)
+                        .WithMany()
+                        .HasForeignKey("CashSessionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
             modelBuilder.Entity("DzentoPOS2.Core.Entities.Businesses.Branch", b =>
                 {
                     b.OwnsOne("DzentoPOS2.Core.ValueObjects.Business.Address", "Address", b1 =>
@@ -3416,6 +3424,11 @@ namespace DzentoPOS2.Data.Migrations
 
             modelBuilder.Entity("DzentoPOS2.Core.Entities.Sales.SalesInvoice", b =>
                 {
+                    b.HasOne("DzentoPOS2.Core.Entities.Accounting.CashSession", null)
+                        .WithMany()
+                        .HasForeignKey("CashSessionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.OwnsOne("DzentoPOS2.Core.ValueObjects.Common.Money", "DiscountAmount", b1 =>
                         {
                             b1.Property<Guid>("SalesInvoiceId")

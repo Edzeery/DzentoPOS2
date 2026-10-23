@@ -46,6 +46,11 @@ namespace DzentoPOS2.Data.Configurations.Accounting
             builder.HasIndex(x => x.ReferenceNumber);
 
             builder.HasIndex(x => new { x.SourceType, x.SourceId });
+
+            builder.HasOne<DzentoPOS2.Core.Entities.Accounting.CashSession>()
+                .WithMany()
+                .HasForeignKey(x => x.CashSessionId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

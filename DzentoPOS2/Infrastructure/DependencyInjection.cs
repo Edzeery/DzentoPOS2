@@ -60,9 +60,10 @@ public static class DependencyInjection
         services.AddTransient<InventoryForm>();
         services.AddTransient<ReportsForm>();
         services.AddTransient<SettingsForm>();
-        services.AddTransient<ExpensesForm>();
-        services.AddTransient<ProductCategoriesForm>();
-        services.AddTransient<ProductUnitsForm>();
+            services.AddTransient<ExpensesForm>();
+            services.AddTransient<ProductCategoriesForm>();
+            services.AddTransient<ProductUnitsForm>();
+            services.AddTransient<CashSessionForm>();
 
         return services;
     }

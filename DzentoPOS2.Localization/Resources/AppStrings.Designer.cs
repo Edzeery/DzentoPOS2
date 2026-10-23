@@ -2599,5 +2599,131 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("DeleteUnitConfirm", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Cash Sessions.
+        /// </summary>
+        public static string CashSessions {
+            get {
+                return ResourceManager.GetString("CashSessions", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Opened At.
+        /// </summary>
+        public static string OpenedAt {
+            get {
+                return ResourceManager.GetString("OpenedAt", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Closed At.
+        /// </summary>
+        public static string ClosedAt {
+            get {
+                return ResourceManager.GetString("ClosedAt", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Cashbox.
+        /// </summary>
+        public static string Cashbox {
+            get {
+                return ResourceManager.GetString("Cashbox", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Opening Balance.
+        /// </summary>
+        public static string OpeningBalance {
+            get {
+                return ResourceManager.GetString("OpeningBalance", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Closing Balance.
+        /// </summary>
+        public static string ClosingBalance {
+            get {
+                return ResourceManager.GetString("ClosingBalance", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Expected Balance.
+        /// </summary>
+        public static string ExpectedBalance {
+            get {
+                return ResourceManager.GetString("ExpectedBalance", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Difference.
+        /// </summary>
+        public static string Difference {
+            get {
+                return ResourceManager.GetString("Difference", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Open Cashbox.
+        /// </summary>
+        public static string OpenCashbox {
+            get {
+                return ResourceManager.GetString("OpenCashbox", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Close Cashbox.
+        /// </summary>
+        public static string CloseCashbox {
+            get {
+                return ResourceManager.GetString("CloseCashbox", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to No open session.
+        /// </summary>
+        public static string NoOpenSession {
+            get {
+                return ResourceManager.GetString("NoOpenSession", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to A session is already open for this cashbox.
+        /// </summary>
+        public static string SessionAlreadyOpen {
+            get {
+                return ResourceManager.GetString("SessionAlreadyOpen", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Open.
+        /// </summary>
+        public static string SessionOpen {
+            get {
+                return ResourceManager.GetString("SessionOpen", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Closed.
+        /// </summary>
+        public static string SessionClosed {
+            get {
+                return ResourceManager.GetString("SessionClosed", resourceCulture);
+            }
+        }
     }
 }

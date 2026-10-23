@@ -52,6 +52,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
         private IconButton _btnSuppliers = null!;
         private IconButton _btnCategories = null!;
         private IconButton _btnUnits = null!;
+        private IconButton _btnCashSessions = null!;
         private Label _storeNameLabel = null!;
         private Image? _defaultLogo;
         private Panel? _userInfoAvatar;
@@ -108,6 +109,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             AddSuppliersSidebarButton();
             AddCategoriesSidebarButton();
             AddUnitsSidebarButton();
+            AddCashSessionsSidebarButton();
 
             InitializeStoreBranding();
 
@@ -618,6 +620,47 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             SidebarPanelM.Controls.SetChildIndex(_btnUnits, SidebarPanelM.Controls.GetChildIndex(_btnCategories) + 1);
         }
 
+        private void AddCashSessionsSidebarButton()
+        {
+            _btnCashSessions = new IconButton
+            {
+                IconChar = IconChar.CashRegister,
+                Text = "  " + AppStrings.CashSessions,
+                IconColor = Color.White,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 13F),
+                FlatStyle = FlatStyle.Flat,
+                FlatAppearance = { BorderSize = 0 },
+                Dock = DockStyle.Top,
+                Size = new Size(279, 55),
+                Padding = new Padding(13, 0, 13, 0),
+                TextImageRelation = TextImageRelation.ImageBeforeText,
+                ImageAlign = ContentAlignment.MiddleLeft,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Cursor = Cursors.Hand,
+                BackColor = AppColors.SidebarSurface,
+                IconSize = 35,
+                Name = "btnCashSessions"
+            };
+
+            _btnCashSessions.Click += (_, _) => NavigateTo<CashSessionForm>(_btnCashSessions);
+            _btnCashSessions.FlatAppearance.MouseOverBackColor = AppColors.Primary;
+            _btnCashSessions.FlatAppearance.MouseDownBackColor = AppColors.SidebarPressed;
+            _btnCashSessions.MouseEnter += (_, _) =>
+            {
+                if (_btnCashSessions.BackColor != AppColors.Primary)
+                    _btnCashSessions.BackColor = AppColors.SidebarHover;
+            };
+            _btnCashSessions.MouseLeave += (_, _) =>
+            {
+                if (_btnCashSessions.BackColor != AppColors.Primary && _btnCashSessions.BackColor != AppColors.SidebarSurface)
+                    _btnCashSessions.BackColor = AppColors.SidebarSurface;
+            };
+
+            SidebarPanelM.Controls.Add(_btnCashSessions);
+            SidebarPanelM.Controls.SetChildIndex(_btnCashSessions, SidebarPanelM.Controls.GetChildIndex(_btnUnits) + 1);
+        }
+
         private void WireNavButtons()
         {
             btnDashboard.Click += (s, e) => NavigateTo<DashboardForm>(btnDashboard);
@@ -629,8 +672,6 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             btnReports.Click += (s, e) => NavigateTo<ReportsForm>(btnReports);
             btnUsersRoles.Click += (s, e) => NavigateTo<UsersForm>(btnUsersRoles);
             btnSettings.Click += (s, e) => NavigateTo<SettingsForm>(btnSettings);
-            _btnCategories.Click += (s, e) => NavigateTo<ProductCategoriesForm>(_btnCategories);
-            _btnUnits.Click += (s, e) => NavigateTo<ProductUnitsForm>(_btnUnits);
         }
 
         private void NavigateTo<TForm>(IconButton button)
@@ -782,6 +823,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             _btnSuppliers.Text = "  " + AppStrings.Suppliers; 
             _btnCategories.Text = "  " + AppStrings.Categories;
             _btnUnits.Text = "  " + AppStrings.Units;
+            _btnCashSessions.Text = "  " + AppStrings.CashSessions;
 
             btnInventory.Text = AppStrings.Inventory; 
 

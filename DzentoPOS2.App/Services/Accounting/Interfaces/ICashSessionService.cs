@@ -1,10 +1,11 @@
-using DzentoPOS2.App.Services.Accounting.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Accounting;
 
-namespace DzentoPOS2.App.Services.Accounting.Interfaces
+namespace DzentoPOS2.App.Services.Accounting
 {
     public interface ICashSessionService
     {
+        Task<List<CashboxDto>> GetCashboxesAsync();
+
         Task<CashSessionDto?> GetOpenSessionAsync();
 
         Task<CashSessionDto?> GetOpenSessionByCashboxAsync(Guid cashboxId);

@@ -39,6 +39,7 @@ namespace DzentoPOS2.Data.Seed
             await ProductUnitSeeder.SeedAsync(context);
             await ExpenseCategorySeeder.SeedAsync(context);
             await WarehouseSeeder.SeedAsync(context);
+            await CashboxSeeder.SeedAsync(context);
         }
     }
 }

@@ -48,63 +48,41 @@ namespace DzentoPOS2.App.Services.Reports
             // Sales — invoice value (Total), periods expressed as half-open ranges.
             // Note: SQLite cannot SUM decimal columns directly, so amounts are cast to
             // double in SQL (translated to CAST(x AS REAL)) and converted back on read.
-            var todaySalesTotal = await _context.SalesInvoices
-                .Where(s => s.CreatedAt >= todayStart && s.CreatedAt < tomorrowStart)
-                .SumAsync(s => (double?)s.Total.Amount) is double ts ? (decimal)ts : 0m;
+            // One grouped query computes every sales KPI instead of six round trips.
+            var salesStats = await _context.SalesInvoices
+                .GroupBy(_ => 1)
+                .Select(g => new
+                {
+                    TodayTotal = g.Sum(s => s.CreatedAt >= todayStart && s.CreatedAt < tomorrowStart ? (double?)s.Total.Amount : null) ?? 0,
+                    TodayCount = g.Count(s => s.CreatedAt >= todayStart && s.CreatedAt < tomorrowStart),
+                    YesterdayTotal = g.Sum(s => s.CreatedAt >= yesterdayStart && s.CreatedAt < todayStart ? (double?)s.Total.Amount : null) ?? 0,
+                    YesterdayCount = g.Count(s => s.CreatedAt >= yesterdayStart && s.CreatedAt < todayStart),
+                    MonthTotal = g.Sum(s => s.CreatedAt >= monthStart && s.CreatedAt < nextMonthStart ? (double?)s.Total.Amount : null) ?? 0,
+                    LastMonthTotal = g.Sum(s => s.CreatedAt >= lastMonthStart && s.CreatedAt < monthStart ? (double?)s.Total.Amount : null) ?? 0
+                })
+                .FirstOrDefaultAsync();
 
-            var yesterdaySalesTotal = await _context.SalesInvoices
-                .Where(s => s.CreatedAt >= yesterdayStart && s.CreatedAt < todayStart)
-                .SumAsync(s => (double?)s.Total.Amount) is double ys ? (decimal)ys : 0m;
+            SetCardData(dto.SalesToday, (decimal)(salesStats?.TodayTotal ?? 0), (decimal)(salesStats?.YesterdayTotal ?? 0));
+            SetCardData(dto.SalesCount, salesStats?.TodayCount ?? 0, salesStats?.YesterdayCount ?? 0);
 
-            SetCardData(dto.SalesToday, todaySalesTotal, yesterdaySalesTotal);
+            // Purchases — invoice value (Total); same single grouped query approach.
+            var purchaseStats = await _context.PurchaseInvoices
+                .GroupBy(_ => 1)
+                .Select(g => new
+                {
+                    TodayTotal = g.Sum(p => p.CreatedAt >= todayStart && p.CreatedAt < tomorrowStart ? (double?)p.Total : null) ?? 0,
+                    TodayCount = g.Count(p => p.CreatedAt >= todayStart && p.CreatedAt < tomorrowStart),
+                    YesterdayTotal = g.Sum(p => p.CreatedAt >= yesterdayStart && p.CreatedAt < todayStart ? (double?)p.Total : null) ?? 0,
+                    YesterdayCount = g.Count(p => p.CreatedAt >= yesterdayStart && p.CreatedAt < todayStart),
+                    MonthTotal = g.Sum(p => p.CreatedAt >= monthStart && p.CreatedAt < nextMonthStart ? (double?)p.Total : null) ?? 0,
+                    LastMonthTotal = g.Sum(p => p.CreatedAt >= lastMonthStart && p.CreatedAt < monthStart ? (double?)p.Total : null) ?? 0
+                })
+                .FirstOrDefaultAsync();
 
-            var todaySalesCount = await _context.SalesInvoices
-                .CountAsync(s => s.CreatedAt >= todayStart && s.CreatedAt < tomorrowStart);
-
-            var yesterdaySalesCount = await _context.SalesInvoices
-                .CountAsync(s => s.CreatedAt >= yesterdayStart && s.CreatedAt < todayStart);
-
-            SetCardData(dto.SalesCount, todaySalesCount, yesterdaySalesCount);
-
-            // Purchases — invoice value (Total).
-            var todayPurchasesTotal = await _context.PurchaseInvoices
-                .Where(p => p.CreatedAt >= todayStart && p.CreatedAt < tomorrowStart)
-                .SumAsync(p => (double?)p.Total) is double tp ? (decimal)tp : 0m;
-
-            var yesterdayPurchasesTotal = await _context.PurchaseInvoices
-                .Where(p => p.CreatedAt >= yesterdayStart && p.CreatedAt < todayStart)
-                .SumAsync(p => (double?)p.Total) is double yp ? (decimal)yp : 0m;
-
-            SetCardData(dto.PurchasesToday, todayPurchasesTotal, yesterdayPurchasesTotal);
-
-            var todayPurchasesCount = await _context.PurchaseInvoices
-                .CountAsync(p => p.CreatedAt >= todayStart && p.CreatedAt < tomorrowStart);
-
-            var yesterdayPurchasesCount = await _context.PurchaseInvoices
-                .CountAsync(p => p.CreatedAt >= yesterdayStart && p.CreatedAt < todayStart);
-
-            SetCardData(dto.PurchasesCount, todayPurchasesCount, yesterdayPurchasesCount);
-
-            // Monthly sales (invoice value).
-            var monthSalesTotal = await _context.SalesInvoices
-                .Where(s => s.CreatedAt >= monthStart && s.CreatedAt < nextMonthStart)
-                .SumAsync(s => (double?)s.Total.Amount) is double ms ? (decimal)ms : 0m;
-
-            var lastMonthSalesTotal = await _context.SalesInvoices
-                .Where(s => s.CreatedAt >= lastMonthStart && s.CreatedAt < monthStart)
-                .SumAsync(s => (double?)s.Total.Amount) is double lms ? (decimal)lms : 0m;
-
-            SetCardData(dto.MonthlySales, monthSalesTotal, lastMonthSalesTotal);
-
-            var monthPurchasesTotal = await _context.PurchaseInvoices
-                .Where(p => p.CreatedAt >= monthStart && p.CreatedAt < nextMonthStart)
-                .SumAsync(p => (double?)p.Total) is double mp ? (decimal)mp : 0m;
-
-            var lastMonthPurchasesTotal = await _context.PurchaseInvoices
-                .Where(p => p.CreatedAt >= lastMonthStart && p.CreatedAt < monthStart)
-                .SumAsync(p => (double?)p.Total) is double lmp ? (decimal)lmp : 0m;
-
-            SetCardData(dto.MonthlyPurchases, monthPurchasesTotal, lastMonthPurchasesTotal);
+            SetCardData(dto.PurchasesToday, (decimal)(purchaseStats?.TodayTotal ?? 0), (decimal)(purchaseStats?.YesterdayTotal ?? 0));
+            SetCardData(dto.PurchasesCount, purchaseStats?.TodayCount ?? 0, purchaseStats?.YesterdayCount ?? 0);
+            SetCardData(dto.MonthlySales, (decimal)(salesStats?.MonthTotal ?? 0), (decimal)(salesStats?.LastMonthTotal ?? 0));
+            SetCardData(dto.MonthlyPurchases, (decimal)(purchaseStats?.MonthTotal ?? 0), (decimal)(purchaseStats?.LastMonthTotal ?? 0));
 
             // Revenue / COGS aggregated in SQL (no full table materialization).
             var grossRevenue = await (
@@ -150,13 +128,16 @@ namespace DzentoPOS2.App.Services.Reports
             dto.ActualProfit.TrendDisplay = $"هامش {netMargin}%";
             dto.ActualProfit.TrendPercent = netMargin;
 
-            var activeProducts = await _context.Products
-                .CountAsync(p => p.IsActive);
+            var productStats = await _context.Products
+                .GroupBy(_ => 1)
+                .Select(g => new
+                {
+                    Active = g.Count(p => p.IsActive),
+                    LastMonth = g.Count(p => p.IsActive && p.CreatedAt < monthStart)
+                })
+                .FirstOrDefaultAsync();
 
-            var lastMonthProducts = await _context.Products
-                .CountAsync(p => p.IsActive && p.CreatedAt < monthStart);
-
-            SetCardData(dto.ActiveProducts, activeProducts, lastMonthProducts);
+            SetCardData(dto.ActiveProducts, productStats?.Active ?? 0, productStats?.LastMonth ?? 0);
 
             // Low stock — products whose total warehouse stock is at/below reorder level.
             var lowStockCount = await _context.Products
@@ -168,18 +149,27 @@ namespace DzentoPOS2.App.Services.Reports
 
             SetCardData(dto.LowStock, lowStockCount, 0);
 
-            var activeCustomers = await _context.Customers
-                .CountAsync(c => c.IsActive);
+            var customerStats = await _context.Customers
+                .GroupBy(_ => 1)
+                .Select(g => new
+                {
+                    Active = g.Count(c => c.IsActive),
+                    LastMonth = g.Count(c => c.IsActive && c.CreatedAt < monthStart)
+                })
+                .FirstOrDefaultAsync();
 
-            var lastMonthCustomers = await _context.Customers
-                .CountAsync(c => c.IsActive && c.CreatedAt < monthStart);
+            SetCardData(dto.ActiveCustomers, customerStats?.Active ?? 0, customerStats?.LastMonth ?? 0);
 
-            SetCardData(dto.ActiveCustomers, activeCustomers, lastMonthCustomers);
+            var supplierStats = await _context.Suppliers
+                .GroupBy(_ => 1)
+                .Select(g => new
+                {
+                    Active = g.Count(s => s.IsActive),
+                    LastMonth = g.Count(s => s.IsActive && s.CreatedAt < monthStart)
+                })
+                .FirstOrDefaultAsync();
 
-            var activeSuppliers = await _context.Suppliers.CountAsync(s => s.IsActive);
-            var lastMonthSuppliers = await _context.Suppliers
-                .CountAsync(s => s.IsActive && s.CreatedAt < monthStart);
-            SetCardData(dto.ActiveSuppliers, activeSuppliers, lastMonthSuppliers);
+            SetCardData(dto.ActiveSuppliers, supplierStats?.Active ?? 0, supplierStats?.LastMonth ?? 0);
         }
 
         private static string MonthKey(DateTime local) => $"{local.Year}-{local.Month:D2}";
@@ -205,17 +195,22 @@ namespace DzentoPOS2.App.Services.Reports
 
         private async Task ComputeChartData(DashboardSummaryDto dto, DateTime thirtyDaysAgoUtc, DateTime tomorrowStartUtc, DateTime localNow)
         {
-            var dailySales = await _context.SalesInvoices
-                .Where(s => s.CreatedAt >= thirtyDaysAgoUtc && s.CreatedAt < tomorrowStartUtc)
+            var sixMonthsAgo = _regional.ToUtcSafe(new DateTime(localNow.Year, localNow.Month, 1).AddMonths(-5));
+
+            // A single read over the last six months feeds both the daily trend and
+            // the month-over-month comparison.
+            var salesRows = await _context.SalesInvoices
+                .Where(s => s.CreatedAt >= sixMonthsAgo && s.CreatedAt < tomorrowStartUtc)
                 .Select(s => new { s.CreatedAt, Total = (double?)s.Total.Amount })
                 .ToListAsync();
 
-            // Grouping happens on the local date of the configured time zone.
-            var grouped = dailySales
-                .GroupBy(x => _regional.ToLocal(x.CreatedAt).Date)
-                .ToDictionary(g => g.Key, g => (decimal)g.Sum(x => x.Total ?? 0));
-
             var firstDay = _regional.ToLocal(thirtyDaysAgoUtc).Date;
+
+            var grouped = salesRows
+                .Select(x => new { Local = _regional.ToLocal(x.CreatedAt), x.Total })
+                .Where(x => x.Local.Date >= firstDay)
+                .GroupBy(x => x.Local.Date)
+                .ToDictionary(g => g.Key, g => (decimal)g.Sum(x => x.Total ?? 0));
 
             for (int i = 29; i >= 0; i--)
             {
@@ -227,12 +222,7 @@ namespace DzentoPOS2.App.Services.Reports
                 });
             }
 
-            var sixMonthsAgo = _regional.ToUtcSafe(new DateTime(localNow.Year, localNow.Month, 1).AddMonths(-5));
-
-            var salesByMonth = (await _context.SalesInvoices
-                .Where(s => s.CreatedAt >= sixMonthsAgo && s.CreatedAt < tomorrowStartUtc)
-                .Select(s => new { s.CreatedAt, Total = (double?)s.Total.Amount })
-                .ToListAsync())
+            var salesByMonth = salesRows
                 .GroupBy(x => MonthKey(_regional.ToLocal(x.CreatedAt)))
                 .ToDictionary(g => g.Key, g => (decimal)g.Sum(x => x.Total ?? 0));
 
@@ -260,30 +250,23 @@ namespace DzentoPOS2.App.Services.Reports
                 });
             }
 
-            var categoryIds = await (
+            var categoryTotals = await (
                 from item in _context.SalesInvoiceItems
                 join invoice in _context.SalesInvoices on item.SalesInvoiceId equals invoice.Id
                 join product in _context.Products on item.ProductId equals product.Id
                 where product.CategoryId != Guid.Empty
-                group (double?)item.Total by product.CategoryId into g
+                group (double?)item.Total by new { product.CategoryId, product.Category.Name } into g
                 orderby g.Sum() descending
-                select new { CategoryId = g.Key, Total = g.Sum() ?? 0 }
+                select new { Category = g.Key.Name, Total = g.Sum() ?? 0 }
             ).Take(5).ToListAsync();
 
-            if (categoryIds.Count != 0)
+            foreach (var c in categoryTotals)
             {
-                var categories = await _context.ProductCategories
-                    .Where(c => categoryIds.Select(x => x.CategoryId).Contains(c.Id))
-                    .ToDictionaryAsync(c => c.Id, c => c.Name);
-
-                foreach (var c in categoryIds)
+                dto.CategoryDistribution.Add(new PieSliceData
                 {
-                    dto.CategoryDistribution.Add(new PieSliceData
-                    {
-                        Category = categories.GetValueOrDefault(c.CategoryId, "أخرى"),
-                        Value = (decimal)c.Total
-                    });
-                }
+                    Category = string.IsNullOrWhiteSpace(c.Category) ? "أخرى" : c.Category,
+                    Value = (decimal)c.Total
+                });
             }
         }
 

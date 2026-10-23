@@ -1026,4 +1026,46 @@
   <data name="DeleteUnitConfirm" xml:space="preserve">
     <value>Supprimer cette unité ?</value>
   </data>
+  <data name="CashSessions" xml:space="preserve">
+    <value>Sessions de caisse</value>
+  </data>
+  <data name="OpenedAt" xml:space="preserve">
+    <value>Ouvert le</value>
+  </data>
+  <data name="ClosedAt" xml:space="preserve">
+    <value>Fermé le</value>
+  </data>
+  <data name="Cashbox" xml:space="preserve">
+    <value>Caisse</value>
+  </data>
+  <data name="OpeningBalance" xml:space="preserve">
+    <value>Solde d'ouverture</value>
+  </data>
+  <data name="ClosingBalance" xml:space="preserve">
+    <value>Solde de clôture</value>
+  </data>
+  <data name="ExpectedBalance" xml:space="preserve">
+    <value>Solde attendu</value>
+  </data>
+  <data name="Difference" xml:space="preserve">
+    <value>Écart</value>
+  </data>
+  <data name="OpenCashbox" xml:space="preserve">
+    <value>Ouvrir la caisse</value>
+  </data>
+  <data name="CloseCashbox" xml:space="preserve">
+    <value>Fermer la caisse</value>
+  </data>
+  <data name="NoOpenSession" xml:space="preserve">
+    <value>Aucune session ouverte</value>
+  </data>
+  <data name="SessionAlreadyOpen" xml:space="preserve">
+    <value>Une session est déjà ouverte pour cette caisse</value>
+  </data>
+  <data name="SessionOpen" xml:space="preserve">
+    <value>Ouverte</value>
+  </data>
+  <data name="SessionClosed" xml:space="preserve">
+    <value>Fermée</value>
+  </data>
 </root>

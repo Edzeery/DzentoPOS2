@@ -22,6 +22,7 @@ using DzentoPOS2.Data.Repositories.Sales.Interfaces;
 using DzentoPOS2.Data.Repositories.Systems;
 using DzentoPOS2.Data.Repositories.Systems.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -39,7 +40,7 @@ namespace DzentoPOS2.Data
             IConfiguration configuration)
         {
 
-            services.AddDbContext<AppDbContext>(options =>
+            services.AddDbContext<AppDbContext>((serviceProvider, options) =>
             {
                 var connectionString =
                     configuration.GetConnectionString("DefaultConnection");
@@ -47,9 +48,14 @@ namespace DzentoPOS2.Data
                 options.UseSqlite(
                     ResolveSqliteConnectionString(connectionString));
 
+                options.AddInterceptors(
+                    serviceProvider.GetServices<IInterceptor>());
+
+#if DEBUG
                 options.EnableSensitiveDataLogging();
 
                 options.EnableDetailedErrors();
+#endif
             });
 
             #region Common Repositories

@@ -2,6 +2,36 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] — 2026-10-23 (cash sessions + dashboard performance)
+
+### Added
+
+#### Daily cash sessions (C.1–C.2)
+
+- `CashSession` entity + `CashSessionStatus` enum, `CashSessionConfiguration` (decimal(18,2) balances, indexes, restrict FK to `Cashbox`) and migration `20261023082755_AddCashSessions`.
+- `ICashSessionRepository` / `CashSessionRepository` and `ICashSessionService` / `CashSessionService`: one open session per cashbox; closing computes the expected balance from `CashTransaction` rows since `OpenedAtUtc` (signs from `MovementType`), stores `ExpectedBalance` / `Difference`, closes the session and updates `Cashbox.CurrentBalance`.
+- `CashboxSeeder` creates a default cashbox for the first branch and runs from `DbInitializer`.
+- `CashSessionForm` (cashbox picker, opening/closing balances, open/close buttons, session grid and a localized status line) plus the `btnCashSessions` sidebar entry and DI registration.
+- Localization: `CashSessions`, `Cashbox`, `OpeningBalance`, `ClosingBalance`, `ExpectedBalance`, `Difference`, `OpenCashbox`, `CloseCashbox`, `NoOpenSession`, `SessionAlreadyOpen`, `SessionOpen`, `SessionClosed`, `OpenedAt`, `ClosedAt` in base/`ar`/`en`/`fr` and `AppStrings.Designer.cs`.
+
+### Changed
+
+#### Dashboard summary uses 19 DB commands instead of ~34 (D.1)
+
+- KPI aggregates per table are computed in one grouped query (`GroupBy(_ => 1)` + conditional `Sum`); monthly sales/purchases reuse those grouped reads; the six-month sales read also feeds the 30-day trend; category names are joined into the distribution query.
+- Measured with an EF Core `DbCommandInterceptor` in the harness: **19 commands** for `GetSummaryAsync` (target ≤ 22).
+
+### Fixed
+
+- `EnableSensitiveDataLogging` / `EnableDetailedErrors` are now compiled only in `DEBUG` (`DzentoPOS2.Data\DependencyInjection.cs`, D.2), so release builds no longer log parameter values.
+- Removed two duplicate `Click` handlers in `MainForm.WireNavButtons` that dereferenced the sidebar buttons before they were created.
+
+### Verification
+
+- `dotnet build DzentoPOS2.sln`: **0 errors** (only pre-existing `NU1701` package notices).
+- Headless UI harness: **91 passed / 0 failed** — previous sections plus `C.1.0–C.1.6`, `C.2.1–C.2.5`, `D.1.1–D.1.2`, `D.2.1` and `D.3.1–D.3.2`.
+- DPI review (D.3): `AutoScaleMode=Font`, `DeviceDpi > 0` and `ApplicationHighDpiMode=PerMonitorV2`; no Apple-specific assets exist in this Windows-only solution.
+
 ## [Unreleased] — 2026-10-23 (categories & units management)
 
 ### Added

@@ -2,6 +2,17 @@ using DzentoPOS2.Core.Enums;
 
 namespace DzentoPOS2.Shared.Contracts.DTOs.Accounting
 {
+    public class CashboxDto
+    {
+        public Guid Id { get; set; }
+
+        public string Name { get; set; } = "";
+
+        public decimal CurrentBalance { get; set; }
+
+        public bool IsActive { get; set; }
+    }
+
     public class CashSessionDto
     {
         public Guid Id { get; set; }

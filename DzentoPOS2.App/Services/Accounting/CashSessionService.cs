@@ -35,6 +35,20 @@ namespace DzentoPOS2.App.Services.Accounting
             _context = context;
         }
 
+        public async Task<List<CashboxDto>> GetCashboxesAsync()
+        {
+            var boxes = await _cashboxRepo.GetActiveAsync();
+            return boxes
+                .Select(c => new CashboxDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    CurrentBalance = c.CurrentBalance,
+                    IsActive = c.IsActive
+                })
+                .ToList();
+        }
+
         public async Task<CashSessionDto?> GetOpenSessionAsync()
         {
             var session = await _sessionRepo.GetOpenAsync();
@@ -129,7 +143,7 @@ namespace DzentoPOS2.App.Services.Accounting
         public async Task<List<CashSessionDto>> GetRecentSessionsAsync(Guid cashboxId, int take = 10)
         {
             var sessions = await _sessionRepo.GetRecentAsync(cashboxId, take);
-            var list = new List<CashSessionDto>(sessions.Count);
+            var list = new List<CashSessionDto>(sessions.Count());
             foreach (var s in sessions)
                 list.Add(Map(s));
             return list;

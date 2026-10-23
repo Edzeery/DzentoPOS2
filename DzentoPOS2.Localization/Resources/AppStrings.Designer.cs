@@ -2725,5 +2725,59 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("SessionClosed", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Opening stock.
+        /// </summary>
+        public static string OpeningStock {
+            get {
+                return ResourceManager.GetString("OpeningStock", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Adjust stock.
+        /// </summary>
+        public static string AdjustStock {
+            get {
+                return ResourceManager.GetString("AdjustStock", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to New quantity.
+        /// </summary>
+        public static string NewQuantity {
+            get {
+                return ResourceManager.GetString("NewQuantity", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Reason.
+        /// </summary>
+        public static string AdjustmentReason {
+            get {
+                return ResourceManager.GetString("AdjustmentReason", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Apply.
+        /// </summary>
+        public static string Apply {
+            get {
+                return ResourceManager.GetString("Apply", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to An adjustment reason is required.
+        /// </summary>
+        public static string AdjustmentReasonRequired {
+            get {
+                return ResourceManager.GetString("AdjustmentReasonRequired", resourceCulture);
+            }
+        }
     }
 }

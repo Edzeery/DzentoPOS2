@@ -23,6 +23,42 @@ namespace DzentoPOS2.Data.Configurations.Sales
                 n.HasIndex(p => p.Value).IsUnique();
             });
 
+            builder.OwnsOne(x => x.Subtotal, m =>
+            {
+                m.Property(p => p.Amount)
+                    .HasColumnName("SubtotalAmount")
+                    .HasPrecision(18, 2)
+                    .IsRequired();
+
+                m.Property(p => p.Currency)
+                    .HasColumnName("SubtotalCurrency")
+                    .HasMaxLength(10);
+            });
+
+            builder.OwnsOne(x => x.DiscountAmount, m =>
+            {
+                m.Property(p => p.Amount)
+                    .HasColumnName("DiscountAmount")
+                    .HasPrecision(18, 2)
+                    .IsRequired();
+
+                m.Property(p => p.Currency)
+                    .HasColumnName("DiscountCurrency")
+                    .HasMaxLength(10);
+            });
+
+            builder.OwnsOne(x => x.TaxAmount, m =>
+            {
+                m.Property(p => p.Amount)
+                    .HasColumnName("TaxAmount")
+                    .HasPrecision(18, 2)
+                    .IsRequired();
+
+                m.Property(p => p.Currency)
+                    .HasColumnName("TaxCurrency")
+                    .HasMaxLength(10);
+            });
+
             builder.OwnsOne(x => x.Total, m =>
             {
                 m.Property(p => p.Amount)
@@ -66,6 +102,13 @@ namespace DzentoPOS2.Data.Configurations.Sales
 
             builder.Property(x => x.IsDeleted)
                 .HasDefaultValue(false);
+
+            builder.Property(x => x.VoidReason)
+                .HasMaxLength(500);
+
+            builder.HasIndex(x => x.IsVoided);
+
+            builder.HasIndex(x => x.CashSessionId);
 
             builder.HasMany(x => x.Items)
                 .WithOne()

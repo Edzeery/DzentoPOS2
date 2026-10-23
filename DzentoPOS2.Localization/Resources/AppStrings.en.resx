@@ -1068,4 +1068,22 @@
   <data name="SessionClosed" xml:space="preserve">
     <value>Closed</value>
   </data>
+  <data name="OpeningStock" xml:space="preserve">
+    <value>Opening stock</value>
+  </data>
+  <data name="AdjustStock" xml:space="preserve">
+    <value>Adjust stock</value>
+  </data>
+  <data name="NewQuantity" xml:space="preserve">
+    <value>New quantity</value>
+  </data>
+  <data name="AdjustmentReason" xml:space="preserve">
+    <value>Reason</value>
+  </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="AdjustmentReasonRequired" xml:space="preserve">
+    <value>An adjustment reason is required</value>
+  </data>
 </root>

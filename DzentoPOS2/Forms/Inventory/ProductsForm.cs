@@ -407,6 +407,32 @@ public partial class ProductsForm : LocalizableFormBase
                     y += 22;
                 }
             }
+
+            var actions = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Bottom,
+                Height = 56,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                BackColor = AppColors.Surface
+            };
+
+            var btnAdjust = ButtonFactory.Primary(AppStrings.AdjustStock);
+            btnAdjust.Size = new Size(160, 44);
+            btnAdjust.Margin = new Padding(10, 6, 0, 6);
+            btnAdjust.Click += (_, _) =>
+            {
+                using var dialog = new StockAdjustDialog(
+                    _productService,
+                    product.Id,
+                    stocks.Sum(s => s.Quantity));
+
+                if (dialog.ShowDialog(this) == DialogResult.OK)
+                    ShowProductDetails();
+            };
+
+            actions.Controls.Add(btnAdjust);
+            stockPanel.Controls.Add(actions);
         }
     }
 

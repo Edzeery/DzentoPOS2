@@ -34,6 +34,8 @@ namespace DzentoPOS2.Data.Repositories.Common
                 await _transaction.CommitAsync();
 
                 await _transaction.DisposeAsync();
+
+                _transaction = null;
             }
         }
 
@@ -44,6 +46,8 @@ namespace DzentoPOS2.Data.Repositories.Common
                 await _transaction.RollbackAsync();
 
                 await _transaction.DisposeAsync();
+
+                _transaction = null;
             }
         }
 

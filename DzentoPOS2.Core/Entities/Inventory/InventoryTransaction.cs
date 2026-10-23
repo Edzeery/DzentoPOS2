@@ -18,6 +18,16 @@ namespace DzentoPOS2.Core.Entities.Inventory
 
         public MovementType TransactionType { get; set; }
 
+        public decimal QuantityBefore { get; set; }
+
+        public decimal QuantityAfter { get; set; }
+
+        public string? SourceType { get; set; }
+
+        public Guid? SourceId { get; set; }
+
+        public Guid? UserId { get; set; }
+
         public string? ReferenceNumber { get; set; }
 
         public string? Notes { get; set; }

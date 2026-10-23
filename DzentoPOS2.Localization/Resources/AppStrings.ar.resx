@@ -1066,6 +1066,24 @@
     <value>مفتوحة</value>
   </data>
   <data name="SessionClosed" xml:space="preserve">
-    <value>مغلقة</value>
+    <value>مغلق</value>
+  </data>
+  <data name="OpeningStock" xml:space="preserve">
+    <value>مخزون افتتاحي</value>
+  </data>
+  <data name="AdjustStock" xml:space="preserve">
+    <value>تعديل المخزون</value>
+  </data>
+  <data name="NewQuantity" xml:space="preserve">
+    <value>الكمية الجديدة</value>
+  </data>
+  <data name="AdjustmentReason" xml:space="preserve">
+    <value>السبب</value>
+  </data>
+  <data name="Apply" xml:space="preserve">
+    <value>تطبيق</value>
+  </data>
+  <data name="AdjustmentReasonRequired" xml:space="preserve">
+    <value>سبب التعديل مطلوب</value>
   </data>
 </root>

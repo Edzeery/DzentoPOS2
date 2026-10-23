@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DzentoPOS2.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261023112454_E3_CashSessionLinking")]
+    [Migration("20261023131151_E3_CashSessionLinking")]
     partial class E3_CashSessionLinking
     {
         /// <inheritdoc />
@@ -77,7 +77,10 @@ namespace DzentoPOS2.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CashboxId");
+                    b.HasIndex("CashboxId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_CashSessions_OpenPerCashbox")
+                        .HasFilter("\"Status\" = 0 AND \"IsDeleted\" = 0");
 
                     b.HasIndex("OpenedAtUtc");
 
@@ -94,6 +97,9 @@ namespace DzentoPOS2.Data.Migrations
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid?>("CashSessionId")
+                        .HasColumnType("TEXT");
 
                     b.Property<Guid>("CashboxId")
                         .HasColumnType("TEXT");
@@ -116,6 +122,13 @@ namespace DzentoPOS2.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("SourceId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SourceType")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("TransactionDate")
                         .HasColumnType("TEXT");
 
@@ -131,11 +144,15 @@ namespace DzentoPOS2.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CashSessionId");
+
                     b.HasIndex("CashboxId");
 
                     b.HasIndex("ReferenceNumber");
 
                     b.HasIndex("TransactionDate");
+
+                    b.HasIndex("SourceType", "SourceId");
 
                     b.ToTable("CashTransactions", (string)null);
                 });
@@ -1997,6 +2014,9 @@ namespace DzentoPOS2.Data.Migrations
                     b.Property<Guid>("BranchId")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("CashSessionId")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
@@ -2031,6 +2051,8 @@ namespace DzentoPOS2.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CashSessionId");
 
                     b.HasIndex("IsVoided");
 

@@ -11,9 +11,7 @@ namespace DzentoPOS2.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
-                name: "IX_InventoryTransactions_ProductId",
-                table: "InventoryTransactions");
+            migrationBuilder.Sql("DROP INDEX IF EXISTS \"IX_InventoryTransactions_ProductId\";");
 
             migrationBuilder.AddColumn<bool>(
                 name: "IsVoided",

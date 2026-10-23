@@ -109,6 +109,9 @@ namespace DzentoPOS2.App.Services.Sales
                     !x.IsDeleted)
                 ?? throw new DzentoPOS2.Core.Exceptions.CashSessionRequiredException();
 
+            if (openSession.OpeningBalance < 0)
+                throw new DzentoPOS2.Core.Exceptions.CashSessionRequiredException();
+
             for (var attempt = 0; ; attempt++)
             {
                 await _unitOfWork.BeginTransactionAsync();

@@ -31,7 +31,7 @@ namespace DzentoPOS2.Data.Seed
 
             await AppSettingSeeder.SeedAsync(context);
 
-            await CurrencySeeder.SeedAsync(context); Microsoft.Data.Sqlite.SqliteException: 'SQLite Error 1: 'no such index: IX_InventoryTransactions_ProductId'.'
+            await CurrencySeeder.SeedAsync(context);
 
             await LicensePlanSeeder.SeedAsync(context);
 

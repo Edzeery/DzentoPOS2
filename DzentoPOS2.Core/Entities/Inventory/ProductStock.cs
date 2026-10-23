@@ -20,5 +20,7 @@ namespace DzentoPOS2.Core.Entities.Inventory
         public Warehouse Warehouse { get; set; } = null!;
 
         public Quantity Quantity { get; set; } = null!;
+
+        public int Version { get; set; }
     }
 }

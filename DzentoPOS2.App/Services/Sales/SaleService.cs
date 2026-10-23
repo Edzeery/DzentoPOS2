@@ -1,10 +1,14 @@
-using DzentoPOS2.App.Services.Sales;
+using DzentoPOS2.App.Services.Inventory;
+using DzentoPOS2.App.Services.Systems;
+using DzentoPOS2.App.Session;
 using DzentoPOS2.Core.Entities.Sales;
-using DzentoPOS2.Core.ValueObjects.Sales;
+using DzentoPOS2.Core.Enums;
+using DzentoPOS2.Core.Services.Sales;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Data.Repositories.Common.Interfaces;
 using DzentoPOS2.Data.Repositories.Sales.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Sales;
+using DzentoPOS2.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace DzentoPOS2.App.Services.Sales
@@ -14,15 +18,33 @@ namespace DzentoPOS2.App.Services.Sales
         private readonly ISalesInvoiceRepository _invoiceRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly AppDbContext _context;
+        private readonly IBusinessClock _clock;
+        private readonly IStoreContextService _storeContext;
+        private readonly IDocumentNumberService _documentNumbers;
+        private readonly IStockService _stockService;
+        private readonly ICurrentUserService _currentUser;
+        private readonly RegionalContext _regional;
 
         public SaleService(
             ISalesInvoiceRepository invoiceRepo,
             IUnitOfWork unitOfWork,
-            AppDbContext context)
+            AppDbContext context,
+            IBusinessClock clock,
+            IStoreContextService storeContext,
+            IDocumentNumberService documentNumbers,
+            IStockService stockService,
+            ICurrentUserService currentUser,
+            RegionalContext regional)
         {
             _invoiceRepo = invoiceRepo;
             _unitOfWork = unitOfWork;
             _context = context;
+            _clock = clock;
+            _storeContext = storeContext;
+            _documentNumbers = documentNumbers;
+            _stockService = stockService;
+            _currentUser = currentUser;
+            _regional = regional;
         }
 
         public async Task<List<SaleDto>> GetAllAsync()
@@ -70,83 +92,199 @@ namespace DzentoPOS2.App.Services.Sales
             if (dto.Items.Count == 0)
                 throw new InvalidOperationException("Sale must have at least one item");
 
-            var invoiceNumber = await GenerateInvoiceNumberAsync();
+            var lines = dto.Items
+                .Select(i => new InvoiceLine(i.Quantity, i.Price))
+                .ToList();
 
-            var invoice = SalesInvoice.Create(
-                invoiceNumber,
-                dto.CustomerId,
-                Guid.Empty,
-                dto.Items.Sum(i => i.Quantity * i.Price),
-                dto.Discount,
-                dto.TaxRate,
-                dto.PaidAmount);
+            var branchId = await _storeContext.GetDefaultBranchIdAsync();
+            var warehouseId = await _storeContext.GetDefaultWarehouseIdAsync(branchId);
+            var cashboxId = await _storeContext.GetDefaultCashboxIdAsync(branchId);
+            var currency = _regional.CurrencyCode;
+            var digits = _regional.CurrencyDecimalDigits;
 
-            foreach (var item in dto.Items)
+            var openSession = await _context.CashSessions
+                .FirstOrDefaultAsync(x =>
+                    x.CashboxId == cashboxId &&
+                    x.Status == Core.Enums.CashSessionStatus.Open &&
+                    !x.IsDeleted)
+                ?? throw new DzentoPOS2.Core.Exceptions.CashSessionRequiredException();
+
+            for (var attempt = 0; ; attempt++)
             {
-                invoice.Items.Add(new SalesInvoiceItem
+                await _unitOfWork.BeginTransactionAsync();
+
+                try
                 {
-                    ProductId = item.ProductId,
-                    Quantity = item.Quantity,
-                    Price = item.Price,
-                    Total = item.Quantity * item.Price,
-                    Description = item.Description ?? string.Empty
-                });
-            }
+                    var invoiceNumber =
+                        await _documentNumbers.NextInvoiceNumberAsync();
 
-            await _context.SalesInvoices.AddAsync(invoice);
+                    var invoice = SalesInvoice.Create(
+                        invoiceNumber,
+                        dto.CustomerId,
+                        branchId,
+                        lines,
+                        dto.Discount,
+                        dto.TaxRate,
+                        dto.PaidAmount,
+                        currency,
+                        digits);
 
-            if (dto.PaidAmount > 0)
-            {
-                await _context.SalesPayments.AddAsync(new SalesPayment
+                    foreach (var item in dto.Items)
+                    {
+                        invoice.Items.Add(new SalesInvoiceItem
+                        {
+                            ProductId = item.ProductId,
+                            Quantity = item.Quantity,
+                            Price = item.Price,
+                            Total = item.Quantity * item.Price,
+                            Description = item.Description ?? string.Empty
+                        });
+                    }
+
+                invoice.AssignCashSession(openSession.Id);
+                await _context.SalesInvoices.AddAsync(invoice);
+
+                if (dto.PaidAmount > 0)
                 {
-                    SalesInvoiceId = invoice.Id,
-                    Amount = dto.PaidAmount,
-                    PaymentMethod = dto.PaymentMethod,
-                    PaymentDate = DateTime.UtcNow
-                });
+                    await _context.SalesPayments.AddAsync(new SalesPayment
+                    {
+                        SalesInvoiceId = invoice.Id,
+                        Amount = dto.PaidAmount,
+                        PaymentMethod = dto.PaymentMethod,
+                        PaymentDate = _clock.UtcNow
+                    });
+
+                    if (string.Equals(dto.PaymentMethod, "Cash", StringComparison.OrdinalIgnoreCase))
+                    {
+                        await _context.CashTransactions.AddAsync(new Core.Entities.Accounting.CashTransaction
+                        {
+                            CashboxId = cashboxId,
+                            CashSessionId = openSession.Id,
+                            Amount = dto.PaidAmount,
+                            TransactionType = Core.Enums.MovementType.SaleCashIn,
+                            SourceType = "SalesInvoice",
+                            SourceId = invoice.Id,
+                            ReferenceNumber = invoice.InvoiceNumber.Value,
+                            Notes = "Cash sale",
+                            TransactionDate = _clock.UtcNow
+                        });
+                    }
+                }
+
+                    await _stockService.ApplySaleAsync(
+                        invoice.Id,
+                        invoice.InvoiceNumber.Value,
+                        warehouseId,
+                        dto.Items
+                            .Select(i => new StockChange(i.ProductId, i.Quantity))
+                            .ToList(),
+                        _currentUser.UserId);
+
+                    await _unitOfWork.SaveChangesAsync();
+                    await _unitOfWork.CommitTransactionAsync();
+
+                    return Map(invoice);
+                }
+                catch (DbUpdateConcurrencyException) when (attempt == 0)
+                {
+                    await _unitOfWork.RollbackTransactionAsync();
+                    _context.ChangeTracker.Clear();
+                }
+                catch
+                {
+                    await _unitOfWork.RollbackTransactionAsync();
+                    _context.ChangeTracker.Clear();
+                    throw;
+                }
             }
-
-            await _unitOfWork.SaveChangesAsync();
-
-            return Map(invoice);
         }
 
-        public async Task DeleteAsync(Guid id)
+        public Task DeleteAsync(Guid id)
+        {
+            return VoidAsync(id, "Voided by user");
+        }
+
+        public async Task VoidAsync(Guid id, string reason)
         {
             var invoice = await _invoiceRepo.GetWithItemsAsync(id);
-            if (invoice == null) return;
+            if (invoice == null || invoice.IsVoided)
+                return;
 
-            _invoiceRepo.Remove(invoice);
-            await _unitOfWork.SaveChangesAsync();
+            if (string.IsNullOrWhiteSpace(reason))
+                throw new InvalidOperationException("A void reason is required");
+
+            var warehouseId = await _storeContext
+                .GetDefaultWarehouseIdAsync(invoice.BranchId);
+
+            await _unitOfWork.BeginTransactionAsync();
+
+            try
+            {
+                var cashboxId = await _storeContext
+                    .GetDefaultCashboxIdAsync(invoice.BranchId);
+
+                await _stockService.ReverseAsync(
+                    invoice.Id,
+                    "SalesInvoiceVoid",
+                    $"VOID-{invoice.InvoiceNumber.Value}",
+                    warehouseId,
+                    invoice.Items
+                        .Select(i => new StockChange(i.ProductId, i.Quantity))
+                        .ToList(),
+                    MovementType.SaleVoidIn,
+                    _currentUser.UserId);
+
+                invoice.Void(_currentUser.UserId, reason, _clock.UtcNow);
+
+                var cashPaid = invoice.PaidAmount?.Amount ?? 0;
+                if (cashPaid > 0 && invoice.CashSessionId.HasValue)
+                {
+                    await _context.CashTransactions.AddAsync(new Core.Entities.Accounting.CashTransaction
+                    {
+                        CashboxId = cashboxId,
+                        CashSessionId = invoice.CashSessionId.Value,
+                        Amount = cashPaid,
+                        TransactionType = Core.Enums.MovementType.SaleVoidCashOut,
+                        SourceType = "SalesInvoiceVoid",
+                        SourceId = invoice.Id,
+                        ReferenceNumber = $"VOID-{invoice.InvoiceNumber.Value}",
+                        Notes = reason.Trim(),
+                        TransactionDate = _clock.UtcNow
+                    });
+                }
+
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitTransactionAsync();
+            }
+            catch
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                _context.ChangeTracker.Clear();
+                throw;
+            }
         }
 
         public async Task<decimal> GetTodayTotalAsync()
         {
-            var today = DateTime.UtcNow.Date;
+            var (todayStart, tomorrowStart) = _clock.TodayRangeUtc();
+
             return await _context.SalesInvoices
                 .AsNoTracking()
-                .Where(x => !x.IsDeleted && x.CreatedAt >= today)
+                .Where(x => !x.IsDeleted &&
+                    x.CreatedAt >= todayStart &&
+                    x.CreatedAt < tomorrowStart)
                 .SumAsync(x => x.Total.Amount);
         }
 
         public async Task<int> GetTodayCountAsync()
         {
-            var today = DateTime.UtcNow.Date;
+            var (todayStart, tomorrowStart) = _clock.TodayRangeUtc();
+
             return await _context.SalesInvoices
                 .AsNoTracking()
-                .CountAsync(x => !x.IsDeleted && x.CreatedAt >= today);
-        }
-
-        private async Task<string> GenerateInvoiceNumberAsync()
-        {
-            var today = DateTime.UtcNow.ToString("yyyyMMdd");
-            var prefix = $"INV-{today}";
-
-            var count = await _context.SalesInvoices
-                .AsNoTracking()
-                .CountAsync(x => x.InvoiceNumber.Value.StartsWith(prefix) && !x.IsDeleted);
-
-            return $"{prefix}-{(count + 1):D4}";
+                .CountAsync(x => !x.IsDeleted &&
+                    x.CreatedAt >= todayStart &&
+                    x.CreatedAt < tomorrowStart);
         }
 
         private static SaleDto Map(SalesInvoice invoice)
@@ -156,11 +294,17 @@ namespace DzentoPOS2.App.Services.Sales
                 Id = invoice.Id,
                 InvoiceNumber = invoice.InvoiceNumber?.Value ?? "",
                 CustomerId = invoice.CustomerId,
-                Total = invoice.Total?.Amount ?? 0,
+                Subtotal = invoice.Subtotal?.Amount ?? 0,
                 Discount = invoice.Discount?.Value ?? 0,
+                DiscountAmount = invoice.DiscountAmount?.Amount ?? 0,
                 TaxRate = invoice.Tax?.Rate ?? 0,
+                TaxAmount = invoice.TaxAmount?.Amount ?? 0,
+                Total = invoice.Total?.Amount ?? 0,
                 PaidAmount = invoice.PaidAmount?.Amount ?? 0,
                 RemainingAmount = invoice.RemainingAmount?.Amount ?? 0,
+                IsVoided = invoice.IsVoided,
+                VoidReason = invoice.VoidReason,
+                VoidedAtUtc = invoice.VoidedAtUtc,
                 CreatedAt = invoice.CreatedAt,
                 Items = invoice.Items?.Select(i => new SaleItemDto
                 {

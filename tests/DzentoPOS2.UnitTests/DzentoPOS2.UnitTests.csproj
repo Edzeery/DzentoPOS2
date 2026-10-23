@@ -19,6 +19,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\DzentoPOS2.Core\DzentoPOS2.Core.csproj" />
+    <ProjectReference Include="..\..\DzentoPOS2.Shared\DzentoPOS2.Shared.csproj" />
+    <ProjectReference Include="..\..\DzentoPOS2.App\DzentoPOS2.App.csproj" />
   </ItemGroup>
 
 </Project>

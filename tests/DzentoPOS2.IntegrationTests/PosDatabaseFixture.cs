@@ -1,6 +1,10 @@
+using DzentoPOS2.App;
+using DzentoPOS2.App.Session;
+using DzentoPOS2.Data;
 using DzentoPOS2.Data.Context;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -16,6 +20,8 @@ public sealed class PosDatabaseFixture : IAsyncLifetime
 
     public ServiceProvider Services { get; private set; } = null!;
 
+    public TestData Data { get; private set; } = null!;
+
     public async Task InitializeAsync()
     {
         Directory.CreateDirectory(_directory);
@@ -24,10 +30,20 @@ public sealed class PosDatabaseFixture : IAsyncLifetime
             _directory,
             $"{Guid.NewGuid():N}.db");
 
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:DefaultConnection"] =
+                    $"Data Source={DatabasePath}"
+            })
+            .Build();
+
         var services = new ServiceCollection();
 
-        services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlite($"Data Source={DatabasePath}"));
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddLogging();
+        services.AddDataServices(configuration);
+        services.AddApplicationServices();
 
         Services = services.BuildServiceProvider();
 
@@ -37,6 +53,22 @@ public sealed class PosDatabaseFixture : IAsyncLifetime
             .GetRequiredService<AppDbContext>();
 
         await context.Database.MigrateAsync();
+
+        Data = await TestData.SeedAsync(context);
+
+        var currentUser = scope.ServiceProvider
+            .GetRequiredService<ICurrentUserService>();
+
+        currentUser.SetUser(new UserSession
+        {
+            UserId = Data.UserId,
+            UserName = "cashier",
+            FullName = "Test Cashier",
+            RoleName = "Cashier",
+            BranchId = Data.BranchId,
+            BranchName = "Main Branch",
+            IsAdmin = true
+        });
     }
 
     public AsyncServiceScope CreateScope()

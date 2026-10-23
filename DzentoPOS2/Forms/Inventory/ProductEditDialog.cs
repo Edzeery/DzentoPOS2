@@ -20,6 +20,7 @@ public class ProductEditDialog : Form
     private readonly Label _lblCost;
     private readonly Label _lblSale;
     private readonly Label _lblMinStock;
+    private readonly Label _lblOpeningStock;
     private readonly TextBox _txtName;
     private readonly TextBox _txtSKU;
     private readonly TextBox _txtBarcode;
@@ -28,6 +29,7 @@ public class ProductEditDialog : Form
     private readonly NumericUpDown _numCost;
     private readonly NumericUpDown _numSale;
     private readonly NumericUpDown _numMinStock;
+    private readonly NumericUpDown _numOpeningStock;
     private readonly CheckBox _chkActive;
     private readonly Button _btnSave;
     private readonly Button _btnCancel;
@@ -38,7 +40,7 @@ public class ProductEditDialog : Form
         _languageService = languageService;
         _existing = existing;
 
-        Size = new Size(520, 500);
+        Size = new Size(520, 580);
         StartPosition = FormStartPosition.CenterParent;
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false;
@@ -62,6 +64,7 @@ public class ProductEditDialog : Form
         _lblCost = lbl(AppStrings.CostPrice + ":", 210);
         _lblSale = lbl(AppStrings.SalePrice + ":", 248);
         _lblMinStock = lbl(AppStrings.MinimumStock + ":", 286);
+        _lblOpeningStock = lbl(AppStrings.OpeningStock + ":", 324);
 
         _txtName = new TextBox { Location = new Point(150, 20), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F) };
         _txtSKU = new TextBox { Location = new Point(150, 58), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F) };
@@ -73,18 +76,25 @@ public class ProductEditDialog : Form
         _numCost = new NumericUpDown { Location = new Point(150, 210), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F), DecimalPlaces = 2, Maximum = 999999 };
         _numSale = new NumericUpDown { Location = new Point(150, 248), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F), DecimalPlaces = 2, Maximum = 999999 };
         _numMinStock = new NumericUpDown { Location = new Point(150, 286), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F), DecimalPlaces = 0, Maximum = 999999 };
+        _numOpeningStock = new NumericUpDown { Location = new Point(150, 324), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F), DecimalPlaces = 0, Maximum = 999999 };
 
-        _chkActive = new CheckBox { Text = AppStrings.ProductActive, Location = new Point(150, 324), Size = new Size(200, 28), Font = new Font("Segoe UI", 10F), Checked = true };
+        _chkActive = new CheckBox { Text = AppStrings.ProductActive, Location = new Point(150, 362), Size = new Size(200, 28), Font = new Font("Segoe UI", 10F), Checked = true };
 
         _btnSave = ButtonFactory.Primary(AppStrings.Save);
-        _btnSave.Location = new Point(150, 368);
+        _btnSave.Location = new Point(150, 420);
         _btnSave.Size = new Size(120, 40);
         _btnSave.Click += async (_, _) => await SaveAsync();
 
         _btnCancel = ButtonFactory.Neutral(AppStrings.Cancel);
-        _btnCancel.Location = new Point(290, 368);
+        _btnCancel.Location = new Point(290, 420);
         _btnCancel.Size = new Size(120, 40);
         _btnCancel.DialogResult = DialogResult.Cancel;
+
+        if (_existing != null)
+        {
+            _lblOpeningStock.Visible = false;
+            _numOpeningStock.Visible = false;
+        }
 
         Controls.AddRange(new Control[]
         {
@@ -96,6 +106,7 @@ public class ProductEditDialog : Form
             _lblCost, _numCost,
             _lblSale, _numSale,
             _lblMinStock, _numMinStock,
+            _lblOpeningStock, _numOpeningStock,
             _chkActive,
             _btnSave, _btnCancel
         });
@@ -122,6 +133,7 @@ public class ProductEditDialog : Form
         _lblCost.Text = AppStrings.CostPrice + ":";
         _lblSale.Text = AppStrings.SalePrice + ":";
         _lblMinStock.Text = AppStrings.MinimumStock + ":";
+        _lblOpeningStock.Text = AppStrings.OpeningStock + ":";
         _chkActive.Text = AppStrings.ProductActive;
         _btnSave.Text = AppStrings.Save;
         _btnCancel.Text = AppStrings.Cancel;
@@ -234,6 +246,7 @@ public class ProductEditDialog : Form
                 CostPrice = _numCost.Value,
                 SalePrice = _numSale.Value,
                 MinimumStock = _numMinStock.Value,
+                OpeningStock = _numOpeningStock.Value,
                 IsActive = _chkActive.Checked
             });
         }

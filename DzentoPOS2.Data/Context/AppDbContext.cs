@@ -160,6 +160,8 @@ namespace DzentoPOS2.Data.Context
 
         public DbSet<Sequence> Sequences => Set<Sequence>();
 
+        public DbSet<DocumentSequence> DocumentSequences => Set<DocumentSequence>();
+
         #endregion
 
         #region Reports

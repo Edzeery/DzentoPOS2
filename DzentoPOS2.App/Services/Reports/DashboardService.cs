@@ -1,4 +1,5 @@
 using DzentoPOS2.App.Services.Reports.Interfaces;
+using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Shared.Contracts.DTOs.Reports;
 using DzentoPOS2.Shared.Helpers;
@@ -10,20 +11,24 @@ namespace DzentoPOS2.App.Services.Reports
     {
         private readonly AppDbContext _context;
         private readonly RegionalContext _regional;
+        private readonly IBusinessClock _clock;
 
-        public DashboardService(AppDbContext context, RegionalContext regional)
+        public DashboardService(
+            AppDbContext context,
+            RegionalContext regional,
+            IBusinessClock clock)
         {
             _context = context;
             _regional = regional;
+            _clock = clock;
         }
 
         public async Task<DashboardSummaryDto> GetSummaryAsync()
         {
             // The day and month boundaries follow the time zone configured in the
             // settings; the values compared against the database stay in UTC.
-            var localNow = _regional.Now;
-            var todayStart = _regional.StartOfLocalDayUtc(localNow.Date);
-            var tomorrowStart = _regional.StartOfLocalDayUtc(localNow.Date.AddDays(1));
+            var localNow = _clock.Now;
+            var (todayStart, tomorrowStart) = _clock.TodayRangeUtc();
             var yesterdayStart = _regional.StartOfLocalDayUtc(localNow.Date.AddDays(-1));
             var monthStart = _regional.StartOfLocalMonthUtc();
             var nextMonthStart = _regional.ToUtcSafe(new DateTime(localNow.Year, localNow.Month, 1).AddMonths(1));

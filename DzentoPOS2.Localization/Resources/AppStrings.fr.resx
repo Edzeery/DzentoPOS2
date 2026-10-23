@@ -1068,4 +1068,22 @@
   <data name="SessionClosed" xml:space="preserve">
     <value>Fermée</value>
   </data>
+  <data name="OpeningStock" xml:space="preserve">
+    <value>Stock d'ouverture</value>
+  </data>
+  <data name="AdjustStock" xml:space="preserve">
+    <value>Ajuster le stock</value>
+  </data>
+  <data name="NewQuantity" xml:space="preserve">
+    <value>Nouvelle quantité</value>
+  </data>
+  <data name="AdjustmentReason" xml:space="preserve">
+    <value>Motif</value>
+  </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Appliquer</value>
+  </data>
+  <data name="AdjustmentReasonRequired" xml:space="preserve">
+    <value>Un motif d'ajustement est requis</value>
+  </data>
 </root>

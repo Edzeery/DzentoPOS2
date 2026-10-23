@@ -1,6 +1,7 @@
 using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.App.Services.Partners;
 using DzentoPOS2.App.Services.Sales;
+using DzentoPOS2.Core.Services.Sales;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
@@ -704,11 +705,22 @@ public partial class SalesForm : LocalizableFormBase
 
     private void UpdateTotals()
     {
-        var subtotal = _cart.Sum(i => i.Quantity * i.Price);
-        var discountAmount = subtotal * (decimal)_numDiscount.Value / 100;
-        var afterDiscount = subtotal - discountAmount;
-        var taxAmount = afterDiscount * (decimal)_numTax.Value / 100;
-        var total = afterDiscount + taxAmount;
+        var digits = _currentSettings.Regional.CurrencyDecimalDigits;
+        var subtotal = 0m;
+        var total = 0m;
+
+        if (_cart.Count > 0)
+        {
+            var totals = InvoiceCalculator.Calculate(
+                _cart.Select(i => new InvoiceLine(i.Quantity, i.Price)).ToList(),
+                (decimal)_numDiscount.Value,
+                (decimal)_numTax.Value,
+                (decimal)_numPaid.Value,
+                digits);
+
+            subtotal = totals.Subtotal;
+            total = totals.Total;
+        }
 
         _lblSubtotalValue.Text = FormatMoney(subtotal);
         _lblTotalValue.Text = FormatMoney(total);
@@ -719,7 +731,10 @@ public partial class SalesForm : LocalizableFormBase
             _updatingTotals = true;
             try
             {
-                _numPaid.Value = (decimal)Math.Round(total, 2);
+                _numPaid.Value = decimal.Round(
+                    total,
+                    digits,
+                    MidpointRounding.AwayFromZero);
             }
             finally
             {

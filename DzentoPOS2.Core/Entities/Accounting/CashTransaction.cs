@@ -12,10 +12,16 @@ namespace DzentoPOS2.Core.Entities.Accounting
     {
         public Guid CashboxId { get; set; }
 
+        public Guid? CashSessionId { get; set; }
+
         public decimal Amount { get; set; }
 
         public MovementType TransactionType { get; set; }
-        
+
+        public string? SourceType { get; set; }
+
+        public Guid? SourceId { get; set; }
+
         public required string ReferenceNumber { get; set; }
 
         public string? Notes { get; set; }

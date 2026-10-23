@@ -37,6 +37,19 @@ namespace DzentoPOS2.Data.Configurations.Inventory
             builder.Property(x => x.Notes)
                 .HasMaxLength(1000);
 
+            builder.Property(x => x.QuantityBefore)
+                .HasPrecision(18, 2);
+
+            builder.Property(x => x.QuantityAfter)
+                .HasPrecision(18, 2);
+
+            builder.Property(x => x.SourceType)
+                .HasMaxLength(50);
+
+            builder.HasIndex(x => new { x.SourceType, x.SourceId });
+
+            builder.HasIndex(x => new { x.ProductId, x.WarehouseId, x.CreatedAt });
+
             builder.HasOne(x => x.Product)
                 .WithMany(x => x.InventoryTransactions)
                 .HasForeignKey(x => x.ProductId)

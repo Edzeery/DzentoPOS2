@@ -111,6 +111,17 @@ public sealed class TestData
 
         await context.SaveChangesAsync();
 
+        context.CashSessions.Add(new CashSession
+        {
+            CashboxId = cashbox.Id,
+            OpenedAtUtc = DateTime.UtcNow,
+            OpenedByUserId = user.Id,
+            OpeningBalance = 1000m,
+            Status = DzentoPOS2.Core.Enums.CashSessionStatus.Open
+        });
+
+        await context.SaveChangesAsync();
+
         return new TestData
         {
             BranchId = branch.Id,

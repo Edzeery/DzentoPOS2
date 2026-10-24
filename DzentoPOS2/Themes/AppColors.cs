@@ -57,8 +57,8 @@ namespace DzentoPOS2.WinForms.Themes
         // Inputs
         // =========================
 
-        public static Color InputBackground => ThemeManager.IsDark ? Color.FromArgb(21, 30, 48) : Color.White;
-        public static Color InputBorder => Border;
+        public static Color InputBackground => ThemeManager.IsDark ? Color.FromArgb(24, 33, 52) : Color.White;
+        public static Color InputBorder => ThemeManager.IsDark ? Color.FromArgb(48, 59, 82) : Border;
         public static Color InputBorderFocus => Primary;
 
         // =========================
@@ -75,20 +75,20 @@ namespace DzentoPOS2.WinForms.Themes
         // Grid / list
         // =========================
 
-        public static Color GridHeaderBackground => ThemeManager.IsDark ? Color.FromArgb(21, 30, 48) : Color.FromArgb(245, 247, 250);
+        public static Color GridHeaderBackground => ThemeManager.IsDark ? Color.FromArgb(26, 36, 56) : Color.FromArgb(245, 247, 250);
         public static Color GridHeaderForeground => Ink;
-        public static Color GridRowAlt => ThemeManager.IsDark ? Color.FromArgb(19, 27, 44) : Color.FromArgb(249, 250, 252);
-        public static Color GridHover => ThemeManager.IsDark ? ThemeManager.ChangeBrightness(Primary, -0.7) : Color.FromArgb(229, 246, 245);
-        public static Color GridSelectionBackground => ThemeManager.IsDark ? ThemeManager.ChangeBrightness(Primary, -0.65) : Color.FromArgb(229, 246, 245);
+        public static Color GridRowAlt => ThemeManager.IsDark ? Color.FromArgb(22, 31, 49) : Color.FromArgb(249, 250, 252);
+        public static Color GridHover => ThemeManager.IsDark ? Color.FromArgb(34, 46, 70) : Color.FromArgb(229, 246, 245);
+        public static Color GridSelectionBackground => ThemeManager.IsDark ? ThemeManager.ChangeBrightness(Primary, -0.55) : Color.FromArgb(229, 246, 245);
         public static Color GridSelectionForeground => Ink;
-        public static Color GridLine => ThemeManager.IsDark ? Color.FromArgb(35, 45, 63) : Color.FromArgb(240, 243, 245);
+        public static Color GridLine => ThemeManager.IsDark ? Color.FromArgb(44, 56, 78) : Color.FromArgb(240, 243, 245);
 
         // =========================
         // Disabled
         // =========================
 
-        public static Color DisabledBack => ThemeManager.IsDark ? Color.FromArgb(28, 38, 56) : Color.FromArgb(233, 236, 239);
-        public static Color DisabledFore => ThemeManager.IsDark ? Color.FromArgb(110, 120, 140) : Color.FromArgb(160, 166, 172);
+        public static Color DisabledBack => ThemeManager.IsDark ? Color.FromArgb(33, 44, 65) : Color.FromArgb(233, 236, 239);
+        public static Color DisabledFore => ThemeManager.IsDark ? Color.FromArgb(118, 128, 148) : Color.FromArgb(160, 166, 172);
 
         // =========================
         // KPI card accents

@@ -129,9 +129,10 @@ namespace DzentoPOS2.Data.Migrations
                     b.Property<DateTime>("TransactionDate")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("TransactionType")
+                    b.Property<string>("TransactionType")
+                        .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("TEXT");
@@ -2071,7 +2072,7 @@ namespace DzentoPOS2.Data.Migrations
                     b.Property<string>("Description")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasMaxLength(256)
+                        .HasMaxLength(1000)
                         .HasColumnType("TEXT")
                         .HasDefaultValue("");
 

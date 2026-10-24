@@ -45,7 +45,7 @@ namespace DzentoPOS2.WinForms.Themes
             using var brush = new SolidBrush(AppColors.Background);
             int h = tab.ItemSize.Height + 14;
             if (tab.DisplayRectangle.Top > 0) h = tab.DisplayRectangle.Top;
-            e.Graphics.FillRectangle(brush, new Rectangle(0, 0, tab.Width, Math.Max(h + 1, 1)));
+            e.Graphics.FillRectangle(brush, new Rectangle(0, 0, tab.Width, Math.Max(h + 2, 1)));
         }
 
         private static void OnDrawItem(object? sender, DrawItemEventArgs e)
@@ -56,13 +56,13 @@ namespace DzentoPOS2.WinForms.Themes
             bool selected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
 
             var bounds = e.Bounds;
-            using (var back = new SolidBrush(selected ? AppColors.Surface : AppColors.SurfaceAlt))
+            using (var back = new SolidBrush(selected ? AppColors.Surface : AppColors.Background))
                 g.FillRectangle(back, bounds);
 
             if (selected)
             {
                 using var accent = new SolidBrush(AppColors.Primary);
-                g.FillRectangle(accent, bounds.Left, Math.Max(bounds.Top, bounds.Bottom - 3), bounds.Width, 3);
+                g.FillRectangle(accent, bounds.Left + 4, Math.Max(bounds.Top, bounds.Bottom - 3), bounds.Width - 8, 3);
             }
             else
             {
@@ -71,11 +71,14 @@ namespace DzentoPOS2.WinForms.Themes
             }
 
             var color = selected ? AppColors.Ink : AppColors.InkMuted;
+            var font = e.Font ?? tab.Font;
+            var fontDraw = selected ? new Font(font, FontStyle.Regular) : font;
             const TextFormatFlags flags =
                 TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter |
                 TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix;
-            var textBounds = new Rectangle(bounds.X + 6, bounds.Y, Math.Max(0, bounds.Width - 12), bounds.Height);
-            TextRenderer.DrawText(g, tab.TabPages[e.Index].Text, e.Font ?? tab.Font, textBounds, color, flags);
+            var textBounds = new Rectangle(bounds.X + 8, bounds.Y, Math.Max(0, bounds.Width - 16), bounds.Height);
+            TextRenderer.DrawText(g, tab.TabPages[e.Index].Text, fontDraw, textBounds, color, flags);
+            if (selected) fontDraw.Dispose();
         }
 
         private static int StripHeight(TabControl tab)

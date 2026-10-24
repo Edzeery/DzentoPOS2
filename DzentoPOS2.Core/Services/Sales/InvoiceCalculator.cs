@@ -18,7 +18,7 @@ public static class InvoiceCalculator
 {
     public static InvoiceTotals Calculate(
         IReadOnlyCollection<InvoiceLine> lines,
-        decimal discountPercent,
+        decimal discountPercentOrAmount,
         decimal taxRate,
         decimal paidAmount,
         int currencyDecimalDigits)
@@ -26,8 +26,8 @@ public static class InvoiceCalculator
         if (lines is null || lines.Count == 0)
             throw new DomainException("Sale must have at least one item");
 
-        if (discountPercent < 0 || discountPercent > 100)
-            throw new DomainException("Discount must be between 0 and 100");
+        if (discountPercentOrAmount < 0)
+            throw new DomainException("Discount cannot be negative");
 
         if (taxRate < 0 || taxRate > 100)
             throw new DomainException("Tax must be between 0 and 100");
@@ -52,9 +52,23 @@ public static class InvoiceCalculator
         }
 
         var subtotal = Round(rawSubtotal, currencyDecimalDigits);
-        var discountAmount = Round(
-            subtotal * discountPercent / 100m,
-            currencyDecimalDigits);
+        decimal discountAmount;
+        if (discountPercentOrAmount <= 100)
+        {
+            discountAmount = Round(
+                subtotal * discountPercentOrAmount / 100m,
+                currencyDecimalDigits);
+        }
+        else
+        {
+            if (discountPercentOrAmount > subtotal)
+                throw new DomainException("Discount cannot exceed subtotal");
+            discountAmount = Round(discountPercentOrAmount, currencyDecimalDigits);
+        }
+
+        if (discountAmount > subtotal)
+            discountAmount = subtotal;
+
         var afterDiscount = subtotal - discountAmount;
         var taxAmount = Round(
             afterDiscount * taxRate / 100m,

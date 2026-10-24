@@ -34,23 +34,25 @@ public static class DataGridViewStyleHelper
     {
         ApplyBaseStyle(grid);
 
-        grid.Font = new Font("Segoe UI", 9.5F);
-        grid.RowTemplate.Height = 44;
+        grid.Font = new Font("Segoe UI", 9F);
+        grid.RowTemplate.Height = 38;
         grid.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
         grid.GridColor = GridLineColor;
         grid.EnableHeadersVisualStyles = false;
+        grid.RowHeadersVisible = false;
+        grid.DefaultCellStyle.WrapMode = DataGridViewTriState.False;
 
         grid.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
         {
             BackColor = AppColors.GridHeaderBackground,
             ForeColor = AppColors.GridHeaderForeground,
-            Font = new Font("Segoe UI Semibold", 10F),
+            Font = new Font("Segoe UI Semibold", 9F),
             Padding = new Padding(10, 0, 10, 0),
             Alignment = DataGridViewContentAlignment.MiddleLeft,
             SelectionBackColor = AppColors.GridHeaderBackground,
             SelectionForeColor = AppColors.GridHeaderForeground
         };
-        grid.ColumnHeadersHeight = 44;
+        grid.ColumnHeadersHeight = 40;
         grid.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
 
         grid.DefaultCellStyle = new DataGridViewCellStyle
@@ -64,7 +66,10 @@ public static class DataGridViewStyleHelper
 
         grid.AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
         {
-            BackColor = AltRowColor
+            BackColor = AltRowColor,
+            ForeColor = InkColor,
+            SelectionBackColor = AccentSoft,
+            SelectionForeColor = InkColor
         };
 
         if (withHover)

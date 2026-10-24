@@ -24,7 +24,7 @@ namespace DzentoPOS2.Data.Configurations.Sales
 
             builder.Property(x => x.Description)
                 .IsRequired()
-                .HasMaxLength(256)
+                .HasMaxLength(1000)
                 .HasDefaultValue("");
 
             builder.Property(x => x.CreatedAt)

@@ -112,6 +112,15 @@ namespace DzentoPOS2.App.Services.Sales
             if (openSession.OpeningBalance < 0)
                 throw new DzentoPOS2.Core.Exceptions.CashSessionRequiredException();
 
+            foreach (var item in dto.Items)
+            {
+                var product = await _context.Products
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(p => p.Id == item.ProductId && !p.IsDeleted);
+                if (product == null || !product.IsActive)
+                    throw new InvalidOperationException("Invalid or inactive product");
+            }
+
             for (var attempt = 0; ; attempt++)
             {
                 await _unitOfWork.BeginTransactionAsync();
@@ -134,14 +143,15 @@ namespace DzentoPOS2.App.Services.Sales
 
                     foreach (var item in dto.Items)
                     {
-                        invoice.Items.Add(new SalesInvoiceItem
+                        var line = new SalesInvoiceItem
                         {
                             ProductId = item.ProductId,
                             Quantity = item.Quantity,
                             Price = item.Price,
-                            Total = item.Quantity * item.Price,
-                            Description = item.Description ?? string.Empty
-                        });
+                            Total = Math.Round(item.Quantity * item.Price, digits, MidpointRounding.AwayFromZero),
+                            Description = string.IsNullOrWhiteSpace(item.Description) ? string.Empty : item.Description.Trim()
+                        };
+                        invoice.Items.Add(line);
                     }
 
                 invoice.AssignCashSession(openSession.Id);
@@ -149,15 +159,16 @@ namespace DzentoPOS2.App.Services.Sales
 
                 if (dto.PaidAmount > 0)
                 {
+                    var paymentMethod = string.IsNullOrWhiteSpace(dto.PaymentMethod) ? "Cash" : dto.PaymentMethod;
                     await _context.SalesPayments.AddAsync(new SalesPayment
                     {
                         SalesInvoiceId = invoice.Id,
                         Amount = dto.PaidAmount,
-                        PaymentMethod = dto.PaymentMethod,
+                        PaymentMethod = paymentMethod,
                         PaymentDate = _clock.UtcNow
                     });
 
-                    if (string.Equals(dto.PaymentMethod, "Cash", StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(paymentMethod, "Cash", StringComparison.OrdinalIgnoreCase))
                     {
                         await _context.CashTransactions.AddAsync(new Core.Entities.Accounting.CashTransaction
                         {

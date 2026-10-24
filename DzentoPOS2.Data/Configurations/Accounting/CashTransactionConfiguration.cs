@@ -22,6 +22,7 @@ namespace DzentoPOS2.Data.Configurations.Accounting
                 .HasColumnType("decimal(18,2)");
 
             builder.Property(x => x.TransactionType)
+                .HasConversion<string>()
                 .IsRequired()
                 .HasMaxLength(100);
 

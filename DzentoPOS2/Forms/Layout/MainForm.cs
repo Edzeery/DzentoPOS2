@@ -1,4 +1,5 @@
 ﻿using DzentoPOS2.App.Session;
+using DzentoPOS2.Data.Context;
 using DzentoPOS2.Localization.Constants;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services;
@@ -24,6 +25,7 @@ using DzentoPOS2.WinForms.Services;
 using DzentoPOS2.WinForms.ServicesUI;
 using DzentoPOS2.WinForms.Themes;
 using FontAwesome.Sharp;
+using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Runtime;
 using System.Runtime.InteropServices; 
@@ -41,6 +43,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
 
         private readonly INavigationService _navigation;
         private readonly ICurrentUserService _currentUser;
+        private readonly AppDbContext _context;
 
         private readonly ILanguageService _languageService;
         private readonly IUserPreferencesService _preferences;
@@ -67,12 +70,14 @@ namespace DzentoPOS2.WinForms.Forms.Layout
              INavigationService navigation,
              ILanguageService languageService,
              IUserPreferencesService preferences,
-             ICurrentSettingsService currentSettings)
+             ICurrentSettingsService currentSettings,
+             AppDbContext context)
         {
             InitializeComponent();
 
             _currentUser = currentUser;
             _navigation = navigation;
+            _context = context;
             _languageService = languageService;
             _preferences = preferences;
             _currentSettings = currentSettings;
@@ -785,7 +790,6 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             labelVersion.Text = AppStrings.Version + " " + Application.ProductVersion;
             lblFullName.Text = _currentUser.User?.FullName;
             lblRole.Text = _currentUser.User?.RoleName;
-            lblBranch.Text = _currentUser.User?.BranchName;
 
             _mainHeaderBar.SetUser(new UserInfoViewModel
             {
@@ -795,18 +799,27 @@ namespace DzentoPOS2.WinForms.Forms.Layout
                 RoleName = _currentUser.User?.RoleName ?? ""
             });
 
-            _mainHeaderBar.SetBranches(new[]
-            {
-                new BranchViewModel
+            // The header branch must reflect what is actually in the database,
+            // not a hand-built placeholder.
+            var branchEntities = _context.Branches
+                .AsNoTracking()
+                .Where(b => !b.IsDeleted && b.IsActive)
+                .OrderByDescending(b => b.IsMainBranch)
+                .ThenBy(b => b.CreatedAt)
+                .ThenBy(b => b.Id)
+                .ToList();
+
+            var branchViewModels = branchEntities
+                .Select(b => new BranchViewModel
                 {
-                    Id = _currentUser.User?.BranchId ?? Guid.Empty,
-                    Name = string.IsNullOrWhiteSpace(_currentUser.User?.BranchName)
-                        ? "Main Branch"
-                        : _currentUser.User.BranchName,
-                    IsMainBranch = true,
-                    IsActive = true
-                }
-            }, _currentUser.User?.BranchId);
+                    Id = b.Id,
+                    Name = b.Name,
+                    IsMainBranch = b.IsMainBranch,
+                    IsActive = b.IsActive
+                })
+                .ToList();
+
+            _mainHeaderBar.SetBranches(branchViewModels, _currentUser.User?.BranchId);
 
             _mainHeaderBar.SetNotifications(Array.Empty<NotificationItem>());
             ConfigureSettingsMenus();

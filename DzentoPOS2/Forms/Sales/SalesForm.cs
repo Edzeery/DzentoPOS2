@@ -988,7 +988,7 @@ public partial class SalesForm : LocalizableFormBase
         }
         catch (Exception ex)
         {
-            AppMessageBox.Error(ex.Message);
+            AppMessageBox.Error(ex, "CompleteSale");
         }
     }
 
@@ -1035,7 +1035,7 @@ public partial class SalesForm : LocalizableFormBase
         }
         catch (Exception ex)
         {
-            AppMessageBox.Error(ex.Message);
+            AppMessageBox.Error(ex, "PrintLastInvoice");
         }
     }
 

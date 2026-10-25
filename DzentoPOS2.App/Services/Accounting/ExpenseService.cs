@@ -64,6 +64,22 @@ namespace DzentoPOS2.App.Services.Accounting;
 
     public async Task<ExpenseDto> CreateAsync(CreateExpenseDto dto)
     {
+        // Wrapped so a failure during the pre-transaction lookups also rolls
+        // back and clears the shared change tracker.
+        try
+        {
+            return await CreateInternalAsync(dto);
+        }
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            _context.ChangeTracker.Clear();
+            throw;
+        }
+    }
+
+    private async Task<ExpenseDto> CreateInternalAsync(CreateExpenseDto dto)
+    {
         var branchId = _currentUser.User?.BranchId ?? Guid.Empty;
         if (branchId == Guid.Empty)
             branchId = await _storeContext.GetDefaultBranchIdAsync();

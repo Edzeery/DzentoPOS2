@@ -89,6 +89,24 @@ namespace DzentoPOS2.App.Services.Sales
 
         public async Task<SaleDto> CreateAsync(CreateSaleDto dto)
         {
+            // The whole body is wrapped so that a failure during the
+            // pre-transaction lookups (which used to run outside any guard)
+            // still rolls back and clears the shared change tracker. Otherwise
+            // a poisoned tracker makes every later save fail until restart.
+            try
+            {
+                return await CreateInternalAsync(dto);
+            }
+            catch
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                _context.ChangeTracker.Clear();
+                throw;
+            }
+        }
+
+        private async Task<SaleDto> CreateInternalAsync(CreateSaleDto dto)
+        {
             if (dto.Items.Count == 0)
                 throw new InvalidOperationException("Sale must have at least one item");
 
@@ -154,36 +172,36 @@ namespace DzentoPOS2.App.Services.Sales
                         invoice.Items.Add(line);
                     }
 
-                invoice.AssignCashSession(openSession.Id);
-                await _context.SalesInvoices.AddAsync(invoice);
+                    invoice.AssignCashSession(openSession.Id);
+                    await _context.SalesInvoices.AddAsync(invoice);
 
-                if (dto.PaidAmount > 0)
-                {
-                    var paymentMethod = string.IsNullOrWhiteSpace(dto.PaymentMethod) ? "Cash" : dto.PaymentMethod;
-                    await _context.SalesPayments.AddAsync(new SalesPayment
+                    if (dto.PaidAmount > 0)
                     {
-                        SalesInvoiceId = invoice.Id,
-                        Amount = dto.PaidAmount,
-                        PaymentMethod = paymentMethod,
-                        PaymentDate = _clock.UtcNow
-                    });
-
-                    if (string.Equals(paymentMethod, "Cash", StringComparison.OrdinalIgnoreCase))
-                    {
-                        await _context.CashTransactions.AddAsync(new Core.Entities.Accounting.CashTransaction
+                        var paymentMethod = string.IsNullOrWhiteSpace(dto.PaymentMethod) ? "Cash" : dto.PaymentMethod;
+                        await _context.SalesPayments.AddAsync(new SalesPayment
                         {
-                            CashboxId = cashboxId,
-                            CashSessionId = openSession.Id,
+                            SalesInvoiceId = invoice.Id,
                             Amount = dto.PaidAmount,
-                            TransactionType = Core.Enums.MovementType.SaleCashIn,
-                            SourceType = "SalesInvoice",
-                            SourceId = invoice.Id,
-                            ReferenceNumber = invoice.InvoiceNumber.Value,
-                            Notes = "Cash sale",
-                            TransactionDate = _clock.UtcNow
+                            PaymentMethod = paymentMethod,
+                            PaymentDate = _clock.UtcNow
                         });
+
+                        if (string.Equals(paymentMethod, "Cash", StringComparison.OrdinalIgnoreCase))
+                        {
+                            await _context.CashTransactions.AddAsync(new Core.Entities.Accounting.CashTransaction
+                            {
+                                CashboxId = cashboxId,
+                                CashSessionId = openSession.Id,
+                                Amount = dto.PaidAmount,
+                                TransactionType = Core.Enums.MovementType.SaleCashIn,
+                                SourceType = "SalesInvoice",
+                                SourceId = invoice.Id,
+                                ReferenceNumber = invoice.InvoiceNumber.Value,
+                                Notes = "Cash sale",
+                                TransactionDate = _clock.UtcNow
+                            });
+                        }
                     }
-                }
 
                     await _stockService.ApplySaleAsync(
                         invoice.Id,

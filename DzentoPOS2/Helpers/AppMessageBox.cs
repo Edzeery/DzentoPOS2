@@ -1,7 +1,9 @@
+using DzentoPOS2.App.Diagnostics;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.WinForms.Controls;
 using DzentoPOS2.WinForms.Themes;
 using System.Drawing.Drawing2D;
+using System.Globalization;
 
 namespace DzentoPOS2.WinForms.Helpers
 {
@@ -10,6 +12,24 @@ namespace DzentoPOS2.WinForms.Helpers
         public static void Error(string message, string? title = null)
         {
             Show(message, title ?? AppStrings.ErrorMsg, MessageBoxIcon.Error);
+        }
+
+        /// <summary>
+        /// Shows a friendly, localized message for the exception's category,
+        /// writes the full exception to the rolling file log and offers a
+        /// collapsible "Details" view with a copy button. The raw provider
+        /// message is never shown as the headline.
+        /// </summary>
+        public static void Error(Exception exception, string? context = null)
+        {
+            if (exception is null)
+            {
+                Error(AppStrings.ErrorUnknown);
+                return;
+            }
+
+            var logPath = ExceptionLogger.Write(exception, context);
+            ShowError(exception, logPath);
         }
 
         public static void Success(string message, string? title = null)
@@ -43,23 +63,9 @@ namespace DzentoPOS2.WinForms.Helpers
                 Padding = new Padding(20)
             };
 
-            using var path = new GraphicsPath();
-            int r = 12;
-            path.AddArc(0, 0, r * 2, r * 2, 180, 90);
-            path.AddArc(form.Width - r * 2, 0, r * 2, r * 2, 270, 90);
-            path.AddArc(form.Width - r * 2, form.Height - r * 2, r * 2, r * 2, 0, 90);
-            path.AddArc(0, form.Height - r * 2, r * 2, r * 2, 90, 90);
-            path.CloseFigure();
-            form.Region = new Region(path);
+            ApplyRoundedRegion(form, 12);
 
-            Color accent = icon switch
-            {
-                MessageBoxIcon.Error => AppColors.Danger,
-                MessageBoxIcon.Warning => AppColors.Warning,
-                MessageBoxIcon.Information => AppColors.Info,
-                MessageBoxIcon.Question => AppColors.Success,
-                _ => AppColors.Neutral
-            };
+            Color accent = ResolveAccent(icon);
 
             var accentBar = new Panel
             {
@@ -91,16 +97,11 @@ namespace DzentoPOS2.WinForms.Helpers
 
             var btnOk = new ThemedButton
             {
-                Text = AppStrings.Save,
+                // The dialog's confirm button must read OK / موافق, never "Save".
+                Text = AppStrings.Ok,
                 Size = new Size(100, 34),
                 Location = new Point(form.Width - 140, form.Height - 60),
-                Tone = icon switch
-                {
-                    MessageBoxIcon.Error => ButtonTone.Danger,
-                    MessageBoxIcon.Warning => ButtonTone.Warning,
-                    MessageBoxIcon.Question => ButtonTone.Success,
-                    _ => ButtonTone.Primary
-                },
+                Tone = ResolveTone(icon),
                 Cursor = Cursors.Hand,
                 DialogResult = buttons == MessageBoxButtons.OK ? DialogResult.OK : DialogResult.Yes
             };
@@ -130,6 +131,182 @@ namespace DzentoPOS2.WinForms.Helpers
             }
 
             return form.ShowDialog();
+        }
+
+        private static void ShowError(Exception exception, string? logPath)
+        {
+            const int collapsedHeight = 230;
+            const int detailsHeight = 420;
+
+            var friendly = ExceptionFormatter.FriendlyMessage(exception);
+            var details = ExceptionFormatter.BuildDetails(exception);
+
+            using var form = new Form
+            {
+                Size = new Size(560, collapsedHeight),
+                FormBorderStyle = FormBorderStyle.None,
+                StartPosition = FormStartPosition.CenterScreen,
+                BackColor = AppColors.Surface,
+                Text = AppStrings.ErrorMsg,
+                Padding = new Padding(20),
+                RightToLeft = IsRightToLeft() ? RightToLeft.Yes : RightToLeft.No
+            };
+
+            ApplyRoundedRegion(form, 12);
+
+            var accent = AppColors.Danger;
+
+            var accentBar = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 4,
+                BackColor = accent
+            };
+
+            var lblTitle = new Label
+            {
+                Text = AppStrings.ErrorMsg,
+                Font = new Font("Segoe UI Semibold", 12F),
+                ForeColor = accent,
+                Location = new Point(20, 18),
+                AutoSize = true,
+                BackColor = Color.Transparent
+            };
+
+            var lblMessage = new Label
+            {
+                Text = friendly,
+                Font = new Font("Segoe UI", 10F),
+                ForeColor = AppColors.Ink,
+                Location = new Point(20, 50),
+                AutoSize = true,
+                MaximumSize = new Size(510, 0),
+                BackColor = Color.Transparent
+            };
+
+            var lblLog = new Label
+            {
+                Text = logPath is null ? string.Empty : AppStrings.ErrorLoggedToFile,
+                Font = new Font("Segoe UI", 8.5F, FontStyle.Italic),
+                ForeColor = AppColors.InkMuted,
+                Location = new Point(20, 110),
+                AutoSize = true,
+                BackColor = Color.Transparent
+            };
+
+            var detailsBox = new TextBox
+            {
+                Multiline = true,
+                ReadOnly = true,
+                ScrollBars = ScrollBars.Both,
+                WordWrap = false,
+                Font = new Font("Consolas", 9F),
+                BackColor = AppColors.SurfaceAlt,
+                ForeColor = AppColors.Ink,
+                BorderStyle = BorderStyle.FixedSingle,
+                Text = details,
+                Visible = false,
+                Location = new Point(20, 140),
+                Size = new Size(520, detailsHeight - 230),
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom
+            };
+
+            var btnOk = new ThemedButton
+            {
+                Text = AppStrings.Ok,
+                Size = new Size(100, 34),
+                Location = new Point(440, collapsedHeight - 60),
+                Tone = ButtonTone.Danger,
+                Cursor = Cursors.Hand,
+                DialogResult = DialogResult.OK,
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Right
+            };
+            btnOk.ApplyTheme();
+
+            var btnDetails = new ThemedButton
+            {
+                Text = AppStrings.ErrorDetails,
+                Size = new Size(120, 34),
+                Location = new Point(20, collapsedHeight - 60),
+                Tone = ButtonTone.Neutral,
+                Cursor = Cursors.Hand,
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Left
+            };
+            btnDetails.ApplyTheme();
+
+            var btnCopy = new ThemedButton
+            {
+                Text = AppStrings.ErrorCopyDetails,
+                Size = new Size(120, 34),
+                Location = new Point(150, collapsedHeight - 60),
+                Tone = ButtonTone.Neutral,
+                Cursor = Cursors.Hand,
+                Visible = false,
+                Anchor = AnchorStyles.Bottom | AnchorStyles.Left
+            };
+            btnCopy.ApplyTheme();
+
+            btnDetails.Click += (_, _) =>
+            {
+                var expand = !detailsBox.Visible;
+                detailsBox.Visible = expand;
+                btnCopy.Visible = expand;
+                form.Height = expand ? detailsHeight : collapsedHeight;
+                btnDetails.Text = expand ? AppStrings.Close : AppStrings.ErrorDetails;
+            };
+
+            btnCopy.Click += (_, _) =>
+            {
+                try
+                {
+                    Clipboard.SetText(details);
+                    btnCopy.Text = AppStrings.ErrorDetailsCopied;
+                }
+                catch
+                {
+                    // Clipboard can be busy; ignore.
+                }
+            };
+
+            form.Controls.AddRange(
+                [accentBar, lblTitle, lblMessage, lblLog, detailsBox, btnDetails, btnCopy, btnOk]);
+
+            form.AcceptButton = btnOk;
+            form.CancelButton = btnOk;
+
+            form.ShowDialog();
+        }
+
+        private static Color ResolveAccent(MessageBoxIcon icon) => icon switch
+        {
+            MessageBoxIcon.Error => AppColors.Danger,
+            MessageBoxIcon.Warning => AppColors.Warning,
+            MessageBoxIcon.Information => AppColors.Info,
+            MessageBoxIcon.Question => AppColors.Success,
+            _ => AppColors.Neutral
+        };
+
+        private static ButtonTone ResolveTone(MessageBoxIcon icon) => icon switch
+        {
+            MessageBoxIcon.Error => ButtonTone.Danger,
+            MessageBoxIcon.Warning => ButtonTone.Warning,
+            MessageBoxIcon.Question => ButtonTone.Success,
+            _ => ButtonTone.Primary
+        };
+
+        private static bool IsRightToLeft()
+            => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName
+                .Equals("ar", StringComparison.OrdinalIgnoreCase);
+
+        private static void ApplyRoundedRegion(Form form, int radius)
+        {
+            using var path = new GraphicsPath();
+            path.AddArc(0, 0, radius * 2, radius * 2, 180, 90);
+            path.AddArc(form.Width - radius * 2, 0, radius * 2, radius * 2, 270, 90);
+            path.AddArc(form.Width - radius * 2, form.Height - radius * 2, radius * 2, radius * 2, 0, 90);
+            path.AddArc(0, form.Height - radius * 2, radius * 2, radius * 2, 90, 90);
+            path.CloseFigure();
+            form.Region = new Region(path);
         }
     }
 }

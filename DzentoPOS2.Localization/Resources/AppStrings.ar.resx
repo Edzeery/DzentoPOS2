@@ -1086,4 +1086,40 @@
   <data name="AdjustmentReasonRequired" xml:space="preserve">
     <value>سبب التعديل مطلوب</value>
   </data>
+  <data name="Ok" xml:space="preserve">
+    <value>موافق</value>
+  </data>
+  <data name="ErrorForeignKey" xml:space="preserve">
+    <value>تعذّر إتمام العملية لأن هذا السجل مرتبط ببيانات أخرى.</value>
+  </data>
+  <data name="ErrorUnique" xml:space="preserve">
+    <value>يوجد سجل بنفس القيمة مسبقًا.</value>
+  </data>
+  <data name="ErrorNotNull" xml:space="preserve">
+    <value>هناك قيمة مطلوبة مفقودة.</value>
+  </data>
+  <data name="ErrorConcurrency" xml:space="preserve">
+    <value>تم تعديل البيانات بواسطة عملية أخرى. يرجى المحاولة مرة أخرى.</value>
+  </data>
+  <data name="ErrorDomain" xml:space="preserve">
+    <value>تعذّر إتمام العملية.</value>
+  </data>
+  <data name="ErrorUnknown" xml:space="preserve">
+    <value>حدث خطأ غير متوقع.</value>
+  </data>
+  <data name="StoreNotInitialized" xml:space="preserve">
+    <value>لم تتم تهيئة المتجر. أعد تشغيل التطبيق لتهيئته.</value>
+  </data>
+  <data name="ErrorDetails" xml:space="preserve">
+    <value>التفاصيل</value>
+  </data>
+  <data name="ErrorCopyDetails" xml:space="preserve">
+    <value>نسخ</value>
+  </data>
+  <data name="ErrorDetailsCopied" xml:space="preserve">
+    <value>تم النسخ</value>
+  </data>
+  <data name="ErrorLoggedToFile" xml:space="preserve">
+    <value>تم حفظ نسخة من الخطأ في ملف السجل.</value>
+  </data>
 </root>

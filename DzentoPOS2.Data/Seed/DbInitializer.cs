@@ -17,10 +17,16 @@ namespace DzentoPOS2.Data.Seed
                 scope.ServiceProvider
                     .GetRequiredService<AppDbContext>();
 
+            // Repair the physical schema before the migrations run. This makes
+            // upgrades deterministic for every starting state (fresh DB, DB at
+            // AddCashSessions, DB whose history still contains the removed E3
+            // migration ids). It never loses data and is idempotent.
+            await LegacySchemaRepair.RepairAsync(
+                context.Database.GetDbConnection());
+
             // تطبيق الـ Migrations تلقائياً
             await context.Database.MigrateAsync();
-              
-               
+
             await PermissionSeeder.SeedAsync(context);
 
             await RoleSeeder.SeedAsync(context);
@@ -38,8 +44,18 @@ namespace DzentoPOS2.Data.Seed
             await ProductCategorySeeder.SeedAsync(context);
             await ProductUnitSeeder.SeedAsync(context);
             await ExpenseCategorySeeder.SeedAsync(context);
-            await WarehouseSeeder.SeedAsync(context);
-            await CashboxSeeder.SeedAsync(context);
+
+            // Bootstrap the store once at startup: one deterministic main branch
+            // with at least one active warehouse and cashbox under it. This
+            // replaces the lazy creation that used to happen inside the sale.
+            var bootstrap = await StoreBootstrapper.EnsureInitializedAsync(context);
+            if (bootstrap.Changed)
+            {
+                System.Diagnostics.Trace.TraceInformation(
+                    "Store bootstrap: {0}", bootstrap);
+                System.Diagnostics.Debug.WriteLine(
+                    $"[StoreBootstrapper] {bootstrap}");
+            }
         }
     }
 }

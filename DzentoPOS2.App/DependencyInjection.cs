@@ -9,6 +9,7 @@ using DzentoPOS2.App.Services.Purchases;
 using DzentoPOS2.App.Services.Reports;
 using DzentoPOS2.App.Services.Reports.Interfaces;
 using DzentoPOS2.App.Services.Sales;
+using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.App.Session;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +31,9 @@ namespace DzentoPOS2.App
             // Regional configuration (currency / country / time zone) is shared
             // by the application layer and the user interface.
             services.AddSingleton<Shared.Helpers.RegionalContext>();
+            services.AddSingleton<IBusinessClock, BusinessClock>();
+            services.AddScoped<IStoreContextService, StoreContextService>();
+            services.AddScoped<IDocumentNumberService, DocumentNumberService>();
 
             services.AddScoped<IAuthService, AuthService>();
 
@@ -53,12 +57,14 @@ namespace DzentoPOS2.App
                 DashboardService>();
 
             services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IStockService, StockService>();
             services.AddScoped<IExpenseService, ExpenseService>();
 
             services.AddScoped<IProductCategoryService, ProductCategoryService>();
             services.AddScoped<IProductUnitService, ProductUnitService>();
 
             services.AddScoped<ISaleService, SaleService>();
+            services.AddScoped<ISalesPolicy, SalesPolicy>();
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<ISupplierService, SupplierService>();
             services.AddScoped<IPurchaseService, PurchaseService>();

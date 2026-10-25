@@ -102,21 +102,8 @@ namespace DzentoPOS2.App.Services.Accounting
             var cashbox = await _context.Cashboxes
                 .FirstOrDefaultAsync(c => c.Id == session.CashboxId && !c.IsDeleted);
 
-            var transactions = await _context.CashTransactions
-                .Where(t => t.CashboxId == session.CashboxId && !t.IsDeleted && t.TransactionDate >= session.OpenedAtUtc)
-                .ToListAsync();
-
-            decimal expected = session.OpeningBalance;
-            foreach (var t in transactions)
-            {
-                if (t.TransactionType == MovementType.Purchase ||
-                    t.TransactionType == MovementType.PurchaseReturn ||
-                    t.TransactionType == MovementType.StockTransferOut ||
-                    t.TransactionType == MovementType.StockAdjustmentDecrease)
-                    expected -= t.Amount;
-                else
-                    expected += t.Amount;
-            }
+            var summary = await GetSessionSummaryAsync(session.Id, default);
+            var expected = summary.ExpectedBalance;
 
             decimal closing = dto.ClosingBalance;
             decimal difference = closing - expected;
@@ -138,6 +125,122 @@ namespace DzentoPOS2.App.Services.Accounting
             await _unitOfWork.SaveChangesAsync();
 
             return Map(session);
+        }
+
+        public async Task<CashSessionSummaryDto> GetSessionSummaryAsync(
+            Guid sessionId,
+            CancellationToken cancellationToken = default)
+        {
+            var session = await _context.CashSessions
+                .AsNoTracking()
+                .FirstOrDefaultAsync(
+                    x => x.Id == sessionId && !x.IsDeleted,
+                    cancellationToken)
+                ?? throw new KeyNotFoundException($"Cash session {sessionId} not found.");
+
+            var transactions = await _context.CashTransactions
+                .AsNoTracking()
+                .Where(x =>
+                    x.CashSessionId == sessionId &&
+                    !x.IsDeleted)
+                .ToListAsync(cancellationToken);
+
+            decimal cashSales = 0m;
+            decimal cashRefunds = 0m;
+            decimal payIns = 0m;
+            decimal payOuts = 0m;
+            decimal expenses = 0m;
+
+            foreach (var tx in transactions)
+            {
+                if (tx.TransactionType == MovementType.SaleCashIn)
+                    cashSales += tx.Amount;
+                else if (tx.TransactionType == MovementType.SaleVoidCashOut)
+                    cashRefunds += tx.Amount;
+                else if (tx.TransactionType == MovementType.SessionPayIn)
+                    payIns += tx.Amount;
+                else if (tx.TransactionType == MovementType.SessionPayOut)
+                    payOuts += tx.Amount;
+                else if (tx.TransactionType == MovementType.Purchase)
+                    expenses += tx.Amount;
+            }
+
+            var expected = session.OpeningBalance + cashSales - cashRefunds + payIns - payOuts - expenses;
+
+            return new CashSessionSummaryDto
+            {
+                SessionId = session.Id,
+                OpeningBalance = session.OpeningBalance,
+                CashSales = cashSales,
+                CashRefunds = cashRefunds,
+                PayIns = payIns,
+                PayOuts = payOuts,
+                Expenses = expenses,
+                ExpectedBalance = expected
+            };
+        }
+
+        public async Task<CashTransaction> RecordPayInAsync(
+            CashMovementDto dto,
+            CancellationToken cancellationToken = default)
+        {
+            var session = await GetOpenSessionForCashboxAsync(dto.CashboxId, cancellationToken);
+
+            var transaction = new CashTransaction
+            {
+                CashboxId = dto.CashboxId,
+                CashSessionId = session.Id,
+                Amount = dto.Amount,
+                TransactionType = MovementType.SessionPayIn,
+                SourceType = "CashSession",
+                SourceId = session.Id,
+                ReferenceNumber = dto.ReferenceNumber,
+                Notes = dto.Reason,
+                TransactionDate = DateTime.UtcNow
+            };
+
+            await _context.CashTransactions.AddAsync(transaction, cancellationToken);
+            await _unitOfWork.SaveChangesAsync();
+            return transaction;
+        }
+
+        public async Task<CashTransaction> RecordPayOutAsync(
+            CashMovementDto dto,
+            CancellationToken cancellationToken = default)
+        {
+            var session = await GetOpenSessionForCashboxAsync(dto.CashboxId, cancellationToken);
+
+            var transaction = new CashTransaction
+            {
+                CashboxId = dto.CashboxId,
+                CashSessionId = session.Id,
+                Amount = dto.Amount,
+                TransactionType = MovementType.SessionPayOut,
+                SourceType = "CashSession",
+                SourceId = session.Id,
+                ReferenceNumber = dto.ReferenceNumber,
+                Notes = dto.Reason,
+                TransactionDate = DateTime.UtcNow
+            };
+
+            await _context.CashTransactions.AddAsync(transaction, cancellationToken);
+            await _unitOfWork.SaveChangesAsync();
+            return transaction;
+        }
+
+        private async Task<CashSession> GetOpenSessionForCashboxAsync(
+            Guid cashboxId,
+            CancellationToken cancellationToken)
+        {
+            var session = await _context.CashSessions
+                .FirstOrDefaultAsync(
+                    x => x.CashboxId == cashboxId &&
+                         x.Status == CashSessionStatus.Open &&
+                         !x.IsDeleted,
+                    cancellationToken)
+                ?? throw new KeyNotFoundException("No open cash session for this cashbox.");
+
+            return session;
         }
 
         public async Task<List<CashSessionDto>> GetRecentSessionsAsync(Guid cashboxId, int take = 10)

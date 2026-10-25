@@ -22,6 +22,7 @@ namespace DzentoPOS2.Data.Configurations.Accounting
                 .HasColumnType("decimal(18,2)");
 
             builder.Property(x => x.TransactionType)
+                .HasConversion<string>()
                 .IsRequired()
                 .HasMaxLength(100);
 
@@ -34,11 +35,23 @@ namespace DzentoPOS2.Data.Configurations.Accounting
             builder.Property(x => x.TransactionDate)
                 .IsRequired();
 
+            builder.Property(x => x.SourceType)
+                .HasMaxLength(50);
+
             builder.HasIndex(x => x.CashboxId);
+
+            builder.HasIndex(x => x.CashSessionId);
 
             builder.HasIndex(x => x.TransactionDate);
 
             builder.HasIndex(x => x.ReferenceNumber);
+
+            builder.HasIndex(x => new { x.SourceType, x.SourceId });
+
+            builder.HasOne<DzentoPOS2.Core.Entities.Accounting.CashSession>()
+                .WithMany()
+                .HasForeignKey(x => x.CashSessionId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

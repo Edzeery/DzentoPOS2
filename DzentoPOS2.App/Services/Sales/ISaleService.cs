@@ -9,6 +9,7 @@ namespace DzentoPOS2.App.Services.Sales
         Task<List<SaleDto>> GetByCustomerAsync(Guid customerId);
         Task<SaleDto> CreateAsync(CreateSaleDto dto);
         Task DeleteAsync(Guid id);
+        Task VoidAsync(Guid id, string reason);
         Task<decimal> GetTodayTotalAsync();
         Task<int> GetTodayCountAsync();
     }

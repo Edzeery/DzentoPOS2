@@ -1,6 +1,13 @@
+using DzentoPOS2.App.Services.Accounting;
 using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.App.Services.Partners;
 using DzentoPOS2.App.Services.Sales;
+using DzentoPOS2.Core.Services.Sales;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
+using Color = System.Drawing.Color;
+using Size = System.Drawing.Size;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
@@ -25,6 +32,7 @@ public partial class SalesForm : LocalizableFormBase
     private readonly IProductService _productService;
     private readonly ICustomerService _customerService;
     private readonly ICurrentSettingsService _currentSettings;
+    private readonly ICashSessionService _cashSessionService;
 
     private readonly Panel _leftPanel;
     private readonly Panel _rightPanel;
@@ -45,15 +53,24 @@ public partial class SalesForm : LocalizableFormBase
     private readonly Label _lblSubtotal;
     private readonly Label _lblSubtotalValue;
     private readonly Label _lblDiscount;
+    private readonly ComboBox _cmbDiscountMode;
     private readonly NumericUpDown _numDiscount;
+    private readonly Label _lblAfterDiscount;
+    private readonly Label _lblAfterDiscountValue;
     private readonly Label _lblTax;
     private readonly NumericUpDown _numTax;
+    private readonly Label _lblTaxAmount;
+    private readonly Label _lblTaxAmountValue;
     private readonly Label _lblTotal;
     private readonly Label _lblTotalValue;
     private readonly Label _lblPaid;
     private readonly NumericUpDown _numPaid;
+    private readonly ThemedIconButton _btnPayInFull;
+    private readonly Label _lblBalance;
+    private readonly Label _lblBalanceValue;
     private readonly ThemedIconButton _btnCompleteSale;
     private readonly ThemedIconButton _btnRemoveFromCart;
+    private readonly ThemedIconButton _btnPrintLast;
     private readonly ThemedIconButton _btnNewSale;
     private readonly ThemedIconButton _btnDeleteInvoice;
     private readonly TabControl _tabs;
@@ -64,18 +81,20 @@ public partial class SalesForm : LocalizableFormBase
     private List<CustomerDto> _customers = new();
     private List<CreateSaleItemDto> _cart = new();
     private List<SaleDto> _invoices = new();
-    private bool _paidTouched;
+    private PaidMode _paidMode = PaidMode.FullPayment;
     private bool _updatingTotals;
     private bool _saleStacked;
     private int _saleCartSize;
     private int _saleCartHeight;
     private bool _layoutPending;
+    private SaleDto? _lastInvoice;
 
     public SalesForm(
         ISaleService saleService,
         IProductService productService,
         ICustomerService customerService,
         ICurrentSettingsService currentSettings,
+        ICashSessionService cashSessionService,
         ILanguageService languageService)
         : base(languageService)
     {
@@ -83,11 +102,12 @@ public partial class SalesForm : LocalizableFormBase
         _productService = productService;
         _customerService = customerService;
         _currentSettings = currentSettings;
+        _cashSessionService = cashSessionService;
 
         Size = new Size(1200, 700);
         BackColor = AppColors.Background;
 
-        _tabs = new TabControl { Dock = DockStyle.Fill, Font = new Font("Segoe UI", 10F) };
+        _tabs = new TabControl { Dock = DockStyle.Fill, Font = new Font("Segoe UI", 10F), Padding = new Point(18, 8), SizeMode = TabSizeMode.FillToRight };
         DzentoPOS2.WinForms.Themes.TabsStyler.Apply(_tabs);
         _tabNewSale = new TabPage { Text = AppStrings.NewSale, BackColor = AppColors.Background };
         _tabInvoices = new TabPage { Text = AppStrings.Sales, BackColor = AppColors.Background };
@@ -114,25 +134,28 @@ public partial class SalesForm : LocalizableFormBase
         };
 
         _btnScanBarcode = ButtonFactory.Tool(IconChar.Barcode, AppStrings.ScanBarcode, ButtonTone.Primary, ButtonFactory.ButtonSize.Medium);
-        _btnScanBarcode.Size = new Size(150, 36);
+        _btnScanBarcode.Size = new Size(150, 38);
         _btnScanBarcode.Dock = DockStyle.Right;
-        _btnScanBarcode.Margin = Padding.Empty;
+        _btnScanBarcode.Margin = new Padding(0, 0, 0, 4);
         _btnScanBarcode.Click += (_, _) => ScanBarcode();
 
         var searchBar = new Panel
         {
             Dock = DockStyle.Top,
-            Height = 44,
+            Height = 48,
             Padding = new Padding(0, 0, 0, 8),
             BackColor = Color.Transparent
         };
         _productSearch.Dock = DockStyle.Fill;
         _productSearch.Margin = new Padding(0, 0, 8, 0);
+        _productSearch.Height = 38;
         searchBar.Controls.Add(_productSearch);
         searchBar.Controls.Add(_btnScanBarcode);
 
         _productGrid = new DataGridView { Dock = DockStyle.Fill, ReadOnly = true, MultiSelect = false };
         DataGridViewStyleHelper.ApplyModernStyle(_productGrid);
+        _productGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+        _productGrid.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
         _productGrid.CellDoubleClick += (_, e) =>
         {
             if (e.RowIndex >= 0 && _productGrid.Rows[e.RowIndex].DataBoundItem is ProductDto p)
@@ -161,27 +184,23 @@ public partial class SalesForm : LocalizableFormBase
             DropDownStyle = ComboBoxStyle.DropDownList
         };
 
-        _btnAddCustomer = new ThemedIconButton
-        {
-            IconChar = IconChar.UserPlus,
-            Tone = ButtonTone.Primary,
-            Dock = DockStyle.Fill,
-            Margin = Padding.Empty
-        };
+        _btnAddCustomer = ButtonFactory.Tool(IconChar.UserPlus, AppStrings.AddCustomer, ButtonTone.Primary, ButtonFactory.ButtonSize.Small);
+        _btnAddCustomer.Dock = DockStyle.Fill;
+        _btnAddCustomer.Margin = Padding.Empty;
         _btnAddCustomer.Click += (_, _) => AddCustomer();
 
         var customerRow = new TableLayoutPanel
         {
             Dock = DockStyle.Top,
-            Height = 34,
+            Height = 42,
             ColumnCount = 3,
             RowCount = 1,
             Margin = Padding.Empty,
             Padding = Padding.Empty
         };
-        customerRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38F));
-        customerRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 62F));
-        customerRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 38F));
+        customerRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F));
+        customerRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70F));
+        customerRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 44F));
         customerRow.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
         _lblCustomer.Dock = DockStyle.Fill;
@@ -207,22 +226,33 @@ public partial class SalesForm : LocalizableFormBase
         _cartGrid = new DataGridView
         {
             Dock = DockStyle.Fill,
-            ReadOnly = true,
-            MultiSelect = false
+            ReadOnly = false,
+            MultiSelect = false,
+            AllowUserToAddRows = false,
+            EditMode = DataGridViewEditMode.EditOnEnter
         };
         DataGridViewStyleHelper.ApplyModernStyle(_cartGrid);
-
-        _btnRemoveFromCart = new ThemedIconButton
+        _cartGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
+        _cartGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+        _cartGrid.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
+        _cartGrid.CellEndEdit += (_, _) => OnCartCellEdited();
+        _cartGrid.CellContentClick += (_, e) => OnCartCellContentClick(e);
+        _cartGrid.KeyDown += (_, e) =>
         {
-            IconChar = IconChar.Minus,
-            Tone = ButtonTone.Danger,
-            Dock = DockStyle.Right,
-            Size = new Size(36, 28),
-            Margin = Padding.Empty
+            if (e.KeyCode == Keys.Delete)
+            {
+                e.Handled = true;
+                RemoveFromCart();
+            }
         };
-        _btnRemoveFromCart.Click += (_, _) => RemoveFromCart();
 
-        // Cart header: title on the leading edge, remove button on the trailing one.
+        _btnRemoveFromCart = ButtonFactory.Tool(IconChar.Trash, AppStrings.Delete, ButtonTone.Neutral, ButtonFactory.ButtonSize.Small);
+        _btnRemoveFromCart.Dock = DockStyle.Right;
+        _btnRemoveFromCart.Size = new Size(90, 28);
+        _btnRemoveFromCart.Margin = Padding.Empty;
+        _btnRemoveFromCart.Click += (_, _) => ClearCart();
+
+        // Cart header: title on the leading edge, clear button on the trailing one.
         var cartHeader = new Panel { Dock = DockStyle.Top, Height = 34, Padding = new Padding(0, 0, 0, 6) };
         _lblCart = new Label
         {
@@ -246,42 +276,108 @@ public partial class SalesForm : LocalizableFormBase
         {
             Dock = DockStyle.Fill,
             ColumnCount = 2,
-            RowCount = 5,
+            RowCount = 8,
             Margin = Padding.Empty,
             Padding = new Padding(0, TotalsPadding, 0, 0)
         };
         _totalsLayout = totals;
         totals.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        totals.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 110F));
-        for (int i = 0; i < 5; i++)
+        totals.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
+        for (int i = 0; i < 8; i++)
             totals.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
 
         _lblSubtotal = MakeLabel(AppStrings.Subtotal + ":");
         _lblSubtotalValue = MakeValueLabel("0.00");
-        _lblDiscount = MakeLabel(AppStrings.Discount + " (%):");
-        _numDiscount = MakeNumeric(0, 100);
+
+        _lblDiscount = MakeLabel(AppStrings.Discount + ":");
+        _cmbDiscountMode = new ComboBox
+        {
+            Dock = DockStyle.Fill,
+            DropDownStyle = ComboBoxStyle.DropDownList,
+            Font = new Font("Segoe UI", 9F),
+            Margin = new Padding(0, 0, 4, 0)
+        };
+        _cmbDiscountMode.Items.AddRange(new object[] { AppStrings.DiscountModePercent, AppStrings.DiscountModeAmount });
+        _cmbDiscountMode.SelectedIndex = 0;
+        _cmbDiscountMode.SelectedIndexChanged += (_, _) => UpdateTotals();
+
+        _numDiscount = MakeNumeric(0, 99999999);
         _numDiscount.ValueChanged += (_, _) => UpdateTotals();
+
+        var discountValuePanel = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 1,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
+        };
+        discountValuePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 58F));
+        discountValuePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 42F));
+        discountValuePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        _cmbDiscountMode.Dock = DockStyle.Fill;
+        _numDiscount.Dock = DockStyle.Fill;
+        discountValuePanel.Controls.Add(_cmbDiscountMode, 1, 0);
+        discountValuePanel.Controls.Add(_numDiscount, 0, 0);
+
+        _lblAfterDiscount = MakeLabel(AppStrings.AfterDiscount + ":");
+        _lblAfterDiscountValue = MakeValueLabel("0.00");
+
         _lblTax = MakeLabel(AppStrings.TaxRate + " (%):");
         _numTax = MakeNumeric(0, 100);
         _numTax.ValueChanged += (_, _) => UpdateTotals();
+
+        _lblTaxAmount = MakeLabel(AppStrings.TaxAmount + ":");
+        _lblTaxAmountValue = MakeValueLabel("0.00");
+
         _lblTotal = MakeLabel(AppStrings.GrandTotal + ":");
         _lblTotalValue = MakeValueLabel("0.00");
         _lblTotalValue.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
         _lblTotalValue.ForeColor = AppColors.Primary;
+
         _lblPaid = MakeLabel(AppStrings.PaidAmount + ":");
         _numPaid = MakeNumeric(0, 99999999);
         _numPaid.ValueChanged += (_, _) => OnPaidChanged();
 
+        _btnPayInFull = ButtonFactory.Tool(IconChar.MoneyBillWave, AppStrings.PayInFull, ButtonTone.Success, ButtonFactory.ButtonSize.Small);
+        _btnPayInFull.Dock = DockStyle.Fill;
+        _btnPayInFull.Margin = Padding.Empty;
+        _btnPayInFull.Click += (_, _) => SetFullPayment();
+
+        var paidValuePanel = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 1,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
+        };
+        paidValuePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        paidValuePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 44F));
+        paidValuePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        _numPaid.Dock = DockStyle.Fill;
+        paidValuePanel.Controls.Add(_numPaid, 0, 0);
+        paidValuePanel.Controls.Add(_btnPayInFull, 1, 0);
+
+        _lblBalance = MakeLabel(AppStrings.RemainingAmount + ":");
+        _lblBalanceValue = MakeValueLabel("0.00");
+
         totals.Controls.Add(_lblSubtotal, 0, 0);
         totals.Controls.Add(_lblSubtotalValue, 1, 0);
         totals.Controls.Add(_lblDiscount, 0, 1);
-        totals.Controls.Add(_numDiscount, 1, 1);
-        totals.Controls.Add(_lblTax, 0, 2);
-        totals.Controls.Add(_numTax, 1, 2);
-        totals.Controls.Add(_lblTotal, 0, 3);
-        totals.Controls.Add(_lblTotalValue, 1, 3);
-        totals.Controls.Add(_lblPaid, 0, 4);
-        totals.Controls.Add(_numPaid, 1, 4);
+        totals.Controls.Add(discountValuePanel, 1, 1);
+        totals.Controls.Add(_lblAfterDiscount, 0, 2);
+        totals.Controls.Add(_lblAfterDiscountValue, 1, 2);
+        totals.Controls.Add(_lblTax, 0, 3);
+        totals.Controls.Add(_numTax, 1, 3);
+        totals.Controls.Add(_lblTaxAmount, 0, 4);
+        totals.Controls.Add(_lblTaxAmountValue, 1, 4);
+        totals.Controls.Add(_lblTotal, 0, 5);
+        totals.Controls.Add(_lblTotalValue, 1, 5);
+        totals.Controls.Add(_lblPaid, 0, 6);
+        totals.Controls.Add(paidValuePanel, 1, 6);
+        totals.Controls.Add(_lblBalance, 0, 7);
+        totals.Controls.Add(_lblBalanceValue, 1, 7);
 
         _btnCalculator = ButtonFactory.Tool(IconChar.Calculator, AppStrings.Calculator, ButtonTone.Primary, ButtonFactory.ButtonSize.Medium);
         _btnCalculator.Dock = DockStyle.Fill;
@@ -294,19 +390,27 @@ public partial class SalesForm : LocalizableFormBase
         _btnCompleteSale.Margin = Padding.Empty;
         _btnCompleteSale.Click += async (_, _) => await CompleteSaleAsync();
 
+        _btnPrintLast = ButtonFactory.Tool(IconChar.Print, AppStrings.Print, ButtonTone.Neutral, ButtonFactory.ButtonSize.Medium);
+        _btnPrintLast.Dock = DockStyle.Fill;
+        _btnPrintLast.Margin = new Padding(0, 0, 6, 0);
+        _btnPrintLast.Enabled = false;
+        _btnPrintLast.Click += (_, _) => PrintLastInvoice();
+
         var actions = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            ColumnCount = 2,
+            ColumnCount = 3,
             RowCount = 1,
             Margin = Padding.Empty,
             Padding = new Padding(0, 6, 0, 0)
         };
+        actions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F));
+        actions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F));
         actions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40F));
-        actions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 60F));
         actions.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         actions.Controls.Add(_btnCalculator, 0, 0);
-        actions.Controls.Add(_btnCompleteSale, 1, 0);
+        actions.Controls.Add(_btnPrintLast, 1, 0);
+        actions.Controls.Add(_btnCompleteSale, 2, 0);
 
         // Basket layout: customer row, cart grid, totals, actions.
         _cartLayout = new TableLayoutPanel
@@ -318,10 +422,10 @@ public partial class SalesForm : LocalizableFormBase
             Padding = Padding.Empty
         };
         _cartLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        _cartLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+        _cartLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
         _cartLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        _cartLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 156F));
-        _cartLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 54F));
+        _cartLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 250F));
+        _cartLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 62F));
 
         customerRow.Dock = DockStyle.Fill;
         _cartLayout.Controls.Add(customerRow, 0, 0);
@@ -346,6 +450,9 @@ public partial class SalesForm : LocalizableFormBase
         // INVOICES TAB
         _invoiceGrid = new DataGridView { Dock = DockStyle.Fill, ReadOnly = true, MultiSelect = false };
         DataGridViewStyleHelper.ApplyModernStyle(_invoiceGrid);
+        _invoiceGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
+        _invoiceGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+        _invoiceGrid.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
 
         _invoiceSearch = new EZTextBox
         {
@@ -416,9 +523,9 @@ public partial class SalesForm : LocalizableFormBase
         if (available <= 0) return;
 
         bool stacked = available < 780;
-        int cartSize = Math.Clamp((int)(available * 0.38), 300, 420);
+        int cartSize = Math.Clamp((int)(available * 0.40), 340, 460);
         int cartHeight = stacked
-            ? Math.Clamp((int)(_tabNewSale.ClientSize.Height * 0.55), 300, 380)
+            ? Math.Clamp((int)(_tabNewSale.ClientSize.Height * 0.62), 360, 470)
             : 0;
 
         if (stacked == _saleStacked && cartSize == _saleCartSize && cartHeight == _saleCartHeight) return;
@@ -464,9 +571,9 @@ public partial class SalesForm : LocalizableFormBase
     /// </summary>
     private void ApplyCartLayout(bool compact)
     {
-        int totalsBlock = compact ? 136 : 156;
-        int totalsRow = (totalsBlock - TotalsPadding) / 5;
-        int actionsBlock = compact ? 52 : 60;
+        int totalsBlock = compact ? 240 : 250;
+        int totalsRow = (totalsBlock - TotalsPadding) / 8;
+        int actionsBlock = compact ? 56 : 62;
 
         for (int i = 0; i < _totalsLayout.RowStyles.Count; i++)
             _totalsLayout.RowStyles[i] = new RowStyle(SizeType.Absolute, totalsRow);
@@ -505,13 +612,22 @@ public partial class SalesForm : LocalizableFormBase
         _btnAddCustomer.AccessibleDescription = AppStrings.AddCustomer;
         _btnCalculator.Text = "  " + AppStrings.Calculator;
         _lblSubtotal.Text = AppStrings.Subtotal + ":";
-        _lblDiscount.Text = AppStrings.Discount + " (%):";
+        _lblDiscount.Text = AppStrings.Discount + ":";
+        _lblAfterDiscount.Text = AppStrings.AfterDiscount + ":";
         _lblTax.Text = AppStrings.TaxRate + " (%):";
+        _lblTaxAmount.Text = AppStrings.TaxAmount + ":";
         _lblTotal.Text = AppStrings.GrandTotal + ":";
         _lblPaid.Text = AppStrings.PaidAmount + ":";
+        _btnPayInFull.Text = "  " + AppStrings.PayInFull;
+        _btnPayInFull.AccessibleDescription = AppStrings.PayInFull;
         _btnCompleteSale.Text = "  " + AppStrings.CompleteSale;
         _btnNewSale.Text = "  " + AppStrings.NewSale;
         _btnDeleteInvoice.Text = "  " + AppStrings.Delete;
+
+        var discountModeIndex = _cmbDiscountMode.SelectedIndex;
+        _cmbDiscountMode.Items.Clear();
+        _cmbDiscountMode.Items.AddRange(new object[] { AppStrings.DiscountModePercent, AppStrings.DiscountModeAmount });
+        _cmbDiscountMode.SelectedIndex = discountModeIndex < 0 ? 0 : discountModeIndex;
     }
 
     private async Task LoadProductsAsync()
@@ -559,12 +675,16 @@ public partial class SalesForm : LocalizableFormBase
         _invoiceGrid.AutoGenerateColumns = false;
         _invoiceGrid.Columns.AddRange(new[]
         {
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.InvoiceNumber, DataPropertyName = "InvoiceNumber", Width = 160 },
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.InvoiceNumber, DataPropertyName = "InvoiceNumber", Width = 150 },
             new DataGridViewTextBoxColumn { HeaderText = AppStrings.CustomerName, DataPropertyName = "CustomerName", Width = 150 },
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Total + " (" + CurrencyCode + ")", DataPropertyName = "Total", Width = 100, DefaultCellStyle = { Format = "N2", Alignment = DataGridViewContentAlignment.MiddleRight } },
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Subtotal + " (" + CurrencyCode + ")", DataPropertyName = "Subtotal", Width = 110, DefaultCellStyle = { Format = "N2", Alignment = DataGridViewContentAlignment.MiddleRight } },
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Discount, DataPropertyName = "DiscountDisplay", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight } },
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.TaxAmount + " (" + CurrencyCode + ")", DataPropertyName = "TaxAmount", Width = 100, DefaultCellStyle = { Format = "N2", Alignment = DataGridViewContentAlignment.MiddleRight } },
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Total + " (" + CurrencyCode + ")", DataPropertyName = "Total", Width = 110, DefaultCellStyle = { Format = "N2", Alignment = DataGridViewContentAlignment.MiddleRight } },
             new DataGridViewTextBoxColumn { HeaderText = AppStrings.PaidAmount + " (" + CurrencyCode + ")", DataPropertyName = "PaidAmount", Width = 100, DefaultCellStyle = { Format = "N2", Alignment = DataGridViewContentAlignment.MiddleRight } },
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.RemainingAmount + " (" + CurrencyCode + ")", DataPropertyName = "RemainingAmount", Width = 100, DefaultCellStyle = { Format = "N2", Alignment = DataGridViewContentAlignment.MiddleRight } },
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Date, DataPropertyName = "CreatedAt", Width = 120, DefaultCellStyle = { Format = "yyyy/MM/dd HH:mm" } }
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.RemainingAmount + " (" + CurrencyCode + ")", DataPropertyName = "RemainingAmount", Width = 110, DefaultCellStyle = { Format = "N2", Alignment = DataGridViewContentAlignment.MiddleRight } },
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Change + " (" + CurrencyCode + ")", DataPropertyName = "ChangeAmount", Width = 100, DefaultCellStyle = { Format = "N2", Alignment = DataGridViewContentAlignment.MiddleRight } },
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Date, DataPropertyName = "CreatedAt", Width = 130, DefaultCellStyle = { Format = "yyyy/MM/dd HH:mm" } }
         });
         _invoiceGrid.DataSource = _invoices;
         FilterInvoices();
@@ -655,6 +775,12 @@ public partial class SalesForm : LocalizableFormBase
 
     private void AddToCart(ProductDto product)
     {
+        if (!product.IsActive)
+        {
+            AppMessageBox.Warning(AppStrings.OperationFailed);
+            return;
+        }
+
         var existing = _cart.FirstOrDefault(i => i.ProductId == product.Id);
         if (existing != null)
             existing.Quantity += 1;
@@ -669,6 +795,17 @@ public partial class SalesForm : LocalizableFormBase
         if (_cartGrid.CurrentRow?.Index is int idx && idx >= 0 && idx < _cart.Count)
         {
             _cart.RemoveAt(idx);
+            RefreshCart();
+        }
+    }
+
+    private void ClearCart()
+    {
+        if (_cart.Count == 0) return;
+        var result = MessageBox.Show(AppStrings.DeleteSaleConfirm, AppStrings.DeleteConfirmation, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+        if (result == DialogResult.Yes)
+        {
+            _cart.Clear();
             RefreshCart();
         }
     }
@@ -690,41 +827,155 @@ public partial class SalesForm : LocalizableFormBase
         _cartGrid.DataSource = null;
         _cartGrid.Columns.Clear();
         _cartGrid.AutoGenerateColumns = false;
-        _cartGrid.Columns.AddRange(new[]
+        _cartGrid.Columns.AddRange(new DataGridViewColumn[]
         {
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.ProductLabel, DataPropertyName = "ProductName", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, MinimumWidth = 90 },
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Quantity, DataPropertyName = "Quantity", Width = 60 },
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.ProductLabel, DataPropertyName = "ProductName", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, MinimumWidth = 90, ReadOnly = true },
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Quantity, DataPropertyName = "Quantity", Width = 70 },
             new DataGridViewTextBoxColumn { HeaderText = AppStrings.Price + " (" + CurrencyCode + ")", DataPropertyName = "Price", Width = 80, DefaultCellStyle = { Format = "N2" } },
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Total + " (" + CurrencyCode + ")", DataPropertyName = "Total", Width = 90, DefaultCellStyle = { Format = "N2" } }
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Total + " (" + CurrencyCode + ")", DataPropertyName = "Total", Width = 90, DefaultCellStyle = { Format = "N2" }, ReadOnly = true },
+            new DataGridViewButtonColumn { HeaderText = AppStrings.Delete, Text = "X", UseColumnTextForButtonValue = true, Width = 40 }
         });
         _cartGrid.DataSource = display;
 
         UpdateTotals();
     }
 
+    private void OnCartCellEdited()
+    {
+        if (_cartGrid.CurrentRow?.Index is int idx && idx >= 0 && idx < _cart.Count)
+        {
+            try
+            {
+                var qtyVal = _cartGrid.Rows[idx].Cells["Quantity"].Value;
+                if (qtyVal is decimal qty)
+                {
+                    if (qty <= 0) qty = 1;
+                    _cart[idx].Quantity = qty;
+                }
+                else if (qtyVal != null && decimal.TryParse(qtyVal.ToString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var qv) && qv > 0)
+                    _cart[idx].Quantity = qv;
+                else if (qtyVal != null && decimal.TryParse(qtyVal.ToString(), out var qv2) && qv2 > 0)
+                    _cart[idx].Quantity = qv2;
+
+                var priceVal = _cartGrid.Rows[idx].Cells["Price"].Value;
+                if (priceVal is decimal pr)
+                {
+                    if (pr < 0) pr = 0;
+                    _cart[idx].Price = pr;
+                }
+                else if (priceVal != null && decimal.TryParse(priceVal.ToString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var pv) && pv >= 0)
+                    _cart[idx].Price = pv;
+                else if (priceVal != null && decimal.TryParse(priceVal.ToString(), out var pv2) && pv2 >= 0)
+                    _cart[idx].Price = pv2;
+
+                RefreshCart();
+            }
+            catch
+            {
+                RefreshCart();
+            }
+        }
+    }
+
+    private void OnCartCellContentClick(DataGridViewCellEventArgs e)
+    {
+        if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+        if (_cartGrid.Columns[e.ColumnIndex] is DataGridViewButtonColumn && e.ColumnIndex == _cartGrid.Columns.Count - 1)
+        {
+            if (e.RowIndex >= 0 && e.RowIndex < _cart.Count)
+            {
+                _cart.RemoveAt(e.RowIndex);
+                RefreshCart();
+            }
+        }
+    }
+
+    /// <summary>Preview shared with the printed receipt and the saved invoice.</summary>
+    private InvoiceTotals? CalculateTotals()
+    {
+        if (_cart.Count == 0)
+            return null;
+
+        var digits = _currentSettings.Regional.CurrencyDecimalDigits;
+        var mode = _cmbDiscountMode.SelectedIndex == 1
+            ? DiscountMode.FixedAmount
+            : DiscountMode.Percent;
+        var discountValue = (decimal)_numDiscount.Value;
+        var taxRate = (decimal)_numTax.Value;
+        var paid = (decimal)_numPaid.Value;
+
+        if (mode == DiscountMode.FixedAmount)
+        {
+            var subtotalPreview = _cart.Sum(i =>
+                decimal.Round(i.Quantity * i.Price, digits, MidpointRounding.AwayFromZero));
+            if (discountValue > subtotalPreview)
+                discountValue = subtotalPreview;
+        }
+        else if (discountValue > 100)
+        {
+            // Kept at the maximum for the live preview; the service rejects it.
+            discountValue = 100;
+        }
+
+        return InvoiceCalculator.Calculate(
+            _cart.Select(i => new InvoiceLine(i.Quantity, i.Price)).ToList(),
+            mode,
+            discountValue,
+            taxRate,
+            paid,
+            digits);
+    }
+
     private void UpdateTotals()
     {
-        var subtotal = _cart.Sum(i => i.Quantity * i.Price);
-        var discountAmount = subtotal * (decimal)_numDiscount.Value / 100;
-        var afterDiscount = subtotal - discountAmount;
-        var taxAmount = afterDiscount * (decimal)_numTax.Value / 100;
-        var total = afterDiscount + taxAmount;
+        var totals = CalculateTotals();
+
+        var subtotal = totals?.Subtotal ?? 0;
+        var discountAmount = totals?.DiscountAmount ?? 0;
+        var afterDiscount = totals?.AfterDiscount ?? 0;
+        var taxAmount = totals?.TaxAmount ?? 0;
+        var total = totals?.Total ?? 0;
 
         _lblSubtotalValue.Text = FormatMoney(subtotal);
+        _lblAfterDiscountValue.Text = FormatMoney(afterDiscount);
+        _lblTaxAmountValue.Text = FormatMoney(taxAmount);
         _lblTotalValue.Text = FormatMoney(total);
 
-        // the paid amount follows the total until the cashier types his own value
-        if (!_paidTouched)
+        var percentMode = _cmbDiscountMode.SelectedIndex != 1;
+        _lblDiscount.Text = discountAmount > 0
+            ? $"{AppStrings.Discount}:  {FormatMoney(discountAmount)}" + (percentMode ? $"  ({_numDiscount.Value:0.##}%)" : string.Empty)
+            : AppStrings.Discount + ":";
+
+        // Full payment follows the total on every change; custom keeps the
+        // value the cashier typed.
+        if (_paidMode == PaidMode.FullPayment)
         {
             _updatingTotals = true;
             try
             {
-                _numPaid.Value = (decimal)Math.Round(total, 2);
+                _numPaid.Value = Math.Min(Math.Max(total, _numPaid.Minimum), _numPaid.Maximum);
             }
             finally
             {
                 _updatingTotals = false;
             }
+        }
+
+        var paid = _numPaid.Value;
+        var remaining = Math.Max(0, total - paid);
+        var change = Math.Max(0, paid - total);
+
+        if (remaining > 0)
+        {
+            _lblBalance.Text = AppStrings.RemainingAmount + ":";
+            _lblBalanceValue.Text = FormatMoney(remaining);
+            _lblBalanceValue.ForeColor = AppColors.Warning;
+        }
+        else
+        {
+            _lblBalance.Text = AppStrings.Change + ":";
+            _lblBalanceValue.Text = FormatMoney(change);
+            _lblBalanceValue.ForeColor = change > 0 ? AppColors.Success : AppColors.Ink;
         }
     }
 
@@ -732,7 +983,20 @@ public partial class SalesForm : LocalizableFormBase
     {
         if (_updatingTotals) return;
 
-        _paidTouched = true;
+        var digits = _currentSettings.Regional.CurrencyDecimalDigits;
+        var total = CalculateTotals()?.Total ?? 0;
+
+        // Typing the exact total switches back to full payment.
+        _paidMode = _numPaid.Value == decimal.Round(total, digits, MidpointRounding.AwayFromZero)
+            ? PaidMode.FullPayment
+            : PaidMode.Custom;
+
+        UpdateTotals();
+    }
+
+    private void SetFullPayment()
+    {
+        _paidMode = PaidMode.FullPayment;
         UpdateTotals();
     }
 
@@ -800,11 +1064,10 @@ public partial class SalesForm : LocalizableFormBase
 
             case CalculatorTarget.SetPaid:
                 _numPaid.Value = Math.Min(outcome.Value, _numPaid.Maximum);
-                _paidTouched = true;
                 break;
 
             case CalculatorTarget.SetDiscount:
-                _numDiscount.Value = Math.Clamp(outcome.Value, _numDiscount.Minimum, _numDiscount.Maximum);
+                _numDiscount.Value = outcome.Value < 0 ? 0 : Math.Min(outcome.Value, _numDiscount.Maximum);
                 break;
 
             case CalculatorTarget.SetTax:
@@ -830,20 +1093,74 @@ public partial class SalesForm : LocalizableFormBase
         // The combo is filled by hand, so SelectedValue is not bound to the
         // item (it stays null even with a selected entry). The identifier is
         // therefore read from the selected item itself.
-        var customerId = _cmbCustomer.SelectedItem is CustomerItem selectedCustomer
-            ? selectedCustomer.Id
-            : Guid.Empty;
+        var selectedCustomer = _cmbCustomer.SelectedItem as CustomerItem;
+        var customerId = selectedCustomer?.Id ?? Guid.Empty;
+        var customerName = selectedCustomer?.FullName ?? string.Empty;
+
+        var totals = CalculateTotals();
+        if (totals is null)
+        {
+            AppMessageBox.Warning(AppStrings.EmptyCart);
+            return;
+        }
+
+        var discountMode = _cmbDiscountMode.SelectedIndex == 1
+            ? DiscountMode.FixedAmount
+            : DiscountMode.Percent;
 
         try
         {
-            await _saleService.CreateAsync(new CreateSaleDto
+            if (discountMode == DiscountMode.Percent && _numDiscount.Value > 100)
+            {
+                AppMessageBox.Warning(AppStrings.DiscountExceedsLimit);
+                return;
+            }
+
+            if (totals.Remaining > 0)
+            {
+                if (customerId == Guid.Empty)
+                {
+                    AppMessageBox.Warning(AppStrings.CreditSaleRequiresCustomer);
+                    return;
+                }
+
+                var confirmed = AppMessageBox.Confirm(
+                    string.Format(
+                        AppStrings.CreditSaleConfirm,
+                        customerName,
+                        FormatMoney(totals.Remaining)),
+                    AppStrings.CompleteSale);
+
+                if (!confirmed)
+                    return;
+            }
+
+            var openSession = await _cashSessionService.GetOpenSessionAsync();
+            if (openSession == null)
+            {
+                AppMessageBox.Warning(AppStrings.NoOpenSession);
+                return;
+            }
+
+            var sale = await _saleService.CreateAsync(new CreateSaleDto
             {
                 CustomerId = customerId,
-                Discount = (decimal)_numDiscount.Value,
+                DiscountMode = discountMode,
+                DiscountValue = (decimal)_numDiscount.Value,
                 TaxRate = (decimal)_numTax.Value,
                 PaidAmount = (decimal)_numPaid.Value,
-                Items = _cart.ToList()
+                Items = _cart.Select(c => new CreateSaleItemDto
+                {
+                    ProductId = c.ProductId,
+                    Quantity = c.Quantity,
+                    Price = c.Price,
+                    Description = c.Description
+                }).ToList()
             });
+
+            _lastInvoice = sale;
+            if (_btnPrintLast != null)
+                _btnPrintLast.Enabled = true;
 
             AppMessageBox.Success(AppStrings.DataSaved);
 
@@ -851,14 +1168,15 @@ public partial class SalesForm : LocalizableFormBase
             _numDiscount.Value = 0;
             _numTax.Value = 0;
             _numPaid.Value = 0;
-            _paidTouched = false;
+            _cmbDiscountMode.SelectedIndex = 0;
+            _paidMode = PaidMode.FullPayment;
             RefreshCart();
             await LoadInvoicesAsync();
             _tabs.SelectedIndex = 1;
         }
         catch (Exception ex)
         {
-            AppMessageBox.Error(ex.Message);
+            AppMessageBox.Error(ex, "CompleteSale");
         }
     }
 
@@ -873,6 +1191,43 @@ public partial class SalesForm : LocalizableFormBase
         {
             await _saleService.DeleteAsync(invoice.Id);
             await LoadInvoicesAsync();
+        }
+    }
+
+    private void PrintLastInvoice()
+    {
+        if (_lastInvoice == null) return;
+        try
+        {
+            QuestPDF.Settings.License = LicenseType.Community;
+            var path = Path.Combine(Path.GetTempPath(), $"Invoice_{_lastInvoice.InvoiceNumber}_{DateTime.Now:yyyyMMddHHmmss}.pdf");
+            Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Size(PageSizes.A4);
+                    page.Margin(30);
+                    page.DefaultTextStyle(x => x.FontSize(10));
+                    page.Header().Text($"Invoice { _lastInvoice.InvoiceNumber }").SemiBold().FontSize(16);
+                    page.Content().Column(col =>
+                    {
+                        col.Item().Text($"Date: {_lastInvoice.CreatedAt:yyyy-MM-dd HH:mm}");
+                        col.Item().Text($"Subtotal: {_lastInvoice.Subtotal:N2} {CurrencyCode}");
+                        col.Item().Text($"Discount: {_lastInvoice.DiscountDisplay} {CurrencyCode}");
+                        col.Item().Text($"Tax: {_lastInvoice.TaxAmount:N2} {CurrencyCode}");
+                        col.Item().Text($"Total: {_lastInvoice.Total:N2} {CurrencyCode}");
+                        col.Item().Text($"Paid: {_lastInvoice.PaidAmount:N2} {CurrencyCode}");
+                        col.Item().Text($"Remaining: {_lastInvoice.RemainingAmount:N2} {CurrencyCode}");
+                        col.Item().Text($"Change: {_lastInvoice.ChangeAmount:N2} {CurrencyCode}");
+                    });
+                    page.Footer().AlignCenter().Text("DzentoPOS2");
+                });
+            }).GeneratePdf(path);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo { FileName = path, UseShellExecute = true });
+        }
+        catch (Exception ex)
+        {
+            AppMessageBox.Error(ex, "PrintLastInvoice");
         }
     }
 
@@ -907,4 +1262,14 @@ public partial class SalesForm : LocalizableFormBase
 
     /// <summary>Uniform customer entry so the combo always exposes a Guid value.</summary>
     private sealed record CustomerItem(Guid Id, string FullName);
+
+    /// <summary>
+    /// How the paid amount behaves: either mirror the total automatically, or
+    /// use the value the cashier typed (<see cref="_paidMode"/>).
+    /// </summary>
+    private enum PaidMode
+    {
+        FullPayment,
+        Custom
+    }
 }

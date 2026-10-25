@@ -1,4 +1,5 @@
 using DzentoPOS2.App.Services.Reports.Interfaces;
+using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Shared.Contracts.DTOs.Reports;
 using DzentoPOS2.Shared.Helpers;
@@ -10,20 +11,24 @@ namespace DzentoPOS2.App.Services.Reports
     {
         private readonly AppDbContext _context;
         private readonly RegionalContext _regional;
+        private readonly IBusinessClock _clock;
 
-        public DashboardService(AppDbContext context, RegionalContext regional)
+        public DashboardService(
+            AppDbContext context,
+            RegionalContext regional,
+            IBusinessClock clock)
         {
             _context = context;
             _regional = regional;
+            _clock = clock;
         }
 
         public async Task<DashboardSummaryDto> GetSummaryAsync()
         {
             // The day and month boundaries follow the time zone configured in the
             // settings; the values compared against the database stay in UTC.
-            var localNow = _regional.Now;
-            var todayStart = _regional.StartOfLocalDayUtc(localNow.Date);
-            var tomorrowStart = _regional.StartOfLocalDayUtc(localNow.Date.AddDays(1));
+            var localNow = _clock.Now;
+            var (todayStart, tomorrowStart) = _clock.TodayRangeUtc();
             var yesterdayStart = _regional.StartOfLocalDayUtc(localNow.Date.AddDays(-1));
             var monthStart = _regional.StartOfLocalMonthUtc();
             var nextMonthStart = _regional.ToUtcSafe(new DateTime(localNow.Year, localNow.Month, 1).AddMonths(1));
@@ -50,6 +55,7 @@ namespace DzentoPOS2.App.Services.Reports
             // double in SQL (translated to CAST(x AS REAL)) and converted back on read.
             // One grouped query computes every sales KPI instead of six round trips.
             var salesStats = await _context.SalesInvoices
+                .Where(s => !s.IsVoided)
                 .GroupBy(_ => 1)
                 .Select(g => new
                 {
@@ -90,6 +96,7 @@ namespace DzentoPOS2.App.Services.Reports
                 join invoice in _context.SalesInvoices
                     on item.SalesInvoiceId equals invoice.Id
                 where invoice.CreatedAt >= monthStart && invoice.CreatedAt < nextMonthStart
+                    && !invoice.IsVoided
                 select (double?)item.Total
             ).SumAsync() is double gr ? (decimal)gr : 0m;
 
@@ -100,6 +107,7 @@ namespace DzentoPOS2.App.Services.Reports
                 join product in _context.Products
                     on item.ProductId equals product.Id
                 where invoice.CreatedAt >= monthStart && invoice.CreatedAt < nextMonthStart
+                    && !invoice.IsVoided
                 select (double?)(item.Quantity * product.CostPrice.Amount)
             ).SumAsync() is double cg ? (decimal)cg : 0m;
 
@@ -200,7 +208,7 @@ namespace DzentoPOS2.App.Services.Reports
             // A single read over the last six months feeds both the daily trend and
             // the month-over-month comparison.
             var salesRows = await _context.SalesInvoices
-                .Where(s => s.CreatedAt >= sixMonthsAgo && s.CreatedAt < tomorrowStartUtc)
+                .Where(s => !s.IsVoided && s.CreatedAt >= sixMonthsAgo && s.CreatedAt < tomorrowStartUtc)
                 .Select(s => new { s.CreatedAt, Total = (double?)s.Total.Amount })
                 .ToListAsync();
 
@@ -255,6 +263,7 @@ namespace DzentoPOS2.App.Services.Reports
                 join invoice in _context.SalesInvoices on item.SalesInvoiceId equals invoice.Id
                 join product in _context.Products on item.ProductId equals product.Id
                 where product.CategoryId != Guid.Empty
+                    && !invoice.IsVoided
                 group (double?)item.Total by new { product.CategoryId, product.Category.Name } into g
                 orderby g.Sum() descending
                 select new { Category = g.Key.Name, Total = g.Sum() ?? 0 }
@@ -273,6 +282,7 @@ namespace DzentoPOS2.App.Services.Reports
         private async Task ComputeRecentTransactions(DashboardSummaryDto dto)
         {
             var sales = await _context.SalesInvoices
+                .Where(s => !s.IsVoided)
                 .OrderByDescending(s => s.CreatedAt)
                 .Take(5)
                 .Select(s => new TransactionRow
@@ -356,6 +366,7 @@ namespace DzentoPOS2.App.Services.Reports
             }).ToList();
 
             var topCust = (await _context.SalesInvoices
+                .Where(s => !s.IsVoided)
                 .GroupBy(s => s.CustomerId)
                 .OrderByDescending(g => g.Sum(s => (double?)s.Total.Amount))
                 .Take(5)

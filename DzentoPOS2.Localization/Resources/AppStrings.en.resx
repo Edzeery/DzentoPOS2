@@ -1068,4 +1068,85 @@
   <data name="SessionClosed" xml:space="preserve">
     <value>Closed</value>
   </data>
+  <data name="OpeningStock" xml:space="preserve">
+    <value>Opening stock</value>
+  </data>
+  <data name="AdjustStock" xml:space="preserve">
+    <value>Adjust stock</value>
+  </data>
+  <data name="NewQuantity" xml:space="preserve">
+    <value>New quantity</value>
+  </data>
+  <data name="AdjustmentReason" xml:space="preserve">
+    <value>Reason</value>
+  </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="AdjustmentReasonRequired" xml:space="preserve">
+    <value>An adjustment reason is required</value>
+  </data>
+  <data name="Ok" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="ErrorForeignKey" xml:space="preserve">
+    <value>The operation could not be completed because this record is referenced by other data.</value>
+  </data>
+  <data name="ErrorUnique" xml:space="preserve">
+    <value>A record with the same value already exists.</value>
+  </data>
+  <data name="ErrorNotNull" xml:space="preserve">
+    <value>A required value is missing.</value>
+  </data>
+  <data name="ErrorConcurrency" xml:space="preserve">
+    <value>The data was changed by another operation. Please try again.</value>
+  </data>
+  <data name="ErrorDomain" xml:space="preserve">
+    <value>The operation could not be completed.</value>
+  </data>
+  <data name="ErrorUnknown" xml:space="preserve">
+    <value>An unexpected error occurred.</value>
+  </data>
+  <data name="StoreNotInitialized" xml:space="preserve">
+    <value>The store is not initialized. Restart the application to set it up.</value>
+  </data>
+  <data name="ErrorDetails" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="ErrorCopyDetails" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="ErrorDetailsCopied" xml:space="preserve">
+    <value>Copied</value>
+  </data>
+  <data name="ErrorLoggedToFile" xml:space="preserve">
+    <value>A copy of the error was saved to the log file.</value>
+  </data>
+  <data name="DiscountModePercent" xml:space="preserve">
+    <value>Percent</value>
+  </data>
+  <data name="DiscountModeAmount" xml:space="preserve">
+    <value>Amount</value>
+  </data>
+  <data name="AfterDiscount" xml:space="preserve">
+    <value>After discount</value>
+  </data>
+  <data name="TaxAmount" xml:space="preserve">
+    <value>Tax</value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>Change</value>
+  </data>
+  <data name="PayInFull" xml:space="preserve">
+    <value>Pay in full</value>
+  </data>
+  <data name="CreditSaleRequiresCustomer" xml:space="preserve">
+    <value>A customer is required when the sale is not paid in full.</value>
+  </data>
+  <data name="CreditSaleConfirm" xml:space="preserve">
+    <value>The outstanding balance for {0} is {1}. Continue?</value>
+  </data>
+  <data name="DiscountExceedsLimit" xml:space="preserve">
+    <value>Discount exceeds the allowed maximum.</value>
+  </data>
 </root>

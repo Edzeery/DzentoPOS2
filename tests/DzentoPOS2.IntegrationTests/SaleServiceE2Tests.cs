@@ -32,7 +32,7 @@ public sealed class SaleServiceE2Tests
 
         var sale = await sales.CreateAsync(new CreateSaleDto
         {
-            PaidAmount = 0,
+            PaidAmount = 30,
             Items =
             {
                 new CreateSaleItemDto
@@ -70,7 +70,7 @@ public sealed class SaleServiceE2Tests
 
         await Assert.ThrowsAsync<DomainException>(() => sales.CreateAsync(new CreateSaleDto
         {
-            PaidAmount = 0,
+            PaidAmount = 1000000,
             Items =
             {
                 new CreateSaleItemDto
@@ -95,7 +95,7 @@ public sealed class SaleServiceE2Tests
 
         var sale = await sales.CreateAsync(new CreateSaleDto
         {
-            PaidAmount = 0,
+            PaidAmount = 50,
             Items =
             {
                 new CreateSaleItemDto
@@ -123,7 +123,7 @@ public sealed class SaleServiceE2Tests
 
         var sale = await sales.CreateAsync(new CreateSaleDto
         {
-            PaidAmount = 0,
+            PaidAmount = 20,
             Items =
             {
                 new CreateSaleItemDto

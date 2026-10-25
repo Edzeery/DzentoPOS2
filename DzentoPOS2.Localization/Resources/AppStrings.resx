@@ -1122,4 +1122,31 @@
   <data name="ErrorLoggedToFile" xml:space="preserve">
     <value>A copy of the error was saved to the log file.</value>
   </data>
+  <data name="DiscountModePercent" xml:space="preserve">
+    <value>Percent</value>
+  </data>
+  <data name="DiscountModeAmount" xml:space="preserve">
+    <value>Amount</value>
+  </data>
+  <data name="AfterDiscount" xml:space="preserve">
+    <value>After discount</value>
+  </data>
+  <data name="TaxAmount" xml:space="preserve">
+    <value>Tax</value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>Change</value>
+  </data>
+  <data name="PayInFull" xml:space="preserve">
+    <value>Pay in full</value>
+  </data>
+  <data name="CreditSaleRequiresCustomer" xml:space="preserve">
+    <value>A customer is required when the sale is not paid in full.</value>
+  </data>
+  <data name="CreditSaleConfirm" xml:space="preserve">
+    <value>The outstanding balance for {0} is {1}. Continue?</value>
+  </data>
+  <data name="DiscountExceedsLimit" xml:space="preserve">
+    <value>Discount exceeds the allowed maximum.</value>
+  </data>
 </root>

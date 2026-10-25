@@ -27,7 +27,8 @@ public sealed class SaleServiceE1Tests
 
         var dto = new CreateSaleDto
         {
-            Discount = 10,
+            DiscountMode = DzentoPOS2.Core.Services.Sales.DiscountMode.Percent,
+            DiscountValue = 10,
             TaxRate = 20,
             PaidAmount = 150,
             Items =
@@ -45,6 +46,7 @@ public sealed class SaleServiceE1Tests
 
         var expected = InvoiceCalculator.Calculate(
             new[] { new InvoiceLine(2, 50) },
+            DzentoPOS2.Core.Services.Sales.DiscountMode.Percent,
             10,
             20,
             150,
@@ -81,7 +83,7 @@ public sealed class SaleServiceE1Tests
 
                 var result = await service.CreateAsync(new CreateSaleDto
                 {
-                    PaidAmount = 10,
+                    PaidAmount = 10 + index,
                     Items =
                     {
                         new CreateSaleItemDto

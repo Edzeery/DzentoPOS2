@@ -64,6 +64,7 @@ namespace DzentoPOS2.App
             services.AddScoped<IProductUnitService, ProductUnitService>();
 
             services.AddScoped<ISaleService, SaleService>();
+            services.AddScoped<ISalesPolicy, SalesPolicy>();
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<ISupplierService, SupplierService>();
             services.AddScoped<IPurchaseService, PurchaseService>();

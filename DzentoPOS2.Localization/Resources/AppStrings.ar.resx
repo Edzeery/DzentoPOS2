@@ -1122,4 +1122,31 @@
   <data name="ErrorLoggedToFile" xml:space="preserve">
     <value>تم حفظ نسخة من الخطأ في ملف السجل.</value>
   </data>
+  <data name="DiscountModePercent" xml:space="preserve">
+    <value>نسبة</value>
+  </data>
+  <data name="DiscountModeAmount" xml:space="preserve">
+    <value>مبلغ</value>
+  </data>
+  <data name="AfterDiscount" xml:space="preserve">
+    <value>بعد الخصم</value>
+  </data>
+  <data name="TaxAmount" xml:space="preserve">
+    <value>الضريبة</value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>الباقي</value>
+  </data>
+  <data name="PayInFull" xml:space="preserve">
+    <value>دفع كامل</value>
+  </data>
+  <data name="CreditSaleRequiresCustomer" xml:space="preserve">
+    <value>يجب اختيار عميل عندما لا يتم دفع كامل المبلغ.</value>
+  </data>
+  <data name="CreditSaleConfirm" xml:space="preserve">
+    <value>المبلغ المتبقي على {0} هو {1}. هل تريد المتابعة؟</value>
+  </data>
+  <data name="DiscountExceedsLimit" xml:space="preserve">
+    <value>الخصم يتجاوز الحد المسموح به.</value>
+  </data>
 </root>

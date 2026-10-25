@@ -2887,5 +2887,86 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("ErrorLoggedToFile", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Percent.
+        /// </summary>
+        public static string DiscountModePercent {
+            get {
+                return ResourceManager.GetString("DiscountModePercent", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Amount.
+        /// </summary>
+        public static string DiscountModeAmount {
+            get {
+                return ResourceManager.GetString("DiscountModeAmount", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to After discount.
+        /// </summary>
+        public static string AfterDiscount {
+            get {
+                return ResourceManager.GetString("AfterDiscount", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Tax.
+        /// </summary>
+        public static string TaxAmount {
+            get {
+                return ResourceManager.GetString("TaxAmount", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Change.
+        /// </summary>
+        public static string Change {
+            get {
+                return ResourceManager.GetString("Change", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Pay in full.
+        /// </summary>
+        public static string PayInFull {
+            get {
+                return ResourceManager.GetString("PayInFull", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to A customer is required when the sale is not paid in full..
+        /// </summary>
+        public static string CreditSaleRequiresCustomer {
+            get {
+                return ResourceManager.GetString("CreditSaleRequiresCustomer", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The outstanding balance for {0} is {1}. Continue?.
+        /// </summary>
+        public static string CreditSaleConfirm {
+            get {
+                return ResourceManager.GetString("CreditSaleConfirm", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Discount exceeds the allowed maximum..
+        /// </summary>
+        public static string DiscountExceedsLimit {
+            get {
+                return ResourceManager.GetString("DiscountExceedsLimit", resourceCulture);
+            }
+        }
     }
 }

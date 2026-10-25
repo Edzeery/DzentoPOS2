@@ -314,7 +314,6 @@ public sealed class SaleServiceE3Tests
             var sale = await sales.CreateAsync(new CreateSaleDto
             {
                 CustomerId = Guid.Empty,
-                Discount = 0,
                 TaxRate = 0,
                 PaidAmount = 10,
                 Items =

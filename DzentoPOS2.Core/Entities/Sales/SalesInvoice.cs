@@ -26,6 +26,12 @@ namespace DzentoPOS2.Core.Entities.Sales
 
         public Percentage Discount { get; private set; } = null!;
 
+        /// <summary>How <see cref="DiscountValue"/> is interpreted.</summary>
+        public DiscountMode DiscountMode { get; private set; }
+
+        /// <summary>Raw discount input (percent or amount, see <see cref="DiscountMode"/>).</summary>
+        public decimal DiscountValue { get; private set; }
+
         public Tax Tax { get; private set; } = null!;
 
         public Money PaidAmount { get; private set; } = null!;
@@ -57,11 +63,39 @@ namespace DzentoPOS2.Core.Entities.Sales
         {
             var totals = InvoiceCalculator.Calculate(
                 lines,
+                DiscountMode.Percent,
                 discountPercent,
                 taxRate,
                 paidAmount,
                 currencyDecimalDigits);
 
+            return Create(
+                invoiceNumber,
+                customerId,
+                branchId,
+                totals,
+                DiscountMode.Percent,
+                discountPercent,
+                taxRate,
+                currency);
+        }
+
+        /// <summary>
+        /// Builds the invoice from an already-computed <see cref="InvoiceTotals"/>
+        /// so the store, the receipt and the cash movement can never disagree.
+        /// <see cref="PaidAmount"/> stores the applied payment (never more than
+        /// the total); the tendered amount and change live on the payment row.
+        /// </summary>
+        public static SalesInvoice Create(
+            string invoiceNumber,
+            Guid customerId,
+            Guid branchId,
+            InvoiceTotals totals,
+            DiscountMode discountMode,
+            decimal discountValue,
+            decimal taxRate,
+            string currency)
+        {
             return new SalesInvoice
             {
                 InvoiceNumber = new InvoiceNumber(invoiceNumber),
@@ -71,10 +105,12 @@ namespace DzentoPOS2.Core.Entities.Sales
                 DiscountAmount = new Money(totals.DiscountAmount, currency),
                 TaxAmount = new Money(totals.TaxAmount, currency),
                 Total = new Money(totals.Total, currency),
-                Discount = new Percentage(discountPercent),
+                DiscountMode = discountMode,
+                DiscountValue = discountValue,
+                Discount = new Percentage(discountMode == DiscountMode.Percent ? discountValue : 0m),
                 Tax = new Tax(taxRate),
-                PaidAmount = new Money(totals.PaidAmount, currency),
-                RemainingAmount = new Money(totals.RemainingAmount, currency)
+                PaidAmount = new Money(totals.AppliedPayment, currency),
+                RemainingAmount = new Money(totals.Remaining, currency)
             };
         }
 

@@ -3,6 +3,7 @@ using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.App.Session;
 using DzentoPOS2.Core.Entities.Sales;
 using DzentoPOS2.Core.Enums;
+using DzentoPOS2.Core.Exceptions;
 using DzentoPOS2.Core.Services.Sales;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Data.Repositories.Common.Interfaces;
@@ -24,6 +25,7 @@ namespace DzentoPOS2.App.Services.Sales
         private readonly IStockService _stockService;
         private readonly ICurrentUserService _currentUser;
         private readonly RegionalContext _regional;
+        private readonly ISalesPolicy _salesPolicy;
 
         public SaleService(
             ISalesInvoiceRepository invoiceRepo,
@@ -34,7 +36,8 @@ namespace DzentoPOS2.App.Services.Sales
             IDocumentNumberService documentNumbers,
             IStockService stockService,
             ICurrentUserService currentUser,
-            RegionalContext regional)
+            RegionalContext regional,
+            ISalesPolicy salesPolicy)
         {
             _invoiceRepo = invoiceRepo;
             _unitOfWork = unitOfWork;
@@ -45,6 +48,7 @@ namespace DzentoPOS2.App.Services.Sales
             _stockService = stockService;
             _currentUser = currentUser;
             _regional = regional;
+            _salesPolicy = salesPolicy;
         }
 
         public async Task<List<SaleDto>> GetAllAsync()
@@ -56,7 +60,19 @@ namespace DzentoPOS2.App.Services.Sales
                 .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync();
 
-            return invoices.Select(Map).ToList();
+            var paymentInfo = await LoadPaymentInfoAsync(invoices.Select(x => x.Id).ToList());
+
+            return invoices.Select(invoice =>
+            {
+                var dto = Map(invoice);
+                if (paymentInfo.TryGetValue(invoice.Id, out var payment))
+                {
+                    dto.TenderedAmount = payment.Tendered;
+                    dto.ChangeAmount = payment.Change;
+                }
+
+                return dto;
+            }).ToList();
         }
 
         public async Task<SaleDto?> GetByIdAsync(Guid id)
@@ -72,7 +88,34 @@ namespace DzentoPOS2.App.Services.Sales
 
             var dto = Map(invoice);
             dto.CustomerName = customerName;
+
+            var paymentInfo = await LoadPaymentInfoAsync(new[] { invoice.Id });
+            if (paymentInfo.TryGetValue(invoice.Id, out var payment))
+            {
+                dto.TenderedAmount = payment.Tendered;
+                dto.ChangeAmount = payment.Change;
+            }
+
             return dto;
+        }
+
+        private async Task<Dictionary<Guid, (decimal Tendered, decimal Change)>> LoadPaymentInfoAsync(
+            IReadOnlyCollection<Guid> invoiceIds)
+        {
+            if (invoiceIds.Count == 0)
+                return new Dictionary<Guid, (decimal, decimal)>();
+
+            var rows = await _context.SalesPayments
+                .AsNoTracking()
+                .Where(p => invoiceIds.Contains(p.SalesInvoiceId))
+                .Select(p => new { p.SalesInvoiceId, p.TenderedAmount, p.ChangeAmount })
+                .ToListAsync();
+
+            return rows
+                .GroupBy(r => r.SalesInvoiceId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => (g.First().TenderedAmount, g.First().ChangeAmount));
         }
 
         public async Task<List<SaleDto>> GetByCustomerAsync(Guid customerId)
@@ -139,6 +182,22 @@ namespace DzentoPOS2.App.Services.Sales
                     throw new InvalidOperationException("Invalid or inactive product");
             }
 
+            // Single source of truth: every stored/recorded amount comes from
+            // this calculator result (invoice, payment and cash movement).
+            var totals = InvoiceCalculator.Calculate(
+                lines,
+                dto.DiscountMode,
+                dto.DiscountValue,
+                dto.TaxRate,
+                dto.PaidAmount,
+                digits);
+
+            if (totals.Remaining > 0 && dto.CustomerId == Guid.Empty)
+                throw new DomainException(
+                    "A customer is required when the sale is not paid in full.");
+
+            await EnforceDiscountLimitAsync(dto);
+
             for (var attempt = 0; ; attempt++)
             {
                 await _unitOfWork.BeginTransactionAsync();
@@ -152,12 +211,11 @@ namespace DzentoPOS2.App.Services.Sales
                         invoiceNumber,
                         dto.CustomerId,
                         branchId,
-                        lines,
-                        dto.Discount,
+                        totals,
+                        dto.DiscountMode,
+                        dto.DiscountValue,
                         dto.TaxRate,
-                        dto.PaidAmount,
-                        currency,
-                        digits);
+                        currency);
 
                     foreach (var item in dto.Items)
                     {
@@ -166,7 +224,10 @@ namespace DzentoPOS2.App.Services.Sales
                             ProductId = item.ProductId,
                             Quantity = item.Quantity,
                             Price = item.Price,
-                            Total = Math.Round(item.Quantity * item.Price, digits, MidpointRounding.AwayFromZero),
+                            Total = decimal.Round(
+                                item.Quantity * item.Price,
+                                digits,
+                                MidpointRounding.AwayFromZero),
                             Description = string.IsNullOrWhiteSpace(item.Description) ? string.Empty : item.Description.Trim()
                         };
                         invoice.Items.Add(line);
@@ -175,13 +236,16 @@ namespace DzentoPOS2.App.Services.Sales
                     invoice.AssignCashSession(openSession.Id);
                     await _context.SalesInvoices.AddAsync(invoice);
 
-                    if (dto.PaidAmount > 0)
+                    var paymentMethod = string.IsNullOrWhiteSpace(dto.PaymentMethod) ? "Cash" : dto.PaymentMethod;
+
+                    if (totals.AppliedPayment > 0)
                     {
-                        var paymentMethod = string.IsNullOrWhiteSpace(dto.PaymentMethod) ? "Cash" : dto.PaymentMethod;
                         await _context.SalesPayments.AddAsync(new SalesPayment
                         {
                             SalesInvoiceId = invoice.Id,
-                            Amount = dto.PaidAmount,
+                            Amount = totals.AppliedPayment,
+                            TenderedAmount = totals.TenderedAmount,
+                            ChangeAmount = totals.Change,
                             PaymentMethod = paymentMethod,
                             PaymentDate = _clock.UtcNow
                         });
@@ -192,7 +256,7 @@ namespace DzentoPOS2.App.Services.Sales
                             {
                                 CashboxId = cashboxId,
                                 CashSessionId = openSession.Id,
-                                Amount = dto.PaidAmount,
+                                Amount = totals.AppliedPayment,
                                 TransactionType = Core.Enums.MovementType.SaleCashIn,
                                 SourceType = "SalesInvoice",
                                 SourceId = invoice.Id,
@@ -215,7 +279,10 @@ namespace DzentoPOS2.App.Services.Sales
                     await _unitOfWork.SaveChangesAsync();
                     await _unitOfWork.CommitTransactionAsync();
 
-                    return Map(invoice);
+                    var result = Map(invoice);
+                    result.TenderedAmount = totals.TenderedAmount;
+                    result.ChangeAmount = totals.Change;
+                    return result;
                 }
                 catch (DbUpdateConcurrencyException) when (attempt == 0)
                 {
@@ -229,6 +296,21 @@ namespace DzentoPOS2.App.Services.Sales
                     throw;
                 }
             }
+        }
+
+        /// <summary>
+        /// Discount ceiling. Reads <c>sales.max_discount_percent</c> (default 100).
+        /// Hook: the permissions phase will let an authorised user bypass this.
+        /// </summary>
+        private async Task EnforceDiscountLimitAsync(CreateSaleDto dto)
+        {
+            if (dto.DiscountMode != DiscountMode.Percent)
+                return;
+
+            var max = await _salesPolicy.GetMaxDiscountPercentAsync();
+            if (dto.DiscountValue > max)
+                throw new DomainException(
+                    $"Discount exceeds the allowed maximum of {max:0.##}%.");
         }
 
         public Task DeleteAsync(Guid id)
@@ -321,14 +403,26 @@ namespace DzentoPOS2.App.Services.Sales
 
         private static SaleDto Map(SalesInvoice invoice)
         {
+            var subtotal = invoice.Subtotal?.Amount ?? 0;
+            var discountAmount = invoice.DiscountAmount?.Amount ?? 0;
+            var discountPercent = invoice.Discount?.Value ?? 0;
+
+            var discountDisplay = invoice.DiscountMode == DiscountMode.Percent
+                ? $"{discountPercent:0.##}% ({discountAmount:0.##})"
+                : $"{discountAmount:0.##}";
+
             return new SaleDto
             {
                 Id = invoice.Id,
                 InvoiceNumber = invoice.InvoiceNumber?.Value ?? "",
                 CustomerId = invoice.CustomerId,
-                Subtotal = invoice.Subtotal?.Amount ?? 0,
-                Discount = invoice.Discount?.Value ?? 0,
-                DiscountAmount = invoice.DiscountAmount?.Amount ?? 0,
+                Subtotal = subtotal,
+                Discount = discountPercent,
+                DiscountDisplay = discountDisplay,
+                DiscountMode = invoice.DiscountMode,
+                DiscountValue = invoice.DiscountValue,
+                DiscountAmount = discountAmount,
+                AfterDiscount = subtotal - discountAmount,
                 TaxRate = invoice.Tax?.Rate ?? 0,
                 TaxAmount = invoice.TaxAmount?.Amount ?? 0,
                 Total = invoice.Total?.Amount ?? 0,

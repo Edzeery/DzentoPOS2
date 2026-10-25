@@ -2024,6 +2024,12 @@ namespace DzentoPOS2.Data.Migrations
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("DiscountMode")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("DiscountValue")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
@@ -2122,6 +2128,9 @@ namespace DzentoPOS2.Data.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal>("ChangeAmount")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
@@ -2152,6 +2161,9 @@ namespace DzentoPOS2.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("SalesInvoiceId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("TenderedAmount")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("UpdatedAt")

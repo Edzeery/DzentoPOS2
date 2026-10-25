@@ -2,6 +2,8 @@ using DzentoPOS2.Data.Context;
 using DzentoPOS2.Data.Seed;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Xunit;
 
 namespace DzentoPOS2.IntegrationTests;
@@ -144,6 +146,73 @@ public sealed class LegacySchemaRepairTests : IDisposable
     private string NewPath(string name)
         => Path.Combine(_directory, $"{name}.db");
 
+    [Fact]
+    public async Task F2_upgrade_from_the_pre_f2_schema_preserves_legacy_rows()
+    {
+        var path = NewPath("pref2");
+
+        var invoiceId = Guid.NewGuid();
+        var paymentId = Guid.NewGuid();
+        var cashId = Guid.NewGuid();
+        var branchId = Guid.NewGuid();
+        var cashboxId = Guid.NewGuid();
+
+        // 1) A database at the previous head (E3) with legacy invoice / payment
+        //    / cash rows that predate F2.
+        await using (var context = CreateContext(path))
+        {
+            var migrator = context.Database.GetService<IMigrator>();
+            await migrator.MigrateAsync("20261023140849_E3_CashSessionLinking");
+
+            await context.Database.ExecuteSqlRawAsync(
+                "INSERT INTO \"Branches\" (\"Id\",\"Name\",\"IsMainBranch\",\"IsActive\",\"IsDeleted\",\"CreatedAt\") VALUES ({0},{1},{2},{3},{4},{5});",
+                branchId, "Legacy", 1, 1, 0, DateTime.UtcNow);
+
+            await context.Database.ExecuteSqlRawAsync(
+                "INSERT INTO \"Cashboxes\" (\"Id\",\"Name\",\"BranchId\",\"CurrentBalance\",\"IsActive\",\"IsDeleted\",\"CreatedAt\") VALUES ({0},{1},{2},{3},{4},{5},{6});",
+                cashboxId, "Legacy cashbox", branchId, "0", 1, 0, DateTime.UtcNow);
+
+            await context.Database.ExecuteSqlRawAsync(
+                "INSERT INTO \"SalesInvoices\" (\"Id\",\"InvoiceNumber\",\"CustomerId\",\"BranchId\",\"TotalAmount\",\"TotalCurrency\",\"Discount\",\"TaxRate\",\"PaidAmount\",\"PaidCurrency\",\"RemainingAmount\",\"RemainingCurrency\",\"DiscountAmount\",\"DiscountCurrency\",\"SubtotalAmount\",\"SubtotalCurrency\",\"TaxAmount\",\"TaxCurrency\",\"IsVoided\",\"IsDeleted\",\"CreatedAt\") VALUES ({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20});",
+                invoiceId, "LEGACY-F2-1", Guid.Empty, branchId,
+                "10", "DZD", "0", "0", "10", "DZD", "0", "DZD",
+                "0", "DZD", "10", "DZD", "0", "DZD",
+                0, 0, DateTime.UtcNow);
+
+            await context.Database.ExecuteSqlRawAsync(
+                "INSERT INTO \"SalesPayments\" (\"Id\",\"SalesInvoiceId\",\"Amount\",\"PaymentDate\",\"PaymentMethod\",\"ReferenceNumber\",\"Notes\",\"CreatedAt\") VALUES ({0},{1},{2},{3},{4},{5},{6},{7});",
+                paymentId, invoiceId, "10", DateTime.UtcNow, "Cash", "LEGACY-F2-1", string.Empty, DateTime.UtcNow);
+
+            await context.Database.ExecuteSqlRawAsync(
+                "INSERT INTO \"CashTransactions\" (\"Id\",\"CashboxId\",\"Amount\",\"TransactionType\",\"ReferenceNumber\",\"TransactionDate\",\"IsDeleted\",\"CreatedAt\") VALUES ({0},{1},{2},{3},{4},{5},{6},{7});",
+                cashId, cashboxId, "10", 13, "LEGACY-F2-1", DateTime.UtcNow, 0, DateTime.UtcNow);
+        }
+
+        // 2) Upgrade to the current head (applies the F2 migration).
+        await using (var context = CreateContext(path))
+        {
+            await context.Database.MigrateAsync();
+        }
+
+        // 3) Legacy rows survive, the new columns default to 0, no dangling FKs.
+        Assert.Equal(1, await ScalarLongAsync(path, "SELECT COUNT(*) FROM \"SalesInvoices\";"));
+        Assert.Equal(1, await ScalarLongAsync(path, "SELECT COUNT(*) FROM \"SalesPayments\";"));
+        Assert.Equal(1, await ScalarLongAsync(path, "SELECT COUNT(*) FROM \"CashTransactions\";"));
+        Assert.Equal(0, await ScalarLongAsync(path, "SELECT \"DiscountMode\" FROM \"SalesInvoices\" LIMIT 1;"));
+        Assert.Equal(0, await ScalarLongAsync(path, "SELECT \"TenderedAmount\" FROM \"SalesPayments\" LIMIT 1;"));
+        Assert.Empty(await ForeignKeyViolationsAsync(path));
+
+        // 4) A second migrate is a no-op.
+        await using (var context = CreateContext(path))
+        {
+            var before = (await context.Database.GetAppliedMigrationsAsync()).ToList();
+            await context.Database.MigrateAsync();
+            var after = (await context.Database.GetAppliedMigrationsAsync()).ToList();
+
+            Assert.Equal(before, after);
+        }
+    }
+
     private static AppDbContext CreateContext(string path)
         => new(
             new DbContextOptionsBuilder<AppDbContext>()
@@ -165,7 +234,11 @@ public sealed class LegacySchemaRepairTests : IDisposable
         await using var command = connection.CreateCommand();
         command.CommandText = sql;
 
-        return Convert.ToInt64(await command.ExecuteScalarAsync());
+        var value = await command.ExecuteScalarAsync();
+        if (value is null || value is DBNull)
+            return 0;
+
+        return Convert.ToInt64(Convert.ToDecimal(value, System.Globalization.CultureInfo.InvariantCulture));
     }
 
     private static async Task<bool> ColumnExistsAsync(string path, string table, string column)

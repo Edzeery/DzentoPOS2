@@ -4,42 +4,64 @@ namespace DzentoPOS2.Core.Services.Sales;
 
 public readonly record struct InvoiceLine(decimal Quantity, decimal Price);
 
+/// <summary>
+/// How the invoice-level discount is interpreted:
+/// <see cref="Percent"/> = percentage of the subtotal,
+/// <see cref="FixedAmount"/> = absolute money amount.
+/// </summary>
+public enum DiscountMode
+{
+    Percent = 0,
+    FixedAmount = 1
+}
+
 public sealed record InvoiceTotals(
     decimal Subtotal,
     decimal DiscountAmount,
     decimal AfterDiscount,
     decimal TaxAmount,
     decimal Total,
-    decimal PaidAmount,
-    decimal RemainingAmount,
-    decimal ChangeAmount);
+    decimal TenderedAmount,
+    decimal AppliedPayment,
+    decimal Remaining,
+    decimal Change);
 
+/// <summary>
+/// Pure invoice math. This is the single source of truth for every amount the
+/// screen previews, the invoice stores, the receipt prints and the cash drawer
+/// records. It performs no rounding-side effects and never touches the database.
+/// </summary>
 public static class InvoiceCalculator
 {
     public static InvoiceTotals Calculate(
         IReadOnlyCollection<InvoiceLine> lines,
-        decimal discountPercentOrAmount,
+        DiscountMode discountMode,
+        decimal discountValue,
         decimal taxRate,
-        decimal paidAmount,
+        decimal tenderedAmount,
         int currencyDecimalDigits)
     {
         if (lines is null || lines.Count == 0)
             throw new DomainException("Sale must have at least one item");
 
-        if (discountPercentOrAmount < 0)
+        if (!Enum.IsDefined(typeof(DiscountMode), discountMode))
+            throw new DomainException("Discount mode is invalid");
+
+        if (discountValue < 0)
             throw new DomainException("Discount cannot be negative");
 
         if (taxRate < 0 || taxRate > 100)
             throw new DomainException("Tax must be between 0 and 100");
 
-        if (paidAmount < 0)
+        if (tenderedAmount < 0)
             throw new DomainException("Paid amount cannot be negative");
 
         if (currencyDecimalDigits < 0 || currencyDecimalDigits > 4)
             throw new DomainException("Currency decimal digits are invalid");
 
-        decimal rawSubtotal = 0;
-
+        // Each line is rounded first so the printed lines always add up to the
+        // subtotal (no drift between the lines and their sum).
+        decimal subtotal = 0;
         foreach (var line in lines)
         {
             if (line.Quantity <= 0)
@@ -48,35 +70,37 @@ public static class InvoiceCalculator
             if (line.Price < 0)
                 throw new DomainException("Item price cannot be negative");
 
-            rawSubtotal += line.Quantity * line.Price;
+            subtotal += Round(line.Quantity * line.Price, currencyDecimalDigits);
         }
 
-        var subtotal = Round(rawSubtotal, currencyDecimalDigits);
+        subtotal = Round(subtotal, currencyDecimalDigits);
+
         decimal discountAmount;
-        if (discountPercentOrAmount <= 100)
+        if (discountMode == DiscountMode.Percent)
         {
-            discountAmount = Round(
-                subtotal * discountPercentOrAmount / 100m,
-                currencyDecimalDigits);
+            if (discountValue > 100)
+                throw new DomainException("Discount percentage must be between 0 and 100");
+
+            discountAmount = Round(subtotal * discountValue / 100m, currencyDecimalDigits);
+            if (discountAmount > subtotal)
+                discountAmount = subtotal;
         }
         else
         {
-            if (discountPercentOrAmount > subtotal)
+            if (discountValue > subtotal)
                 throw new DomainException("Discount cannot exceed subtotal");
-            discountAmount = Round(discountPercentOrAmount, currencyDecimalDigits);
+
+            discountAmount = Round(discountValue, currencyDecimalDigits);
         }
 
-        if (discountAmount > subtotal)
-            discountAmount = subtotal;
-
         var afterDiscount = subtotal - discountAmount;
-        var taxAmount = Round(
-            afterDiscount * taxRate / 100m,
-            currencyDecimalDigits);
+        var taxAmount = Round(afterDiscount * taxRate / 100m, currencyDecimalDigits);
         var total = afterDiscount + taxAmount;
-        var paid = Round(paidAmount, currencyDecimalDigits);
-        var remaining = Math.Max(0, total - paid);
-        var change = Math.Max(0, paid - total);
+
+        var tendered = Round(tenderedAmount, currencyDecimalDigits);
+        var appliedPayment = Math.Min(tendered, total);
+        var remaining = Math.Max(0, total - tendered);
+        var change = Math.Max(0, tendered - total);
 
         return new InvoiceTotals(
             subtotal,
@@ -84,7 +108,8 @@ public static class InvoiceCalculator
             afterDiscount,
             taxAmount,
             total,
-            paid,
+            tendered,
+            appliedPayment,
             remaining,
             change);
     }

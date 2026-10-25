@@ -1122,4 +1122,31 @@
   <data name="ErrorLoggedToFile" xml:space="preserve">
     <value>Une copie de l'erreur a été enregistrée dans le journal.</value>
   </data>
+  <data name="DiscountModePercent" xml:space="preserve">
+    <value>Pourcentage</value>
+  </data>
+  <data name="DiscountModeAmount" xml:space="preserve">
+    <value>Montant</value>
+  </data>
+  <data name="AfterDiscount" xml:space="preserve">
+    <value>Après remise</value>
+  </data>
+  <data name="TaxAmount" xml:space="preserve">
+    <value>TVA</value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>Rendu</value>
+  </data>
+  <data name="PayInFull" xml:space="preserve">
+    <value>Payer en totalité</value>
+  </data>
+  <data name="CreditSaleRequiresCustomer" xml:space="preserve">
+    <value>Un client est requis lorsque la vente n'est pas payée intégralement.</value>
+  </data>
+  <data name="CreditSaleConfirm" xml:space="preserve">
+    <value>Le solde restant pour {0} est {1}. Continuer ?</value>
+  </data>
+  <data name="DiscountExceedsLimit" xml:space="preserve">
+    <value>La remise dépasse le maximum autorisé.</value>
+  </data>
 </root>

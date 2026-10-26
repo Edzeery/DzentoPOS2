@@ -1,9 +1,11 @@
 using DzentoPOS2.App.Services.Reports.Interfaces;
 using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.Data.Context;
+using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Shared.Contracts.DTOs.Reports;
 using DzentoPOS2.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace DzentoPOS2.App.Services.Reports
 {
@@ -68,8 +70,8 @@ namespace DzentoPOS2.App.Services.Reports
                 })
                 .FirstOrDefaultAsync();
 
-            SetCardData(dto.SalesToday, (decimal)(salesStats?.TodayTotal ?? 0), (decimal)(salesStats?.YesterdayTotal ?? 0));
-            SetCardData(dto.SalesCount, salesStats?.TodayCount ?? 0, salesStats?.YesterdayCount ?? 0);
+            SetCardData(dto.SalesToday, (decimal)(salesStats?.TodayTotal ?? 0), (decimal)(salesStats?.YesterdayTotal ?? 0), KpiValueKind.Money);
+            SetCardData(dto.SalesCount, salesStats?.TodayCount ?? 0, salesStats?.YesterdayCount ?? 0, KpiValueKind.Count);
 
             // Purchases — invoice value (Total); same single grouped query approach.
             var purchaseStats = await _context.PurchaseInvoices
@@ -85,10 +87,10 @@ namespace DzentoPOS2.App.Services.Reports
                 })
                 .FirstOrDefaultAsync();
 
-            SetCardData(dto.PurchasesToday, (decimal)(purchaseStats?.TodayTotal ?? 0), (decimal)(purchaseStats?.YesterdayTotal ?? 0));
-            SetCardData(dto.PurchasesCount, purchaseStats?.TodayCount ?? 0, purchaseStats?.YesterdayCount ?? 0);
-            SetCardData(dto.MonthlySales, (decimal)(salesStats?.MonthTotal ?? 0), (decimal)(salesStats?.LastMonthTotal ?? 0));
-            SetCardData(dto.MonthlyPurchases, (decimal)(purchaseStats?.MonthTotal ?? 0), (decimal)(purchaseStats?.LastMonthTotal ?? 0));
+            SetCardData(dto.PurchasesToday, (decimal)(purchaseStats?.TodayTotal ?? 0), (decimal)(purchaseStats?.YesterdayTotal ?? 0), KpiValueKind.Money);
+            SetCardData(dto.PurchasesCount, purchaseStats?.TodayCount ?? 0, purchaseStats?.YesterdayCount ?? 0, KpiValueKind.Count);
+            SetCardData(dto.MonthlySales, (decimal)(salesStats?.MonthTotal ?? 0), (decimal)(salesStats?.LastMonthTotal ?? 0), KpiValueKind.Money);
+            SetCardData(dto.MonthlyPurchases, (decimal)(purchaseStats?.MonthTotal ?? 0), (decimal)(purchaseStats?.LastMonthTotal ?? 0), KpiValueKind.Money);
 
             // Revenue / COGS aggregated in SQL (no full table materialization).
             var grossRevenue = await (
@@ -129,11 +131,13 @@ namespace DzentoPOS2.App.Services.Reports
             var grossMargin = netRevenue > 0 ? Math.Round(grossProfit / netRevenue * 100, 1) : 0;
             var netMargin = netRevenue > 0 ? Math.Round(actualProfit / netRevenue * 100, 1) : 0;
 
-            SetCardData(dto.ExpectedProfit, grossProfit, 0);
-            SetCardData(dto.ActualProfit, actualProfit, 0);
-            dto.ExpectedProfit.TrendDisplay = $"هامش {grossMargin}%";
+            SetCardData(dto.ExpectedProfit, grossProfit, 0, KpiValueKind.Money);
+            SetCardData(dto.ActualProfit, actualProfit, 0, KpiValueKind.Money);
+
+            // Profit cards show the real margin (never a bare "%هامش" with no number).
+            dto.ExpectedProfit.TrendKind = netRevenue > 0 ? KpiTrendKind.Margin : KpiTrendKind.None;
             dto.ExpectedProfit.TrendPercent = grossMargin;
-            dto.ActualProfit.TrendDisplay = $"هامش {netMargin}%";
+            dto.ActualProfit.TrendKind = netRevenue > 0 ? KpiTrendKind.Margin : KpiTrendKind.None;
             dto.ActualProfit.TrendPercent = netMargin;
 
             var productStats = await _context.Products
@@ -145,7 +149,7 @@ namespace DzentoPOS2.App.Services.Reports
                 })
                 .FirstOrDefaultAsync();
 
-            SetCardData(dto.ActiveProducts, productStats?.Active ?? 0, productStats?.LastMonth ?? 0);
+            SetCardData(dto.ActiveProducts, productStats?.Active ?? 0, productStats?.LastMonth ?? 0, KpiValueKind.Count);
 
             // Low stock — products whose total warehouse stock is at/below reorder level.
             var lowStockCount = await _context.Products
@@ -155,7 +159,7 @@ namespace DzentoPOS2.App.Services.Reports
                     .Sum(s => (double?)s.Quantity.Value) <= (double)p.MinimumStock.Value)
                 .CountAsync();
 
-            SetCardData(dto.LowStock, lowStockCount, 0);
+            SetCardData(dto.LowStock, lowStockCount, 0, KpiValueKind.Count);
 
             var customerStats = await _context.Customers
                 .GroupBy(_ => 1)
@@ -166,7 +170,7 @@ namespace DzentoPOS2.App.Services.Reports
                 })
                 .FirstOrDefaultAsync();
 
-            SetCardData(dto.ActiveCustomers, customerStats?.Active ?? 0, customerStats?.LastMonth ?? 0);
+            SetCardData(dto.ActiveCustomers, customerStats?.Active ?? 0, customerStats?.LastMonth ?? 0, KpiValueKind.Count);
 
             var supplierStats = await _context.Suppliers
                 .GroupBy(_ => 1)
@@ -177,28 +181,28 @@ namespace DzentoPOS2.App.Services.Reports
                 })
                 .FirstOrDefaultAsync();
 
-            SetCardData(dto.ActiveSuppliers, supplierStats?.Active ?? 0, supplierStats?.LastMonth ?? 0);
+            SetCardData(dto.ActiveSuppliers, supplierStats?.Active ?? 0, supplierStats?.LastMonth ?? 0, KpiValueKind.Count);
         }
 
         private static string MonthKey(DateTime local) => $"{local.Year}-{local.Month:D2}";
 
-        private static void SetCardData(DashboardCardData card, decimal current, decimal previous)
+        private static void SetCardData(DashboardCardData card, decimal current, decimal previous, KpiValueKind kind)
         {
             card.Value = current;
-            card.DisplayValue = FormatValue(current);
-            card.TrendPercent = previous != 0 ? Math.Round((current - previous) / previous * 100, 1) : 0;
-            card.TrendDisplay = card.TrendPercent >= 0
-                ? $"+{card.TrendPercent}%"
-                : $"{card.TrendPercent}%";
-        }
+            card.Kind = kind;
 
-        private static string FormatValue(decimal value)
-        {
-            if (value >= 1_000_000)
-                return $"{value / 1_000_000:N2}M";
-            if (value >= 1_000)
-                return $"{value:N0}";
-            return $"{value:N2}";
+            // A trend chip is only shown when there is a comparable previous
+            // period: never a fake "+0%".
+            if (previous != 0)
+            {
+                card.TrendKind = KpiTrendKind.Change;
+                card.TrendPercent = Math.Round((current - previous) / previous * 100, 1);
+            }
+            else
+            {
+                card.TrendKind = KpiTrendKind.None;
+                card.TrendPercent = 0;
+            }
         }
 
         private async Task ComputeChartData(DashboardSummaryDto dto, DateTime thirtyDaysAgoUtc, DateTime tomorrowStartUtc, DateTime localNow)
@@ -245,7 +249,7 @@ namespace DzentoPOS2.App.Services.Reports
             foreach (var k in salesByMonth.Keys) allMonths.Add(k);
             foreach (var k in purchasesByMonth.Keys) allMonths.Add(k);
 
-            var culture = new System.Globalization.CultureInfo("ar-SA");
+            var culture = CultureInfo.CurrentCulture;
             foreach (var key in allMonths.OrderBy(x => x))
             {
                 var parts = key.Split('-');
@@ -273,7 +277,7 @@ namespace DzentoPOS2.App.Services.Reports
             {
                 dto.CategoryDistribution.Add(new PieSliceData
                 {
-                    Category = string.IsNullOrWhiteSpace(c.Category) ? "أخرى" : c.Category,
+                    Category = string.IsNullOrWhiteSpace(c.Category) ? AppStrings.Other : c.Category,
                     Value = (decimal)c.Total
                 });
             }
@@ -281,36 +285,70 @@ namespace DzentoPOS2.App.Services.Reports
 
         private async Task ComputeRecentTransactions(DashboardSummaryDto dto)
         {
-            var sales = await _context.SalesInvoices
+            var salesRaw = await _context.SalesInvoices
                 .Where(s => !s.IsVoided)
                 .OrderByDescending(s => s.CreatedAt)
                 .Take(5)
-                .Select(s => new TransactionRow
+                .Select(s => new
                 {
-                    Id = s.Id,
-                    Type = "بيع",
+                    s.Id,
                     Number = s.InvoiceNumber.Value,
-                    Party = s.CustomerId.ToString(),
+                    s.CustomerId,
                     Amount = s.Total.Amount,
-                    Date = s.CreatedAt,
-                    Status = s.PaidAmount.Amount >= s.Total.Amount ? "مدفوع" : "معلق"
+                    s.CreatedAt,
+                    PaidAmount = s.PaidAmount.Amount,
+                    Total = s.Total.Amount
                 })
                 .ToListAsync();
 
-            var purchases = await _context.PurchaseInvoices
+            var purchaseRaw = await _context.PurchaseInvoices
                 .OrderByDescending(p => p.CreatedAt)
                 .Take(5)
-                .Select(p => new TransactionRow
+                .Select(p => new
                 {
-                    Id = p.Id,
-                    Type = "شراء",
-                    Number = p.InvoiceNumber,
-                    Party = p.SupplierId.ToString(),
+                    p.Id,
+                    p.InvoiceNumber,
+                    p.SupplierId,
                     Amount = p.Total,
-                    Date = p.CreatedAt,
-                    Status = p.PaidAmount >= p.Total ? "مدفوع" : "معلق"
+                    p.CreatedAt,
+                    Paid = p.PaidAmount,
+                    Total = p.Total
                 })
                 .ToListAsync();
+
+            var customerIds = salesRaw.Select(s => s.CustomerId).Distinct().ToList();
+            var customerNames = await _context.Customers.AsNoTracking()
+                .Where(c => customerIds.Contains(c.Id))
+                .Select(c => new { c.Id, c.FullName })
+                .ToDictionaryAsync(x => x.Id, x => x.FullName);
+
+            var supplierIds = purchaseRaw.Select(p => p.SupplierId).Distinct().ToList();
+            var supplierNames = await _context.Suppliers.AsNoTracking()
+                .Where(s => supplierIds.Contains(s.Id))
+                .Select(s => new { s.Id, s.Name })
+                .ToDictionaryAsync(x => x.Id, x => x.Name);
+
+            var sales = salesRaw.Select(s => new TransactionRow
+            {
+                Id = s.Id,
+                Type = AppStrings.TransactionSale,
+                Number = s.Number,
+                Party = ResolveParty(s.CustomerId, customerNames, AppStrings.WalkInCustomer),
+                Amount = s.Amount,
+                Date = s.CreatedAt,
+                Status = s.PaidAmount >= s.Total ? AppStrings.Paid : AppStrings.Pending
+            });
+
+            var purchases = purchaseRaw.Select(p => new TransactionRow
+            {
+                Id = p.Id,
+                Type = AppStrings.TransactionPurchase,
+                Number = p.InvoiceNumber,
+                Party = ResolveParty(p.SupplierId, supplierNames, p.SupplierId.ToString()),
+                Amount = p.Amount,
+                Date = p.CreatedAt,
+                Status = p.Paid >= p.Total ? AppStrings.Paid : AppStrings.Pending
+            });
 
             dto.RecentTransactions = sales
                 .Concat(purchases)
@@ -319,8 +357,21 @@ namespace DzentoPOS2.App.Services.Reports
                 .ToList();
         }
 
+        private static string ResolveParty(Guid id, Dictionary<Guid, string> names, string fallback)
+        {
+            if (id == Guid.Empty)
+                return fallback;
+
+            return names.TryGetValue(id, out var name) && !string.IsNullOrWhiteSpace(name)
+                ? name
+                : fallback;
+        }
+
         private async Task ComputeInsights(DashboardSummaryDto dto)
         {
+            var culture = CultureInfo.CurrentCulture;
+            var digits = _regional.CurrencyDecimalDigits;
+
             var topProducts = (await (
                 from item in _context.SalesInvoiceItems
                 join product in _context.Products on item.ProductId equals product.Id
@@ -338,7 +389,7 @@ namespace DzentoPOS2.App.Services.Reports
             for (int i = 0; i < topProducts.Count; i++)
             {
                 topProducts[i].Rank = $"{i + 1}";
-                topProducts[i].DisplayValue = topProducts[i].Value.ToString("N0");
+                topProducts[i].DisplayValue = KpiValueFormatter.Format(topProducts[i].Value, KpiValueKind.Money, culture, digits);
             }
             dto.BestSellingProducts = topProducts;
 
@@ -362,39 +413,63 @@ namespace DzentoPOS2.App.Services.Reports
                 Rank = $"{i + 1}",
                 Name = a.Name,
                 Value = (decimal)a.Current,
-                DisplayValue = $"الحد الأدنى {a.Minimum:N0}"
+                DisplayValue = $"{AppStrings.MinimumLabel} {KpiValueFormatter.Format(a.Minimum, KpiValueKind.Count, culture)}"
             }).ToList();
 
-            var topCust = (await _context.SalesInvoices
+            var custGroups = await _context.SalesInvoices
                 .Where(s => !s.IsVoided)
                 .GroupBy(s => s.CustomerId)
                 .OrderByDescending(g => g.Sum(s => (double?)s.Total.Amount))
                 .Take(5)
-                .Select(g => new { Name = g.Key.ToString(), Value = g.Sum(s => (double?)s.Total.Amount) ?? 0 })
-                .ToListAsync())
-                .Select(x => new InsightRow { Name = x.Name, Value = (decimal)x.Value })
+                .Select(g => new { CustomerId = g.Key, Value = g.Sum(s => (double?)s.Total.Amount) ?? 0 })
+                .ToListAsync();
+
+            var custIds = custGroups.Select(g => g.CustomerId).Distinct().ToList();
+            var custNames = await _context.Customers.AsNoTracking()
+                .Where(c => custIds.Contains(c.Id))
+                .Select(c => new { c.Id, c.FullName })
+                .ToDictionaryAsync(x => x.Id, x => x.FullName);
+
+            var topCust = custGroups
+                .Select(x => new InsightRow
+                {
+                    Name = ResolveParty(x.CustomerId, custNames, AppStrings.WalkInCustomer),
+                    Value = (decimal)x.Value
+                })
                 .ToList();
 
             for (int i = 0; i < topCust.Count; i++)
             {
                 topCust[i].Rank = $"{i + 1}";
-                topCust[i].DisplayValue = topCust[i].Value.ToString("N0");
+                topCust[i].DisplayValue = KpiValueFormatter.Format(topCust[i].Value, KpiValueKind.Money, culture, digits);
             }
             dto.TopCustomers = topCust;
 
-            var topSupp = (await _context.PurchaseInvoices
+            var suppGroups = await _context.PurchaseInvoices
                 .GroupBy(p => p.SupplierId)
                 .OrderByDescending(g => g.Sum(p => (double?)p.Total))
                 .Take(5)
-                .Select(g => new { Name = g.Key.ToString(), Value = g.Sum(p => (double?)p.Total) ?? 0 })
-                .ToListAsync())
-                .Select(x => new InsightRow { Name = x.Name, Value = (decimal)x.Value })
+                .Select(g => new { SupplierId = g.Key, Value = g.Sum(p => (double?)p.Total) ?? 0 })
+                .ToListAsync();
+
+            var suppIds = suppGroups.Select(g => g.SupplierId).Distinct().ToList();
+            var suppNames = await _context.Suppliers.AsNoTracking()
+                .Where(s => suppIds.Contains(s.Id))
+                .Select(s => new { s.Id, s.Name })
+                .ToDictionaryAsync(x => x.Id, x => x.Name);
+
+            var topSupp = suppGroups
+                .Select(x => new InsightRow
+                {
+                    Name = ResolveParty(x.SupplierId, suppNames, x.SupplierId.ToString()),
+                    Value = (decimal)x.Value
+                })
                 .ToList();
 
             for (int i = 0; i < topSupp.Count; i++)
             {
                 topSupp[i].Rank = $"{i + 1}";
-                topSupp[i].DisplayValue = topSupp[i].Value.ToString("N0");
+                topSupp[i].DisplayValue = KpiValueFormatter.Format(topSupp[i].Value, KpiValueKind.Money, culture, digits);
             }
             dto.TopSuppliers = topSupp;
         }

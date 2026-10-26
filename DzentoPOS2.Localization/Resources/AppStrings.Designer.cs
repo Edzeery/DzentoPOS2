@@ -2968,5 +2968,50 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("DiscountExceedsLimit", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Other.
+        /// </summary>
+        public static string Other {
+            get {
+                return ResourceManager.GetString("Other", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Walk-in customer.
+        /// </summary>
+        public static string WalkInCustomer {
+            get {
+                return ResourceManager.GetString("WalkInCustomer", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Sale.
+        /// </summary>
+        public static string TransactionSale {
+            get {
+                return ResourceManager.GetString("TransactionSale", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Purchase.
+        /// </summary>
+        public static string TransactionPurchase {
+            get {
+                return ResourceManager.GetString("TransactionPurchase", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Minimum.
+        /// </summary>
+        public static string MinimumLabel {
+            get {
+                return ResourceManager.GetString("MinimumLabel", resourceCulture);
+            }
+        }
     }
 }

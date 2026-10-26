@@ -1149,4 +1149,19 @@
   <data name="DiscountExceedsLimit" xml:space="preserve">
     <value>Discount exceeds the allowed maximum.</value>
   </data>
+  <data name="Other" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="WalkInCustomer" xml:space="preserve">
+    <value>Walk-in customer</value>
+  </data>
+  <data name="TransactionSale" xml:space="preserve">
+    <value>Sale</value>
+  </data>
+  <data name="TransactionPurchase" xml:space="preserve">
+    <value>Purchase</value>
+  </data>
+  <data name="MinimumLabel" xml:space="preserve">
+    <value>Minimum</value>
+  </data>
 </root>

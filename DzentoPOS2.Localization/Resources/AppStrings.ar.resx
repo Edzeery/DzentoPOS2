@@ -1149,4 +1149,19 @@
   <data name="DiscountExceedsLimit" xml:space="preserve">
     <value>الخصم يتجاوز الحد المسموح به.</value>
   </data>
+  <data name="Other" xml:space="preserve">
+    <value>أخرى</value>
+  </data>
+  <data name="WalkInCustomer" xml:space="preserve">
+    <value>عميل نقدي</value>
+  </data>
+  <data name="TransactionSale" xml:space="preserve">
+    <value>بيع</value>
+  </data>
+  <data name="TransactionPurchase" xml:space="preserve">
+    <value>شراء</value>
+  </data>
+  <data name="MinimumLabel" xml:space="preserve">
+    <value>الحد الأدنى</value>
+  </data>
 </root>

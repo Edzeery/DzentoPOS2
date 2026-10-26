@@ -1149,4 +1149,19 @@
   <data name="DiscountExceedsLimit" xml:space="preserve">
     <value>La remise dépasse le maximum autorisé.</value>
   </data>
+  <data name="Other" xml:space="preserve">
+    <value>Autre</value>
+  </data>
+  <data name="WalkInCustomer" xml:space="preserve">
+    <value>Client de passage</value>
+  </data>
+  <data name="TransactionSale" xml:space="preserve">
+    <value>Vente</value>
+  </data>
+  <data name="TransactionPurchase" xml:space="preserve">
+    <value>Achat</value>
+  </data>
+  <data name="MinimumLabel" xml:space="preserve">
+    <value>Minimum</value>
+  </data>
 </root>

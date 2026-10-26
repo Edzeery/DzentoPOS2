@@ -621,6 +621,8 @@ public partial class SalesForm : LocalizableFormBase
         _btnPayInFull.Text = "  " + AppStrings.PayInFull;
         _btnPayInFull.AccessibleDescription = AppStrings.PayInFull;
         _btnCompleteSale.Text = "  " + AppStrings.CompleteSale;
+        _btnPrintLast.Text = "  " + AppStrings.Print;
+        _btnRemoveFromCart.Text = "  " + AppStrings.Delete;
         _btnNewSale.Text = "  " + AppStrings.NewSale;
         _btnDeleteInvoice.Text = "  " + AppStrings.Delete;
 

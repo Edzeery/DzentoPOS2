@@ -56,6 +56,9 @@ namespace DzentoPOS2.WinForms.Forms.Layout
         private IconButton _btnCategories = null!;
         private IconButton _btnUnits = null!;
         private IconButton _btnCashSessions = null!;
+        private IconButton _btnExpenses = null!;
+        private readonly ToolTip _toolTip = new();
+        private string _currentBranchName = string.Empty;
         private Label _storeNameLabel = null!;
         private Image? _defaultLogo;
         private Panel? _userInfoAvatar;
@@ -103,12 +106,6 @@ namespace DzentoPOS2.WinForms.Forms.Layout
 
             FormLocalizationHelper.ApplyDirection(this, _languageService);
 
-            //bool isRtl = languageService.IsRightToLeft();
-            //if (isRtl)
-            //    pictureBoxLogo2.Dock = DockStyle.Right;
-
-            ApplySidebarButtonHover();
-
             WireNavButtons();
             AddExpensesSidebarButton();
             AddSuppliersSidebarButton();
@@ -116,12 +113,42 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             AddUnitsSidebarButton();
             AddCashSessionsSidebarButton();
 
+            // One hover behaviour for every sidebar button (the dynamically
+            // added ones are wired here so there is no per-button duplicate).
+            ApplySidebarButtonHover();
+
             InitializeStoreBranding();
 
             LoadText();
 
             ThemeManager.ThemeChanged += OnThemeChanged;
             _currentSettings.Changed += OnSettingsChanged;
+
+            // Single mechanism for language: the shell and every hosted page
+            // (LocalizableFormBase) react to LanguageChanged.
+            _languageService.LanguageChanged += OnLanguageChanged;
+        }
+
+        private void OnLanguageChanged(object? sender, string culture)
+        {
+            if (IsDisposed) return;
+            if (InvokeRequired) { BeginInvoke(ApplyLocalization); return; }
+            ApplyLocalization();
+        }
+
+        /// <summary>
+        /// Re-applies every localized text of the shell. Public so the language
+        /// switch (and any host) uses the same single entry point.
+        /// </summary>
+        public void ApplyLocalization()
+        {
+            if (IsDisposed) return;
+            SuspendLayout();
+            FormLocalizationHelper.ApplyDirection(this, _languageService);
+            LoadText();
+            _mainHeaderBar.ApplyLocalization();
+            RefreshSidebarSelection();
+            ResumeLayout(true);
         }
 
         private void OnSettingsChanged(object? sender, EventArgs e)
@@ -407,20 +434,32 @@ namespace DzentoPOS2.WinForms.Forms.Layout
                 _statusStoreLabel.ForeColor = AppColors.SidebarMuted;
             }
 
-            var isActive = _activeSidebarButton;
+            _mainHeaderBar.ApplyTheme();
+
+            RefreshSidebarSelection();
+        }
+
+        /// <summary>
+        /// Single source of truth for the sidebar active state: exactly one
+        /// button is highlighted (the current page); every hover tint is
+        /// cleared. Called on navigation, theme change and language change.
+        /// </summary>
+        private void RefreshSidebarSelection()
+        {
+            var accent = AppColors.Primary;
+            var sidebar = AppColors.SidebarSurface;
+            var active = _activeSidebarButton;
 
             ApplyToSidebarButtons(btn =>
             {
                 btn.FlatAppearance.MouseOverBackColor = accent;
                 btn.FlatAppearance.MouseDownBackColor = AppColors.SidebarPressed;
 
-                bool active = ReferenceEquals(btn, isActive);
-                btn.BackColor = active ? accent : sidebar;
+                bool isActive = ReferenceEquals(btn, active);
+                btn.BackColor = isActive ? accent : sidebar;
                 btn.ForeColor = Color.White;
                 btn.IconColor = Color.White;
             });
-
-            _mainHeaderBar.ApplyTheme();
         }
 
         private void InitializeMainHeader()
@@ -443,20 +482,22 @@ namespace DzentoPOS2.WinForms.Forms.Layout
         private void ApplySidebarButtonHover()
         {
             var accent = AppColors.Primary;
-            var dark = AppColors.SidebarSurface;
             ApplyToSidebarButtons(btn =>
             {
                 btn.FlatAppearance.MouseOverBackColor = accent;
                 btn.FlatAppearance.MouseDownBackColor = AppColors.SidebarPressed;
                 btn.MouseEnter += (_, _) =>
                 {
-                    if (btn.BackColor != accent)
+                    if (!ReferenceEquals(btn, _activeSidebarButton))
                         btn.BackColor = AppColors.SidebarHover;
                 };
                 btn.MouseLeave += (_, _) =>
                 {
-                    if (btn.BackColor != accent && btn.BackColor != dark)
-                        btn.BackColor = dark;
+                    // Only the active button keeps the accent; a hovered button
+                    // always falls back to the sidebar surface.
+                    btn.BackColor = ReferenceEquals(btn, _activeSidebarButton)
+                        ? accent
+                        : AppColors.SidebarSurface;
                 };
             });
         }
@@ -464,8 +505,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
         private void AddExpensesSidebarButton()
         {
             var btnExpenses = new IconButton
-            {
-                IconChar = IconChar.MoneyBillWave,
+            {                IconChar = IconChar.MoneyBillWave,
                 Text = "  " + AppStrings.ExpensesButton,
                 IconColor = Color.White,
                 ForeColor = Color.White,
@@ -485,21 +525,10 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             };
 
             btnExpenses.Click += (_, _) => NavigateTo<ExpensesForm>(btnExpenses);
-            btnExpenses.FlatAppearance.MouseOverBackColor = AppColors.Primary;
-            btnExpenses.FlatAppearance.MouseDownBackColor = AppColors.SidebarPressed;
-            btnExpenses.MouseEnter += (_, _) =>
-            {
-                if (btnExpenses.BackColor != AppColors.Primary)
-                    btnExpenses.BackColor = AppColors.SidebarHover;
-            };
-            btnExpenses.MouseLeave += (_, _) =>
-            {
-                if (btnExpenses.BackColor != AppColors.Primary && btnExpenses.BackColor != AppColors.SidebarSurface)
-                    btnExpenses.BackColor = AppColors.SidebarSurface;
-            };
 
             SidebarPanelM.Controls.Add(btnExpenses);
             SidebarPanelM.Controls.SetChildIndex(btnExpenses, SidebarPanelM.Controls.GetChildIndex(btnInventory) + 1);
+            _btnExpenses = btnExpenses;
         }
 
         private void AddSuppliersSidebarButton()
@@ -526,18 +555,6 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             };
 
             _btnSuppliers.Click += (_, _) => NavigateTo<SuppliersForm>(_btnSuppliers);
-            _btnSuppliers.FlatAppearance.MouseOverBackColor = AppColors.Primary;
-            _btnSuppliers.FlatAppearance.MouseDownBackColor = AppColors.SidebarPressed;
-            _btnSuppliers.MouseEnter += (_, _) =>
-            {
-                if (_btnSuppliers.BackColor != AppColors.Primary)
-                    _btnSuppliers.BackColor = AppColors.SidebarHover;
-            };
-            _btnSuppliers.MouseLeave += (_, _) =>
-            {
-                if (_btnSuppliers.BackColor != AppColors.Primary && _btnSuppliers.BackColor != AppColors.SidebarSurface)
-                    _btnSuppliers.BackColor = AppColors.SidebarSurface;
-            };
 
             SidebarPanelM.Controls.Add(_btnSuppliers);
             SidebarPanelM.Controls.SetChildIndex(_btnSuppliers, SidebarPanelM.Controls.GetChildIndex(BtnCustomers) + 1);
@@ -567,18 +584,6 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             };
 
             _btnCategories.Click += (_, _) => NavigateTo<ProductCategoriesForm>(_btnCategories);
-            _btnCategories.FlatAppearance.MouseOverBackColor = AppColors.Primary;
-            _btnCategories.FlatAppearance.MouseDownBackColor = AppColors.SidebarPressed;
-            _btnCategories.MouseEnter += (_, _) =>
-            {
-                if (_btnCategories.BackColor != AppColors.Primary)
-                    _btnCategories.BackColor = AppColors.SidebarHover;
-            };
-            _btnCategories.MouseLeave += (_, _) =>
-            {
-                if (_btnCategories.BackColor != AppColors.Primary && _btnCategories.BackColor != AppColors.SidebarSurface)
-                    _btnCategories.BackColor = AppColors.SidebarSurface;
-            };
 
             SidebarPanelM.Controls.Add(_btnCategories);
             SidebarPanelM.Controls.SetChildIndex(_btnCategories, SidebarPanelM.Controls.GetChildIndex(_btnSuppliers) + 1);
@@ -608,18 +613,6 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             };
 
             _btnUnits.Click += (_, _) => NavigateTo<ProductUnitsForm>(_btnUnits);
-            _btnUnits.FlatAppearance.MouseOverBackColor = AppColors.Primary;
-            _btnUnits.FlatAppearance.MouseDownBackColor = AppColors.SidebarPressed;
-            _btnUnits.MouseEnter += (_, _) =>
-            {
-                if (_btnUnits.BackColor != AppColors.Primary)
-                    _btnUnits.BackColor = AppColors.SidebarHover;
-            };
-            _btnUnits.MouseLeave += (_, _) =>
-            {
-                if (_btnUnits.BackColor != AppColors.Primary && _btnUnits.BackColor != AppColors.SidebarSurface)
-                    _btnUnits.BackColor = AppColors.SidebarSurface;
-            };
 
             SidebarPanelM.Controls.Add(_btnUnits);
             SidebarPanelM.Controls.SetChildIndex(_btnUnits, SidebarPanelM.Controls.GetChildIndex(_btnCategories) + 1);
@@ -649,18 +642,6 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             };
 
             _btnCashSessions.Click += (_, _) => NavigateTo<CashSessionForm>(_btnCashSessions);
-            _btnCashSessions.FlatAppearance.MouseOverBackColor = AppColors.Primary;
-            _btnCashSessions.FlatAppearance.MouseDownBackColor = AppColors.SidebarPressed;
-            _btnCashSessions.MouseEnter += (_, _) =>
-            {
-                if (_btnCashSessions.BackColor != AppColors.Primary)
-                    _btnCashSessions.BackColor = AppColors.SidebarHover;
-            };
-            _btnCashSessions.MouseLeave += (_, _) =>
-            {
-                if (_btnCashSessions.BackColor != AppColors.Primary && _btnCashSessions.BackColor != AppColors.SidebarSurface)
-                    _btnCashSessions.BackColor = AppColors.SidebarSurface;
-            };
 
             SidebarPanelM.Controls.Add(_btnCashSessions);
             SidebarPanelM.Controls.SetChildIndex(_btnCashSessions, SidebarPanelM.Controls.GetChildIndex(_btnUnits) + 1);
@@ -685,6 +666,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             _activeSidebarButton = button;
             _navigation.SetActiveButton(button);
             _navigation.Navigate<TForm>();
+            RefreshSidebarSelection();
         }
 
 
@@ -787,9 +769,12 @@ namespace DzentoPOS2.WinForms.Forms.Layout
 
         private void LoadText()
         {
-            labelVersion.Text = AppStrings.Version + " " + Application.ProductVersion;
+            labelVersion.RightToLeft = RightToLeft.No;
+            labelVersion.Text = AppStrings.Version + " \u200E" + Application.ProductVersion;
             lblFullName.Text = _currentUser.User?.FullName;
             lblRole.Text = _currentUser.User?.RoleName;
+            _toolTip.SetToolTip(lblFullName, lblFullName.Text ?? string.Empty);
+            _toolTip.SetToolTip(lblRole, lblRole.Text ?? string.Empty);
 
             _mainHeaderBar.SetUser(new UserInfoViewModel
             {
@@ -821,6 +806,19 @@ namespace DzentoPOS2.WinForms.Forms.Layout
 
             _mainHeaderBar.SetBranches(branchViewModels, _currentUser.User?.BranchId);
 
+            // Show the real branch under the user name (never the designer
+            // placeholder); hide the line when there is no branch.
+            var selectedBranch = branchViewModels.FirstOrDefault(b => b.Id == _currentUser.User?.BranchId)
+                ?? branchViewModels.FirstOrDefault(b => b.IsMainBranch)
+                ?? branchViewModels.FirstOrDefault();
+
+            if (selectedBranch is not null)
+                _currentBranchName = selectedBranch.Name;
+
+            lblBranch.Text = _currentBranchName;
+            lblBranch.Visible = _currentBranchName.Length > 0;
+            _toolTip.SetToolTip(lblBranch, _currentBranchName);
+
             _mainHeaderBar.SetNotifications(Array.Empty<NotificationItem>());
             ConfigureSettingsMenus();
 
@@ -837,6 +835,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             _btnCategories.Text = "  " + AppStrings.Categories;
             _btnUnits.Text = "  " + AppStrings.Units;
             _btnCashSessions.Text = "  " + AppStrings.CashSessions;
+            _btnExpenses.Text = "  " + AppStrings.ExpensesButton;
 
             btnInventory.Text = AppStrings.Inventory; 
 
@@ -987,7 +986,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             string culture = selectedIndex switch
             {
                 0 => SupportedLanguages.Arabic,
-                1 =>   SupportedLanguages.English,
+                1 => SupportedLanguages.English,
                 2 => SupportedLanguages.French,
                 _ => SupportedLanguages.Arabic
             };
@@ -995,14 +994,13 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             if (culture == _settings.Language)
                 return;
 
-            _languageService.SetLanguage(culture);
-
             _currentSettings.Update(s => s.Language = culture);
             _settings = _currentSettings.Current;
 
-            FormLocalizationHelper.ApplyDirection(this, _languageService);
+            // The shell refreshes itself through LanguageChanged (single entry
+            // point); no text is assigned here.
+            _languageService.SetLanguage(culture);
             ConfigureSidebarSettingsButton();
-            LoadText();
         }
 
         private static int LanguageToIndex(string? culture) =>
@@ -1015,7 +1013,10 @@ namespace DzentoPOS2.WinForms.Forms.Layout
 
         private void BranchSelector_BranchChanged(object? sender, BranchChangedEventArgs e)
         {
-            lblBranch.Text = e.Branch.Name;
+            _currentBranchName = e.Branch?.Name ?? string.Empty;
+            lblBranch.Text = _currentBranchName;
+            lblBranch.Visible = _currentBranchName.Length > 0;
+            _toolTip.SetToolTip(lblBranch, _currentBranchName);
         }
 
         private void UserMenu_MenuActionSelected(object? sender, UserMenuEventArgs e)

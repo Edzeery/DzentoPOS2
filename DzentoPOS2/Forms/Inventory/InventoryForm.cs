@@ -2,6 +2,7 @@ using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
+using DzentoPOS2.Shared.Helpers;
 using DzentoPOS2.WinForms.Controls;
 using DzentoPOS2.WinForms.Helpers;
 using DzentoPOS2.WinForms.Modules.Dashboard;
@@ -200,10 +201,10 @@ public partial class InventoryForm : LocalizableFormBase
     private async Task LoadStatsAsync()
     {
         var stats = await _productService.GetInventoryStatsAsync();
-        _kpiCards[0].SetData(stats.TotalProducts.ToString("N0"), string.Empty, true);
-        _kpiCards[1].SetData(stats.TotalStockValue.ToString("N2"), string.Empty, true);
-        _kpiCards[2].SetData(stats.LowStockProducts.ToString("N0"), string.Empty, stats.LowStockProducts == 0);
-        _kpiCards[3].SetData(stats.ActiveProducts.ToString("N0"), string.Empty, true);
+        _kpiCards[0].SetValue(stats.TotalProducts, KpiValueKind.Count);
+        _kpiCards[1].SetValue(stats.TotalStockValue, KpiValueKind.Money);
+        _kpiCards[2].SetValue(stats.LowStockProducts, KpiValueKind.Count);
+        _kpiCards[3].SetValue(stats.ActiveProducts, KpiValueKind.Count);
     }
 
     private async Task LoadDataAsync()

@@ -1,5 +1,6 @@
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Shared.Contracts.DTOs.Reports;
+using DzentoPOS2.Shared.Helpers;
 using DzentoPOS2.WinForms.Controls;
 using DzentoPOS2.WinForms.Themes;
 using FontAwesome.Sharp;
@@ -87,7 +88,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             foreach (var card in _cards)
             {
                 if (map.TryGetValue(card.CardKey, out var d))
-                    card.SetData(d.DisplayValue, d.TrendDisplay, d.IsUp);
+                    card.SetValue(d.Value, d.Kind, d.TrendKind, d.TrendPercent);
             }
         }
     }

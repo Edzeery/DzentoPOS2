@@ -2,6 +2,7 @@ using DzentoPOS2.App.Services.Reports.Interfaces;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Reports;
+using DzentoPOS2.Shared.Helpers;
 using DzentoPOS2.WinForms.Controls;
 using DzentoPOS2.WinForms.Helpers;
 using DzentoPOS2.WinForms.Modules.Dashboard;
@@ -146,14 +147,14 @@ public partial class ReportsForm : LocalizableFormBase
 
     private void ApplySummary(DashboardSummaryDto s)
     {
-        _kpiCards[0].SetData(s.SalesToday.DisplayValue, s.SalesToday.TrendDisplay, s.SalesToday.IsUp);
-        _kpiCards[1].SetData(s.PurchasesToday.DisplayValue, s.PurchasesToday.TrendDisplay, s.PurchasesToday.IsUp);
-        _kpiCards[2].SetData(s.MonthlySales.DisplayValue, s.MonthlySales.TrendDisplay, s.MonthlySales.IsUp);
-        _kpiCards[3].SetData(s.MonthlyPurchases.DisplayValue, s.MonthlyPurchases.TrendDisplay, s.MonthlyPurchases.IsUp);
-        _kpiCards[4].SetData(s.ExpectedProfit.DisplayValue, s.ExpectedProfit.TrendDisplay, s.ExpectedProfit.IsUp);
-        _kpiCards[5].SetData(s.ActualProfit.DisplayValue, s.ActualProfit.TrendDisplay, s.ActualProfit.IsUp);
-        _kpiCards[6].SetData(s.SalesCount.DisplayValue, s.SalesCount.TrendDisplay, s.SalesCount.IsUp);
-        _kpiCards[7].SetData(s.PurchasesCount.DisplayValue, s.PurchasesCount.TrendDisplay, s.PurchasesCount.IsUp);
+        _kpiCards[0].SetValue(s.SalesToday.Value, s.SalesToday.Kind, s.SalesToday.TrendKind, s.SalesToday.TrendPercent);
+        _kpiCards[1].SetValue(s.PurchasesToday.Value, s.PurchasesToday.Kind, s.PurchasesToday.TrendKind, s.PurchasesToday.TrendPercent);
+        _kpiCards[2].SetValue(s.MonthlySales.Value, s.MonthlySales.Kind, s.MonthlySales.TrendKind, s.MonthlySales.TrendPercent);
+        _kpiCards[3].SetValue(s.MonthlyPurchases.Value, s.MonthlyPurchases.Kind, s.MonthlyPurchases.TrendKind, s.MonthlyPurchases.TrendPercent);
+        _kpiCards[4].SetValue(s.ExpectedProfit.Value, s.ExpectedProfit.Kind, s.ExpectedProfit.TrendKind, s.ExpectedProfit.TrendPercent);
+        _kpiCards[5].SetValue(s.ActualProfit.Value, s.ActualProfit.Kind, s.ActualProfit.TrendKind, s.ActualProfit.TrendPercent);
+        _kpiCards[6].SetValue(s.SalesCount.Value, s.SalesCount.Kind, s.SalesCount.TrendKind, s.SalesCount.TrendPercent);
+        _kpiCards[7].SetValue(s.PurchasesCount.Value, s.PurchasesCount.Kind, s.PurchasesCount.TrendKind, s.PurchasesCount.TrendPercent);
 
         _gridBestSelling.DataSource = s.BestSellingProducts;
         _gridCustomers.DataSource = s.TopCustomers;

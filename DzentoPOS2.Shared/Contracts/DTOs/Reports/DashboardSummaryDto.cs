@@ -1,5 +1,7 @@
 namespace DzentoPOS2.Shared.Contracts.DTOs.Reports
 {
+    using DzentoPOS2.Shared.Helpers;
+
     public class DashboardSummaryDto
     {
         public DashboardCardData SalesToday { get; set; } = new();
@@ -26,11 +28,31 @@ namespace DzentoPOS2.Shared.Contracts.DTOs.Reports
 
     public class DashboardCardData
     {
+        /// <summary>The raw numeric value (never a pre-formatted string).</summary>
         public decimal Value { get; set; }
+
+        /// <summary>How <see cref="Value"/> must be formatted.</summary>
+        public KpiValueKind Kind { get; set; } = KpiValueKind.Count;
+
+        /// <summary>What the small chip under the value shows.</summary>
+        public KpiTrendKind TrendKind { get; set; } = KpiTrendKind.None;
+
         public decimal TrendPercent { get; set; }
+
         public bool IsUp => TrendPercent >= 0;
-        public string DisplayValue { get; set; } = "0";
-        public string TrendDisplay { get; set; } = "0%";
+    }
+
+    /// <summary>Content of the small trend chip of a KPI card.</summary>
+    public enum KpiTrendKind
+    {
+        /// <summary>No comparable history: the chip is hidden (never a fake +0%).</summary>
+        None,
+
+        /// <summary>Change versus the previous period, e.g. "▲ +12%".</summary>
+        Change,
+
+        /// <summary>Profit margin, e.g. "Margin 12.5%".</summary>
+        Margin
     }
 
     public class LineChartPoint

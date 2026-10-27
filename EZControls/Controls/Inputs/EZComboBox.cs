@@ -4,6 +4,7 @@ using EZControls.Core.Drawing;
 using EZControls.Core.Enums;
 using EZControls.Core.Themes;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing.Drawing2D;
 
 namespace EZControls.Controls.Inputs;
@@ -252,6 +253,7 @@ public class EZComboBox : EZControlBase
 
     /// <summary>The value of the selected item's <see cref="ValueMember"/> property.</summary>
     [Browsable(false)]
+    [DisallowNull]
     public object? SelectedValue
     {
         get => _inner?.SelectedValue;

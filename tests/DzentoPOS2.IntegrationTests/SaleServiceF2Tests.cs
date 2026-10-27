@@ -1,8 +1,10 @@
-using DzentoPOS2.App.Services.Sales;
+﻿using DzentoPOS2.App.Services.Sales;
 using DzentoPOS2.Core.Entities.Partners;
+using DzentoPOS2.Core.Entities.Systems;
 using DzentoPOS2.Core.Enums;
 using DzentoPOS2.Core.Exceptions;
 using DzentoPOS2.Core.Services.Sales;
+using DzentoPOS2.Core.Systems;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Shared.Contracts.DTOs.Sales;
 using DzentoPOS2.Shared.Helpers;
@@ -135,7 +137,7 @@ public sealed class SaleServiceF2Tests
             paid: 0,
             price: 10);
 
-        await Assert.ThrowsAsync<DomainException>(() => sales.CreateAsync(dto));
+        await Assert.ThrowsAnyAsync<DomainException>(() => sales.CreateAsync(dto));
     }
 
     [Fact]
@@ -146,7 +148,7 @@ public sealed class SaleServiceF2Tests
 
         var dto = Sale(_fixture.Data.ProductId, customerId: Guid.Empty, paid: 0, price: 10);
 
-        await Assert.ThrowsAsync<DomainException>(() => sales.CreateAsync(dto));
+        await Assert.ThrowsAnyAsync<DomainException>(() => sales.CreateAsync(dto));
     }
 
     [Fact]
@@ -212,5 +214,70 @@ public sealed class SaleServiceF2Tests
                 c.TransactionType == MovementType.SaleVoidCashOut);
 
         Assert.Equal(10, voidCash.Amount);
+    }
+
+    [Fact]
+    public async Task Discount_ceiling_applies_to_fixed_mode_via_effective_percent()
+    {
+        await using var scope = _fixture.CreateScope();
+        var sales = scope.ServiceProvider.GetRequiredService<ISaleService>();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await SetMaxDiscountAsync(context, 10);
+
+        // subtotal 100, fixed 50 -> effective 50% > 10% -> rejected.
+        await Assert.ThrowsAsync<CodedDomainException>(() => sales.CreateAsync(
+            Sale(_fixture.Data.ProductId, mode: DiscountMode.FixedAmount, discount: 50, paid: 50, price: 100)));
+
+        // fixed 10 -> effective 10% -> accepted.
+        var sale = await sales.CreateAsync(
+            Sale(_fixture.Data.ProductId, mode: DiscountMode.FixedAmount, discount: 10, paid: 90, price: 100));
+
+        Assert.Equal(10, sale.DiscountAmount);
+        Assert.Equal(90, sale.Total);
+    }
+
+    [Fact]
+    public async Task Discount_ceiling_still_applies_to_percent_mode()
+    {
+        await using var scope = _fixture.CreateScope();
+        var sales = scope.ServiceProvider.GetRequiredService<ISaleService>();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await SetMaxDiscountAsync(context, 10);
+
+        await Assert.ThrowsAsync<CodedDomainException>(() => sales.CreateAsync(
+            Sale(_fixture.Data.ProductId, mode: DiscountMode.Percent, discount: 50, paid: 50, price: 100)));
+    }
+
+    [Fact]
+    public async Task Discount_ceiling_ignores_a_zero_subtotal()
+    {
+        await using var scope = _fixture.CreateScope();
+        var sales = scope.ServiceProvider.GetRequiredService<ISaleService>();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await SetMaxDiscountAsync(context, 0);
+
+        // subtotal 0 -> no effective discount -> accepted.
+        var sale = await sales.CreateAsync(
+            Sale(_fixture.Data.ProductId, mode: DiscountMode.FixedAmount, discount: 0, paid: 0, price: 0));
+
+        Assert.Equal(0, sale.Total);
+    }
+
+    private static async Task SetMaxDiscountAsync(AppDbContext context, int percent)
+    {
+        var setting = await context.AppSettings
+            .FirstOrDefaultAsync(x => x.Key == AppSettingKeys.MaxDiscountPercent);
+
+        if (setting is null)
+        {
+            setting = new AppSetting { Key = AppSettingKeys.MaxDiscountPercent, Group = "Sales" };
+            context.AppSettings.Add(setting);
+        }
+
+        setting.Value = percent.ToString();
+        await context.SaveChangesAsync();
     }
 }

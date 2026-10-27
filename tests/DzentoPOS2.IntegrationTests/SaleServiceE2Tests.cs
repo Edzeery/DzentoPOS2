@@ -1,4 +1,4 @@
-using DzentoPOS2.App.Services.Inventory;
+﻿using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.App.Services.Purchases;
 using DzentoPOS2.App.Services.Sales;
 using DzentoPOS2.Core.Enums;
@@ -68,7 +68,7 @@ public sealed class SaleServiceE2Tests
         var beforeStock = await GetStockAsync(scope, _fixture.Data.TrackedProductId);
         var beforeInvoices = await context.SalesInvoices.CountAsync();
 
-        await Assert.ThrowsAsync<DomainException>(() => sales.CreateAsync(new CreateSaleDto
+        await Assert.ThrowsAnyAsync<DomainException>(() => sales.CreateAsync(new CreateSaleDto
         {
             PaidAmount = 1000000,
             Items =

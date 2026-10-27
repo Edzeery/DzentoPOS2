@@ -1210,17 +1210,17 @@ public partial class SalesForm : LocalizableFormBase
                     page.Size(PageSizes.A4);
                     page.Margin(30);
                     page.DefaultTextStyle(x => x.FontSize(10));
-                    page.Header().Text($"Invoice { _lastInvoice.InvoiceNumber }").SemiBold().FontSize(16);
+                    page.Header().Text($"{AppStrings.ReceiptInvoice} { _lastInvoice.InvoiceNumber }").SemiBold().FontSize(16);
                     page.Content().Column(col =>
                     {
-                        col.Item().Text($"Date: {_lastInvoice.CreatedAt:yyyy-MM-dd HH:mm}");
-                        col.Item().Text($"Subtotal: {_lastInvoice.Subtotal:N2} {CurrencyCode}");
-                        col.Item().Text($"Discount: {_lastInvoice.DiscountDisplay} {CurrencyCode}");
-                        col.Item().Text($"Tax: {_lastInvoice.TaxAmount:N2} {CurrencyCode}");
-                        col.Item().Text($"Total: {_lastInvoice.Total:N2} {CurrencyCode}");
-                        col.Item().Text($"Paid: {_lastInvoice.PaidAmount:N2} {CurrencyCode}");
-                        col.Item().Text($"Remaining: {_lastInvoice.RemainingAmount:N2} {CurrencyCode}");
-                        col.Item().Text($"Change: {_lastInvoice.ChangeAmount:N2} {CurrencyCode}");
+                        col.Item().Text($"{AppStrings.Date}: {_lastInvoice.CreatedAt:yyyy-MM-dd HH:mm}");
+                        col.Item().Text($"{AppStrings.Subtotal}: {_lastInvoice.Subtotal:N2} {CurrencyCode}");
+                        col.Item().Text($"{AppStrings.Discount}: {_lastInvoice.DiscountDisplay} {CurrencyCode}");
+                        col.Item().Text($"{AppStrings.TaxAmount}: {_lastInvoice.TaxAmount:N2} {CurrencyCode}");
+                        col.Item().Text($"{AppStrings.Total}: {_lastInvoice.Total:N2} {CurrencyCode}");
+                        col.Item().Text($"{AppStrings.PaidAmount}: {_lastInvoice.PaidAmount:N2} {CurrencyCode}");
+                        col.Item().Text($"{AppStrings.RemainingAmount}: {_lastInvoice.RemainingAmount:N2} {CurrencyCode}");
+                        col.Item().Text($"{AppStrings.Change}: {_lastInvoice.ChangeAmount:N2} {CurrencyCode}");
                     });
                     page.Footer().AlignCenter().Text("DzentoPOS2");
                 });

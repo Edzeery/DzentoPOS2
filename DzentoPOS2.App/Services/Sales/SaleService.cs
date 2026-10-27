@@ -193,10 +193,11 @@ namespace DzentoPOS2.App.Services.Sales
                 digits);
 
             if (totals.Remaining > 0 && dto.CustomerId == Guid.Empty)
-                throw new DomainException(
+                throw new CodedDomainException(
+                    DomainErrorCodes.CreditRequiresCustomer,
                     "A customer is required when the sale is not paid in full.");
 
-            await EnforceDiscountLimitAsync(dto);
+            await EnforceDiscountLimitAsync(totals);
 
             for (var attempt = 0; ; attempt++)
             {
@@ -300,16 +301,22 @@ namespace DzentoPOS2.App.Services.Sales
 
         /// <summary>
         /// Discount ceiling. Reads <c>sales.max_discount_percent</c> (default 100).
+        /// The ceiling is expressed as a percentage and is enforced for BOTH
+        /// discount modes by comparing the effective percentage
+        /// (<c>DiscountAmount / Subtotal * 100</c>) of the calculator output.
         /// Hook: the permissions phase will let an authorised user bypass this.
         /// </summary>
-        private async Task EnforceDiscountLimitAsync(CreateSaleDto dto)
+        private async Task EnforceDiscountLimitAsync(InvoiceTotals totals)
         {
-            if (dto.DiscountMode != DiscountMode.Percent)
+            if (totals.Subtotal <= 0 || totals.DiscountAmount <= 0)
                 return;
 
+            var effectivePercent = totals.DiscountAmount / totals.Subtotal * 100m;
+
             var max = await _salesPolicy.GetMaxDiscountPercentAsync();
-            if (dto.DiscountValue > max)
-                throw new DomainException(
+            if (effectivePercent > max)
+                throw new CodedDomainException(
+                    DomainErrorCodes.DiscountExceedsLimit,
                     $"Discount exceeds the allowed maximum of {max:0.##}%.");
         }
 

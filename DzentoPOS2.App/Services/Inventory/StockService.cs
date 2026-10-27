@@ -216,7 +216,8 @@ public sealed class StockService : IStockService
 
             if (after < 0 && !allowNegative)
             {
-                throw new DomainException(
+                throw new CodedDomainException(
+                    DomainErrorCodes.InsufficientStock,
                     $"Insufficient stock for '{product.Name}'. Available: {before:N2}, requested: {quantity:N2}.");
             }
 

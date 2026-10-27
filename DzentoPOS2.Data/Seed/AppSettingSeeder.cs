@@ -1,4 +1,5 @@
 ﻿using DzentoPOS2.Core.Entities.Systems;
+using DzentoPOS2.Core.Systems;
 using DzentoPOS2.Data.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,6 +20,7 @@ namespace DzentoPOS2.Data.Seed
                 new() { Key = "company.tax_number", Value = "", Group = "Company" },
                 new() { Key = "pos.default_customer", Value = "عميل نقدي", Group = "POS" },
                 new() { Key = "pos.receipt_footer", Value = "شكراً لتسوقكم معنا", Group = "POS" },
+                new() { Key = AppSettingKeys.MaxDiscountPercent, Value = "100", Group = "Sales" },
                 new() { Key = "inventory.low_stock_threshold", Value = "10", Group = "Inventory" },
                 new() { Key = "inventory.allow_negative_stock", Value = "false", Group = "Inventory" },
                 new() { Key = "currency.default", Value = "SAR", Group = "Currency" },

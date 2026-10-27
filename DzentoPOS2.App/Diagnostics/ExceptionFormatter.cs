@@ -102,6 +102,16 @@ public static class ExceptionFormatter
         {
             if (current is StoreNotInitializedException)
                 return AppStrings.StoreNotInitialized;
+
+            if (current is CashSessionRequiredException)
+                return AppStrings.NoOpenSession;
+
+            if (current is CodedDomainException coded)
+            {
+                var localized = LocalizeCode(coded.Code);
+                if (localized is not null)
+                    return localized;
+            }
         }
 
         // Domain messages are written for the user, so surface them directly.
@@ -109,4 +119,25 @@ public static class ExceptionFormatter
             ? exception.Message
             : AppStrings.ErrorDomain;
     }
+
+    /// <summary>
+    /// Maps a stable <see cref="DomainErrorCodes"/> entry to a localized
+    /// message. Returns <c>null</c> for codes without a dedicated string so
+    /// the caller can fall back to the raw (developer) message.
+    /// </summary>
+    private static string? LocalizeCode(string code) => code switch
+    {
+        DomainErrorCodes.DiscountExceedsSubtotal => AppStrings.DiscountExceedsSubtotal,
+        DomainErrorCodes.DiscountExceedsLimit => AppStrings.DiscountExceedsLimit,
+        DomainErrorCodes.InvalidTaxRate => AppStrings.InvalidTaxRate,
+        DomainErrorCodes.CreditRequiresCustomer => AppStrings.CreditSaleRequiresCustomer,
+        DomainErrorCodes.InsufficientStock => AppStrings.InsufficientStock,
+        DomainErrorCodes.NoOpenSession => AppStrings.NoOpenSession,
+        DomainErrorCodes.SaleRequiresItem => AppStrings.EmptyCart,
+        DomainErrorCodes.SessionAlreadyOpen => AppStrings.SessionAlreadyOpen,
+        DomainErrorCodes.SessionAlreadyClosed => AppStrings.SessionAlreadyClosed,
+        DomainErrorCodes.SessionNotFound => AppStrings.NoOpenSession,
+        DomainErrorCodes.CashboxNotFound => AppStrings.ErrorDomain,
+        _ => null
+    };
 }

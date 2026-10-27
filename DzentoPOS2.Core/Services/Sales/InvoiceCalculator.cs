@@ -42,22 +42,22 @@ public static class InvoiceCalculator
         int currencyDecimalDigits)
     {
         if (lines is null || lines.Count == 0)
-            throw new DomainException("Sale must have at least one item");
+            throw new CodedDomainException(DomainErrorCodes.SaleRequiresItem, "Sale must have at least one item");
 
         if (!Enum.IsDefined(typeof(DiscountMode), discountMode))
-            throw new DomainException("Discount mode is invalid");
+            throw new CodedDomainException(DomainErrorCodes.InvalidDiscountMode, "Discount mode is invalid");
 
         if (discountValue < 0)
-            throw new DomainException("Discount cannot be negative");
+            throw new CodedDomainException(DomainErrorCodes.DiscountNegative, "Discount cannot be negative");
 
         if (taxRate < 0 || taxRate > 100)
-            throw new DomainException("Tax must be between 0 and 100");
+            throw new CodedDomainException(DomainErrorCodes.InvalidTaxRate, "Tax must be between 0 and 100");
 
         if (tenderedAmount < 0)
-            throw new DomainException("Paid amount cannot be negative");
+            throw new CodedDomainException(DomainErrorCodes.InvalidPayment, "Paid amount cannot be negative");
 
         if (currencyDecimalDigits < 0 || currencyDecimalDigits > 4)
-            throw new DomainException("Currency decimal digits are invalid");
+            throw new CodedDomainException(DomainErrorCodes.InvalidCurrency, "Currency decimal digits are invalid");
 
         // Each line is rounded first so the printed lines always add up to the
         // subtotal (no drift between the lines and their sum).
@@ -65,10 +65,10 @@ public static class InvoiceCalculator
         foreach (var line in lines)
         {
             if (line.Quantity <= 0)
-                throw new DomainException("Item quantity must be greater than zero");
+                throw new CodedDomainException(DomainErrorCodes.InvalidQuantity, "Item quantity must be greater than zero");
 
             if (line.Price < 0)
-                throw new DomainException("Item price cannot be negative");
+                throw new CodedDomainException(DomainErrorCodes.InvalidPrice, "Item price cannot be negative");
 
             subtotal += Round(line.Quantity * line.Price, currencyDecimalDigits);
         }
@@ -79,7 +79,7 @@ public static class InvoiceCalculator
         if (discountMode == DiscountMode.Percent)
         {
             if (discountValue > 100)
-                throw new DomainException("Discount percentage must be between 0 and 100");
+                throw new CodedDomainException(DomainErrorCodes.DiscountExceedsSubtotal, "Discount percentage must be between 0 and 100");
 
             discountAmount = Round(subtotal * discountValue / 100m, currencyDecimalDigits);
             if (discountAmount > subtotal)
@@ -88,7 +88,7 @@ public static class InvoiceCalculator
         else
         {
             if (discountValue > subtotal)
-                throw new DomainException("Discount cannot exceed subtotal");
+                throw new CodedDomainException(DomainErrorCodes.DiscountExceedsSubtotal, "Discount cannot exceed subtotal");
 
             discountAmount = Round(discountValue, currencyDecimalDigits);
         }

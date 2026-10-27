@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -1163,5 +1163,20 @@
   </data>
   <data name="MinimumLabel" xml:space="preserve">
     <value>Minimum</value>
+  </data>
+  <data name="DiscountExceedsSubtotal" xml:space="preserve">
+    <value>Discount cannot exceed the subtotal.</value>
+  </data>
+  <data name="InvalidTaxRate" xml:space="preserve">
+    <value>The tax rate must be between 0 and 100.</value>
+  </data>
+  <data name="InsufficientStock" xml:space="preserve">
+    <value>Not enough stock to complete this operation.</value>
+  </data>
+  <data name="ReceiptInvoice" xml:space="preserve">
+    <value>Invoice</value>
+  </data>
+  <data name="SessionAlreadyClosed" xml:space="preserve">
+    <value>This cash session is already closed.</value>
   </data>
 </root>

@@ -3013,5 +3013,50 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("MinimumLabel", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Discount cannot exceed the subtotal..
+        /// </summary>
+        public static string DiscountExceedsSubtotal {
+            get {
+                return ResourceManager.GetString("DiscountExceedsSubtotal", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The tax rate must be between 0 and 100..
+        /// </summary>
+        public static string InvalidTaxRate {
+            get {
+                return ResourceManager.GetString("InvalidTaxRate", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Not enough stock to complete this operation..
+        /// </summary>
+        public static string InsufficientStock {
+            get {
+                return ResourceManager.GetString("InsufficientStock", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Invoice.
+        /// </summary>
+        public static string ReceiptInvoice {
+            get {
+                return ResourceManager.GetString("ReceiptInvoice", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to This cash session is already closed..
+        /// </summary>
+        public static string SessionAlreadyClosed {
+            get {
+                return ResourceManager.GetString("SessionAlreadyClosed", resourceCulture);
+            }
+        }
     }
 }

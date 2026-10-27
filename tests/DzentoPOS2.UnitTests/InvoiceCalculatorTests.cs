@@ -1,4 +1,4 @@
-using DzentoPOS2.Core.Exceptions;
+﻿using DzentoPOS2.Core.Exceptions;
 using DzentoPOS2.Core.Services.Sales;
 using Xunit;
 
@@ -130,14 +130,14 @@ public sealed class InvoiceCalculatorTests
     [Fact]
     public void FixedDiscountAboveSubtotalIsRejected()
     {
-        Assert.Throws<DomainException>(() =>
+        Assert.ThrowsAny<DomainException>(() =>
             Calc(1, 50, DiscountMode.FixedAmount, 50.01m));
     }
 
     [Fact]
     public void PercentAboveHundredIsRejected()
     {
-        Assert.Throws<DomainException>(() =>
+        Assert.ThrowsAny<DomainException>(() =>
             Calc(1, 50, DiscountMode.Percent, 100.01m));
     }
 
@@ -152,14 +152,14 @@ public sealed class InvoiceCalculatorTests
     [Fact]
     public void InvalidDiscountModeIsRejected()
     {
-        Assert.Throws<DomainException>(() =>
+        Assert.ThrowsAny<DomainException>(() =>
             Calc(1, 10, (DiscountMode)99));
     }
 
     [Fact]
     public void NegativeDiscountIsRejected()
     {
-        Assert.Throws<DomainException>(() => Calc(1, 10, discount: -0.01m));
+        Assert.ThrowsAny<DomainException>(() => Calc(1, 10, discount: -0.01m));
     }
 
     // ---- rounding ---------------------------------------------------------
@@ -281,7 +281,7 @@ public sealed class InvoiceCalculatorTests
     [Fact]
     public void RejectsEmptyInvoice()
     {
-        Assert.Throws<DomainException>(() =>
+        Assert.ThrowsAny<DomainException>(() =>
             InvoiceCalculator.Calculate(
                 Array.Empty<InvoiceLine>(),
                 DiscountMode.Percent,
@@ -296,13 +296,13 @@ public sealed class InvoiceCalculatorTests
     [InlineData(-1)]
     public void RejectsNonPositiveQuantity(decimal quantity)
     {
-        Assert.Throws<DomainException>(() => Calc(quantity, 10));
+        Assert.ThrowsAny<DomainException>(() => Calc(quantity, 10));
     }
 
     [Fact]
     public void RejectsNegativePrice()
     {
-        Assert.Throws<DomainException>(() => Calc(1, -1));
+        Assert.ThrowsAny<DomainException>(() => Calc(1, -1));
     }
 
     [Theory]
@@ -310,13 +310,13 @@ public sealed class InvoiceCalculatorTests
     [InlineData(100.01)]
     public void RejectsInvalidTax(decimal tax)
     {
-        Assert.Throws<DomainException>(() => Calc(1, 10, tax: tax));
+        Assert.ThrowsAny<DomainException>(() => Calc(1, 10, tax: tax));
     }
 
     [Fact]
     public void RejectsNegativePayment()
     {
-        Assert.Throws<DomainException>(() => Calc(1, 10, paid: -1));
+        Assert.ThrowsAny<DomainException>(() => Calc(1, 10, paid: -1));
     }
 
     [Theory]
@@ -324,7 +324,7 @@ public sealed class InvoiceCalculatorTests
     [InlineData(5)]
     public void RejectsInvalidCurrencyDigits(int digits)
     {
-        Assert.Throws<DomainException>(() => Calc(1, 10, digits: digits));
+        Assert.ThrowsAny<DomainException>(() => Calc(1, 10, digits: digits));
     }
 
     [Fact]

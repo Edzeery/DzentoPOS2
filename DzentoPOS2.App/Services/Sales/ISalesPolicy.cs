@@ -1,3 +1,4 @@
+using DzentoPOS2.Core.Systems;
 using DzentoPOS2.Data.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,7 +27,7 @@ public interface ISalesPolicy
 /// </summary>
 public sealed class SalesPolicy : ISalesPolicy
 {
-    public const string MaxDiscountPercentKey = "sales.max_discount_percent";
+    public const string MaxDiscountPercentKey = AppSettingKeys.MaxDiscountPercent;
 
     public const decimal DefaultMaxDiscountPercent = 100m;
 

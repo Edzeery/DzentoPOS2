@@ -36,11 +36,35 @@ namespace DzentoPOS2.WinForms.Controls
         private Color _appliedAccent = Color.Gray;
 
         /// <summary>
-        /// When true the value is set immediately (no animation). There is no
-        /// reduce-motion preference in the app yet, so it defaults to false;
-        /// this is the hook for one.
+        /// When true the value is set immediately (no animation). It follows the
+        /// Windows "Show animations in Windows" accessibility setting
+        /// (<see cref="SystemInformation.UIEffectsEnabled"/>), so a user who
+        /// turned animations off for motion sensitivity (or a slow machine)
+        /// gets instant values. It is re-read when the system preference
+        /// changes.
         /// </summary>
         public static bool ReduceMotion { get; set; }
+
+        static KpiCard()
+        {
+            ReduceMotion = !SystemInformation.UIEffectsEnabled;
+
+            try
+            {
+                Microsoft.Win32.SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
+            }
+            catch
+            {
+                // SystemEvents needs a message loop and an interactive session.
+                // Without them the initial value above still applies.
+            }
+        }
+
+        private static void OnUserPreferenceChanged(
+            object sender, Microsoft.Win32.UserPreferenceChangedEventArgs e)
+        {
+            ReduceMotion = !SystemInformation.UIEffectsEnabled;
+        }
 
         /// <summary>Fraction digits used for money values (from RegionalContext).</summary>
         public static int CurrencyDigits { get; set; } = 2;

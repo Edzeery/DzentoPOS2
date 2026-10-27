@@ -1179,4 +1179,61 @@
   <data name="SessionAlreadyClosed" xml:space="preserve">
     <value>Cette session de caisse est déjà fermée.</value>
   </data>
+  <data name="OpenCashDrawer" xml:space="preserve">
+    <value>Ouvrir la caisse</value>
+  </data>
+  <data name="CashDrawer" xml:space="preserve">
+    <value>Caisse</value>
+  </data>
+  <data name="DrawerOpen" xml:space="preserve">
+    <value>Caisse ouverte</value>
+  </data>
+  <data name="DrawerClosed" xml:space="preserve">
+    <value>Caisse fermée</value>
+  </data>
+  <data name="DrawerNotOpen" xml:space="preserve">
+    <value>Ouvrez la caisse avant d'effectuer une vente.</value>
+  </data>
+  <data name="SessionSummary" xml:space="preserve">
+    <value>Résumé de la session</value>
+  </data>
+  <data name="TotalSales" xml:space="preserve">
+    <value>Ventes totales</value>
+  </data>
+  <data name="CashSales" xml:space="preserve">
+    <value>Ventes en espèces</value>
+  </data>
+  <data name="NonCashSales" xml:space="preserve">
+    <value>Carte / autre</value>
+  </data>
+  <data name="Invoices" xml:space="preserve">
+    <value>Factures</value>
+  </data>
+  <data name="Voids" xml:space="preserve">
+    <value>Annulées</value>
+  </data>
+  <data name="PayIn" xml:space="preserve">
+    <value>Encaissement</value>
+  </data>
+  <data name="PayOut" xml:space="preserve">
+    <value>Décaissement</value>
+  </data>
+  <data name="SessionOpenedSuccess" xml:space="preserve">
+    <value>Session de caisse ouverte.</value>
+  </data>
+  <data name="SessionClosedSuccess" xml:space="preserve">
+    <value>Session de caisse fermée.</value>
+  </data>
+  <data name="PreviousBusinessDayWarning" xml:space="preserve">
+    <value>La caisse a été ouverte un jour ouvré précédent. Fermez-la avant de continuer.</value>
+  </data>
+  <data name="ConfirmCloseSession" xml:space="preserve">
+    <value>Fermer la session de caisse en cours ?</value>
+  </data>
+  <data name="OpenSession" xml:space="preserve">
+    <value>Ouvrir la session</value>
+  </data>
+  <data name="CloseSession" xml:space="preserve">
+    <value>Fermer la session</value>
+  </data>
 </root>

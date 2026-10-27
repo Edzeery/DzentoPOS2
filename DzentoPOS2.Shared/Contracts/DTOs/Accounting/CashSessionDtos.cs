@@ -62,9 +62,18 @@ namespace DzentoPOS2.Shared.Contracts.DTOs.Accounting
     {
         public Guid SessionId { get; set; }
 
+        public Guid CashboxId { get; set; }
+
         public decimal OpeningBalance { get; set; }
 
+        /// <summary>Sum of every non-voided invoice total recorded in the session.</summary>
+        public decimal TotalSales { get; set; }
+
+        /// <summary>Cash that was actually applied to non-voided invoices.</summary>
         public decimal CashSales { get; set; }
+
+        /// <summary>Non-cash sales grouped by payment method (card, transfer, ...).</summary>
+        public Dictionary<string, decimal> NonCashSalesByMethod { get; set; } = new();
 
         public decimal CashRefunds { get; set; }
 
@@ -74,6 +83,16 @@ namespace DzentoPOS2.Shared.Contracts.DTOs.Accounting
 
         public decimal Expenses { get; set; }
 
+        /// <summary>Number of non-voided invoices recorded in the session.</summary>
+        public int InvoiceCount { get; set; }
+
+        /// <summary>Number of invoices that were voided during the session.</summary>
+        public int VoidCount { get; set; }
+
+        /// <summary>
+        /// Expected cash held by the drawer:
+        /// <c>Opening + CashSales + PayIns - PayOuts - Expenses - CashRefunds</c>.
+        /// </summary>
         public decimal ExpectedBalance { get; set; }
     }
 

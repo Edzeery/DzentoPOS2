@@ -1179,4 +1179,61 @@
   <data name="SessionAlreadyClosed" xml:space="preserve">
     <value>This cash session is already closed.</value>
   </data>
+  <data name="OpenCashDrawer" xml:space="preserve">
+    <value>Open Cash Session</value>
+  </data>
+  <data name="CashDrawer" xml:space="preserve">
+    <value>Cash Drawer</value>
+  </data>
+  <data name="DrawerOpen" xml:space="preserve">
+    <value>Drawer Open</value>
+  </data>
+  <data name="DrawerClosed" xml:space="preserve">
+    <value>Drawer Closed</value>
+  </data>
+  <data name="DrawerNotOpen" xml:space="preserve">
+    <value>Open the cash drawer before making a sale.</value>
+  </data>
+  <data name="SessionSummary" xml:space="preserve">
+    <value>Session Summary</value>
+  </data>
+  <data name="TotalSales" xml:space="preserve">
+    <value>Total Sales</value>
+  </data>
+  <data name="CashSales" xml:space="preserve">
+    <value>Cash Sales</value>
+  </data>
+  <data name="NonCashSales" xml:space="preserve">
+    <value>Card / Other</value>
+  </data>
+  <data name="Invoices" xml:space="preserve">
+    <value>Invoices</value>
+  </data>
+  <data name="Voids" xml:space="preserve">
+    <value>Voids</value>
+  </data>
+  <data name="PayIn" xml:space="preserve">
+    <value>Pay In</value>
+  </data>
+  <data name="PayOut" xml:space="preserve">
+    <value>Pay Out</value>
+  </data>
+  <data name="SessionOpenedSuccess" xml:space="preserve">
+    <value>Cash session opened.</value>
+  </data>
+  <data name="SessionClosedSuccess" xml:space="preserve">
+    <value>Cash session closed.</value>
+  </data>
+  <data name="PreviousBusinessDayWarning" xml:space="preserve">
+    <value>The cash drawer was opened on a previous business day. Close it before continuing.</value>
+  </data>
+  <data name="ConfirmCloseSession" xml:space="preserve">
+    <value>Close the current cash session?</value>
+  </data>
+  <data name="OpenSession" xml:space="preserve">
+    <value>Open Session</value>
+  </data>
+  <data name="CloseSession" xml:space="preserve">
+    <value>Close Session</value>
+  </data>
 </root>

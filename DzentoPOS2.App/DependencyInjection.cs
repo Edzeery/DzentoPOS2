@@ -1,6 +1,7 @@
 ﻿using DzentoPOS2.App.Authentication;
 using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Accounting;
+using DzentoPOS2.App.Services.Events;
 using DzentoPOS2.App.Services.Identity;
 using DzentoPOS2.App.Services.Identity.Interfaces;
 using DzentoPOS2.App.Services.Inventory;
@@ -39,6 +40,10 @@ namespace DzentoPOS2.App
 
             services.AddSingleton<ICurrentUserService,
                 CurrentUserService>();
+
+            // Singleton so every scoped service and every form of the running
+            // shell share the same sale / cash-drawer notifications.
+            services.AddSingleton<ISalesEventPublisher, SalesEventPublisher>();
 
             services.AddScoped<IPermissionService,
                 PermissionService>();

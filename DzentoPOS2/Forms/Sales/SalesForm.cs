@@ -10,6 +10,7 @@ using Color = System.Drawing.Color;
 using Size = System.Drawing.Size;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
+using DzentoPOS2.Shared.Contracts.DTOs.Accounting;
 using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
 using DzentoPOS2.Shared.Contracts.DTOs.Partners;
 using DzentoPOS2.Shared.Contracts.DTOs.Sales;
@@ -17,9 +18,11 @@ using DzentoPOS2.WinForms.Configurations;
 using DzentoPOS2.WinForms.Controls;
 using DzentoPOS2.WinForms.Themes;
 using DzentoPOS2.WinForms.Helpers;
+using DzentoPOS2.WinForms.Forms.Accounting;
 using DzentoPOS2.WinForms.Forms.Customers;
 using EZControls.Controls.Inputs;
 using FontAwesome.Sharp;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DzentoPOS2.WinForms.Forms.Sales;
 
@@ -33,9 +36,13 @@ public partial class SalesForm : LocalizableFormBase
     private readonly ICustomerService _customerService;
     private readonly ICurrentSettingsService _currentSettings;
     private readonly ICashSessionService _cashSessionService;
+    private readonly IServiceProvider _services;
 
     private readonly Panel _leftPanel;
     private readonly Panel _rightPanel;
+    private readonly Panel _drawerBanner;
+    private readonly Label _drawerBannerLabel;
+    private readonly ThemedIconButton _btnOpenDrawer;
     private readonly TableLayoutPanel _saleLayout;
     private readonly TableLayoutPanel _cartLayout;
     private readonly TableLayoutPanel _totalsLayout;
@@ -95,6 +102,7 @@ public partial class SalesForm : LocalizableFormBase
         ICustomerService customerService,
         ICurrentSettingsService currentSettings,
         ICashSessionService cashSessionService,
+        IServiceProvider services,
         ILanguageService languageService)
         : base(languageService)
     {
@@ -103,6 +111,7 @@ public partial class SalesForm : LocalizableFormBase
         _customerService = customerService;
         _currentSettings = currentSettings;
         _cashSessionService = cashSessionService;
+        _services = services;
 
         Size = new Size(1200, 700);
         BackColor = AppColors.Background;
@@ -432,7 +441,58 @@ public partial class SalesForm : LocalizableFormBase
         _cartLayout.Controls.Add(cartArea, 0, 1);
         _cartLayout.Controls.Add(totals, 0, 2);
         _cartLayout.Controls.Add(actions, 0, 3);
-        _rightPanel.Controls.Add(_cartLayout);
+
+        // Drawer banner: shown only while no cash session is open, so the user
+        // always sees why the sale button is disabled.
+        _drawerBannerLabel = new Label
+        {
+            Dock = DockStyle.Fill,
+            AutoSize = false,
+            TextAlign = ContentAlignment.MiddleLeft,
+            Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
+            ForeColor = Color.FromArgb(48, 33, 0),
+            BackColor = Color.Transparent,
+            Margin = Padding.Empty,
+            Text = AppStrings.DrawerNotOpen
+        };
+
+        _btnOpenDrawer = ButtonFactory.Tool(
+            IconChar.CashRegister,
+            AppStrings.OpenCashDrawer,
+            ButtonTone.Primary,
+            ButtonFactory.ButtonSize.Small);
+        _btnOpenDrawer.Dock = DockStyle.Right;
+        _btnOpenDrawer.Size = new Size(170, 30);
+        _btnOpenDrawer.Margin = Padding.Empty;
+        _btnOpenDrawer.Click += async (_, _) => await OpenDrawerAsync();
+
+        _drawerBanner = new Panel
+        {
+            Dock = DockStyle.Fill,
+            Height = 44,
+            Padding = new Padding(10, 6, 6, 6),
+            Margin = Padding.Empty,
+            Visible = false,
+            BackColor = AppColors.Warning
+        };
+        _drawerBanner.Controls.Add(_drawerBannerLabel);
+        _drawerBanner.Controls.Add(_btnOpenDrawer);
+
+        var cartRoot = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
+        };
+        cartRoot.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        cartRoot.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        cartRoot.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        cartRoot.Controls.Add(_drawerBanner, 0, 0);
+        cartRoot.Controls.Add(_cartLayout, 0, 1);
+
+        _rightPanel.Controls.Add(cartRoot);
 
         // Sale layout: products and basket side by side, stacked when narrow.
         _saleLayout = new TableLayoutPanel
@@ -510,6 +570,42 @@ public partial class SalesForm : LocalizableFormBase
         await LoadProductsAsync();
         await LoadCustomersAsync();
         await LoadInvoicesAsync();
+        await RefreshDrawerBannerAsync();
+    }
+
+    /// <summary>
+    /// Shows the "open a drawer first" banner and gates the sale button while
+    /// no cash session is open.
+    /// </summary>
+    private async Task RefreshDrawerBannerAsync()
+    {
+        CashSessionDto? session = null;
+        try
+        {
+            session = await _cashSessionService.GetOpenSessionAsync();
+        }
+        catch
+        {
+            session = null;
+        }
+
+        bool missing = session == null;
+
+        _drawerBanner.Visible = missing;
+        _btnCompleteSale.Enabled = !missing;
+    }
+
+    private async Task OpenDrawerAsync()
+    {
+        if (OfferOpenDrawer())
+            await RefreshDrawerBannerAsync();
+    }
+
+    private bool OfferOpenDrawer()
+    {
+        using var dialog = _services.GetRequiredService<CashSessionOpenDialog>();
+        dialog.ShowDialog(this);
+        return dialog.OpenedSession != null;
     }
 
     /// <summary>
@@ -625,6 +721,9 @@ public partial class SalesForm : LocalizableFormBase
         _btnRemoveFromCart.Text = "  " + AppStrings.Delete;
         _btnNewSale.Text = "  " + AppStrings.NewSale;
         _btnDeleteInvoice.Text = "  " + AppStrings.Delete;
+        _drawerBannerLabel.Text = AppStrings.DrawerNotOpen;
+        _btnOpenDrawer.Text = "  " + AppStrings.OpenCashDrawer;
+        _btnOpenDrawer.AccessibleDescription = AppStrings.OpenCashDrawer;
 
         var discountModeIndex = _cmbDiscountMode.SelectedIndex;
         _cmbDiscountMode.Items.Clear();
@@ -1140,8 +1239,19 @@ public partial class SalesForm : LocalizableFormBase
             var openSession = await _cashSessionService.GetOpenSessionAsync();
             if (openSession == null)
             {
-                AppMessageBox.Warning(AppStrings.NoOpenSession);
-                return;
+                // No drawer: make the reason visible and offer to open one. The
+                // service still rejects the sale if the user cancels.
+                await RefreshDrawerBannerAsync();
+                AppMessageBox.Warning(AppStrings.DrawerNotOpen);
+
+                if (!OfferOpenDrawer())
+                    return;
+
+                openSession = await _cashSessionService.GetOpenSessionAsync();
+                if (openSession == null)
+                    return;
+
+                await RefreshDrawerBannerAsync();
             }
 
             var sale = await _saleService.CreateAsync(new CreateSaleDto

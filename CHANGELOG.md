@@ -2,6 +2,41 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] — 2026-10-27 (cash drawer, discount ceiling, localized errors)
+
+### Added
+
+#### Cash-drawer dashboard, live totals and enforcement (F3, E3)
+
+- `ISalesEventPublisher` / `SalesEventPublisher` (singleton, in-process): `SaleCompleted`, `SaleVoided` and `CashMovementAdded` are raised **after** the database transaction commits, so any subscriber that reads the database observes the committed rows. Handlers are isolated (one failing subscriber cannot break the sale) and subscribers own their lifetime (unsubscribe on dispose).
+- `CashSessionOpenDialog` (opening policy modal) and a rebuilt `CashSessionForm` KPI dashboard (8 `KpiCard`s, 4→2→1 column reflow, RTL, dark mode, `RegionalContext` formatting). Both are designer-first (layout in `<Form>.Designer.cs`, logic in `<Form>.cs`, runtime `ApplyTheme` / localized text).
+- The main shell status bar gains a live cash-drawer chip (open/closed + previous-business-day warning); `SalesForm` shows an "open the drawer first" banner and gates the checkout button.
+- `GetSessionSummaryAsync` is the single source of truth for the drawer totals and is reused by `CloseSessionAsync` (idempotent: a second close throws `CodedDomainException(SessionAlreadyClosed)`).
+- Migration `20261027164243_E3_UniqueOpenSessionIndex` adds the filtered unique index `UX_CashSessions_OpenPerCashbox` (`"Status" = 0 AND "IsDeleted" = 0`) — it previously existed only in the model snapshot.
+- `CashSessionPolicy.IsFromPreviousBusinessDay` (local business day) with unit coverage.
+
+#### Discount ceiling for both modes + seeded setting (F2b / Part 0)
+
+- `sales.max_discount_percent` is now enforced for **both** discount modes by comparing the effective percentage (`DiscountAmount / Subtotal * 100`) of the calculator output.
+- `AppSettingKeys` + idempotent `AppSettingSeeder` seed the `sales.max_discount_percent` setting.
+- `CodedDomainException` / `DomainErrorCodes` + `ExceptionFormatter.LocalizeCode` localize domain and validation failures through stable codes; the printed receipt now takes its labels from `AppStrings`.
+
+### Changed
+
+- `CashSessionService` aggregates the session's cash totals in memory (SQLite cannot `Sum` a `decimal` server-side); the summary exposes `CashSales`, `CashRefunds`, `PayIns`, `PayOuts`, `Expenses`, `TotalSales`, `NonCashSalesByMethod`, `InvoiceCount` and `VoidCount`.
+- `SaleService.VoidAsync` only reverses **cash** that was actually taken, so a voided card sale never moves the drawer.
+
+### Fixed
+
+- Cash sale → exactly one linked `CashTransaction`; a card sale appears only in the non-cash split; a partial payment counts only the cash actually paid; a void nets the drawer back to zero.
+- `CashTransaction` / `SalesInvoice` → `CashSession` foreign keys are `Restrict` (migration `20261023140849_E3_CashSessionLinking`).
+
+### Verification
+
+- `dotnet build DzentoPOS2.sln`: **0 errors**, 21 warnings (pre-existing `NU1701`).
+- `dotnet test DzentoPOS2.sln`: **Unit 79 passed / Integration 37 passed / 0 failed** (Part 0 baseline: Unit 76 / Integration 26).
+- 4-resx + `AppStrings.Designer.cs` key parity: **373 keys each, 0 diff**.
+
 ## [Unreleased] — 2026-10-23 (cash sessions + dashboard performance)
 
 ### Added

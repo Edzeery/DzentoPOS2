@@ -1,4 +1,7 @@
-﻿using DzentoPOS2.App.Session;
+﻿using DzentoPOS2.App.Services.Accounting;
+using DzentoPOS2.App.Services.Events;
+using DzentoPOS2.App.Services.Systems;
+using DzentoPOS2.App.Session;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Localization.Constants;
 using DzentoPOS2.Localization.Resources;
@@ -21,11 +24,14 @@ using DzentoPOS2.WinForms.Forms.Suppliers;
 using DzentoPOS2.WinForms.Helpers;
 using DzentoPOS2.WinForms.Models;
 using DzentoPOS2.WinForms.Navigation;
+using DzentoPOS2.Shared.Contracts.DTOs.Accounting;
+using DzentoPOS2.Shared.Helpers;
 using DzentoPOS2.WinForms.Services;
 using DzentoPOS2.WinForms.ServicesUI;
 using DzentoPOS2.WinForms.Themes;
 using FontAwesome.Sharp;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 using System.Runtime;
 using System.Runtime.InteropServices; 
@@ -48,6 +54,10 @@ namespace DzentoPOS2.WinForms.Forms.Layout
         private readonly ILanguageService _languageService;
         private readonly IUserPreferencesService _preferences;
         private readonly ICurrentSettingsService _currentSettings;
+        private readonly ICashSessionService _cashSessionService;
+        private readonly ISalesEventPublisher _salesEvents;
+        private readonly IBusinessClock _clock;
+        private readonly IServiceProvider _services;
 
         private AppSettings _settings;
         private MainHeaderBar _mainHeaderBar = null!;
@@ -66,6 +76,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
         private Label _statusUserLabel = null!;
         private Label _statusDateLabel = null!;
         private Label _statusStoreLabel = null!;
+        private Label _statusDrawerLabel = null!;
         private readonly System.Windows.Forms.Timer _statusTimer;
 
         public MainForm(
@@ -74,6 +85,10 @@ namespace DzentoPOS2.WinForms.Forms.Layout
              ILanguageService languageService,
              IUserPreferencesService preferences,
              ICurrentSettingsService currentSettings,
+             ICashSessionService cashSessionService,
+             ISalesEventPublisher salesEvents,
+             IBusinessClock clock,
+             IServiceProvider services,
              AppDbContext context)
         {
             InitializeComponent();
@@ -84,6 +99,10 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             _languageService = languageService;
             _preferences = preferences;
             _currentSettings = currentSettings;
+            _cashSessionService = cashSessionService;
+            _salesEvents = salesEvents;
+            _clock = clock;
+            _services = services;
             _settings = _currentSettings.Current;
 
             Padding = new Padding(BorderSize);
@@ -123,6 +142,12 @@ namespace DzentoPOS2.WinForms.Forms.Layout
 
             ThemeManager.ThemeChanged += OnThemeChanged;
             _currentSettings.Changed += OnSettingsChanged;
+
+            // Live cash-drawer chip: any committed sale / void / drawer movement
+            // refreshes the status bar without the user leaving the page.
+            _salesEvents.SaleCompleted += OnSaleCompleted;
+            _salesEvents.SaleVoided += OnSaleVoided;
+            _salesEvents.CashMovementAdded += OnCashMovementAdded;
 
             // Single mechanism for language: the shell and every hosted page
             // (LocalizableFormBase) react to LanguageChanged.
@@ -227,6 +252,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             if (IsDisposed) return;
             if (InvokeRequired) { BeginInvoke(ApplyShellTheme); return; }
             ApplyShellTheme();
+            _ = RefreshDrawerStatusAsync();
         }
 
         /// <summary>
@@ -329,27 +355,118 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             var layout = new TableLayoutPanel
             {
                 Dock = DockStyle.Fill,
-                ColumnCount = 3,
+                ColumnCount = 4,
                 RowCount = 1,
                 Margin = Padding.Empty,
                 Padding = new Padding(14, 0, 14, 0),
                 BackColor = Color.Transparent
             };
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40F));
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
-            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35F));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 32F));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 22F));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 18F));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 28F));
             layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
             _statusUserLabel = CreateStatusLabel(ContentAlignment.MiddleLeft);
             _statusDateLabel = CreateStatusLabel(ContentAlignment.MiddleCenter);
+            _statusDrawerLabel = CreateStatusLabel(ContentAlignment.MiddleCenter);
             _statusStoreLabel = CreateStatusLabel(ContentAlignment.MiddleRight);
 
             layout.Controls.Add(_statusUserLabel, 0, 0);
             layout.Controls.Add(_statusDateLabel, 1, 0);
-            layout.Controls.Add(_statusStoreLabel, 2, 0);
+            layout.Controls.Add(_statusDrawerLabel, 2, 0);
+            layout.Controls.Add(_statusStoreLabel, 3, 0);
 
             StatusBarPanel.Controls.Clear();
             StatusBarPanel.Controls.Add(layout);
+        }
+
+        /// <summary>
+        /// Re-reads the open cash session and paints the status-bar drawer chip.
+        /// The read is async so the shell never blocks on the database.
+        /// </summary>
+        private async Task RefreshDrawerStatusAsync()
+        {
+            if (IsDisposed) return;
+
+            CashSessionDto? session = null;
+            try
+            {
+                session = await _cashSessionService.GetOpenSessionAsync();
+            }
+            catch
+            {
+                // A status chip must never break the shell.
+            }
+
+            ApplyDrawerChip(session);
+        }
+
+        private void ApplyDrawerChip(CashSessionDto? session)
+        {
+            if (IsDisposed || _statusDrawerLabel is null) return;
+
+            if (session is null)
+            {
+                _statusDrawerLabel.Text = AppStrings.DrawerClosed;
+                _statusDrawerLabel.ForeColor = AppColors.SidebarMuted;
+            }
+            else
+            {
+                _statusDrawerLabel.Text = $"● {AppStrings.DrawerOpen}";
+                _statusDrawerLabel.ForeColor = AppColors.Success;
+            }
+
+            RefreshDrawerErrorState(session);
+        }
+
+        /// <summary>
+        /// Points the drawer chip at the currently open session so the shell can
+        /// warn when it was opened on a previous business day. Only worth doing
+        /// once per open session.
+        /// </summary>
+        private CashSessionDto? _lastDrawerAlerted;
+        private bool _checkingDrawerPolicy;
+
+        private void RefreshDrawerErrorState(CashSessionDto? session)
+        {
+            if (session is null)
+            {
+                _lastDrawerAlerted = null;
+                return;
+            }
+
+            var openedLocal = _clock.ToLocal(session.OpenedAtUtc);
+            bool stale = CashSessionPolicy.IsFromPreviousBusinessDay(openedLocal, _clock.Today);
+
+            _statusDrawerLabel.ForeColor = stale ? AppColors.Warning : AppColors.Success;
+
+            if (!stale || _checkingDrawerPolicy) return;
+            if (_lastDrawerAlerted?.Id == session.Id) return;
+
+            _lastDrawerAlerted = session;
+            _checkingDrawerPolicy = true;
+            try
+            {
+                AppMessageBox.Warning(AppStrings.PreviousBusinessDayWarning);
+            }
+            finally
+            {
+                _checkingDrawerPolicy = false;
+            }
+        }
+
+        private void OnSaleCompleted(object? sender, SaleCompletedEventArgs e) => OnDrawerChanged();
+
+        private void OnSaleVoided(object? sender, SaleVoidedEventArgs e) => OnDrawerChanged();
+
+        private void OnCashMovementAdded(object? sender, CashMovementEventArgs e) => OnDrawerChanged();
+
+        private void OnDrawerChanged()
+        {
+            if (IsDisposed) return;
+            if (InvokeRequired) { BeginInvoke(new Action(() => _ = RefreshDrawerStatusAsync())); return; }
+            _ = RefreshDrawerStatusAsync();
         }
 
         private static Label CreateStatusLabel(ContentAlignment alignment) => new()
@@ -396,6 +513,9 @@ namespace DzentoPOS2.WinForms.Forms.Layout
                 ? $"{_currentSettings.Current.StoreName}  ·  {regional.CurrencySymbol}"
                 : $"{_currentSettings.Current.StoreName}  ·  {branch}  ·  {regional.CurrencySymbol}";
 
+            if (string.IsNullOrEmpty(_statusDrawerLabel.Text))
+                _statusDrawerLabel.Text = AppStrings.DrawerClosed;
+
             UpdateStatusClock();
         }
 
@@ -432,6 +552,9 @@ namespace DzentoPOS2.WinForms.Forms.Layout
                 _statusUserLabel.ForeColor = Color.White;
                 _statusDateLabel.ForeColor = AppColors.SidebarMuted;
                 _statusStoreLabel.ForeColor = AppColors.SidebarMuted;
+
+                if (_statusDrawerLabel is not null && string.IsNullOrEmpty(_statusDrawerLabel.Text))
+                    _statusDrawerLabel.ForeColor = AppColors.SidebarMuted;
             }
 
             _mainHeaderBar.ApplyTheme();
@@ -960,7 +1083,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
                 action(btn);
         }
 
-        private void MainForm_Load(object sender, EventArgs e)
+        private async void MainForm_Load(object sender, EventArgs e)
         {
             _mainHeaderBar.SelectedLanguageIndex = LanguageToIndex(_settings.Language);
             labelVersion.Text = AppStrings.Version + " " + Application.ProductVersion;
@@ -974,6 +1097,38 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             // Repaint the whole sidebar from the single active-button state, so
             // no other button keeps the accent color it had in the designer.
             ApplyShellTheme();
+
+            // Opening policy: the user cannot sell without an open drawer.
+            await RunDrawerPolicyAsync();
+        }
+
+        /// <summary>
+        /// Ensures a cash drawer is open after sign-in and warns when the open
+        /// session belongs to a previous local business day.
+        /// </summary>
+        private async Task RunDrawerPolicyAsync()
+        {
+            await RefreshDrawerStatusAsync();
+
+            if (IsDisposed) return;
+
+            var open = await _cashSessionService.GetOpenSessionAsync();
+            if (open != null) return;
+
+            // No drawer yet: ask the user to open one before selling.
+            OpenDrawerDialog();
+            await RefreshDrawerStatusAsync();
+        }
+
+        /// <summary>
+        /// Shows <see cref="CashSessionOpenDialog"/> and returns the session it
+        /// opened (or <c>null</c> when the user cancelled).
+        /// </summary>
+        private CashSessionDto? OpenDrawerDialog()
+        {
+            using var dialog = _services.GetRequiredService<CashSessionOpenDialog>();
+            dialog.ShowDialog(this);
+            return dialog.OpenedSession;
         }
 
         private void btnMenu_Click(object sender, EventArgs e)

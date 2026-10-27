@@ -1,3 +1,4 @@
+using DzentoPOS2.App.Services.Events;
 using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.App.Session;
@@ -26,6 +27,7 @@ namespace DzentoPOS2.App.Services.Sales
         private readonly ICurrentUserService _currentUser;
         private readonly RegionalContext _regional;
         private readonly ISalesPolicy _salesPolicy;
+        private readonly ISalesEventPublisher _events;
 
         public SaleService(
             ISalesInvoiceRepository invoiceRepo,
@@ -37,7 +39,8 @@ namespace DzentoPOS2.App.Services.Sales
             IStockService stockService,
             ICurrentUserService currentUser,
             RegionalContext regional,
-            ISalesPolicy salesPolicy)
+            ISalesPolicy salesPolicy,
+            ISalesEventPublisher events)
         {
             _invoiceRepo = invoiceRepo;
             _unitOfWork = unitOfWork;
@@ -49,6 +52,7 @@ namespace DzentoPOS2.App.Services.Sales
             _currentUser = currentUser;
             _regional = regional;
             _salesPolicy = salesPolicy;
+            _events = events;
         }
 
         public async Task<List<SaleDto>> GetAllAsync()
@@ -280,6 +284,21 @@ namespace DzentoPOS2.App.Services.Sales
                     await _unitOfWork.SaveChangesAsync();
                     await _unitOfWork.CommitTransactionAsync();
 
+                    // Raised only after the commit, so a subscriber that reads
+                    // the database observes the committed invoice, payment and
+                    // cash row.
+                    _events.PublishSaleCompleted(new SaleCompletedEventArgs(
+                        invoice.Id,
+                        invoice.InvoiceNumber.Value,
+                        totals.Total,
+                        string.Equals(paymentMethod, "Cash", StringComparison.OrdinalIgnoreCase)
+                            ? totals.AppliedPayment
+                            : 0m,
+                        paymentMethod,
+                        cashboxId,
+                        openSession.Id,
+                        _clock.UtcNow));
+
                     var result = Map(invoice);
                     result.TenderedAmount = totals.TenderedAmount;
                     result.ChangeAmount = totals.Change;
@@ -357,7 +376,21 @@ namespace DzentoPOS2.App.Services.Sales
 
                 invoice.Void(_currentUser.UserId, reason, _clock.UtcNow);
 
-                var cashPaid = invoice.PaidAmount?.Amount ?? 0;
+                // Only cash that was actually taken is paid back. A card sale
+                // must never move the drawer when it is voided.
+                var payments = await _context.SalesPayments
+                    .AsNoTracking()
+                    .Where(p => p.SalesInvoiceId == invoice.Id && !p.IsDeleted)
+                    .Select(p => new { p.Amount, p.PaymentMethod })
+                    .ToListAsync();
+
+                var cashPaid = payments.Count == 0
+                    ? invoice.PaidAmount?.Amount ?? 0
+                    : payments
+                        .Where(p => string.IsNullOrWhiteSpace(p.PaymentMethod) ||
+                                    string.Equals(p.PaymentMethod.Trim(), "Cash", StringComparison.OrdinalIgnoreCase))
+                        .Sum(p => p.Amount);
+
                 if (cashPaid > 0 && invoice.CashSessionId.HasValue)
                 {
                     await _context.CashTransactions.AddAsync(new Core.Entities.Accounting.CashTransaction
@@ -376,6 +409,13 @@ namespace DzentoPOS2.App.Services.Sales
 
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
+
+                _events.PublishSaleVoided(new SaleVoidedEventArgs(
+                    invoice.Id,
+                    invoice.InvoiceNumber.Value,
+                    cashPaid,
+                    invoice.CashSessionId,
+                    _clock.UtcNow));
             }
             catch
             {

@@ -218,11 +218,15 @@ public partial class ProductsForm : LocalizableFormBase
         base.OnLoad(e);
         try
         {
+            // Navigation can dispose this page while these are still running, so
+            // stop between steps instead of touching a disposed control tree.
             await LoadLookupsAsync();
+            if (IsDisposedOrDisposing) return;
             await LoadStatsAsync();
+            if (IsDisposedOrDisposing) return;
             await LoadGridAsync();
         }
-        catch (Exception ex)
+        catch (Exception ex) when (!IsDisposedOrDisposing)
         {
             MessageBox.Show($"{AppStrings.ErrorMsg}: {ex.Message}", AppStrings.ErrorMsg, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
@@ -249,6 +253,7 @@ public partial class ProductsForm : LocalizableFormBase
     private async Task LoadLookupsAsync()
     {
         _categories = await _productService.GetCategoriesAsync();
+        if (IsDisposedOrDisposing) return;
         _cmbCategoryFilter.Items.Clear();
         _cmbCategoryFilter.Items.Add(AppStrings.All);
         foreach (var c in _categories)
@@ -256,6 +261,7 @@ public partial class ProductsForm : LocalizableFormBase
         _cmbCategoryFilter.SelectedIndex = 0;
 
         _warehouses = await _productService.GetWarehousesAsync();
+        if (IsDisposedOrDisposing) return;
         _cmbWarehouse.Items.Clear();
         _cmbWarehouse.Items.Add(AppStrings.All);
         foreach (var w in _warehouses)
@@ -269,6 +275,7 @@ public partial class ProductsForm : LocalizableFormBase
     private async Task LoadStatsAsync()
     {
         var stats = await _productService.GetInventoryStatsAsync();
+        if (IsDisposedOrDisposing) return;
 
         _kpiCards[0].SetValue(stats.TotalProducts, KpiValueKind.Count);
         _kpiCards[1].SetValue(stats.ActiveProducts, KpiValueKind.Count);
@@ -295,10 +302,14 @@ public partial class ProductsForm : LocalizableFormBase
 
     private async Task LoadGridAsync()
     {
+        if (IsDisposedOrDisposing) return;
+
         var term = _searchBox.Text?.Trim();
         _products = string.IsNullOrWhiteSpace(term)
             ? await _productService.GetAllAsync()
             : await _productService.SearchAsync(term);
+
+        if (IsDisposedOrDisposing) return;
 
         var catFilter = _cmbCategoryFilter.SelectedIndex;
         if (catFilter > 0 && catFilter <= _categories.Count)
@@ -335,6 +346,8 @@ public partial class ProductsForm : LocalizableFormBase
 
     private async void ShowProductDetails()
     {
+        if (IsDisposedOrDisposing) return;
+
         if (_grid.CurrentRow?.DataBoundItem is not ProductDto product)
         {
             _lblDetailTitle.Text = AppStrings.SelectProductDetail;
@@ -376,6 +389,8 @@ public partial class ProductsForm : LocalizableFormBase
         }
 
         var stocks = await _productService.GetProductStocksAsync(product.Id);
+        if (IsDisposedOrDisposing) return;
+
         var stockPanel = _tabStock.Controls[0] as Panel;
         if (stockPanel != null)
         {
@@ -423,6 +438,11 @@ public partial class ProductsForm : LocalizableFormBase
             btnAdjust.Margin = new Padding(10, 6, 0, 6);
             btnAdjust.Click += (_, _) =>
             {
+                // The page can be navigated away from (and disposed) while this
+                // toolbar is still on screen; ShowDialog(this) reads this form's
+                // window handle and throws ObjectDisposedException when it is gone.
+                if (IsDisposedOrDisposing) return;
+
                 using var dialog = new StockAdjustDialog(
                     _productService,
                     product.Id,
@@ -455,21 +475,28 @@ public partial class ProductsForm : LocalizableFormBase
 
     private async Task AddProduct()
     {
+        if (IsDisposedOrDisposing) return;
+
         using var dialog = new ProductEditDialog(_productService, _languageService);
         if (dialog.ShowDialog() == DialogResult.OK)
         {
+            if (IsDisposedOrDisposing) return;
             await LoadGridAsync();
+            if (IsDisposedOrDisposing) return;
             await LoadStatsAsync();
         }
     }
 
     private async Task EditProduct()
     {
+        if (IsDisposedOrDisposing) return;
         if (_grid.CurrentRow?.DataBoundItem is not ProductDto product) return;
         using var dialog = new ProductEditDialog(_productService, _languageService, product);
         if (dialog.ShowDialog() == DialogResult.OK)
         {
+            if (IsDisposedOrDisposing) return;
             await LoadGridAsync();
+            if (IsDisposedOrDisposing) return;
             await LoadStatsAsync();
         }
     }

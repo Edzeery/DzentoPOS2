@@ -2,6 +2,34 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] — 2026-10-27 (.NET 10 retarget)
+
+### Changed
+
+#### Framework
+
+- Retargeted every project from .NET 8 to **.NET 10 (LTS)**: libraries to `net10.0`, the WinForms app and `EZControls` to `net10.0-windows`. Added `global.json` pinning SDK `10.0.403` with `rollForward: latestFeature`.
+- Aligned all Microsoft packages (EF Core, Sqlite, Design, Tools and `Microsoft.Extensions.*`) to **10.0.14**.
+- **End users now need the .NET 10 Desktop Runtime** (`Microsoft.WindowsDesktop.App`) until the installer bundles it.
+
+#### Fixes required by .NET 10
+
+- `WFO1000` (WinForms code-serialization analyzer, error by default on net9+) disabled via `.editorconfig` for the two programmatically-consumed control libraries (`EZControls`, `DzentoPOS2.WinForms`).
+- `EZComboBox.SelectedValue` annotated `[DisallowNull]` to match the .NET 10 non-nullable annotation on `ListControl.SelectedValue`.
+- Added the cash-session linking columns (`CashTransactions.CashSessionId`/`SourceId`/`SourceType`, `SalesInvoices.CashSessionId`) to the baseline `InitialCreate` migration: EF Core 10's SQLite `AddForeignKey` table rebuild copies the full column list, so fresh databases failed with `no such column`. Legacy databases are unaffected (`LegacySchemaRepair` remains the idempotent path).
+- Regenerated `AppDbContextModelSnapshot.cs` for EF Core 10 — only the `ProductVersion` annotation changed (`8.0.27` → `10.0.14`); a probe migration proved the generated Up/Down are empty (no schema change) and no existing migration was edited or renamed.
+
+#### Package audit
+
+- No vulnerable packages. Only `xunit 2.9.3` is flagged as deprecated (`Legacy` → xunit.v3); the migration to xunit v3 is deferred.
+- Kept `System.Data.SqlClient`: `System.Windows.Forms.DataVisualization.dll` references it directly while its nuspec declares no dependency, so removing it breaks the Dashboard charts at runtime.
+- Licence findings needing a business decision: **AutoMapper 16** (RPL-1.5 or paid commercial licence), **QuestPDF** (MIT below US $1M revenue, else a paid tier) and **AForge.Video.DirectShow** (LGPL-3.0). Details in `docs/net10-package-audit.md`.
+
+### Verified
+
+- Clean rebuild **0 errors / 21 warnings** (baseline unchanged; all `NU1701`), Unit **84/84**, Integration **41/41**.
+- `has-pending-model-changes` clean; a fresh database and three legacy starting states upgrade without data loss through the real startup path (`docs/net10-verification.md`, `docs/net10-smoke-run.md`).
+
 ## [Unreleased] — 2026-10-27 (cash drawer, discount ceiling, localized errors)
 
 ### Added

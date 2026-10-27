@@ -1,6 +1,6 @@
 # DzentoPOS2
 
-نظام نقاط بيع (POS) لسطح مكتب Windows مبني على **.NET 8 WinForms** بطبقات Clean Architecture.
+نظام نقاط بيع (POS) لسطح مكتب Windows مبني على **.NET 10 WinForms** بطبقات Clean Architecture.
 
 ---
 
@@ -16,11 +16,17 @@
 | `DzentoPOS2.Localization` | الموارد `AppStrings` (ar / en / fr) + `LanguageService` |
 | `EZControls` | مكتبة عناصر واجهة مخصّصة (قوائم، حقول، رسوم) |
 
+## المتطلبات
+
+- **.NET 10 SDK** — يُختار الإصدار عبر [`global.json`](global.json): `10.0.403` مع `rollForward: latestFeature`.
+- **.NET 10 Desktop Runtime** — مطلوب لتشغيل التطبيق على أجهزة المستخدمين النهائية (`Microsoft.WindowsDesktop.App` + `Microsoft.NETCore.App`، x64). يبقى شرطًا قائمًا حتى يُضمِّن المُثبِّت الإطار داخل حزمة التوزيع.
+- للتحقق من التثبيت: `dotnet --list-sdks` و`dotnet --list-runtimes`.
+
 ## التشغيل
 
 ```bash
 dotnet build DzentoPOS2.sln
-cd DzentoPOS2/bin/Debug/net8.0-windows
+cd DzentoPOS2/bin/Debug/net10.0-windows
 ./DzentoPOS2.WinForms.exe
 ```
 
@@ -41,9 +47,20 @@ dotnet build DzentoPOS2.sln -t:Rebuild -v:m -nologo   # 0 أخطاء
 
 - [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md) — قواعد التصميم والهوية البصرية (Apple Design Restraint).
 - [`docs/design-system-plan.md`](docs/design-system-plan.md) — خطة نظام التصميم وحالة التنفيذ.
+- [`docs/net10-package-audit.md`](docs/net10-package-audit.md) — تدقيق حزم .NET 10 (تراخيص / ثغرات / إهمال).
+- [`docs/net10-breaking-changes.md`](docs/net10-breaking-changes.md) — تغييرات .NET 10 وEF Core 10 المؤثّرة على المشروع.
+- [`docs/net10-verification.md`](docs/net10-verification.md) — التحقق الكامل من البناء والاختبارات والترحيلات.
+- [`docs/net10-smoke-run.md`](docs/net10-smoke-run.md) — تشغيل مسار الإقلاع على نسخ من قواعد بيانات حقيقية.
 - [`Todos.md`](Todos.md) — قائمة المهام الحالية مع أدلة الإنجاز.
 - [`CHANGELOG.md`](CHANGELOG.md) — سجل التغييرات.
 
 ## الاختبارات
 
-لا توجد اختبارات آلية بعد (مجلدا الاختبارات فارغان). التحقق يتم عبر البناء النظيف + مِضيف فحص آلي يقيس الواجهة عند 375 / 768 / 1440 بكسل.
+```bash
+dotnet test DzentoPOS2.sln
+```
+
+- `DzentoPOS2.UnitTests`: **84** اختبارًا.
+- `DzentoPOS2.IntegrationTests`: **41** اختبارًا (قاعدة بيانات SQLite مؤقتة + كل الترحيلات + مسارات الترقية القديمة).
+
+البناء النظيف (`dotnet build DzentoPOS2.sln -t:Rebuild`): **0 أخطاء / 21 تحذيرًا**، وكلها `NU1701` لحزم موجّهة إلى .NET Framework فقط (`AForge*` / `OpenTK*` / `SkiaSharp.Views.WindowsForms`) — نفس خط الأساس قبل الترقية.

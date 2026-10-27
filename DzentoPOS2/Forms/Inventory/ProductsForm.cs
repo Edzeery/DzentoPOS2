@@ -47,6 +47,12 @@ public partial class ProductsForm : LocalizableFormBase
     private List<ProductCategoryDto> _categories = new();
     private List<WarehouseDto> _warehouses = new();
 
+    /// <summary>How long the search box must be idle before it queries.</summary>
+    private const int SearchDebounceMs = 300;
+
+    private readonly System.Windows.Forms.Timer _searchDebounce;
+    private string _lastLoadedTerm = string.Empty;
+
     private static readonly Color CardColor1 = AppColors.Primary;
     private static readonly Color CardColor2 = AppColors.Info;
     private static readonly Color CardColor3 = AppColors.Warning;
@@ -85,7 +91,36 @@ public partial class ProductsForm : LocalizableFormBase
             PlaceholderColor = Color.FromArgb(150, 160, 166),
             Font = new Font("Segoe UI", 10F)
         };
-        _searchBox.TextChanged += async (_, _) => await LoadGridAsync();
+        _searchDebounce = new System.Windows.Forms.Timer { Interval = SearchDebounceMs };
+        _searchDebounce.Tick += async (_, _) =>
+        {
+            _searchDebounce.Stop();
+            if (IsDisposedOrDisposing) return;
+
+            // Editing back to the term already on screen must not re-query.
+            var term = _searchBox.Text?.Trim() ?? string.Empty;
+            if (string.Equals(term, _lastLoadedTerm, StringComparison.Ordinal)) return;
+
+            try
+            {
+                await LoadGridAsync();
+            }
+            catch (Exception ex) when (!IsDisposedOrDisposing)
+            {
+                AppMessageBox.Error(ex, AppStrings.SearchProducts);
+            }
+        };
+        Disposed += (_, _) => _searchDebounce.Dispose();
+
+        _searchBox.TextChanged += (_, _) =>
+        {
+            if (IsDisposedOrDisposing) return;
+
+            // Coalesce keystrokes into one query per pause instead of running a
+            // full load (SQL query + column rebuild + rebind) on every key.
+            _searchDebounce.Stop();
+            _searchDebounce.Start();
+        };
 
         _cmbWarehouse = CreateFilterCombo(320, 14, 140);
         _cmbCategoryFilter = CreateFilterCombo(480, 14, 140);
@@ -310,6 +345,10 @@ public partial class ProductsForm : LocalizableFormBase
             : await _productService.SearchAsync(term);
 
         if (IsDisposedOrDisposing) return;
+
+        // Remember what the grid is showing so the debounced search can skip a
+        // repeat query for the same term.
+        _lastLoadedTerm = term ?? string.Empty;
 
         var catFilter = _cmbCategoryFilter.SelectedIndex;
         if (catFilter > 0 && catFilter <= _categories.Count)

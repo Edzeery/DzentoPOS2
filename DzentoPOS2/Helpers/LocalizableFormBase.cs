@@ -79,6 +79,32 @@ namespace DzentoPOS2.WinForms.Helpers
         /// </summary>
         protected bool IsDisposedOrDisposing => IsDisposed || Disposing;
 
+        /// <summary>
+        /// Runs an asynchronous UI operation as a safe fire-and-forget: skipped
+        /// when the form is already gone, and an exception is logged and shown
+        /// instead of escaping from an <c>async void</c> handler (which would
+        /// otherwise crash the process). When the page was navigated away from
+        /// while the work was in flight the failure is a consequence of that and
+        /// is silently dropped.
+        /// </summary>
+        protected async void RunSafe(Func<Task> work)
+        {
+            if (IsDisposedOrDisposing || work is null)
+                return;
+
+            try
+            {
+                await work();
+            }
+            catch (Exception ex)
+            {
+                if (IsDisposedOrDisposing)
+                    return;
+
+                AppMessageBox.Error(ex);
+            }
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing && _languageSubscribed && _languageService != null)

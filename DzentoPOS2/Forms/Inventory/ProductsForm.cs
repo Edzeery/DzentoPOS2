@@ -133,7 +133,7 @@ public partial class ProductsForm : LocalizableFormBase
         _btnAdd = ButtonFactory.ToolSolid(IconChar.Plus, AppStrings.AddProduct, ButtonTone.Primary, ButtonFactory.ButtonSize.Medium);
         _btnAdd.Size = new Size(130, 36);
         _btnAdd.Location = new Point(800, 12);
-        _btnAdd.Click += async (_, _) => await AddProduct();
+        _btnAdd.Click += (_, _) => RunSafe(AddProduct);
 
         _topBar.Controls.AddRange(new Control[]
         {
@@ -173,7 +173,7 @@ public partial class ProductsForm : LocalizableFormBase
         DataGridViewStyleHelper.ApplyModernStyle(_grid, withHover: true);
 
         _grid.SelectionChanged += (_, _) => ShowProductDetails();
-        _grid.CellDoubleClick += async (_, _) => await EditProduct();
+        _grid.CellDoubleClick += (_, _) => RunSafe(EditProduct);
 
         var gridContainer = new Panel
         {

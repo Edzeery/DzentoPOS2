@@ -54,11 +54,11 @@ public partial class PurchasesForm : LocalizableFormBase
 
         _btnNewPurchase = ButtonFactory.Tool(IconChar.Plus, AppStrings.NewPurchase, ButtonTone.Primary, ButtonFactory.ButtonSize.Medium);
         _btnNewPurchase.Location = new Point(16, 12);
-        _btnNewPurchase.Click += async (_, _) => await AddPurchase();
+        _btnNewPurchase.Click += (_, _) => RunSafe(AddPurchase);
 
         _btnDelete = ButtonFactory.ToolDelete(AppStrings.Delete, ButtonFactory.ButtonSize.Medium);
         _btnDelete.Location = new Point(188, 12);
-        _btnDelete.Click += async (_, _) => await DeletePurchase();
+        _btnDelete.Click += (_, _) => RunSafe(DeletePurchase);
 
         _topPanel.Controls.AddRange(new Control[] { _btnDelete, _btnNewPurchase });
 
@@ -83,11 +83,18 @@ public partial class PurchasesForm : LocalizableFormBase
         Controls.Add(_topPanel);
     }
 
-    protected override async void OnLoad(EventArgs e)
+    protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
+        RunSafe(InitializeAsync);
+    }
+
+    private async Task InitializeAsync()
+    {
         _products = await _productService.GetAllAsync();
+        if (IsDisposedOrDisposing) return;
         _suppliers = await _supplierService.GetAllAsync();
+        if (IsDisposedOrDisposing) return;
         await LoadDataAsync();
     }
 
@@ -101,6 +108,8 @@ public partial class PurchasesForm : LocalizableFormBase
     private async Task LoadDataAsync()
     {
         _invoices = await _purchaseService.GetAllAsync();
+
+        if (IsDisposedOrDisposing) return;
 
         _grid.DataSource = null;
         _grid.Columns.Clear();

@@ -107,19 +107,17 @@ public partial class ReportsForm : LocalizableFormBase
         return grid;
     }
 
-    protected override async void OnLoad(EventArgs e)
+    protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
+        RunSafe(LoadSummaryAsync);
+    }
 
-        try
-        {
-            var summary = await _dashboardService.GetSummaryAsync();
-            ApplySummary(summary);
-        }
-        catch (Exception ex)
-        {
-            AppMessageBox.Error(ex.Message);
-        }
+    private async Task LoadSummaryAsync()
+    {
+        var summary = await _dashboardService.GetSummaryAsync();
+        if (IsDisposedOrDisposing) return;
+        ApplySummary(summary);
     }
 
     protected override void LoadText()

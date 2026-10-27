@@ -52,16 +52,16 @@ public partial class CashSessionForm : LocalizableFormBase
         DataGridViewStyleHelper.ApplyModernStyle(_grid);
         _grid.AutoGenerateColumns = false;
 
-        _cmbCashbox.SelectedIndexChanged += async (_, _) =>
+        _cmbCashbox.SelectedIndexChanged += (_, _) =>
         {
             if (!_loading)
-                await RefreshAsync();
+                RunSafe(RefreshAsync);
         };
 
-        _btnOpen.Click += async (_, _) => await OpenAsync();
-        _btnClose.Click += async (_, _) => await CloseAsync();
-        _btnPayIn.Click += async (_, _) => await RecordMovementAsync(isPayIn: true);
-        _btnPayOut.Click += async (_, _) => await RecordMovementAsync(isPayIn: false);
+        _btnOpen.Click += (_, _) => RunSafe(OpenAsync);
+        _btnClose.Click += (_, _) => RunSafe(CloseAsync);
+        _btnPayIn.Click += (_, _) => RunSafe(() => RecordMovementAsync(isPayIn: true));
+        _btnPayOut.Click += (_, _) => RunSafe(() => RecordMovementAsync(isPayIn: false));
 
         _kpiHost.Resize += (_, _) => RelayoutKpis();
 
@@ -73,9 +73,9 @@ public partial class CashSessionForm : LocalizableFormBase
         ApplyTheme();
     }
 
-    protected override async void OnInitialized()
+    protected override void OnInitialized()
     {
-        await LoadCashboxesAsync();
+        RunSafe(LoadCashboxesAsync);
     }
 
     protected override void LoadText()

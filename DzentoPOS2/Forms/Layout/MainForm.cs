@@ -1126,6 +1126,9 @@ namespace DzentoPOS2.WinForms.Forms.Layout
         /// </summary>
         private CashSessionDto? OpenDrawerDialog()
         {
+            if (IsDisposed || Disposing)
+                return null;
+
             using var dialog = _services.GetRequiredService<CashSessionOpenDialog>();
             dialog.ShowDialog(this);
             return dialog.OpenedSession;

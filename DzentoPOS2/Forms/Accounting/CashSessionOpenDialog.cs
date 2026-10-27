@@ -35,7 +35,7 @@ public partial class CashSessionOpenDialog : LocalizableFormBase
         numOpening.Maximum = 999_999_999m;
         numOpening.DecimalPlaces = _regional.CurrencyDecimalDigits;
 
-        btnOpen.Click += async (_, _) => await OpenAsync();
+        btnOpen.Click += (_, _) => RunSafe(OpenAsync);
         btnCancel.Click += (_, _) => CloseDialog(DialogResult.Cancel);
 
         ThemeManager.ThemeChanged += OnThemeChanged;
@@ -45,11 +45,15 @@ public partial class CashSessionOpenDialog : LocalizableFormBase
     /// <summary>The session that was opened, or <c>null</c> when cancelled.</summary>
     public CashSessionDto? OpenedSession { get; private set; }
 
-    protected override async void OnInitialized()
+    protected override void OnInitialized()
     {
-        await LoadCashboxesAsync();
-        numOpening.Select(0, numOpening.Text.Length);
-        numOpening.Focus();
+        RunSafe(async () =>
+        {
+            await LoadCashboxesAsync();
+            if (IsDisposedOrDisposing) return;
+            numOpening.Select(0, numOpening.Text.Length);
+            numOpening.Focus();
+        });
     }
 
     protected override void LoadText()

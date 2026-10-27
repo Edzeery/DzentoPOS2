@@ -539,6 +539,9 @@ public partial class SettingsForm : LocalizableFormBase
 
     private void ChooseLogo()
     {
+        // OpenFileDialog.ShowDialog(owner) reads the owner's window handle.
+        if (IsDisposedOrDisposing) return;
+
         using var dialog = new OpenFileDialog
         {
             Title = AppStrings.ChooseImage,

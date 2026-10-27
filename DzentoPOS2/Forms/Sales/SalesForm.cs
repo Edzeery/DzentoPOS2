@@ -397,7 +397,7 @@ public partial class SalesForm : LocalizableFormBase
         _btnCompleteSale.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
         _btnCompleteSale.Dock = DockStyle.Fill;
         _btnCompleteSale.Margin = Padding.Empty;
-        _btnCompleteSale.Click += async (_, _) => await CompleteSaleAsync();
+        _btnCompleteSale.Click += (_, _) => RunSafe(CompleteSaleAsync);
 
         _btnPrintLast = ButtonFactory.Tool(IconChar.Print, AppStrings.Print, ButtonTone.Neutral, ButtonFactory.ButtonSize.Medium);
         _btnPrintLast.Dock = DockStyle.Fill;
@@ -464,7 +464,7 @@ public partial class SalesForm : LocalizableFormBase
         _btnOpenDrawer.Dock = DockStyle.Right;
         _btnOpenDrawer.Size = new Size(170, 30);
         _btnOpenDrawer.Margin = Padding.Empty;
-        _btnOpenDrawer.Click += async (_, _) => await OpenDrawerAsync();
+        _btnOpenDrawer.Click += (_, _) => RunSafe(OpenDrawerAsync);
 
         _drawerBanner = new Panel
         {
@@ -531,7 +531,7 @@ public partial class SalesForm : LocalizableFormBase
         _btnDeleteInvoice = ButtonFactory.ToolDelete(AppStrings.Delete, ButtonFactory.ButtonSize.Medium);
         _btnDeleteInvoice.Dock = DockStyle.Fill;
         _btnDeleteInvoice.Margin = Padding.Empty;
-        _btnDeleteInvoice.Click += async (_, _) => await DeleteInvoiceAsync();
+        _btnDeleteInvoice.Click += (_, _) => RunSafe(DeleteInvoiceAsync);
 
         // Toolbar: the search field grows, the actions keep a fixed width.
         // A table layout mirrors itself in RTL, so the actions stay on the
@@ -563,13 +563,21 @@ public partial class SalesForm : LocalizableFormBase
         Controls.Add(_tabs);
     }
 
-    protected override async void OnLoad(EventArgs e)
+    protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
+        RunSafe(InitializeAsync);
+    }
+
+    private async Task InitializeAsync()
+    {
         ApplySaleLayout();
         await LoadProductsAsync();
+        if (IsDisposedOrDisposing) return;
         await LoadCustomersAsync();
+        if (IsDisposedOrDisposing) return;
         await LoadInvoicesAsync();
+        if (IsDisposedOrDisposing) return;
         await RefreshDrawerBannerAsync();
     }
 
@@ -591,6 +599,8 @@ public partial class SalesForm : LocalizableFormBase
 
         bool missing = session == null;
 
+        if (IsDisposedOrDisposing) return;
+
         _drawerBanner.Visible = missing;
         _btnCompleteSale.Enabled = !missing;
     }
@@ -603,6 +613,8 @@ public partial class SalesForm : LocalizableFormBase
 
     private bool OfferOpenDrawer()
     {
+        if (IsDisposedOrDisposing) return false;
+
         using var dialog = _services.GetRequiredService<CashSessionOpenDialog>();
         dialog.ShowDialog(this);
         return dialog.OpenedSession != null;
@@ -734,12 +746,14 @@ public partial class SalesForm : LocalizableFormBase
     private async Task LoadProductsAsync()
     {
         _products = await _productService.GetAllAsync();
+        if (IsDisposedOrDisposing) return;
         BindProductGrid(_products);
     }
 
     private async Task LoadCustomersAsync()
     {
         _customers = await _customerService.GetAllAsync();
+        if (IsDisposedOrDisposing) return;
         _cmbCustomer.Items.Clear();
         _cmbCustomer.Items.Add(new CustomerItem(Guid.Empty, AppStrings.SelectCustomer));
         foreach (var c in _customers)
@@ -752,6 +766,8 @@ public partial class SalesForm : LocalizableFormBase
     /// <summary>Creates a customer from the sales screen and selects it right away.</summary>
     private void AddCustomer()
     {
+        if (IsDisposedOrDisposing) return;
+
         using var dialog = new CustomerEditDialog(_customerService, _languageService);
 
         if (dialog.ShowDialog(this) != DialogResult.OK) return;
@@ -771,6 +787,7 @@ public partial class SalesForm : LocalizableFormBase
     private async Task LoadInvoicesAsync()
     {
         _invoices = await _saleService.GetAllAsync();
+        if (IsDisposedOrDisposing) return;
         _invoiceGrid.DataSource = null;
         _invoiceGrid.Columns.Clear();
         _invoiceGrid.AutoGenerateColumns = false;
@@ -834,6 +851,8 @@ public partial class SalesForm : LocalizableFormBase
 
     private void ScanBarcode()
     {
+        if (IsDisposedOrDisposing) return;
+
         var settings = _currentSettings.Current;
 
         if (!settings.CameraBarcodeEnabled)
@@ -1104,6 +1123,8 @@ public partial class SalesForm : LocalizableFormBase
     /// <summary>Opens the calculator and routes its result to the sales screen.</summary>
     private void OpenCalculator()
     {
+        if (IsDisposedOrDisposing) return;
+
         var cartTotal = _cart.Sum(i => i.Quantity * i.Price);
 
         using var dialog = new SalesCalculatorDialog(

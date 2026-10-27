@@ -1,3 +1,4 @@
+using DzentoPOS2.Core.Enums;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Data.Seed;
 using Microsoft.Data.Sqlite;
@@ -21,6 +22,12 @@ public sealed class LegacySchemaRepairTests : IDisposable
         Guid.NewGuid().ToString("N"));
 
     private const string RemovedE3Id = "20261023131151_E3_CashSessionLinking";
+
+    /// <summary>
+    /// The migration directly before <c>E3_UniqueOpenSessionIndex</c>: the last
+    /// state in which a cashbox could still have more than one open session.
+    /// </summary>
+    private const string PreUniqueSessionIndexMigrationId = "20261025225718_F2_DiscountAndPayment";
 
     public LegacySchemaRepairTests()
     {
@@ -213,6 +220,230 @@ public sealed class LegacySchemaRepairTests : IDisposable
         }
     }
 
+    // ── E3_UniqueOpenSessionIndex upgrade ──────────────────────────────────
+
+    [Fact]
+    public async Task E3_upgrade_closes_duplicate_open_sessions_keeps_the_newest_and_deletes_nothing()
+    {
+        var path = NewPath("e3-duplicates");
+
+        var branchId = Guid.NewGuid();
+        var cashboxId = Guid.NewGuid();
+        var olderSessionId = Guid.NewGuid();
+        var newerSessionId = Guid.NewGuid();
+        var invoiceId = Guid.NewGuid();
+
+        var olderOpened = new DateTime(2026, 1, 1, 8, 0, 0, DateTimeKind.Utc);
+        var newerOpened = new DateTime(2026, 1, 3, 9, 0, 0, DateTimeKind.Utc);
+        var invoiceCreated = new DateTime(2026, 1, 2, 10, 0, 0, DateTimeKind.Utc);
+        var newerMovementDate = new DateTime(2026, 1, 3, 12, 0, 0, DateTimeKind.Utc);
+        var olderMovementDate = new DateTime(2026, 1, 4, 11, 0, 0, DateTimeKind.Utc);
+
+        // 1) A database at the migration just before the unique index, with two
+        //    open sessions on the same cashbox and linked movement / invoice.
+        await using (var context = CreateContext(path))
+        {
+            var migrator = context.Database.GetService<IMigrator>();
+            await migrator.MigrateAsync(PreUniqueSessionIndexMigrationId);
+
+            await InsertBranchAndCashboxAsync(context, branchId, cashboxId);
+
+            await InsertSessionAsync(context, olderSessionId, cashboxId, olderOpened, 100m);
+            await InsertSessionAsync(context, newerSessionId, cashboxId, newerOpened, 200m);
+
+            await context.Database.ExecuteSqlRawAsync(
+                "INSERT INTO \"SalesInvoices\" (\"Id\",\"InvoiceNumber\",\"CustomerId\",\"BranchId\",\"TotalAmount\",\"TotalCurrency\",\"Discount\",\"TaxRate\",\"PaidAmount\",\"PaidCurrency\",\"RemainingAmount\",\"RemainingCurrency\",\"DiscountAmount\",\"DiscountCurrency\",\"SubtotalAmount\",\"SubtotalCurrency\",\"TaxAmount\",\"TaxCurrency\",\"IsVoided\",\"IsDeleted\",\"CreatedAt\",\"CashSessionId\") VALUES ({0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18},{19},{20},{21});",
+                invoiceId, "E3-DUP-1", Guid.Empty, branchId,
+                "10", "DZD", "0", "0", "10", "DZD", "0", "DZD",
+                "0", "DZD", "10", "DZD", "0", "DZD",
+                0, 0, invoiceCreated, olderSessionId);
+
+            await context.Database.ExecuteSqlRawAsync(
+                "INSERT INTO \"CashTransactions\" (\"Id\",\"CashboxId\",\"Amount\",\"TransactionType\",\"ReferenceNumber\",\"TransactionDate\",\"IsDeleted\",\"CreatedAt\",\"CashSessionId\") VALUES ({0},{1},{2},{3},{4},{5},{6},{7},{8});",
+                Guid.NewGuid(), cashboxId, "10", 13, "E3-DUP-1", olderMovementDate, 0, olderMovementDate, olderSessionId);
+
+            await context.Database.ExecuteSqlRawAsync(
+                "INSERT INTO \"CashTransactions\" (\"Id\",\"CashboxId\",\"Amount\",\"TransactionType\",\"ReferenceNumber\",\"TransactionDate\",\"IsDeleted\",\"CreatedAt\",\"CashSessionId\") VALUES ({0},{1},{2},{3},{4},{5},{6},{7},{8});",
+                Guid.NewGuid(), cashboxId, "20", 13, "E3-DUP-2", newerMovementDate, 0, newerMovementDate, newerSessionId);
+        }
+
+        // 2) Upgrade exactly like DbInitializer: repair first, then migrate.
+        await using (var context = CreateContext(path))
+        {
+            await LegacySchemaRepair.RepairAsync(context.Database.GetDbConnection());
+            await context.Database.MigrateAsync();
+        }
+
+        // 3) Nothing was deleted.
+        Assert.Equal(2, await ScalarLongAsync(path, "SELECT COUNT(*) FROM \"CashSessions\";"));
+        Assert.Equal(1, await ScalarLongAsync(path, "SELECT COUNT(*) FROM \"SalesInvoices\";"));
+        Assert.Equal(2, await ScalarLongAsync(path, "SELECT COUNT(*) FROM \"CashTransactions\";"));
+
+        // 4) Exactly one open session remains: the newest.
+        Assert.Equal(1, await ScalarLongAsync(
+            path, "SELECT COUNT(*) FROM \"CashSessions\" WHERE \"Status\" = 0 AND \"IsDeleted\" = 0;"));
+
+        await using (var context = CreateContext(path))
+        {
+            var older = await context.CashSessions.AsNoTracking().SingleAsync(s => s.Id == olderSessionId);
+            var newer = await context.CashSessions.AsNoTracking().SingleAsync(s => s.Id == newerSessionId);
+
+            Assert.Equal(CashSessionStatus.Closed, older.Status);
+            Assert.Equal(CashSessionStatus.Open, newer.Status);
+
+            // ClosedAtUtc = max(OpenedAtUtc, latest linked movement/sale time).
+            Assert.Equal(olderMovementDate, older.ClosedAtUtc);
+            Assert.Contains(LegacySchemaRepair.DuplicateOpenSessionNote, older.Notes!);
+
+            // Existing balances are kept untouched.
+            Assert.Equal(100m, older.OpeningBalance);
+            Assert.Equal(200m, newer.OpeningBalance);
+            Assert.Null(newer.ClosedAtUtc);
+        }
+
+        // 5) No dangling FKs.
+        Assert.Empty(await ForeignKeyViolationsAsync(path));
+
+        // 6) The unique index exists now and a second migrate is a no-op.
+        Assert.Equal(1, await IndexCountAsync(path, "UX_CashSessions_OpenPerCashbox"));
+
+        await using (var context = CreateContext(path))
+        {
+            var before = (await context.Database.GetAppliedMigrationsAsync()).ToList();
+            await context.Database.MigrateAsync();
+            var after = (await context.Database.GetAppliedMigrationsAsync()).ToList();
+
+            Assert.Equal(before, after);
+        }
+    }
+
+    [Fact]
+    public async Task E3_upgrade_without_duplicates_leaves_the_session_untouched()
+    {
+        var path = NewPath("e3-clean");
+
+        var branchId = Guid.NewGuid();
+        var cashboxId = Guid.NewGuid();
+        var sessionId = Guid.NewGuid();
+        var openedAt = new DateTime(2026, 2, 1, 8, 0, 0, DateTimeKind.Utc);
+
+        await using (var context = CreateContext(path))
+        {
+            var migrator = context.Database.GetService<IMigrator>();
+            await migrator.MigrateAsync(PreUniqueSessionIndexMigrationId);
+
+            await InsertBranchAndCashboxAsync(context, branchId, cashboxId);
+            await InsertSessionAsync(context, sessionId, cashboxId, openedAt, 50m);
+        }
+
+        await using (var context = CreateContext(path))
+        {
+            await LegacySchemaRepair.RepairAsync(context.Database.GetDbConnection());
+            await context.Database.MigrateAsync();
+        }
+
+        await using (var context = CreateContext(path))
+        {
+            var session = await context.CashSessions.AsNoTracking().SingleAsync(s => s.Id == sessionId);
+
+            Assert.Equal(CashSessionStatus.Open, session.Status);
+            Assert.Null(session.ClosedAtUtc);
+            Assert.Null(session.Notes);
+            Assert.Equal(50m, session.OpeningBalance);
+        }
+
+        Assert.Equal(1, await ScalarLongAsync(path, "SELECT COUNT(*) FROM \"CashSessions\";"));
+        Assert.Empty(await ForeignKeyViolationsAsync(path));
+        Assert.Equal(1, await IndexCountAsync(path, "UX_CashSessions_OpenPerCashbox"));
+    }
+
+    [Fact]
+    public async Task Fresh_database_has_the_unique_index_and_the_db_rejects_a_second_open_session()
+    {
+        var path = NewPath("e3-fresh");
+
+        await using (var context = CreateContext(path))
+        {
+            await context.Database.MigrateAsync();
+        }
+
+        Assert.Equal(1, await IndexCountAsync(path, "UX_CashSessions_OpenPerCashbox"));
+
+        var branchId = Guid.NewGuid();
+        var cashboxId = Guid.NewGuid();
+
+        await using (var context = CreateContext(path))
+        {
+            await InsertBranchAndCashboxAsync(context, branchId, cashboxId);
+        }
+
+        await using var connection = new SqliteConnection($"Data Source={path}");
+        await connection.OpenAsync();
+
+        // The index is what we are testing, not the FK: the branches/cashboxes
+        // were seeded with EF's GUID text format, so disable FK enforcement.
+        await ExecuteAsync(connection, "PRAGMA foreign_keys = OFF;");
+
+        await ExecuteAsync(connection,
+            $"INSERT INTO \"CashSessions\" (\"Id\",\"CashboxId\",\"OpenedAtUtc\",\"OpeningBalance\",\"Status\",\"IsDeleted\",\"CreatedAt\") "
+            + $"VALUES ('{Guid.NewGuid()}','{cashboxId}','2026-03-01 08:00:00',1,0,0,'2026-03-01 08:00:00');");
+
+        var ex = await Assert.ThrowsAsync<SqliteException>(() => ExecuteAsync(connection,
+            $"INSERT INTO \"CashSessions\" (\"Id\",\"CashboxId\",\"OpenedAtUtc\",\"OpeningBalance\",\"Status\",\"IsDeleted\",\"CreatedAt\") "
+            + $"VALUES ('{Guid.NewGuid()}','{cashboxId}','2026-03-01 09:00:00',1,0,0,'2026-03-01 09:00:00');"));
+
+        Assert.Contains("UNIQUE", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task E3_migration_is_idempotent_when_the_unique_index_already_exists()
+    {
+        var path = NewPath("e3-index-preexisting");
+
+        await using (var context = CreateContext(path))
+        {
+            var migrator = context.Database.GetService<IMigrator>();
+            await migrator.MigrateAsync(PreUniqueSessionIndexMigrationId);
+
+            // Simulate the unique index already being present because an earlier
+            // incarnation of this migration (regenerated with a new id) created
+            // it while its history row is missing.
+            await context.Database.ExecuteSqlRawAsync(
+                "CREATE UNIQUE INDEX \"UX_CashSessions_OpenPerCashbox\" ON \"CashSessions\" (\"CashboxId\") WHERE \"Status\" = 0 AND \"IsDeleted\" = 0;");
+        }
+
+        await using (var context = CreateContext(path))
+        {
+            await LegacySchemaRepair.RepairAsync(context.Database.GetDbConnection());
+            await context.Database.MigrateAsync();
+
+            var applied = (await context.Database.GetAppliedMigrationsAsync()).ToList();
+            Assert.Contains("20261027164243_E3_UniqueOpenSessionIndex", applied);
+        }
+
+        // The index is still there exactly once and the schema is intact.
+        Assert.Equal(1, await IndexCountAsync(path, "UX_CashSessions_OpenPerCashbox"));
+        Assert.Empty(await ForeignKeyViolationsAsync(path));
+    }
+
+    private static async Task InsertBranchAndCashboxAsync(
+        AppDbContext context, Guid branchId, Guid cashboxId)
+    {
+        await context.Database.ExecuteSqlRawAsync(
+            "INSERT INTO \"Branches\" (\"Id\",\"Name\",\"IsMainBranch\",\"IsActive\",\"IsDeleted\",\"CreatedAt\") VALUES ({0},{1},{2},{3},{4},{5});",
+            branchId, "E3 branch", 1, 1, 0, new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+
+        await context.Database.ExecuteSqlRawAsync(
+            "INSERT INTO \"Cashboxes\" (\"Id\",\"Name\",\"BranchId\",\"CurrentBalance\",\"IsActive\",\"IsDeleted\",\"CreatedAt\") VALUES ({0},{1},{2},{3},{4},{5},{6});",
+            cashboxId, "E3 cashbox", branchId, "0", 1, 0, new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc));
+    }
+
+    private static Task InsertSessionAsync(
+        AppDbContext context, Guid id, Guid cashboxId, DateTime openedAt, decimal openingBalance)
+        => context.Database.ExecuteSqlRawAsync(
+            "INSERT INTO \"CashSessions\" (\"Id\",\"CashboxId\",\"OpenedAtUtc\",\"OpeningBalance\",\"Status\",\"IsDeleted\",\"CreatedAt\") VALUES ({0},{1},{2},{3},{4},{5},{6});",
+            id, cashboxId, openedAt, openingBalance, 0, 0, openedAt);
+
     private static AppDbContext CreateContext(string path)
         => new(
             new DbContextOptionsBuilder<AppDbContext>()
@@ -240,6 +471,11 @@ public sealed class LegacySchemaRepairTests : IDisposable
 
         return Convert.ToInt64(Convert.ToDecimal(value, System.Globalization.CultureInfo.InvariantCulture));
     }
+
+    private static Task<long> IndexCountAsync(string path, string index)
+        => ScalarLongAsync(
+            path,
+            $"SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name = '{index}';");
 
     private static async Task<bool> ColumnExistsAsync(string path, string table, string column)
     {

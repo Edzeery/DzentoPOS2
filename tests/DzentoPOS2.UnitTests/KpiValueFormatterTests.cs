@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Resources;
+using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Shared.Helpers;
 using Xunit;
 
@@ -11,6 +13,15 @@ public sealed class KpiValueFormatterTests
     private static readonly CultureInfo ArDz = new("ar-DZ", useUserOverride: false);
     private static readonly CultureInfo FrFr = new("fr-FR", useUserOverride: false);
     private static readonly CultureInfo FrDz = new("fr-DZ", useUserOverride: false);
+
+    private static readonly ResourceManager Strings = new(
+        "DzentoPOS2.Localization.Resources.AppStrings",
+        typeof(AppStrings).Assembly);
+
+    private static KpiCompactSuffixes LocalizedSuffixes(CultureInfo culture) => new(
+        Strings.GetString("KpiSuffixThousand", culture)!,
+        Strings.GetString("KpiSuffixMillion", culture)!,
+        Strings.GetString("KpiSuffixBillion", culture)!);
 
     public static IEnumerable<object[]> Cultures =>
     [
@@ -94,6 +105,55 @@ public sealed class KpiValueFormatterTests
 
         // fr-FR uses a comma as the decimal separator.
         Assert.Equal("1,25M", KpiValueFormatter.Format(1_250_000m, KpiValueKind.CompactMoney, FrFr, 2));
+    }
+
+    [Theory]
+    [InlineData("en")]
+    [InlineData("ar")]
+    [InlineData("fr")]
+    public void Compact_money_uses_the_localized_suffixes_from_the_resources(string cultureName)
+    {
+        var culture = new CultureInfo(cultureName, useUserOverride: false);
+        var suffixes = LocalizedSuffixes(culture);
+
+        Assert.Equal(
+            (1_250_000m / 1_000_000m).ToString("0.##", culture) + suffixes.Million,
+            KpiValueFormatter.Format(1_250_000m, KpiValueKind.CompactMoney, culture, 2, compactSuffixes: suffixes));
+
+        Assert.Equal(
+            (125_000m / 1_000m).ToString("0.##", culture) + suffixes.Thousand,
+            KpiValueFormatter.Format(125_000m, KpiValueKind.CompactMoney, culture, 2, compactSuffixes: suffixes));
+
+        Assert.Equal(
+            (1_500_000_000m / 1_000_000_000m).ToString("0.##", culture) + suffixes.Billion,
+            KpiValueFormatter.Format(1_500_000_000m, KpiValueKind.CompactMoney, culture, 2, compactSuffixes: suffixes));
+    }
+
+    [Fact]
+    public void Compact_money_for_arabic_uses_the_arabic_suffixes_not_the_english_ones()
+    {
+        var suffixes = LocalizedSuffixes(Ar);
+
+        var text = KpiValueFormatter.Format(
+            1_250_000m, KpiValueKind.CompactMoney, Ar, 2, compactSuffixes: suffixes);
+
+        Assert.EndsWith("مليون", text);
+        Assert.DoesNotContain("M", text);
+        Assert.DoesNotContain("K", text);
+        Assert.DoesNotContain("B", text);
+    }
+
+    [Fact]
+    public void Compact_money_uses_the_supplied_suffixes_and_never_hardcodes_units()
+    {
+        var custom = new KpiCompactSuffixes("x", "y", "z");
+
+        Assert.Equal("3x", KpiValueFormatter.Format(3_000m, KpiValueKind.CompactMoney, EnUs, 2, compactSuffixes: custom));
+        Assert.Equal("1.5y", KpiValueFormatter.Format(1_500_000m, KpiValueKind.CompactMoney, EnUs, 2, compactSuffixes: custom));
+        Assert.Equal("2z", KpiValueFormatter.Format(2_000_000_000m, KpiValueKind.CompactMoney, EnUs, 2, compactSuffixes: custom));
+
+        // Promotion to the next unit also keeps the supplied suffix.
+        Assert.Equal("1y", KpiValueFormatter.Format(999_999m, KpiValueKind.CompactMoney, EnUs, 2, compactSuffixes: custom));
     }
 
     [Fact]

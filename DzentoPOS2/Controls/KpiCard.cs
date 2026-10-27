@@ -286,7 +286,18 @@ namespace DzentoPOS2.WinForms.Controls
         }
 
         private string FormatValue(decimal num)
-            => KpiValueFormatter.Format(num, _valueKind, CultureInfo.CurrentCulture, _currencyDigits);
+            => KpiValueFormatter.Format(
+                num,
+                _valueKind,
+                CultureInfo.CurrentCulture,
+                _currencyDigits,
+                compactSuffixes: LocalizedCompactSuffixes());
+
+        private static KpiCompactSuffixes LocalizedCompactSuffixes()
+            => new(
+                AppStrings.KpiSuffixThousand,
+                AppStrings.KpiSuffixMillion,
+                AppStrings.KpiSuffixBillion);
 
         private void StartAnimation()
         {

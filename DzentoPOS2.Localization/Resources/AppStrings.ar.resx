@@ -1236,4 +1236,13 @@
   <data name="CloseSession" xml:space="preserve">
     <value>إغلاق الجلسة</value>
   </data>
+  <data name="KpiSuffixThousand" xml:space="preserve">
+    <value>ألف</value>
+  </data>
+  <data name="KpiSuffixMillion" xml:space="preserve">
+    <value>مليون</value>
+  </data>
+  <data name="KpiSuffixBillion" xml:space="preserve">
+    <value>مليار</value>
+  </data>
 </root>

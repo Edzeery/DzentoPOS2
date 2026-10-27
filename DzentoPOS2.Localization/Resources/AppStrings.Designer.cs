@@ -3229,5 +3229,32 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("CloseSession", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to K.
+        /// </summary>
+        public static string KpiSuffixThousand {
+            get {
+                return ResourceManager.GetString("KpiSuffixThousand", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to M.
+        /// </summary>
+        public static string KpiSuffixMillion {
+            get {
+                return ResourceManager.GetString("KpiSuffixMillion", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to B.
+        /// </summary>
+        public static string KpiSuffixBillion {
+            get {
+                return ResourceManager.GetString("KpiSuffixBillion", resourceCulture);
+            }
+        }
     }
 }

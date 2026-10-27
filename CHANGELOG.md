@@ -21,6 +21,11 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 - `AppSettingKeys` + idempotent `AppSettingSeeder` seed the `sales.max_discount_percent` setting.
 - `CodedDomainException` / `DomainErrorCodes` + `ExceptionFormatter.LocalizeCode` localize domain and validation failures through stable codes; the printed receipt now takes its labels from `AppStrings`.
 
+#### Upgrade-safe unique open-session migration + localized compact KPI suffixes (F3b)
+
+- `LegacySchemaRepair` gains a pre-migration step that closes duplicate open cash sessions before the unique open-session index is created: for every cashbox it keeps the **newest** session by `OpenedAtUtc` and closes the rest with `Status = Closed`, `ClosedAtUtc = max(OpenedAtUtc, latest linked movement/sale time)`, unchanged balances and an appended note `"Auto-closed by upgrade (duplicate open session)"`. It runs in one transaction, is idempotent (skipped once `UX_CashSessions_OpenPerCashbox` exists) and logs every affected session/cashbox. It never deletes rows and never touches invoices or cash movements.
+- `KpiCompactSuffixes` (Shared) carries the localized thousand/million/billion short forms; `KpiValueFormatter.Compact` no longer hardcodes `K/M/B` and uses the supplied suffixes (falling back to the invariant ones only when none is given). New `AppStrings` keys `KpiSuffixThousand` / `KpiSuffixMillion` / `KpiSuffixBillion` in base + `ar` + `en` + `fr` + `AppStrings.Designer.cs` (parity diff 0); `KpiCard` passes them in.
+
 ### Changed
 
 - `CashSessionService` aggregates the session's cash totals in memory (SQLite cannot `Sum` a `decimal` server-side); the summary exposes `CashSales`, `CashRefunds`, `PayIns`, `PayOuts`, `Expenses`, `TotalSales`, `NonCashSalesByMethod`, `InvoiceCount` and `VoidCount`.
@@ -30,12 +35,16 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 
 - Cash sale → exactly one linked `CashTransaction`; a card sale appears only in the non-cash split; a partial payment counts only the cash actually paid; a void nets the drawer back to zero.
 - `CashTransaction` / `SalesInvoice` → `CashSession` foreign keys are `Restrict` (migration `20261023140849_E3_CashSessionLinking`).
+- Startup no longer aborts with `SQLite Error 1: 'no such index: IX_CashSessions_CashboxId'`: the E3 unique-index migration now drops the old index with `DROP INDEX IF EXISTS "IX_CashSessions_CashboxId"` (and `Down()` recreates it with `CREATE INDEX IF NOT EXISTS`), so a missing index can never crash the upgrade path again.
+- Startup no longer aborts with `SQLite Error 1: 'index UX_CashSessions_OpenPerCashbox already exists'`: the same migration creates the filtered unique index with `CREATE UNIQUE INDEX IF NOT EXISTS` (and `Down()` drops it with `DROP INDEX IF EXISTS`), so it is a harmless no-op when the index is already present (for example from an earlier incarnation of the migration whose history row is gone).
+- A database that allowed several open sessions per cashbox (pre-`E3_UniqueOpenSessionIndex`) now upgrades without error: the duplicate sessions are auto-closed by the repair step above instead of failing the `CREATE UNIQUE INDEX`.
 
 ### Verification
 
 - `dotnet build DzentoPOS2.sln`: **0 errors**, 21 warnings (pre-existing `NU1701`).
-- `dotnet test DzentoPOS2.sln`: **Unit 79 passed / Integration 37 passed / 0 failed** (Part 0 baseline: Unit 76 / Integration 26).
-- 4-resx + `AppStrings.Designer.cs` key parity: **373 keys each, 0 diff**.
+- `dotnet test DzentoPOS2.sln`: **Unit 84 passed / Integration 41 passed / 0 failed** (F3 baseline: Unit 79 / Integration 37; Part 0: Unit 76 / Integration 26).
+- 4-resx + `AppStrings.Designer.cs` key parity: **376 keys each, 0 diff**.
+- `dotnet ef migrations has-pending-model-changes`: **No changes** (model snapshot and migration Designer stay consistent).
 
 ## [Unreleased] — 2026-10-23 (cash sessions + dashboard performance)
 

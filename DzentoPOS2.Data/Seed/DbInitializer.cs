@@ -2,6 +2,7 @@
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace DzentoPOS2.Data.Seed
 {
@@ -22,7 +23,10 @@ namespace DzentoPOS2.Data.Seed
             // AddCashSessions, DB whose history still contains the removed E3
             // migration ids). It never loses data and is idempotent.
             await LegacySchemaRepair.RepairAsync(
-                context.Database.GetDbConnection());
+                context.Database.GetDbConnection(),
+                scope.ServiceProvider
+                    .GetService<ILoggerFactory>()
+                    ?.CreateLogger("DzentoPOS2.Data.Seed.LegacySchemaRepair"));
 
             // تطبيق الـ Migrations تلقائياً
             await context.Database.MigrateAsync();

@@ -1236,4 +1236,13 @@
   <data name="CloseSession" xml:space="preserve">
     <value>Fermer la session</value>
   </data>
+  <data name="KpiSuffixThousand" xml:space="preserve">
+    <value>k</value>
+  </data>
+  <data name="KpiSuffixMillion" xml:space="preserve">
+    <value>M</value>
+  </data>
+  <data name="KpiSuffixBillion" xml:space="preserve">
+    <value>Md</value>
+  </data>
 </root>

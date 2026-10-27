@@ -1811,7 +1811,7 @@ namespace DzentoPOS2.Data.Migrations
             // Cash-session linking columns. They belong to the E3 feature, but the
             // E3 migration was regenerated at a point where it only emitted the
             // foreign keys. EF 8 recreated the columns implicitly while rebuilding
-            // the tables for AddForeignKey; EF 10 copies the full target column
+            // the tables for AddForeignKey; EF 9 and EF 10 copy the full target column
             // list instead, so a brand-new database (where LegacySchemaRepair has
             // nothing to repair) fails with "no such column". Defining them in the
             // baseline - which is always already applied whenever the repair runs -

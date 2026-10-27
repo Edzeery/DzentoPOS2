@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net10.0-windows</TargetFramework>
+		<TargetFramework>net9.0-windows</TargetFramework>
 		<Nullable>enable</Nullable>
 		<UseWindowsForms>true</UseWindowsForms>
 		<ImplicitUsings>enable</ImplicitUsings>
@@ -26,14 +26,14 @@
 		<PackageReference Include="QuestPDF" Version="2024.12.3" />
 		<PackageReference Include="ZXing.Net" Version="0.16.8" />
 
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.14">
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.22">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 
-		<PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.14" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.14" />
-		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.14" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.22" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="9.0.22" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.22" />
 		<PackageReference Include="SkiaSharp" Version="3.119.2" />
 		<PackageReference Include="SkiaSharp.Views.WindowsForms" Version="3.119.2" />
 		<PackageReference Include="Svg.Skia" Version="5.0.0" />

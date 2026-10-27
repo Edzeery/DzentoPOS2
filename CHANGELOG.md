@@ -2,7 +2,33 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
-## [Unreleased] — 2026-10-27 (.NET 10 retarget)
+## [Unreleased] — 2026-10-27 (retarget to .NET 9 for Visual Studio 2022)
+
+### Changed
+
+#### Framework
+
+- Retargeted every project back to **.NET 9**: libraries to `net9.0`, the WinForms app and `EZControls` to `net9.0-windows`. Removed `global.json` so the build uses the machine-wide SDK.
+- Aligned all Microsoft packages (EF Core, Sqlite, Design, Tools and `Microsoft.Extensions.*`) to **9.0.22**.
+- **End users need the .NET 9 Desktop Runtime** (`Microsoft.WindowsDesktop.App`) until the installer bundles it.
+- Added a repository-scoped `NuGet.config` (nuget.org, cleared package source mapping): a machine-level `packageSourceMapping` that maps only the pattern `"new"` silently downgrades unavailable packages to cached ones, which blocked downloading 9.0.22.
+
+#### Why not .NET 10
+
+- Visual Studio 2022 (17.14, MSBuild 17.14.10) cannot load the .NET 10 SDK: SDK `10.0.403` declares `minimumMSBuildVersion = 18.0.0` (Visual Studio 2026). MSBuild falls back to the machine-wide .NET 9 SDK, which reports `NETSDK1209`; the "use Visual Studio version 17.16 or higher" text is a stale placeholder. Reproduced outside the IDE — a toolchain constraint, not a repo bug. Details in `docs/net9-retarget.md`.
+
+#### Carried over from the .NET 10 attempt (still required on .NET 9)
+
+- `WFO1000` (WinForms code-serialization analyzer, error by default on net9+) disabled via `.editorconfig` for the two programmatically-consumed control libraries (`EZControls`, `DzentoPOS2.WinForms`).
+- `EZComboBox.SelectedValue` annotated `[DisallowNull]`.
+- Cash-session linking columns (`CashTransactions.CashSessionId`/`SourceId`/`SourceType`, `SalesInvoices.CashSessionId`) defined in the baseline `InitialCreate` migration: EF Core **9** also rebuilds a SQLite table for `AddForeignKey` by copying the full target column list, so fresh databases failed with `no such column`.
+
+### Verified
+
+- Clean rebuild **0 errors / 21 warnings** (all `NU1701`, baseline unchanged), Unit **84/84**, Integration **41/41**.
+- `has-pending-model-changes` clean; a fresh database applies all 9 migrations (`Done.`, 56 tables).
+
+## [Unreleased] — 2026-10-27 (.NET 10 retarget) — superseded
 
 ### Changed
 

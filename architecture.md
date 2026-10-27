@@ -1,6 +1,6 @@
 # Architecture — DzentoPOS2
 
-DzentoPOS2 is a layered .NET 8 WinForms point-of-sale application over SQLite.
+DzentoPOS2 is a layered .NET 9 WinForms point-of-sale application over SQLite.
 
 ## Projects
 

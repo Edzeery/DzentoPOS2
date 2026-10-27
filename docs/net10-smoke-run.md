@@ -1,5 +1,7 @@
 # .NET 10 startup smoke run (P2 / Step 5)
 
+> **Historical (reverted).** This documents the .NET 10 retarget, which was reverted because Visual Studio 2022 cannot build `net10.0`. The solution now targets .NET 9 — see [`net9-retarget.md`](net9-retarget.md). The smoke run itself is framework-agnostic.
+
 The real startup path — `DbInitializer.InitializeAsync` (schema repair →
 `MigrateAsync` → seeders → store bootstrap), exactly what `Program.cs` calls —
 was executed against **copies of the real databases** in the repository. Nothing

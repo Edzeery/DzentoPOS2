@@ -1,5 +1,7 @@
 # .NET 10 retarget verification (P2 / Step 4)
 
+> **Historical (reverted).** This documents the .NET 10 retarget, which was reverted because Visual Studio 2022 cannot build `net10.0`. The solution now targets .NET 9 — see [`net9-retarget.md`](net9-retarget.md) for the current verification.
+
 All commands run from the repository root with the pinned SDK
 (`%USERPROFILE%\.dotnet\dotnet.exe`, 10.0.403; see `global.json`).
 

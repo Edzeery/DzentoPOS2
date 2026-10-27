@@ -1,5 +1,7 @@
 # .NET 10 and EF Core 10 breaking changes (P2 / Step 3)
 
+> **Historical (reverted).** This documents the .NET 10 retarget, which was reverted because Visual Studio 2022 cannot build `net10.0`. The solution now targets .NET 9 — see [`net9-retarget.md`](net9-retarget.md). Items 1 (WFO1000) and 3 (SQLite `AddForeignKey` rebuild) still apply on .NET 9.
+
 Sources reviewed:
 
 - <https://learn.microsoft.com/dotnet/core/compatibility/10.0> (.NET 10 index)

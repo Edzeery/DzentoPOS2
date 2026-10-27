@@ -1,5 +1,7 @@
 # .NET 10 package audit (P2 / Step 2)
 
+> **Historical (reverted).** This documents the .NET 10 retarget, which was reverted because Visual Studio 2022 cannot build `net10.0`. The solution now targets .NET 9 — see [`net9-retarget.md`](net9-retarget.md). The package findings below (licences, vulnerabilities, deprecation) are still valid; the Microsoft package versions are now `9.0.22`.
+
 Scope: every `PackageReference` in the solution, checked for .NET 10
 compatibility, newer stable releases, license terms, vulnerabilities and
 deprecation.

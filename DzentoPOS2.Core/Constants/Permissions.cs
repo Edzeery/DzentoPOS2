@@ -73,6 +73,12 @@ namespace DzentoPOS2.Core.Constants
         // Reports
         public const string ReportsView = "permissions.reports.view";
 
+        // Cash Sessions
+        public const string CashSessionsView = "permissions.cashsessions.view";
+
+        // Units
+        public const string UnitsView = "permissions.units.view";
+
         // Settings
         public const string SettingsView = "permissions.settings.view";
         public const string SettingsEdit = "permissions.settings.edit";

@@ -294,9 +294,14 @@ public sealed class BarcodeScannerOverlay : Form
 
         try
         {
-            BeginInvoke(() => _lblStatus.Text = string.IsNullOrWhiteSpace(error)
-                ? AppStrings.NoCameraFound
-                : error);
+            BeginInvoke(() =>
+            {
+                if (IsDisposed) return;
+                _lblStatus.Text = string.IsNullOrWhiteSpace(error)
+                    ? AppStrings.NoCameraFound
+                    : error;
+                _lblHint.Text = AppStrings.CameraDevice;
+            });
         }
         catch
         {

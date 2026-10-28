@@ -50,6 +50,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
         private readonly INavigationService _navigation;
         private readonly ICurrentUserService _currentUser;
         private readonly AppDbContext _context;
+        private readonly DzentoPOS2.App.Authorization.IPermissionService _permissionService;
 
         private readonly ILanguageService _languageService;
         private readonly IUserPreferencesService _preferences;
@@ -89,13 +90,15 @@ namespace DzentoPOS2.WinForms.Forms.Layout
              ISalesEventPublisher salesEvents,
              IBusinessClock clock,
              IServiceProvider services,
-             AppDbContext context)
+             AppDbContext context,
+             DzentoPOS2.App.Authorization.IPermissionService permissionService)
         {
             InitializeComponent();
 
             _currentUser = currentUser;
             _navigation = navigation;
             _context = context;
+            _permissionService = permissionService;
             _languageService = languageService;
             _preferences = preferences;
             _currentSettings = currentSettings;
@@ -131,6 +134,9 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             AddCategoriesSidebarButton();
             AddUnitsSidebarButton();
             AddCashSessionsSidebarButton();
+
+            // Enforce permissions on sidebar buttons
+            _ = EnforcePermissionsAsync();
 
             // One hover behaviour for every sidebar button (the dynamically
             // added ones are wired here so there is no per-button duplicate).
@@ -781,6 +787,82 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             btnReports.Click += (s, e) => NavigateTo<ReportsForm>(btnReports);
             btnUsersRoles.Click += (s, e) => NavigateTo<UsersForm>(btnUsersRoles);
             btnSettings.Click += (s, e) => NavigateTo<SettingsForm>(btnSettings);
+        }
+
+        private async Task EnforcePermissionsAsync()
+        {
+            try
+            {
+                if (IsDisposed) return;
+
+                if (string.Equals(_currentUser.RoleName, "SuperAdmin", StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                // Dashboard
+                if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.DashboardView))
+                    btnDashboard.Visible = false;
+
+                // Products
+                if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.ProductsView))
+                    BtnProducts.Visible = false;
+
+                // Purchases
+                if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.PurchasesView))
+                    BtnPurchases.Visible = false;
+
+                // Sales
+                if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.SalesView))
+                    BtnSales.Visible = false;
+
+                // Customers
+                if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.CustomersView))
+                    BtnCustomers.Visible = false;
+
+                // Suppliers
+                if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.SuppliersView))
+                    _btnSuppliers.Visible = false;
+
+                // Categories
+                if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.CategoriesView))
+                    _btnCategories.Visible = false;
+
+                // Units
+                if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.UnitsView))
+                    _btnUnits.Visible = false;
+
+                // Inventory
+                if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.InventoryView))
+                    btnInventory.Visible = false;
+
+                // Reports
+                if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.ReportsView))
+                    btnReports.Visible = false;
+
+                // Users/Roles
+                if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.UsersView) &&
+                    !await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.RolesView))
+                {
+                    btnUsersRoles.Visible = false;
+                }
+
+                // Expenses
+                if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.ExpensesView))
+                    _btnExpenses.Visible = false;
+
+                // Cash Sessions
+                if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.CashSessionsView))
+                    _btnCashSessions.Visible = false;
+
+                // Settings
+                if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.SettingsView))
+                {
+                    btnSettings.Visible = false;
+                    settingsButton1.Visible = false;
+                }
+            }
+            catch { }
         }
 
         private void NavigateTo<TForm>(IconButton button)

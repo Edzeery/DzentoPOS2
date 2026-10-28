@@ -51,6 +51,10 @@ public static class CameraDeviceEnumerator
                         if (string.IsNullOrWhiteSpace(monikerPath)) continue;
 
                         string friendlyName = ReadProperty(moniker, "FriendlyName");
+                        if (string.IsNullOrWhiteSpace(friendlyName))
+                            friendlyName = ReadProperty(moniker, "Description");
+                        if (string.IsNullOrWhiteSpace(friendlyName))
+                            friendlyName = ReadProperty(moniker, "DevicePath");
                         string description = ReadProperty(moniker, "Description");
 
                         devices.Add(new CameraDeviceInfo(
@@ -95,8 +99,13 @@ public static class CameraDeviceEnumerator
 
             try
             {
-                if (propertyBag.Get(propertyName, out object? value) == 0 && value is string text)
+                // Try standard Get first
+                if (propertyBag.Get(propertyName, out object? value) == 0 && value is string text && !string.IsNullOrWhiteSpace(text))
                     return text;
+
+                // Some devices only expose via GetProperty
+                if (propertyBag.GetProperty(propertyName, out object? value2) == 0 && value2 is string text2 && !string.IsNullOrWhiteSpace(text2))
+                    return text2;
             }
             finally
             {

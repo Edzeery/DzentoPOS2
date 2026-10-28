@@ -137,7 +137,7 @@ public sealed class BarcodeCameraService : IDisposable
             try
             {
                 device.SignalToStop();
-                device.WaitForStop();
+                try { device.WaitForStop(); } catch { }
             }
             catch
             {
@@ -153,7 +153,7 @@ public sealed class BarcodeCameraService : IDisposable
 
             // Defensive: release explicitly when the concrete type implements
             // IDisposable (no leak if a future AForge build adds it).
-            (device as IDisposable)?.Dispose();
+            try { (device as IDisposable)?.Dispose(); } catch { }
         }
 
         try

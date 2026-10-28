@@ -23,7 +23,9 @@ namespace DzentoPOS2.Data.Seed
 
             if (adminUser != null)
             {
-                await EnsureDefaultPasswordAsync(context, adminUser);
+                // Never overwrite the administrator password on every startup.
+                // The password may be changed by an authorized administrator
+                // and must remain exactly as stored.
                 return;
             }
 
@@ -59,21 +61,6 @@ namespace DzentoPOS2.Data.Seed
                     RoleId = superAdminRole.Id
                 });
 
-            await context.SaveChangesAsync();
-        }
-
-        /// <summary>
-        /// Keeps the built-in administrator able to sign in with the built-in
-        /// default credentials. The stored hash is only rewritten when it no
-        /// longer matches the default, so a database seeded with an older
-        /// default is migrated automatically and <c>admin</c> / <c>admin</c>
-        /// always works.
-        /// </summary>
-        private static async Task EnsureDefaultPasswordAsync(AppDbContext context, User adminUser)
-        {
-            if (PasswordHelper.Verify(DefaultPassword, adminUser.PasswordHash)) return;
-
-            adminUser.PasswordHash = PasswordHelper.Hash(DefaultPassword);
             await context.SaveChangesAsync();
         }
     }

@@ -1,6 +1,7 @@
 ﻿using DzentoPOS2.Shared.Contracts.DTOs.Identity.Auth;
 using DzentoPOS2.App.Services.Identity.Interfaces;
 using DzentoPOS2.App.Session;
+using DzentoPOS2.App.Authorization;
 using DzentoPOS2.Data.Repositories.Common.Interfaces;
 using DzentoPOS2.Data.Repositories.Identity.Interfaces;
 using DzentoPOS2.Shared.Results;
@@ -122,6 +123,13 @@ namespace DzentoPOS2.App.Services.Identity
                     BranchId = response.BranchId,
                     IsAdmin = response.IsAdmin
                 });
+
+                try
+                {
+                    var permissionService = new PermissionService(_currentUser, _userRepository);
+                    await permissionService.RefreshCacheAsync(response.UserId);
+                }
+                catch { }
 
                 return Result<LoginResponseDto>
                     .Succeeded(

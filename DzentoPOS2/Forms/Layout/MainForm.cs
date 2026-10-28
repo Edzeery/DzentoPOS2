@@ -50,6 +50,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
         private readonly INavigationService _navigation;
         private readonly ICurrentUserService _currentUser;
         private readonly AppDbContext _context;
+        private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly DzentoPOS2.App.Authorization.IPermissionService _permissionService;
 
         private readonly ILanguageService _languageService;
@@ -91,6 +92,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
              IBusinessClock clock,
              IServiceProvider services,
              AppDbContext context,
+             IDbContextFactory<AppDbContext> contextFactory,
              DzentoPOS2.App.Authorization.IPermissionService permissionService)
         {
             InitializeComponent();
@@ -98,6 +100,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             _currentUser = currentUser;
             _navigation = navigation;
             _context = context;
+            _contextFactory = contextFactory;
             _permissionService = permissionService;
             _languageService = languageService;
             _preferences = preferences;
@@ -991,7 +994,8 @@ namespace DzentoPOS2.WinForms.Forms.Layout
 
             // The header branch must reflect what is actually in the database,
             // not a hand-built placeholder.
-            var branchEntities = _context.Branches
+            using var db = _contextFactory.CreateDbContext();
+            var branchEntities = db.Branches
                 .AsNoTracking()
                 .Where(b => !b.IsDeleted && b.IsActive)
                 .OrderByDescending(b => b.IsMainBranch)

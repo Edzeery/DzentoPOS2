@@ -27,7 +27,7 @@ public sealed class BarcodeCameraService : IDisposable
     private readonly AutoResetEvent _frameAvailable = new(false);
     private readonly object _sync = new();
 
-    private VideoCaptureDevice? _device;
+    private IVideoSource? _device;
     private Thread? _decodeThread;
     private Bitmap? _currentFrame;
     private volatile bool _running;
@@ -91,6 +91,24 @@ public sealed class BarcodeCameraService : IDisposable
 
         try
         {
+            if (moniker.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || 
+                moniker.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                var mjpeg = new MJPEGStream(moniker);
+                mjpeg.NewFrame += OnNewFrame;
+                mjpeg.VideoSourceError += OnVideoSourceError;
+                _device = mjpeg;
+                mjpeg.Start();
+                _running = true;
+                _decodeThread = new Thread(DecodeLoop)
+                {
+                    IsBackground = true,
+                    Name = "BarcodeDecoder"
+                };
+                _decodeThread.Start();
+                return true;
+            }
+
             var device = new VideoCaptureDevice(moniker);
             TrySetResolution(device, 640, 480);
 
@@ -136,8 +154,23 @@ public sealed class BarcodeCameraService : IDisposable
             // COM objects) is SignalToStop + WaitForStop.
             try
             {
-                device.SignalToStop();
-                try { device.WaitForStop(); } catch { }
+                if (device is VideoCaptureDevice vcd)
+                {
+                    try
+                    {
+                        vcd.SignalToStop();
+                        try { vcd.WaitForStop(); } catch { }
+                    }
+                    catch
+                    {
+                        try { vcd.Stop(); } catch { }
+                    }
+                }
+                else
+                {
+                    try { device.SignalToStop(); } catch { }
+                    try { device.WaitForStop(); } catch { }
+                }
             }
             catch
             {
@@ -151,8 +184,6 @@ public sealed class BarcodeCameraService : IDisposable
                 }
             }
 
-            // Defensive: release explicitly when the concrete type implements
-            // IDisposable (no leak if a future AForge build adds it).
             try { (device as IDisposable)?.Dispose(); } catch { }
         }
 

@@ -20,6 +20,26 @@ namespace DzentoPOS2.Data.Context
             : base(options)
         {
         }
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var conn = Database.GetDbConnection();
+                if (conn.State != System.Data.ConnectionState.Open)
+                    await conn.OpenAsync(cancellationToken);
+
+                using var cmd = conn.CreateCommand();
+                cmd.CommandText = "PRAGMA foreign_keys = ON; PRAGMA journal_mode = WAL; PRAGMA synchronous = NORMAL;";
+                await cmd.ExecuteNonQueryAsync(cancellationToken);
+            }
+            catch
+            {
+                // PRAGMA pragmas are best-effort; don't block operations if unsupported
+            }
+
+            return await base.SaveChangesAsync(cancellationToken);
+        }
          
         #region Identity
 

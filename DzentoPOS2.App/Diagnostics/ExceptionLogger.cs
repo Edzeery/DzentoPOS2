@@ -37,6 +37,17 @@ public static class ExceptionLogger
             var builder = new StringBuilder();
             builder.AppendLine(new string('-', 80));
             builder.AppendLine($"{DateTime.Now:yyyy-MM-dd HH:mm:ss} {context}".TrimEnd());
+            try
+            {
+                builder.AppendLine($"OS: {Environment.OSVersion} | 64Bit: {Environment.Is64BitOperatingSystem} | User: {Environment.UserName}");
+                builder.AppendLine($"Process: {Environment.ProcessPath} | BaseDir: {AppContext.BaseDirectory}");
+                builder.AppendLine($"CLR: {Environment.Version}");
+            }
+            catch
+            {
+                // Best effort only
+            }
+            builder.AppendLine();
             builder.AppendLine(ExceptionFormatter.BuildDetails(exception));
 
             lock (Gate)

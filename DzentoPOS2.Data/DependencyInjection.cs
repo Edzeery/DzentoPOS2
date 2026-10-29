@@ -58,6 +58,24 @@ namespace DzentoPOS2.Data
 #endif
             });
 
+            services.AddDbContextFactory<AppDbContext>((serviceProvider, options) =>
+            {
+                var connectionString =
+                    configuration.GetConnectionString("DefaultConnection");
+
+                options.UseSqlite(
+                    ResolveSqliteConnectionString(connectionString));
+
+                options.AddInterceptors(
+                    serviceProvider.GetServices<IInterceptor>());
+
+#if DEBUG
+                options.EnableSensitiveDataLogging();
+
+                options.EnableDetailedErrors();
+#endif
+            });
+
             #region Common Repositories
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();

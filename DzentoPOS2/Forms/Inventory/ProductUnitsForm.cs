@@ -41,15 +41,15 @@ public partial class ProductUnitsForm : LocalizableFormBase
 
         _btnAdd = ButtonFactory.ToolAdd("Add");
         _btnAdd.Location = new Point(16, 12);
-        _btnAdd.Click += async (_, _) => await AddUnit();
+        _btnAdd.Click += (_, _) => RunSafe(AddUnit);
 
         _btnEdit = ButtonFactory.ToolEdit("Edit");
         _btnEdit.Location = new Point(124, 12);
-        _btnEdit.Click += async (_, _) => await EditUnit();
+        _btnEdit.Click += (_, _) => RunSafe(EditUnit);
 
         _btnDelete = ButtonFactory.ToolDelete("Delete");
         _btnDelete.Location = new Point(232, 12);
-        _btnDelete.Click += async (_, _) => await DeleteUnit();
+        _btnDelete.Click += (_, _) => RunSafe(DeleteUnit);
 
         _lblSearch = new Label
         {
@@ -65,22 +65,22 @@ public partial class ProductUnitsForm : LocalizableFormBase
             Font = new Font("Segoe UI", 10F),
             PlaceholderText = AppStrings.Search
         };
-        _searchBox.TextChanged += async (_, _) => await LoadDataAsync();
+        _searchBox.TextChanged += (_, _) => RunSafe(LoadDataAsync);
 
         _topPanel.Controls.AddRange(new Control[] { _btnDelete, _btnEdit, _btnAdd, _lblSearch, _searchBox });
 
         _grid = new DataGridView { Dock = DockStyle.Fill };
         DataGridViewStyleHelper.ApplyModernStyle(_grid);
-        _grid.CellDoubleClick += async (_, _) => await EditUnit();
+        _grid.CellDoubleClick += (_, _) => RunSafe(EditUnit);
 
         Controls.Add(_grid);
         Controls.Add(_topPanel);
     }
 
-    protected override async void OnLoad(EventArgs e)
+    protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
-        await LoadDataAsync();
+        RunSafe(LoadDataAsync);
     }
 
     protected override void LoadText()
@@ -96,6 +96,8 @@ public partial class ProductUnitsForm : LocalizableFormBase
         _units = string.IsNullOrWhiteSpace(term)
             ? await _unitService.GetAllAsync()
             : await _unitService.SearchAsync(term);
+
+        if (IsDisposedOrDisposing) return;
 
         _grid.DataSource = null;
         _grid.Columns.Clear();

@@ -2,6 +2,104 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] — 2026-10-27 (retarget to .NET 9 for Visual Studio 2022)
+
+### Changed
+
+#### Framework
+
+- Retargeted every project back to **.NET 9**: libraries to `net9.0`, the WinForms app and `EZControls` to `net9.0-windows`. Removed `global.json` so the build uses the machine-wide SDK.
+- Aligned all Microsoft packages (EF Core, Sqlite, Design, Tools and `Microsoft.Extensions.*`) to **9.0.22**.
+- **End users need the .NET 9 Desktop Runtime** (`Microsoft.WindowsDesktop.App`) until the installer bundles it.
+- Added a repository-scoped `NuGet.config` (nuget.org, cleared package source mapping): a machine-level `packageSourceMapping` that maps only the pattern `"new"` silently downgrades unavailable packages to cached ones, which blocked downloading 9.0.22.
+
+#### Why not .NET 10
+
+- Visual Studio 2022 (17.14, MSBuild 17.14.10) cannot load the .NET 10 SDK: SDK `10.0.403` declares `minimumMSBuildVersion = 18.0.0` (Visual Studio 2026). MSBuild falls back to the machine-wide .NET 9 SDK, which reports `NETSDK1209`; the "use Visual Studio version 17.16 or higher" text is a stale placeholder. Reproduced outside the IDE — a toolchain constraint, not a repo bug. Details in `docs/net9-retarget.md`.
+
+#### Carried over from the .NET 10 attempt (still required on .NET 9)
+
+- `WFO1000` (WinForms code-serialization analyzer, error by default on net9+) disabled via `.editorconfig` for the two programmatically-consumed control libraries (`EZControls`, `DzentoPOS2.WinForms`).
+- `EZComboBox.SelectedValue` annotated `[DisallowNull]`.
+- Cash-session linking columns (`CashTransactions.CashSessionId`/`SourceId`/`SourceType`, `SalesInvoices.CashSessionId`) defined in the baseline `InitialCreate` migration: EF Core **9** also rebuilds a SQLite table for `AddForeignKey` by copying the full target column list, so fresh databases failed with `no such column`.
+
+### Verified
+
+- Clean rebuild **0 errors / 21 warnings** (all `NU1701`, baseline unchanged), Unit **84/84**, Integration **41/41**.
+- `has-pending-model-changes` clean; a fresh database applies all 9 migrations (`Done.`, 56 tables).
+
+## [Unreleased] — 2026-10-27 (.NET 10 retarget) — superseded
+
+### Changed
+
+#### Framework
+
+- Retargeted every project from .NET 8 to **.NET 10 (LTS)**: libraries to `net10.0`, the WinForms app and `EZControls` to `net10.0-windows`. Added `global.json` pinning SDK `10.0.403` with `rollForward: latestFeature`.
+- Aligned all Microsoft packages (EF Core, Sqlite, Design, Tools and `Microsoft.Extensions.*`) to **10.0.14**.
+- **End users now need the .NET 10 Desktop Runtime** (`Microsoft.WindowsDesktop.App`) until the installer bundles it.
+
+#### Fixes required by .NET 10
+
+- `WFO1000` (WinForms code-serialization analyzer, error by default on net9+) disabled via `.editorconfig` for the two programmatically-consumed control libraries (`EZControls`, `DzentoPOS2.WinForms`).
+- `EZComboBox.SelectedValue` annotated `[DisallowNull]` to match the .NET 10 non-nullable annotation on `ListControl.SelectedValue`.
+- Added the cash-session linking columns (`CashTransactions.CashSessionId`/`SourceId`/`SourceType`, `SalesInvoices.CashSessionId`) to the baseline `InitialCreate` migration: EF Core 10's SQLite `AddForeignKey` table rebuild copies the full column list, so fresh databases failed with `no such column`. Legacy databases are unaffected (`LegacySchemaRepair` remains the idempotent path).
+- Regenerated `AppDbContextModelSnapshot.cs` for EF Core 10 — only the `ProductVersion` annotation changed (`8.0.27` → `10.0.14`); a probe migration proved the generated Up/Down are empty (no schema change) and no existing migration was edited or renamed.
+
+#### Package audit
+
+- No vulnerable packages. Only `xunit 2.9.3` is flagged as deprecated (`Legacy` → xunit.v3); the migration to xunit v3 is deferred.
+- Kept `System.Data.SqlClient`: `System.Windows.Forms.DataVisualization.dll` references it directly while its nuspec declares no dependency, so removing it breaks the Dashboard charts at runtime.
+- Licence findings needing a business decision: **AutoMapper 16** (RPL-1.5 or paid commercial licence), **QuestPDF** (MIT below US $1M revenue, else a paid tier) and **AForge.Video.DirectShow** (LGPL-3.0). Details in `docs/net10-package-audit.md`.
+
+### Verified
+
+- Clean rebuild **0 errors / 21 warnings** (baseline unchanged; all `NU1701`), Unit **84/84**, Integration **41/41**.
+- `has-pending-model-changes` clean; a fresh database and three legacy starting states upgrade without data loss through the real startup path (`docs/net10-verification.md`, `docs/net10-smoke-run.md`).
+
+## [Unreleased] — 2026-10-27 (cash drawer, discount ceiling, localized errors)
+
+### Added
+
+#### Cash-drawer dashboard, live totals and enforcement (F3, E3)
+
+- `ISalesEventPublisher` / `SalesEventPublisher` (singleton, in-process): `SaleCompleted`, `SaleVoided` and `CashMovementAdded` are raised **after** the database transaction commits, so any subscriber that reads the database observes the committed rows. Handlers are isolated (one failing subscriber cannot break the sale) and subscribers own their lifetime (unsubscribe on dispose).
+- `CashSessionOpenDialog` (opening policy modal) and a rebuilt `CashSessionForm` KPI dashboard (8 `KpiCard`s, 4→2→1 column reflow, RTL, dark mode, `RegionalContext` formatting). Both are designer-first (layout in `<Form>.Designer.cs`, logic in `<Form>.cs`, runtime `ApplyTheme` / localized text).
+- The main shell status bar gains a live cash-drawer chip (open/closed + previous-business-day warning); `SalesForm` shows an "open the drawer first" banner and gates the checkout button.
+- `GetSessionSummaryAsync` is the single source of truth for the drawer totals and is reused by `CloseSessionAsync` (idempotent: a second close throws `CodedDomainException(SessionAlreadyClosed)`).
+- Migration `20261027164243_E3_UniqueOpenSessionIndex` adds the filtered unique index `UX_CashSessions_OpenPerCashbox` (`"Status" = 0 AND "IsDeleted" = 0`) — it previously existed only in the model snapshot.
+- `CashSessionPolicy.IsFromPreviousBusinessDay` (local business day) with unit coverage.
+
+#### Discount ceiling for both modes + seeded setting (F2b / Part 0)
+
+- `sales.max_discount_percent` is now enforced for **both** discount modes by comparing the effective percentage (`DiscountAmount / Subtotal * 100`) of the calculator output.
+- `AppSettingKeys` + idempotent `AppSettingSeeder` seed the `sales.max_discount_percent` setting.
+- `CodedDomainException` / `DomainErrorCodes` + `ExceptionFormatter.LocalizeCode` localize domain and validation failures through stable codes; the printed receipt now takes its labels from `AppStrings`.
+
+#### Upgrade-safe unique open-session migration + localized compact KPI suffixes (F3b)
+
+- `LegacySchemaRepair` gains a pre-migration step that closes duplicate open cash sessions before the unique open-session index is created: for every cashbox it keeps the **newest** session by `OpenedAtUtc` and closes the rest with `Status = Closed`, `ClosedAtUtc = max(OpenedAtUtc, latest linked movement/sale time)`, unchanged balances and an appended note `"Auto-closed by upgrade (duplicate open session)"`. It runs in one transaction, is idempotent (skipped once `UX_CashSessions_OpenPerCashbox` exists) and logs every affected session/cashbox. It never deletes rows and never touches invoices or cash movements.
+- `KpiCompactSuffixes` (Shared) carries the localized thousand/million/billion short forms; `KpiValueFormatter.Compact` no longer hardcodes `K/M/B` and uses the supplied suffixes (falling back to the invariant ones only when none is given). New `AppStrings` keys `KpiSuffixThousand` / `KpiSuffixMillion` / `KpiSuffixBillion` in base + `ar` + `en` + `fr` + `AppStrings.Designer.cs` (parity diff 0); `KpiCard` passes them in.
+
+### Changed
+
+- `CashSessionService` aggregates the session's cash totals in memory (SQLite cannot `Sum` a `decimal` server-side); the summary exposes `CashSales`, `CashRefunds`, `PayIns`, `PayOuts`, `Expenses`, `TotalSales`, `NonCashSalesByMethod`, `InvoiceCount` and `VoidCount`.
+- `SaleService.VoidAsync` only reverses **cash** that was actually taken, so a voided card sale never moves the drawer.
+
+### Fixed
+
+- Cash sale → exactly one linked `CashTransaction`; a card sale appears only in the non-cash split; a partial payment counts only the cash actually paid; a void nets the drawer back to zero.
+- `CashTransaction` / `SalesInvoice` → `CashSession` foreign keys are `Restrict` (migration `20261023140849_E3_CashSessionLinking`).
+- Startup no longer aborts with `SQLite Error 1: 'no such index: IX_CashSessions_CashboxId'`: the E3 unique-index migration now drops the old index with `DROP INDEX IF EXISTS "IX_CashSessions_CashboxId"` (and `Down()` recreates it with `CREATE INDEX IF NOT EXISTS`), so a missing index can never crash the upgrade path again.
+- Startup no longer aborts with `SQLite Error 1: 'index UX_CashSessions_OpenPerCashbox already exists'`: the same migration creates the filtered unique index with `CREATE UNIQUE INDEX IF NOT EXISTS` (and `Down()` drops it with `DROP INDEX IF EXISTS`), so it is a harmless no-op when the index is already present (for example from an earlier incarnation of the migration whose history row is gone).
+- A database that allowed several open sessions per cashbox (pre-`E3_UniqueOpenSessionIndex`) now upgrades without error: the duplicate sessions are auto-closed by the repair step above instead of failing the `CREATE UNIQUE INDEX`.
+
+### Verification
+
+- `dotnet build DzentoPOS2.sln`: **0 errors**, 21 warnings (pre-existing `NU1701`).
+- `dotnet test DzentoPOS2.sln`: **Unit 84 passed / Integration 41 passed / 0 failed** (F3 baseline: Unit 79 / Integration 37; Part 0: Unit 76 / Integration 26).
+- 4-resx + `AppStrings.Designer.cs` key parity: **376 keys each, 0 diff**.
+- `dotnet ef migrations has-pending-model-changes`: **No changes** (model snapshot and migration Designer stay consistent).
+
 ## [Unreleased] — 2026-10-23 (cash sessions + dashboard performance)
 
 ### Added

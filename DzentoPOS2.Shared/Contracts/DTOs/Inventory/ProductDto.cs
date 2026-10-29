@@ -30,6 +30,7 @@ public class CreateProductDto
     public decimal CostPrice { get; set; }
     public decimal SalePrice { get; set; }
     public decimal MinimumStock { get; set; }
+    public decimal OpeningStock { get; set; }
     public bool TrackStock { get; set; } = true;
     public bool IsActive { get; set; } = true;
 }

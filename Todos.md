@@ -1,10 +1,10 @@
 # قائمة المهام — DzentoPOS2
 
-**آخر تحديث:** 2026-10-22
+**آخر تحديث:** 2026-10-27
 **المرجع البصري:** [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md) — [`docs/design-system-plan.md`](docs/design-system-plan.md)
 **قاعدة القبول:** كل بند لا يُعتبر منجزًا إلا إذا تحقّق دليل قابل للقياس (بناء نظيف + فحص آلي عند 375/768/1440).
 
-**المفتاح:** ⬜ لم يبدأ · 🟨 قيد التنفيذ · ✅ مكتمل ومُتحقَّق
+**المفتاح:** ⬜ لم يبدأ · 🟨 قيد التنفيذ · ✅ مكتمل ومُتحقَّق · ⏭️ مُستبدَل بمرحلة أحدث
 
 
 | # | المهمة | الحالة | دليل الإنجاز |
@@ -117,18 +117,45 @@
 | B.3 | تسجيل النماذج في DI + ترجمة العناوين | ✅ | تسجيل `ProductCategoriesForm`/`ProductUnitsForm` في `Infrastructure\DependencyInjection.cs`؛ 12 مفتاحًا في `AppStrings` + ar/en/fr + خصائص `AppStrings.Designer.cs`. فحص `B.4.1` (حلّ النموذجين من DI) |
 | B.4 | فحوصات CRUD آلية (إضافة/تعديل/حذف + تكرار الاسم) | ✅ | المِضيف: **10/10** لقسم B — `B.1.1–B.1.4`, `B.2.1–B.2.4`, `B.3.1`, `B.4.1–B.4.4` |
 
-## C — صندوق النقود اليومية (مكتملة)
+## C — صندوق النقود اليومية (مكتملة — مُستبدَلة بـ E3)
 
 | # | المهمة | الحالة | دليل الإنجاز |
 |---|---|---|---|
-| C.1 | جلسة صندوق يومية (`CashSession`) مربوطة بحركات الصندوق | ✅ | كيان `CashSession` + `CashSessionStatus` + `CashSessionConfiguration` + migration `20261023082755_AddCashSessions` + `ICashSessionRepository`/`CashSessionRepository` + `ICashSessionService`/`CashSessionService` (فتح جلسة واحدة لكل صندوق، إغلاق يحسب المتوقع من حركات الصندوق بإشارة `MovementType` ويضبط `ExpectedBalance`/`Difference`/`Status` و`Cashbox.CurrentBalance`) + `CashboxSeeder` في `DbInitializer`. فحوص `C.1.0–C.1.6`: فتح 1000 ثم حركتا بيع 500/شراء 200 ثم إغلاق 1350 ⇒ المتوقع 1300 والفرق 50 والرصيد 1350، ومنع فتح جلسة ثانية |
-| C.2 | نموذج افتتاح/إغلاق الصندوق مع الرصيد الافتتاحي والختامي | ✅ | `CashSessionForm` (صندوق + رصيد افتتاحي + فتح + رصيد ختامي + إغلاق + شبكة الجلسات + ملصق حالة) + زر `btnCashSessions` في `MainForm` + تسجيل DI + 14 مفتاح ترجمة (ar/en/fr + `AppStrings.Designer.cs`). فحوص `C.2.1–C.2.5`: الحل من DI، عناصر النموذج، حالة الأزرار، ظهور الزر ونصّه المترجم، والنقر يفتح النموذج |
+| C.1 | جلسة صندوق يومية (`CashSession`) مربوطة بحركات الصندوق — مُستبدَلة بـ E3 | ⏭️ | كيان `CashSession` + `CashSessionStatus` + `CashSessionConfiguration` + migration `20261023082755_AddCashSessions` + `ICashSessionRepository`/`CashSessionRepository` + `ICashSessionService`/`CashSessionService` (فتح جلسة واحدة لكل صندوق، إغلاق يحسب المتوقع من حركات الصندوق بإشارة `MovementType` ويضبط `ExpectedBalance`/`Difference`/`Status` و`Cashbox.CurrentBalance`) + `CashboxSeeder` في `DbInitializer`. فحوص `C.1.0–C.1.6`: فتح 1000 ثم حركتا بيع 500/شراء 200 ثم إغلاق 1350 ⇒ المتوقع 1300 والفرق 50 والرصيد 1350، ومنع فتح جلسة ثانية. **استُبدلت بنموذج E3 المربوط بالجلسة والملخّص الموحَّد** |
+| C.2 | نموذج افتتاح/إغلاق الصندوق مع الرصيد الافتتاحي والختامي — مُستبدَلة بـ E3 | ⏭️ | `CashSessionForm` (صندوق + رصيد افتتاحي + فتح + رصيد ختامي + إغلاق + شبكة الجلسات + ملصق حالة) + زر `btnCashSessions` في `MainForm` + تسجيل DI + 14 مفتاح ترجمة (ar/en/fr + `AppStrings.Designer.cs`). فحوص `C.2.1–C.2.5`: الحل من DI، عناصر النموذج، حالة الأزرار، ظهور الزر ونصّه المترجم، والنقر يفتح النموذج. **استُبدل بـ `CashSessionForm` الجديد (لوحة KPI) و`CashSessionOpenDialog` في F3** |
 
 ## D — الأداء ومراجعة هوية Apple/DPI (مكتملة)
 
 | # | المهمة | الحالة | دليل الإنجاز |
 |---|---|---|---|
 | D.1 | خفض استعلامات لوحة التحكم (~25 متسلسلة) | ✅ | `DashboardService`: تجميع KPI لكل جدول في استعلام واحد (`GroupBy(_ => 1)` + `Sum(شرط ? قيمة : null)`)، ودمج قراءة المبيعات اليومية/الشهرية، ودمج أسماء التصنيفات في استعلام التوزيع. فحص `D.1.1` عبر `DbCommandInterceptor`: **19 أمرًا** (الهدف ≤ 22) + `D.1.2`: 30 نقطة اتجاه |
-| D.2 | إيقاف `EnableSensitiveDataLogging` / `DetailedErrors` في البناء الإصدار | ✅ | غُلِّف الاستدعاءان بـ `#if DEBUG` في `DzentoPOS2.Data\DependencyInjection.cs`. فحص `D.2.1` يتحقق أن البوابة قبل الاستدعاءين وأن `#endif` بعدهما |
 | D.3 | مراجعة هوية Apple ودقة DPI للشاشات عالية الكثافة | ✅ | لا أصول/هوية Apple في الحل (Windows-only)، و`ApplicationHighDpiMode=PerMonitorV2` في `DzentoPOS2.WinForms.csproj`. فحص `D.3.1`: `AutoScaleMode=Font` و`DeviceDpi=96`، و`D.3.2`: وجود `PerMonitorV2` |
+
+## E — صحة المبيعات والمخزون والصندوق (مكتملة)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| E1 | صحة إجماليات الفاتورة والتفصيل وترقيم المستندات | ✅ | `InvoiceCalculator` (تقريب كل سطر ثم المجموع، `AwayFromZero`) + `DocumentNumberService` (تسلسل يومي). دليل: `InvoiceCalculatorTests` (وحدة) و`SaleServiceE1Tests.SavedInvoiceTotalsMatchCalculator` (تكامل) — الإجماليات المحفوظة = مخرجات الحاسبة |
+| E2 | خصم المخزون المتتبَّع واسترجاعه عند الإلغاء | ✅ | `StockService` (حركات `SaleOut`/`VoidIn` + منع الرصيد السالب) و`SaleService.VoidAsync` يعيد الكمية للمخزون. دليل: `SaleServiceE2Tests` (خصم + دفتر حركات + استرجاع عند الإلغاء + منع الرصيد السالب) و`BusinessClockTests` |
+| E3 | ربط حركات الصندوق والفواتير بالجلسة + قيود FK + فهرس الجلسة المفتوحة الفريد | ✅ | migration `20261023140849_E3_CashSessionLinking` (FK restrict: `CashTransactions`/`SalesInvoices` → `CashSessions`) و`20261027164243_E3_UniqueOpenSessionIndex` (`UX_CashSessions_OpenPerCashbox` فهرس فريد مفلتر `"Status" = 0 AND "IsDeleted" = 0`). دليل: `SaleServiceE3Tests` (منها انحدار عيب FK عند إتمام البيع) و`MigrationSmokeTests` و`LegacySchemaRepairTests` |
+
+## F — استكمال دورة البيع (مكتملة)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| F1 | تحصين إقلاع المتجر وإصلاح المخطط القديم وتوطين الأخطاء | ✅ | `LegacySchemaRepair` يُصلح مخطط SQLite القديم قبل الترحيلات، والإقلاع يهيّئ الفرع/المستودع/الصندوق مرة واحدة، و`ExceptionFormatter`/`ExceptionLogger` (رسائل محلية + سجل ملفات). دليل: `LegacySchemaRepairTests` و`MigrationSmokeTests` و`ExceptionFormatterTests` و`ExceptionLoggerTests` |
+| F2 | أوضاع الخصم (نسبة/مبلغ) وصحة الدفع (يشمل Part 0/F2b) | ✅ | commit `40bae45`: دعم النسبة والمبلغ، الدفع المطبَّق/الباقي/الصرف، واشتراط زبون للبيع الآجل. **Part 0 (F2b)**: سقف الخصم يُطبَّق على الوضعين معًا عبر النسبة الفعلية `DiscountAmount/Subtotal*100`، وتهيئة `sales.max_discount_percent` عند التنفيذ (`AppSettingKeys` + `AppSettingSeeder`)، وتوطين أخطاء المجال عبر `CodedDomainException`/`DomainErrorCodes`/`ExceptionFormatter.LocalizeCode`، وتثبيت `_numPaid.Maximum = 99,999,999`. دليل: `SaleServiceF2Tests` (`Discount_ceiling_*` للوضعين + parity) و`ReceiptLocalizationTests` (0 نص إنجليزي مكتوب صراحةً في قالب الطباعة) |
+| F3 | لوحة تحكم الصندوق + الإجماليات الحية + الفرض | ✅ | `CashSessionOpenDialog` (نموذج أول: التخطيط في `.Designer.cs` والمنطق في `.cs`) و`CashSessionForm` مُعاد بناؤه (8 بطاقات `KpiCard`، تدفّق 4→2→1، RTL، وضع داكن، تنسيق عبر `RegionalContext`)، و`ISalesEventPublisher` مفرد يُطلق `SaleCompleted`/`SaleVoided`/`CashMovementAdded` **بعد الـcommit** + شريحة في شريط الحالة، و`GetSessionSummaryAsync` مصدر وحيد يستخدمه `CloseSessionAsync` (لا إغلاق مرتين)، وربط المصروفات بالصندوق. دليل: `CashSessionE3Tests` (11) و`CashSessionPolicyTests` (3، اكتشاف يوم العمل السابق بالتوقيت المحلي) — الوحدة 79 والتكامل 37، بناء نظيف (0 أخطاء / 21 تحذير `NU1701`)
+| F3b | ترقية آمنة لفهرس الجلسة المفتوحة الفريد + توطين لواحق KPI المختصرة | ✅ | `LegacySchemaRepair` يغلق الجلسات المفتوحة المكرّرة لكل صندوق قبل `MigrateAsync` داخل معاملة واحدة وبشكل مُكرَّر الأمان (idempotent): يُبقي الأحدث بـ`OpenedAtUtc` ويغلق الباقي بـ`Status = Closed` و`ClosedAtUtc = max(OpenedAtUtc, آخر حركة/فاتورة مرتبطة)` مع الحفاظ على الأرصدة وإلحاق الملاحظة «Auto-closed by upgrade (duplicate open session)» وتسجيل معرّفات الجلسة/الصندوق، دون حذف أي صف أو لمس الفواتير/الحركات. والترحيل `20261027164243_E3_UniqueOpenSessionIndex` أصبح كامل الأمان عند الترقية: `DROP INDEX IF EXISTS "IX_CashSessions_CashboxId"` و`CREATE UNIQUE INDEX IF NOT EXISTS "UX_CashSessions_OpenPerCashbox"`، و`Down()` متماثل (`DROP INDEX IF EXISTS` + `CREATE INDEX IF NOT EXISTS`)، فلا ينهار الإقلاع سواء كان الفهرس مفقودًا أو موجودًا مسبقًا. وتوطين لواحق `KpiValueFormatter.Compact` عبر `KpiCompactSuffixes` ومفاتيح `KpiSuffixThousand/Million/Billion` في base/ar/en/fr + `Designer` (فرق 0). دليل: `LegacySchemaRepairTests` (4 فحوص ترقية عبر ترحيلات حقيقية: وجود تكرار ينجح ويُغلق الأقدم، وغياب التكرار لا يغيّر شيئاً، وقاعدة جديدة تفرض الفهرس، وفهرس موجود مسبقًا يجعل الترحيل بلا أثر) — الوحدة 84 والتكامل 41، وبناء محلول نظيف (0 أخطاء / 21 تحذير `NU1701`)، و`dotnet ef migrations has-pending-model-changes` نظيف |
+
+## G — الإطار: العودة إلى استهداف .NET 9 (ترحيل .NET 10 مُلغى)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| G0 | تثبيت SDK عبر `global.json` | ❌ مُلغى | commit `e5646fa`، ثم أُزيل `global.json`: إصدار SDK `10.0.403` لا يمكن استخدامه من Visual Studio 2022 |
+| G1 | إعادة استهداف الحل إلى `net10.0` / `net10.0-windows` ومحاذاة حزم `Microsoft.*` إلى `10.0.14` | ❌ مُلغى | commit `3c07feb`، ثم أُلغي: مشاريع `net10.0` لا تُبنى على VS 2022 (MSBuild 17.x) — التفاصيل في `docs/net9-retarget.md` |
+| G2 | تدقيق الحزم (توافق / ترخيص / ثغرات / إهمال) | ✅ | commit `0d67e28`: لا حزم مصابة؛ `xunit 2.9.3` مُهمَل فقط؛ قرار تراخيص AutoMapper/QuestPDF/AForge؛ `docs/net10-package-audit.md` |
+| G3 | مراجعة تغييرات .NET 10 وEF Core 10 المكسِرة | ✅ (تاريخي) | commit `e57b7f8`: القائمة في `docs/net10-breaking-changes.md`؛ أُبقيت الإصلاحات اللازمة على .NET 9 أيضًا: WFO1000 عبر `.editorconfig`، و`[DisallowNull]` على `EZComboBox.SelectedValue`، وأعمدة ربط الجلسة في `InitialCreate` |
+| G4 | العودة إلى استهداف .NET 9 ومحاذاة حزم `Microsoft.*` إلى `9.0.22` | ✅ | إعادة TFM إلى `net9.0` / `net9.0-windows`، وإزالة `global.json`، و`ProductVersion` → `9.0.22`، وإضافة `NuGet.config` لإصلاح استعادة الحزم؛ 0 أخطاء / 21 تحذير `NU1701`، الوحدة 84 والتكامل 41، و`has-pending-model-changes` نظيف، وقاعدة بيانات جديدة تُطبّق 9 ترحيلات (56 جدولًا)؛ `docs/net9-retarget.md` |
+| G5 | تشغيل مسار الإقلاع على نسخ قواعد بيانات حقيقية | ✅ | commit `5c367f9` (على .NET 10)؛ مسار الإقلاع لا يخصّ إصدار الإطار: `docs/net10-smoke-run.md` |
 

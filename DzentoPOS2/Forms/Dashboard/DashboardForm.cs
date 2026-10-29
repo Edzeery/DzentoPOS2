@@ -67,34 +67,19 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
             ResumeLayout();
         }
 
-        protected override async void OnLanguageChangedAfterLoadText()
-        {
-            try
-            {
-                var data = await _dashboardService.GetSummaryAsync();
-                _kpiCards.Update(data);
-                _insights.Update(data);
-                _charts.Update(data);
-                _recentTransactions.Update(data);
-            }
-            catch
-            {
-            }
-        }
+        protected override void OnLanguageChangedAfterLoadText() => RunSafe(RefreshSummaryAsync);
 
-        protected override async void OnInitialized()
+        protected override void OnInitialized() => RunSafe(RefreshSummaryAsync);
+
+        private async Task RefreshSummaryAsync()
         {
-            try
-            {
-                var data = await _dashboardService.GetSummaryAsync();
-                _kpiCards.Update(data);
-                _insights.Update(data);
-                _charts.Update(data);
-                _recentTransactions.Update(data);
-            }
-            catch
-            {
-            }
+            var data = await _dashboardService.GetSummaryAsync();
+            if (IsDisposedOrDisposing) return;
+
+            _kpiCards.Update(data);
+            _insights.Update(data);
+            _charts.Update(data);
+            _recentTransactions.Update(data);
         }
     }
 }

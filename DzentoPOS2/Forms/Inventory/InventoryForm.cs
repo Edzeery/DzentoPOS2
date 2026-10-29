@@ -2,6 +2,7 @@ using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
+using DzentoPOS2.Shared.Helpers;
 using DzentoPOS2.WinForms.Controls;
 using DzentoPOS2.WinForms.Helpers;
 using DzentoPOS2.WinForms.Modules.Dashboard;
@@ -85,7 +86,7 @@ public partial class InventoryForm : LocalizableFormBase
             Font = new Font("Segoe UI", 10F),
             PlaceholderText = AppStrings.Search
         };
-        _searchBox.TextChanged += async (_, _) => await LoadDataAsync();
+        _searchBox.TextChanged += (_, _) => RunSafe(LoadDataAsync);
 
         _lblCategoryFilter = new Label
         {
@@ -102,7 +103,7 @@ public partial class InventoryForm : LocalizableFormBase
             Font = new Font("Segoe UI", 10F),
             DropDownStyle = ComboBoxStyle.DropDownList
         };
-        _cmbCategoryFilter.SelectedIndexChanged += async (_, _) => await LoadDataAsync();
+        _cmbCategoryFilter.SelectedIndexChanged += (_, _) => RunSafe(LoadDataAsync);
 
         _lblStockFilter = new Label
         {
@@ -119,7 +120,7 @@ public partial class InventoryForm : LocalizableFormBase
             Font = new Font("Segoe UI", 10F),
             DropDownStyle = ComboBoxStyle.DropDownList
         };
-        _cmbStockFilter.SelectedIndexChanged += async (_, _) => await LoadDataAsync();
+        _cmbStockFilter.SelectedIndexChanged += (_, _) => RunSafe(LoadDataAsync);
 
         _filterPanel.Controls.AddRange(new Control[]
         {
@@ -135,7 +136,7 @@ public partial class InventoryForm : LocalizableFormBase
 
         _grid = new DataGridView { Dock = DockStyle.Fill, ReadOnly = true, MultiSelect = false };
         DataGridViewStyleHelper.ApplyModernStyle(_grid);
-        _grid.SelectionChanged += async (_, _) => await ShowDetailsAsync();
+        _grid.SelectionChanged += (_, _) => RunSafe(ShowDetailsAsync);
 
         _detailPanel = new Panel { Dock = DockStyle.Fill, BackColor = AppColors.Surface, Padding = new Padding(12) };
 
@@ -161,11 +162,16 @@ public partial class InventoryForm : LocalizableFormBase
         Controls.Add(_kpiPanel);
     }
 
-    protected override async void OnLoad(EventArgs e)
+    protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
+        RunSafe(InitializeAsync);
+    }
 
+    private async Task InitializeAsync()
+    {
         _categories = await _productService.GetCategoriesAsync();
+        if (IsDisposedOrDisposing) return;
         _cmbCategoryFilter.Items.Clear();
         _cmbCategoryFilter.Items.Add(new { Id = Guid.Empty, Name = AppStrings.All });
         foreach (var c in _categories)
@@ -182,6 +188,7 @@ public partial class InventoryForm : LocalizableFormBase
         _cmbStockFilter.SelectedIndex = 0;
 
         await LoadStatsAsync();
+        if (IsDisposedOrDisposing) return;
         await LoadDataAsync();
     }
 
@@ -200,10 +207,11 @@ public partial class InventoryForm : LocalizableFormBase
     private async Task LoadStatsAsync()
     {
         var stats = await _productService.GetInventoryStatsAsync();
-        _kpiCards[0].SetData(stats.TotalProducts.ToString("N0"), string.Empty, true);
-        _kpiCards[1].SetData(stats.TotalStockValue.ToString("N2"), string.Empty, true);
-        _kpiCards[2].SetData(stats.LowStockProducts.ToString("N0"), string.Empty, stats.LowStockProducts == 0);
-        _kpiCards[3].SetData(stats.ActiveProducts.ToString("N0"), string.Empty, true);
+        if (IsDisposedOrDisposing) return;
+        _kpiCards[0].SetValue(stats.TotalProducts, KpiValueKind.Count);
+        _kpiCards[1].SetValue(stats.TotalStockValue, KpiValueKind.Money);
+        _kpiCards[2].SetValue(stats.LowStockProducts, KpiValueKind.Count);
+        _kpiCards[3].SetValue(stats.ActiveProducts, KpiValueKind.Count);
     }
 
     private async Task LoadDataAsync()
@@ -212,6 +220,8 @@ public partial class InventoryForm : LocalizableFormBase
         _products = string.IsNullOrWhiteSpace(term)
             ? await _productService.GetAllAsync()
             : await _productService.SearchAsync(term);
+
+        if (IsDisposedOrDisposing) return;
 
         var categoryId = GetSelectedValue(_cmbCategoryFilter);
         if (categoryId != Guid.Empty)
@@ -242,6 +252,8 @@ public partial class InventoryForm : LocalizableFormBase
 
     private async Task ShowDetailsAsync()
     {
+        if (IsDisposedOrDisposing) return;
+
         if (_grid.CurrentRow?.DataBoundItem is not ProductDto product)
         {
             _detailGrid.DataSource = null;
@@ -252,6 +264,8 @@ public partial class InventoryForm : LocalizableFormBase
         _lblDetailTitle.Text = $"{product.Name}  ({product.SKU})";
 
         var stocks = await _productService.GetProductStocksAsync(product.Id);
+
+        if (IsDisposedOrDisposing) return;
 
         _detailGrid.DataSource = null;
         _detailGrid.Columns.Clear();

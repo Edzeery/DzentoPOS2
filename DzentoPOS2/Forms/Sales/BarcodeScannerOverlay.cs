@@ -28,6 +28,7 @@ public sealed class BarcodeScannerOverlay : Form
     private readonly Label _lblStatus;
     private readonly Label _lblHint;
     private readonly ThemedComboBox _cmbDevice;
+    private readonly ThemedButton _btnRefresh;
     private readonly ThemedButton _btnClose;
     private readonly Button _btnCloseOverlay;
 
@@ -117,6 +118,9 @@ public sealed class BarcodeScannerOverlay : Form
         _cmbDevice = new ThemedComboBox { Width = 260 };
         _cmbDevice.SelectedIndexChanged += (_, _) => SwitchDevice();
 
+        _btnRefresh = ButtonFactory.Neutral(AppStrings.Refresh, ButtonFactory.ButtonSize.Medium);
+        _btnRefresh.Click += (_, _) => RefreshDevices();
+
         _btnClose = ButtonFactory.Neutral(AppStrings.Close, ButtonFactory.ButtonSize.Medium);
         _btnClose.Click += (_, _) => Close();
 
@@ -131,6 +135,7 @@ public sealed class BarcodeScannerOverlay : Form
             Margin = Padding.Empty
         };
         footer.Controls.Add(_btnClose);
+        footer.Controls.Add(_btnRefresh);
 
         var deviceLabel = new Label
         {
@@ -206,6 +211,7 @@ public sealed class BarcodeScannerOverlay : Form
 
     private void LoadDevices(string preferredDevice)
     {
+        string? previousMoniker = _cmbDevice.SelectedItem is CameraItem current && !string.IsNullOrWhiteSpace(current.Moniker) ? current.Moniker : preferredDevice;
         _devices.Clear();
 
         try
@@ -221,14 +227,16 @@ public sealed class BarcodeScannerOverlay : Form
         if (_devices.Count == 0)
         {
             _cmbDevice.Items = new[] { AppStrings.NoCameraFound };
+            int bitness = Environment.Is64BitProcess ? 64 : 32;
             _lblStatus.Text = AppStrings.NoCameraFound;
+            _lblHint.Text = $"Start DroidCam Client first; the app must match its 32/64-bit filter ({bitness}-bit)";
             return;
         }
 
         _cmbDevice.Bind(_devices, "Display", "Moniker");
 
         int index = _devices.FindIndex(d =>
-            string.Equals(d.Moniker, preferredDevice, StringComparison.OrdinalIgnoreCase));
+            string.Equals(d.Moniker, previousMoniker, StringComparison.OrdinalIgnoreCase));
 
         _cmbDevice.SelectedIndex = index >= 0 ? index : 0;
     }
@@ -252,6 +260,18 @@ public sealed class BarcodeScannerOverlay : Form
     {
         if (!IsHandleCreated) return;
         StartSelectedDevice();
+    }
+
+    private void RefreshDevices()
+    {
+        string? preferred = _cmbDevice.SelectedItem is CameraItem c ? c.Moniker : null;
+        LoadDevices(preferred ?? string.Empty);
+        StartSelectedDevice();
+        if (_camera.IsRunning)
+        {
+            _timer.Start();
+            _lblStatus.Text = AppStrings.BarcodeScanning;
+        }
     }
 
     // ── Rendering ───────────────────────────────────────────────────────────
@@ -294,9 +314,14 @@ public sealed class BarcodeScannerOverlay : Form
 
         try
         {
-            BeginInvoke(() => _lblStatus.Text = string.IsNullOrWhiteSpace(error)
-                ? AppStrings.NoCameraFound
-                : error);
+            BeginInvoke(() =>
+            {
+                if (IsDisposed) return;
+                _lblStatus.Text = string.IsNullOrWhiteSpace(error)
+                    ? AppStrings.NoCameraFound
+                    : error;
+                _lblHint.Text = AppStrings.CameraDevice;
+            });
         }
         catch
         {

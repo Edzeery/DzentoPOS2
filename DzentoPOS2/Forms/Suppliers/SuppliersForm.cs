@@ -39,15 +39,15 @@ public partial class SuppliersForm : LocalizableFormBase
 
         _btnAdd = ButtonFactory.ToolAdd("Add");
         _btnAdd.Location = new Point(16, 12);
-        _btnAdd.Click += async (_, _) => await AddSupplier();
+        _btnAdd.Click += (_, _) => RunSafe(AddSupplier);
 
         _btnEdit = ButtonFactory.ToolEdit("Edit");
         _btnEdit.Location = new Point(124, 12);
-        _btnEdit.Click += async (_, _) => await EditSupplier();
+        _btnEdit.Click += (_, _) => RunSafe(EditSupplier);
 
         _btnDelete = ButtonFactory.ToolDelete("Delete");
         _btnDelete.Location = new Point(232, 12);
-        _btnDelete.Click += async (_, _) => await DeleteSupplier();
+        _btnDelete.Click += (_, _) => RunSafe(DeleteSupplier);
 
         _lblSearch = new Label
         {
@@ -63,22 +63,22 @@ public partial class SuppliersForm : LocalizableFormBase
             Font = new Font("Segoe UI", 10F),
             PlaceholderText = AppStrings.Search
         };
-        _searchBox.TextChanged += async (_, _) => await LoadDataAsync();
+        _searchBox.TextChanged += (_, _) => RunSafe(LoadDataAsync);
 
         _topPanel.Controls.AddRange(new Control[] { _btnDelete, _btnEdit, _btnAdd, _lblSearch, _searchBox });
 
         _grid = new DataGridView { Dock = DockStyle.Fill };
         DataGridViewStyleHelper.ApplyModernStyle(_grid);
-        _grid.CellDoubleClick += async (_, _) => await EditSupplier();
+        _grid.CellDoubleClick += (_, _) => RunSafe(EditSupplier);
 
         Controls.Add(_grid);
         Controls.Add(_topPanel);
     }
 
-    protected override async void OnLoad(EventArgs e)
+    protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
-        await LoadDataAsync();
+        RunSafe(LoadDataAsync);
     }
 
     protected override void LoadText()
@@ -94,6 +94,8 @@ public partial class SuppliersForm : LocalizableFormBase
         _suppliers = string.IsNullOrWhiteSpace(term)
             ? await _supplierService.GetAllAsync()
             : await _supplierService.SearchAsync(term);
+
+        if (IsDisposedOrDisposing) return;
 
         _grid.DataSource = null;
         _grid.Columns.Clear();

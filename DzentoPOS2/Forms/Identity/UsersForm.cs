@@ -39,30 +39,30 @@ public partial class UsersForm : LocalizableFormBase
 
         _btnAdd = ButtonFactory.ToolAdd("Add");
         _btnAdd.Location = new Point(16, 12);
-        _btnAdd.Click += async (_, _) => await AddUser();
+        _btnAdd.Click += (_, _) => RunSafe(AddUser);
 
         _btnEdit = ButtonFactory.ToolEdit("Edit");
         _btnEdit.Location = new Point(124, 12);
-        _btnEdit.Click += async (_, _) => await EditUser();
+        _btnEdit.Click += (_, _) => RunSafe(EditUser);
 
         _btnDelete = ButtonFactory.ToolDelete("Delete");
         _btnDelete.Location = new Point(232, 12);
-        _btnDelete.Click += async (_, _) => await DeleteUser();
+        _btnDelete.Click += (_, _) => RunSafe(DeleteUser);
 
         _topPanel.Controls.AddRange(new Control[] { _btnDelete, _btnEdit, _btnAdd });
 
         _grid = new DataGridView { Dock = DockStyle.Fill, ReadOnly = true, MultiSelect = false };
         DataGridViewStyleHelper.ApplyModernStyle(_grid);
-        _grid.CellDoubleClick += async (_, _) => await EditUser();
+        _grid.CellDoubleClick += (_, _) => RunSafe(EditUser);
 
         Controls.Add(_grid);
         Controls.Add(_topPanel);
     }
 
-    protected override async void OnLoad(EventArgs e)
+    protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
-        await LoadDataAsync();
+        RunSafe(LoadDataAsync);
     }
 
     protected override void LoadText()
@@ -77,6 +77,8 @@ public partial class UsersForm : LocalizableFormBase
     {
         var result = await _userService.GetPagedAsync(
             new PagedRequest { PageSize = int.MaxValue });
+
+        if (IsDisposedOrDisposing) return;
 
         _users = result.Success && result.Data != null
             ? result.Data.Items.ToList()

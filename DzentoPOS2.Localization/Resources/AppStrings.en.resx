@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -1067,5 +1067,182 @@
   </data>
   <data name="SessionClosed" xml:space="preserve">
     <value>Closed</value>
+  </data>
+  <data name="OpeningStock" xml:space="preserve">
+    <value>Opening stock</value>
+  </data>
+  <data name="AdjustStock" xml:space="preserve">
+    <value>Adjust stock</value>
+  </data>
+  <data name="NewQuantity" xml:space="preserve">
+    <value>New quantity</value>
+  </data>
+  <data name="AdjustmentReason" xml:space="preserve">
+    <value>Reason</value>
+  </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="AdjustmentReasonRequired" xml:space="preserve">
+    <value>An adjustment reason is required</value>
+  </data>
+  <data name="Ok" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="ErrorForeignKey" xml:space="preserve">
+    <value>The operation could not be completed because this record is referenced by other data.</value>
+  </data>
+  <data name="ErrorUnique" xml:space="preserve">
+    <value>A record with the same value already exists.</value>
+  </data>
+  <data name="ErrorNotNull" xml:space="preserve">
+    <value>A required value is missing.</value>
+  </data>
+  <data name="ErrorConcurrency" xml:space="preserve">
+    <value>The data was changed by another operation. Please try again.</value>
+  </data>
+  <data name="ErrorDomain" xml:space="preserve">
+    <value>The operation could not be completed.</value>
+  </data>
+  <data name="ErrorUnknown" xml:space="preserve">
+    <value>An unexpected error occurred.</value>
+  </data>
+  <data name="StoreNotInitialized" xml:space="preserve">
+    <value>The store is not initialized. Restart the application to set it up.</value>
+  </data>
+  <data name="ErrorDetails" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="ErrorCopyDetails" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="ErrorDetailsCopied" xml:space="preserve">
+    <value>Copied</value>
+  </data>
+  <data name="ErrorLoggedToFile" xml:space="preserve">
+    <value>A copy of the error was saved to the log file.</value>
+  </data>
+  <data name="DiscountModePercent" xml:space="preserve">
+    <value>Percent</value>
+  </data>
+  <data name="DiscountModeAmount" xml:space="preserve">
+    <value>Amount</value>
+  </data>
+  <data name="AfterDiscount" xml:space="preserve">
+    <value>After discount</value>
+  </data>
+  <data name="TaxAmount" xml:space="preserve">
+    <value>Tax</value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>Change</value>
+  </data>
+  <data name="PayInFull" xml:space="preserve">
+    <value>Pay in full</value>
+  </data>
+  <data name="CreditSaleRequiresCustomer" xml:space="preserve">
+    <value>A customer is required when the sale is not paid in full.</value>
+  </data>
+  <data name="CreditSaleConfirm" xml:space="preserve">
+    <value>The outstanding balance for {0} is {1}. Continue?</value>
+  </data>
+  <data name="DiscountExceedsLimit" xml:space="preserve">
+    <value>Discount exceeds the allowed maximum.</value>
+  </data>
+  <data name="Other" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="WalkInCustomer" xml:space="preserve">
+    <value>Walk-in customer</value>
+  </data>
+  <data name="TransactionSale" xml:space="preserve">
+    <value>Sale</value>
+  </data>
+  <data name="TransactionPurchase" xml:space="preserve">
+    <value>Purchase</value>
+  </data>
+  <data name="MinimumLabel" xml:space="preserve">
+    <value>Minimum</value>
+  </data>
+  <data name="DiscountExceedsSubtotal" xml:space="preserve">
+    <value>Discount cannot exceed the subtotal.</value>
+  </data>
+  <data name="InvalidTaxRate" xml:space="preserve">
+    <value>The tax rate must be between 0 and 100.</value>
+  </data>
+  <data name="InsufficientStock" xml:space="preserve">
+    <value>Not enough stock to complete this operation.</value>
+  </data>
+  <data name="ReceiptInvoice" xml:space="preserve">
+    <value>Invoice</value>
+  </data>
+  <data name="SessionAlreadyClosed" xml:space="preserve">
+    <value>This cash session is already closed.</value>
+  </data>
+  <data name="OpenCashDrawer" xml:space="preserve">
+    <value>Open Cash Session</value>
+  </data>
+  <data name="CashDrawer" xml:space="preserve">
+    <value>Cash Drawer</value>
+  </data>
+  <data name="DrawerOpen" xml:space="preserve">
+    <value>Drawer Open</value>
+  </data>
+  <data name="DrawerClosed" xml:space="preserve">
+    <value>Drawer Closed</value>
+  </data>
+  <data name="DrawerNotOpen" xml:space="preserve">
+    <value>Open the cash drawer before making a sale.</value>
+  </data>
+  <data name="SessionSummary" xml:space="preserve">
+    <value>Session Summary</value>
+  </data>
+  <data name="TotalSales" xml:space="preserve">
+    <value>Total Sales</value>
+  </data>
+  <data name="CashSales" xml:space="preserve">
+    <value>Cash Sales</value>
+  </data>
+  <data name="NonCashSales" xml:space="preserve">
+    <value>Card / Other</value>
+  </data>
+  <data name="Invoices" xml:space="preserve">
+    <value>Invoices</value>
+  </data>
+  <data name="Voids" xml:space="preserve">
+    <value>Voids</value>
+  </data>
+  <data name="PayIn" xml:space="preserve">
+    <value>Pay In</value>
+  </data>
+  <data name="PayOut" xml:space="preserve">
+    <value>Pay Out</value>
+  </data>
+  <data name="SessionOpenedSuccess" xml:space="preserve">
+    <value>Cash session opened.</value>
+  </data>
+  <data name="SessionClosedSuccess" xml:space="preserve">
+    <value>Cash session closed.</value>
+  </data>
+  <data name="PreviousBusinessDayWarning" xml:space="preserve">
+    <value>The cash drawer was opened on a previous business day. Close it before continuing.</value>
+  </data>
+  <data name="ConfirmCloseSession" xml:space="preserve">
+    <value>Close the current cash session?</value>
+  </data>
+  <data name="OpenSession" xml:space="preserve">
+    <value>Open Session</value>
+  </data>
+  <data name="CloseSession" xml:space="preserve">
+    <value>Close Session</value>
+  </data>
+  <data name="KpiSuffixThousand" xml:space="preserve">
+    <value>K</value>
+  </data>
+  <data name="KpiSuffixMillion" xml:space="preserve">
+    <value>M</value>
+  </data>
+  <data name="KpiSuffixBillion" xml:space="preserve">
+    <value>B</value>
   </data>
 </root>

@@ -504,6 +504,7 @@ public partial class SettingsForm : LocalizableFormBase
 
     private void LoadCameras()
     {
+        string? previousMoniker = _cmbCamera.SelectedItem is CameraItem current ? current.Moniker : _settings.BarcodeCameraDevice;
         _cameras.Clear();
         _cameras.Add(new CameraItem(string.Empty, AppStrings.NoCameraFound));
 
@@ -518,6 +519,11 @@ public partial class SettingsForm : LocalizableFormBase
         }
 
         _cmbCamera.Bind(_cameras, "Display", "Moniker");
+
+        if (!string.IsNullOrWhiteSpace(previousMoniker))
+        {
+            SelectValue(_cmbCamera, _cameras, c => c.Moniker, previousMoniker);
+        }
     }
 
     private void RefreshPaperSizes()
@@ -539,6 +545,9 @@ public partial class SettingsForm : LocalizableFormBase
 
     private void ChooseLogo()
     {
+        // OpenFileDialog.ShowDialog(owner) reads the owner's window handle.
+        if (IsDisposedOrDisposing) return;
+
         using var dialog = new OpenFileDialog
         {
             Title = AppStrings.ChooseImage,

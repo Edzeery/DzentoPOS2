@@ -1,4 +1,6 @@
 using AutoMapper;
+using DzentoPOS2.App.Services.Systems;
+using DzentoPOS2.App.Session;
 using DzentoPOS2.Core.Entities.Businesses;
 using DzentoPOS2.Core.Entities.Inventory;
 using DzentoPOS2.Core.ValueObjects.Common;
@@ -22,6 +24,9 @@ public class ProductService : IProductService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly AppDbContext _context;
+    private readonly IStockService _stockService;
+    private readonly IStoreContextService _storeContext;
+    private readonly ICurrentUserService _currentUser;
 
     public ProductService(
         IProductRepository productRepo,
@@ -31,7 +36,10 @@ public class ProductService : IProductService
         IWarehouseRepository warehouseRepo,
         IUnitOfWork unitOfWork,
         IMapper mapper,
-        AppDbContext context)
+        AppDbContext context,
+        IStockService stockService,
+        IStoreContextService storeContext,
+        ICurrentUserService currentUser)
     {
         _productRepo = productRepo;
         _categoryRepo = categoryRepo;
@@ -41,6 +49,9 @@ public class ProductService : IProductService
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _context = context;
+        _stockService = stockService;
+        _storeContext = storeContext;
+        _currentUser = currentUser;
     }
 
     public async Task<List<ProductDto>> GetAllAsync()
@@ -89,10 +100,40 @@ public class ProductService : IProductService
             IsActive = dto.IsActive
         };
 
-        await _productRepo.AddAsync(product);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.BeginTransactionAsync();
 
-        return MapProduct(product);
+        try
+        {
+            await _productRepo.AddAsync(product);
+            await _unitOfWork.SaveChangesAsync();
+
+            if (product.TrackStock && dto.OpeningStock > 0)
+            {
+                var branchId = await _storeContext.GetDefaultBranchIdAsync();
+                var warehouseId = await _storeContext
+                    .GetDefaultWarehouseIdAsync(branchId);
+
+                await _stockService.AdjustAsync(
+                    product.Id,
+                    warehouseId,
+                    dto.OpeningStock,
+                    "Opening stock",
+                    _currentUser.UserId,
+                    isOpening: true);
+
+                await _unitOfWork.SaveChangesAsync();
+            }
+
+            await _unitOfWork.CommitTransactionAsync();
+
+            return MapProduct(product);
+        }
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            _context.ChangeTracker.Clear();
+            throw;
+        }
     }
 
     public async Task<ProductDto> UpdateAsync(UpdateProductDto dto)
@@ -188,6 +229,40 @@ public class ProductService : IProductService
             TotalStockValue = stockValue,
             LastMonthProducts = lastMonth
         };
+    }
+
+    public async Task AdjustStockAsync(
+        Guid productId,
+        decimal targetQuantity,
+        string reason)
+    {
+        if (string.IsNullOrWhiteSpace(reason))
+            throw new ArgumentException("An adjustment reason is required", nameof(reason));
+
+        var branchId = await _storeContext.GetDefaultBranchIdAsync();
+        var warehouseId = await _storeContext.GetDefaultWarehouseIdAsync(branchId);
+
+        await _unitOfWork.BeginTransactionAsync();
+
+        try
+        {
+            await _stockService.AdjustAsync(
+                productId,
+                warehouseId,
+                targetQuantity,
+                reason,
+                _currentUser.UserId,
+                isOpening: false);
+
+            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.CommitTransactionAsync();
+        }
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            _context.ChangeTracker.Clear();
+            throw;
+        }
     }
 
     public async Task<List<ProductStockDto>> GetProductStocksAsync(Guid productId)

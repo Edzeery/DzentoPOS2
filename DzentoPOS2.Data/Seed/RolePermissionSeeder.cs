@@ -52,6 +52,7 @@ namespace DzentoPOS2.Data.Seed
                     Permissions.ProductsEdit,
 
                     Permissions.CategoriesView,
+                    Permissions.UnitsView,
 
                     Permissions.InventoryView,
                     Permissions.InventoryAdjust,
@@ -63,7 +64,20 @@ namespace DzentoPOS2.Data.Seed
                     Permissions.CustomersView,
                     Permissions.CustomersCreate,
 
-                    Permissions.ReportsView
+                    Permissions.SuppliersView,
+                    Permissions.SuppliersCreate,
+                    Permissions.SuppliersEdit,
+
+                    Permissions.PurchasesView,
+                    Permissions.PurchasesCreate,
+
+                    Permissions.ExpensesView,
+                    Permissions.ExpensesCreate,
+
+                    Permissions.CashSessionsView,
+
+                    Permissions.ReportsView,
+                    Permissions.SettingsView
                 });
 
             // CASHIER
@@ -78,8 +92,10 @@ namespace DzentoPOS2.Data.Seed
                     Permissions.SalesCreate,
 
                     Permissions.CustomersView,
+                    Permissions.CustomersCreate,
 
-                    Permissions.ProductsView
+                    Permissions.ProductsView,
+                    Permissions.CashSessionsView
                 });
         }
 

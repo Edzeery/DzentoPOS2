@@ -1,9 +1,20 @@
 using FontAwesome.Sharp;
+using DzentoPOS2.Localization.Resources;
+using DzentoPOS2.Shared.Contracts.DTOs.Reports;
+using DzentoPOS2.Shared.Helpers;
 using DzentoPOS2.WinForms.ServicesUI;
 using DzentoPOS2.WinForms.Themes;
+using System.Globalization;
 
 namespace DzentoPOS2.WinForms.Controls
 {
+    /// <summary>
+    /// A dashboard KPI tile. It only ever carries a numeric value + a kind; it
+    /// never parses a formatted string back into a number. The animation
+    /// interpolates the number and formats each frame through
+    /// <see cref="KpiValueFormatter"/>, so the displayed text can never become
+    /// "44,44,891".
+    /// </summary>
     public class KpiCard : Panel, IThemeAware
     {
         private readonly Label _lblTitle;
@@ -15,28 +26,62 @@ namespace DzentoPOS2.WinForms.Controls
         private readonly string _key;
         private readonly int _baseElevation;
         private int _currentElevation;
-        private string _prefix = "";
-        private string _suffix = "";
+
+        private KpiValueKind _valueKind = KpiValueKind.Count;
+        private int _currencyDigits = 2;
         private decimal _currentNum;
         private decimal _targetNum;
         private System.Windows.Forms.Timer? _animTimer;
         private Color _baseAccent = Color.Gray;
         private Color _appliedAccent = Color.Gray;
 
-        public string CardKey => _key;
-        public string CardTitle { get => _lblTitle.Text; set => _lblTitle.Text = value; }
-        public string CardValue { get => _lblValue.Text; set => _lblValue.Text = value; }
-        public string CardTrend
+        /// <summary>
+        /// When true the value is set immediately (no animation). It follows the
+        /// Windows "Show animations in Windows" accessibility setting
+        /// (<see cref="SystemInformation.UIEffectsEnabled"/>), so a user who
+        /// turned animations off for motion sensitivity (or a slow machine)
+        /// gets instant values. It is re-read when the system preference
+        /// changes.
+        /// </summary>
+        public static bool ReduceMotion { get; set; }
+
+        static KpiCard()
         {
-            get
+            ReduceMotion = !SystemInformation.UIEffectsEnabled;
+
+            try
             {
-                var parts = _lblTrend.Text.Split(' ');
-                return parts.Length > 1 ? string.Join(" ", parts, 1, parts.Length - 1) : _lblTrend.Text;
+                Microsoft.Win32.SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
             }
-            set => UpdateTrendText(value, _isUp);
+            catch
+            {
+                // SystemEvents needs a message loop and an interactive session.
+                // Without them the initial value above still applies.
+            }
         }
 
-        public IconChar Icon { get => _iconBox.IconChar; set => _iconBox.IconChar = value; }
+        private static void OnUserPreferenceChanged(
+            object sender, Microsoft.Win32.UserPreferenceChangedEventArgs e)
+        {
+            ReduceMotion = !SystemInformation.UIEffectsEnabled;
+        }
+
+        /// <summary>Fraction digits used for money values (from RegionalContext).</summary>
+        public static int CurrencyDigits { get; set; } = 2;
+
+        public string CardKey => _key;
+
+        public string CardTitle
+        {
+            get => _lblTitle.Text;
+            set => _lblTitle.Text = value;
+        }
+
+        public IconChar Icon
+        {
+            get => _iconBox.IconChar;
+            set => _iconBox.IconChar = value;
+        }
 
         /// <summary>
         /// The accent color of the card. The value is stored as a base color and
@@ -52,8 +97,6 @@ namespace DzentoPOS2.WinForms.Controls
                 ApplyAccent(AppColors.AdaptAccent(value));
             }
         }
-
-        private bool _isUp = true;
 
         public KpiCard() : this("", "", IconChar.QuestionCircle, Color.Gray, 4)
         {
@@ -116,19 +159,23 @@ namespace DzentoPOS2.WinForms.Controls
                 Font = new Font("Segoe UI", 24F, FontStyle.Bold),
                 ForeColor = accent,
                 Location = new Point(22, 70),
-                AutoSize = true,
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
+                AutoSize = false,
+                Size = new Size(250, 40),
+                UseMnemonic = false,
                 BackColor = Color.Transparent,
                 Cursor = Cursors.Hand
             };
 
             _lblTrend = new Label
             {
-                Text = "\u25B2 0%",
+                Text = string.Empty,
                 Font = new Font("Segoe UI Semibold", 9.5F),
                 ForeColor = AppColors.InkMuted,
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
                 Location = new Point(Math.Max(22, Width - 100), 28),
                 AutoSize = true,
+                Visible = false,
                 BackColor = Color.Transparent,
                 Cursor = Cursors.Hand
             };
@@ -170,9 +217,9 @@ namespace DzentoPOS2.WinForms.Controls
             int trendLeft = Math.Max(74, Width - _lblTrend.Width - 22);
             _lblTrend.Location = new Point(trendLeft, 28);
 
-            // Keep the title clear of the trend badge on narrow cards.
             _lblTitle.Width = Math.Max(40, trendLeft - 84);
 
+            _lblValue.Width = Math.Max(40, Width - 44);
             _lblValue.Location = new Point(22, Math.Max(60, Height - _lblValue.Height - 28));
         }
 
@@ -183,7 +230,6 @@ namespace DzentoPOS2.WinForms.Controls
             ApplyAccent(AppColors.AdaptAccent(_baseAccent));
             BackColor = AppColors.Surface;
             _lblTitle.ForeColor = AppColors.InkMuted;
-            _lblTrend.ForeColor = _lblTrend.Text.Contains('%') ? (_lblTrend.Text.Contains("\u25B2") ? AppColors.Success : AppColors.Danger) : AppColors.InkMuted;
             Invalidate();
         }
 
@@ -195,8 +241,6 @@ namespace DzentoPOS2.WinForms.Controls
             if (_iconBox != null) _iconBox.IconColor = Color.White;
             if (_iconBadge != null)
             {
-                // A light pastel badge in light mode, a tinted dark badge in dark
-                // mode: a white pastel patch would glow on the dark card.
                 _iconBadge.BackColor = ThemeManager.IsDark
                     ? Blend(AppColors.Surface, color, 0.30f)
                     : Blend(Color.White, color, 0.15f);
@@ -209,89 +253,105 @@ namespace DzentoPOS2.WinForms.Controls
                 (int)(background.G + (accent.G - background.G) * accentShare),
                 (int)(background.B + (accent.B - background.B) * accentShare));
 
-        public void SetData(string value, string trend, bool isUp)
+        /// <summary>
+        /// Sets the tile from a raw number. The value is formatted here through
+        /// <see cref="KpiValueFormatter"/>; no formatted string is ever parsed.
+        /// </summary>
+        public void SetValue(
+            decimal value,
+            KpiValueKind kind,
+            KpiTrendKind trendKind = KpiTrendKind.None,
+            decimal trendPercent = 0,
+            int? currencyDigits = null)
         {
-            _isUp = isUp;
-            UpdateTrendText(trend, isUp);
-            AnimateValue(value);
+            _valueKind = kind;
+            _currencyDigits = currencyDigits ?? CurrencyDigits;
+
+            ApplyTrend(trendKind, trendPercent);
+
+            _targetNum = value;
+
+            if (ReduceMotion || !IsHandleCreated)
+            {
+                _currentNum = _targetNum;
+                _lblValue.Text = FormatValue(_currentNum);
+                return;
+            }
+
+            StartAnimation();
         }
 
-        private void UpdateTrendText(string trend, bool isUp)
+        private void ApplyTrend(KpiTrendKind trendKind, decimal trendPercent)
         {
-            bool isPercent = trend.Contains('%');
-            _lblTrend.Text = isPercent ? $"{(isUp ? "\u25B2" : "\u25BC")} {trend}" : trend;
-            _lblTrend.ForeColor = isPercent
-                ? (isUp ? AppColors.Success : AppColors.Danger)
-                : AppColors.InkMuted;
+            var culture = CultureInfo.CurrentCulture;
+
+            switch (trendKind)
+            {
+                case KpiTrendKind.Change:
+                    var up = trendPercent >= 0;
+                    var magnitude = KpiValueFormatter.Format(Math.Abs(trendPercent), KpiValueKind.Percent, culture);
+                    _lblTrend.Text = up ? $"\u25B2 +{magnitude}" : $"\u25BC {magnitude}";
+                    _lblTrend.ForeColor = up ? AppColors.Success : AppColors.Danger;
+                    _lblTrend.Visible = true;
+                    break;
+
+                case KpiTrendKind.Margin:
+                    var margin = KpiValueFormatter.Format(trendPercent, KpiValueKind.Percent, culture);
+                    _lblTrend.Text = $"{AppStrings.Margin} {margin}";
+                    _lblTrend.ForeColor = AppColors.InkMuted;
+                    _lblTrend.Visible = true;
+                    break;
+
+                default:
+                    _lblTrend.Text = string.Empty;
+                    _lblTrend.Visible = false;
+                    break;
+            }
         }
 
-        private void AnimateValue(string newValue)
-        {
-            var parsed = TryParseNumeric(newValue);
-            if (parsed.HasValue)
-            {
-                _targetNum = parsed.Value;
-                StartAnimation();
-            }
-            else
-            {
-                _lblValue.Text = newValue;
-            }
-        }
+        private string FormatValue(decimal num)
+            => KpiValueFormatter.Format(
+                num,
+                _valueKind,
+                CultureInfo.CurrentCulture,
+                _currencyDigits,
+                compactSuffixes: LocalizedCompactSuffixes());
 
-        private decimal? TryParseNumeric(string text)
-        {
-            if (string.IsNullOrEmpty(text)) return null;
-            var cleaned = new string(text.Where(c => char.IsDigit(c) || c == '.' || c == '-' || c == ',').ToArray());
-            cleaned = cleaned.Replace(",", "");
-            if (decimal.TryParse(cleaned, System.Globalization.NumberStyles.Any,
-                System.Globalization.CultureInfo.InvariantCulture, out var result))
-            {
-                _prefix = text.TrimEnd(cleaned.ToCharArray()).Trim();
-                _suffix = text.Substring(text.Length - (text.Length - text.LastIndexOfAny("0123456789".ToCharArray()) - 1)).Trim();
-                if (_suffix == text) _suffix = "";
-                return result;
-            }
-            return null;
-        }
+        private static KpiCompactSuffixes LocalizedCompactSuffixes()
+            => new(
+                AppStrings.KpiSuffixThousand,
+                AppStrings.KpiSuffixMillion,
+                AppStrings.KpiSuffixBillion);
 
         private void StartAnimation()
         {
             _animTimer?.Stop();
             _animTimer?.Dispose();
 
-            int totalSteps = 24;
+            int totalSteps = 20;
             int interval = 16;
             decimal start = _currentNum;
             decimal range = _targetNum - start;
             int step = 0;
 
-            _animTimer = new System.Windows.Forms.Timer
-            {
-                Interval = interval
-            };
+            _animTimer = new System.Windows.Forms.Timer { Interval = interval };
             _animTimer.Tick += (_, _) =>
             {
                 step++;
                 if (step >= totalSteps)
                 {
                     _currentNum = _targetNum;
-                    _lblValue.Text = FormatDisplayValue(_targetNum);
+                    _lblValue.Text = FormatValue(_targetNum);
                     _animTimer?.Stop();
                     return;
                 }
+
                 double t = (double)step / totalSteps;
                 double eased = 1 - Math.Pow(1 - t, 3);
                 _currentNum = start + (decimal)((double)range * eased);
-                _lblValue.Text = FormatDisplayValue(_currentNum);
+                _lblValue.Text = FormatValue(_currentNum);
             };
             _animTimer.Start();
-        }
-
-        private string FormatDisplayValue(decimal num)
-        {
-            var formatted = num.ToString("N0");
-            return $"{_prefix}{formatted}{_suffix}".Trim();
         }
 
         private void SetHover(bool hovering)
@@ -313,7 +373,6 @@ namespace DzentoPOS2.WinForms.Controls
             var r = Math.Min(12, Math.Min(Width, Height) / 2);
             if (r <= 0)
             {
-                // Still being laid out: GDI+ rejects a zero sized arc.
                 var stale = Region;
                 Region = null;
                 stale?.Dispose();

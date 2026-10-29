@@ -23,6 +23,13 @@ namespace DzentoPOS2.WinForms.Forms.Layout
                 }
 
                 DzentoPOS2.WinForms.Themes.ThemeManager.ThemeChanged -= OnThemeChanged;
+
+                if (_salesEvents is not null)
+                {
+                    _salesEvents.SaleCompleted -= OnSaleCompleted;
+                    _salesEvents.SaleVoided -= OnSaleVoided;
+                    _salesEvents.CashMovementAdded -= OnCashMovementAdded;
+                }
             }
 
             base.Dispose(disposing);

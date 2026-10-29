@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -1066,6 +1066,183 @@
     <value>مفتوحة</value>
   </data>
   <data name="SessionClosed" xml:space="preserve">
-    <value>مغلقة</value>
+    <value>مغلق</value>
+  </data>
+  <data name="OpeningStock" xml:space="preserve">
+    <value>مخزون افتتاحي</value>
+  </data>
+  <data name="AdjustStock" xml:space="preserve">
+    <value>تعديل المخزون</value>
+  </data>
+  <data name="NewQuantity" xml:space="preserve">
+    <value>الكمية الجديدة</value>
+  </data>
+  <data name="AdjustmentReason" xml:space="preserve">
+    <value>السبب</value>
+  </data>
+  <data name="Apply" xml:space="preserve">
+    <value>تطبيق</value>
+  </data>
+  <data name="AdjustmentReasonRequired" xml:space="preserve">
+    <value>سبب التعديل مطلوب</value>
+  </data>
+  <data name="Ok" xml:space="preserve">
+    <value>موافق</value>
+  </data>
+  <data name="ErrorForeignKey" xml:space="preserve">
+    <value>تعذّر إتمام العملية لأن هذا السجل مرتبط ببيانات أخرى.</value>
+  </data>
+  <data name="ErrorUnique" xml:space="preserve">
+    <value>يوجد سجل بنفس القيمة مسبقًا.</value>
+  </data>
+  <data name="ErrorNotNull" xml:space="preserve">
+    <value>هناك قيمة مطلوبة مفقودة.</value>
+  </data>
+  <data name="ErrorConcurrency" xml:space="preserve">
+    <value>تم تعديل البيانات بواسطة عملية أخرى. يرجى المحاولة مرة أخرى.</value>
+  </data>
+  <data name="ErrorDomain" xml:space="preserve">
+    <value>تعذّر إتمام العملية.</value>
+  </data>
+  <data name="ErrorUnknown" xml:space="preserve">
+    <value>حدث خطأ غير متوقع.</value>
+  </data>
+  <data name="StoreNotInitialized" xml:space="preserve">
+    <value>لم تتم تهيئة المتجر. أعد تشغيل التطبيق لتهيئته.</value>
+  </data>
+  <data name="ErrorDetails" xml:space="preserve">
+    <value>التفاصيل</value>
+  </data>
+  <data name="ErrorCopyDetails" xml:space="preserve">
+    <value>نسخ</value>
+  </data>
+  <data name="ErrorDetailsCopied" xml:space="preserve">
+    <value>تم النسخ</value>
+  </data>
+  <data name="ErrorLoggedToFile" xml:space="preserve">
+    <value>تم حفظ نسخة من الخطأ في ملف السجل.</value>
+  </data>
+  <data name="DiscountModePercent" xml:space="preserve">
+    <value>نسبة</value>
+  </data>
+  <data name="DiscountModeAmount" xml:space="preserve">
+    <value>مبلغ</value>
+  </data>
+  <data name="AfterDiscount" xml:space="preserve">
+    <value>بعد الخصم</value>
+  </data>
+  <data name="TaxAmount" xml:space="preserve">
+    <value>الضريبة</value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>الباقي</value>
+  </data>
+  <data name="PayInFull" xml:space="preserve">
+    <value>دفع كامل</value>
+  </data>
+  <data name="CreditSaleRequiresCustomer" xml:space="preserve">
+    <value>يجب اختيار عميل عندما لا يتم دفع كامل المبلغ.</value>
+  </data>
+  <data name="CreditSaleConfirm" xml:space="preserve">
+    <value>المبلغ المتبقي على {0} هو {1}. هل تريد المتابعة؟</value>
+  </data>
+  <data name="DiscountExceedsLimit" xml:space="preserve">
+    <value>الخصم يتجاوز الحد المسموح به.</value>
+  </data>
+  <data name="Other" xml:space="preserve">
+    <value>أخرى</value>
+  </data>
+  <data name="WalkInCustomer" xml:space="preserve">
+    <value>عميل نقدي</value>
+  </data>
+  <data name="TransactionSale" xml:space="preserve">
+    <value>بيع</value>
+  </data>
+  <data name="TransactionPurchase" xml:space="preserve">
+    <value>شراء</value>
+  </data>
+  <data name="MinimumLabel" xml:space="preserve">
+    <value>الحد الأدنى</value>
+  </data>
+  <data name="DiscountExceedsSubtotal" xml:space="preserve">
+    <value>لا يمكن أن يتجاوز الخصم المجموع الفرعي.</value>
+  </data>
+  <data name="InvalidTaxRate" xml:space="preserve">
+    <value>يجب أن تكون نسبة الضريبة بين 0 و 100.</value>
+  </data>
+  <data name="InsufficientStock" xml:space="preserve">
+    <value>المخزون غير كافٍ لإتمام هذه العملية.</value>
+  </data>
+  <data name="ReceiptInvoice" xml:space="preserve">
+    <value>فاتورة</value>
+  </data>
+  <data name="SessionAlreadyClosed" xml:space="preserve">
+    <value>جلسة الصندوق مغلقة بالفعل.</value>
+  </data>
+  <data name="OpenCashDrawer" xml:space="preserve">
+    <value>فتح جلسة الصندوق</value>
+  </data>
+  <data name="CashDrawer" xml:space="preserve">
+    <value>الصندوق النقدي</value>
+  </data>
+  <data name="DrawerOpen" xml:space="preserve">
+    <value>الصندوق مفتوح</value>
+  </data>
+  <data name="DrawerClosed" xml:space="preserve">
+    <value>الصندوق مغلق</value>
+  </data>
+  <data name="DrawerNotOpen" xml:space="preserve">
+    <value>افتح الصندوق النقدي قبل إتمام البيع.</value>
+  </data>
+  <data name="SessionSummary" xml:space="preserve">
+    <value>ملخص الجلسة</value>
+  </data>
+  <data name="TotalSales" xml:space="preserve">
+    <value>إجمالي المبيعات</value>
+  </data>
+  <data name="CashSales" xml:space="preserve">
+    <value>المبيعات النقدية</value>
+  </data>
+  <data name="NonCashSales" xml:space="preserve">
+    <value>بطاقة / أخرى</value>
+  </data>
+  <data name="Invoices" xml:space="preserve">
+    <value>الفواتير</value>
+  </data>
+  <data name="Voids" xml:space="preserve">
+    <value>الملغاة</value>
+  </data>
+  <data name="PayIn" xml:space="preserve">
+    <value>إيداع</value>
+  </data>
+  <data name="PayOut" xml:space="preserve">
+    <value>سحب</value>
+  </data>
+  <data name="SessionOpenedSuccess" xml:space="preserve">
+    <value>تم فتح جلسة الصندوق.</value>
+  </data>
+  <data name="SessionClosedSuccess" xml:space="preserve">
+    <value>تم إغلاق جلسة الصندوق.</value>
+  </data>
+  <data name="PreviousBusinessDayWarning" xml:space="preserve">
+    <value>تم فتح الصندوق في يوم عمل سابق. أغلقه قبل المتابعة.</value>
+  </data>
+  <data name="ConfirmCloseSession" xml:space="preserve">
+    <value>هل تريد إغلاق جلسة الصندوق الحالية؟</value>
+  </data>
+  <data name="OpenSession" xml:space="preserve">
+    <value>فتح الجلسة</value>
+  </data>
+  <data name="CloseSession" xml:space="preserve">
+    <value>إغلاق الجلسة</value>
+  </data>
+  <data name="KpiSuffixThousand" xml:space="preserve">
+    <value>ألف</value>
+  </data>
+  <data name="KpiSuffixMillion" xml:space="preserve">
+    <value>مليون</value>
+  </data>
+  <data name="KpiSuffixBillion" xml:space="preserve">
+    <value>مليار</value>
   </data>
 </root>

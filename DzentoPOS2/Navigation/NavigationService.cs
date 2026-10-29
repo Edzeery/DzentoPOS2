@@ -92,9 +92,10 @@ public void Navigate<TForm>() where TForm : Form
 
             try
             {
-                // Dispose old form
+                // Dispose old form (stop its fade first so nothing outlives it)
                 if (_activeForm != null)
                 {
+                    FormTransition.Cancel(_activeForm);
                     _activeForm.Hide();
                     _activeForm.Dispose();
                     _activeForm = null;
@@ -113,7 +114,6 @@ public void Navigate<TForm>() where TForm : Form
                 form.TopLevel = false;
                 form.FormBorderStyle = FormBorderStyle.None;
                 form.Dock = DockStyle.Fill;
-                form.Opacity = 0;
 
                 _container.Controls.Add(form);
                 _container.ResumeLayout();

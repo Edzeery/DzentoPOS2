@@ -1,3 +1,4 @@
+using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.WinForms.Events;
 using DzentoPOS2.WinForms.Models;
 using DzentoPOS2.WinForms.Themes;
@@ -197,7 +198,7 @@ public sealed class MainHeaderBar : UserControl, IThemeAware
         TitleLabel.Margin = new Padding(8, 0, 0, 0);
         TitleLabel.Name = "TitleLabel";
         TitleLabel.TabIndex = 1;
-        TitleLabel.Text = "Dashboard";
+        TitleLabel.Text = AppStrings.Dashboard;
         TitleLabel.TextAlign = ContentAlignment.MiddleLeft;
         TitleLabel.UseMnemonic = false;
         TitleLabel.TextChanged += (_, _) =>
@@ -222,7 +223,19 @@ public sealed class MainHeaderBar : UserControl, IThemeAware
         _searchBox.Margin = new Padding(12, 6, 12, 6);
         _searchBox.Padding = new Padding(12, 6, 12, 6);
         _searchBox.PlaceholderColor = Color.FromArgb(150, 160, 166);
-        _searchBox.PlaceholderText = "Search";
+        _searchBox.PlaceholderText = AppStrings.Search;
+    }
+
+    /// <summary>
+    /// Re-applies the localized texts of the header. Called by the shell on
+    /// language change so the header never keeps a stale/English string.
+    /// </summary>
+    public void ApplyLocalization()
+    {
+        if (IsDisposed) return;
+        _searchBox.PlaceholderText = AppStrings.Search;
+        UserMenu.ApplyLocalization();
+        Invalidate(true);
     }
 
     private void ConfigureLanguageBox()

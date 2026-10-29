@@ -2725,5 +2725,536 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("SessionClosed", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Opening stock.
+        /// </summary>
+        public static string OpeningStock {
+            get {
+                return ResourceManager.GetString("OpeningStock", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Adjust stock.
+        /// </summary>
+        public static string AdjustStock {
+            get {
+                return ResourceManager.GetString("AdjustStock", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to New quantity.
+        /// </summary>
+        public static string NewQuantity {
+            get {
+                return ResourceManager.GetString("NewQuantity", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Reason.
+        /// </summary>
+        public static string AdjustmentReason {
+            get {
+                return ResourceManager.GetString("AdjustmentReason", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Apply.
+        /// </summary>
+        public static string Apply {
+            get {
+                return ResourceManager.GetString("Apply", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to An adjustment reason is required.
+        /// </summary>
+        public static string AdjustmentReasonRequired {
+            get {
+                return ResourceManager.GetString("AdjustmentReasonRequired", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        public static string Ok {
+            get {
+                return ResourceManager.GetString("Ok", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The operation could not be completed because this record is referenced by other data..
+        /// </summary>
+        public static string ErrorForeignKey {
+            get {
+                return ResourceManager.GetString("ErrorForeignKey", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to A record with the same value already exists..
+        /// </summary>
+        public static string ErrorUnique {
+            get {
+                return ResourceManager.GetString("ErrorUnique", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to A required value is missing..
+        /// </summary>
+        public static string ErrorNotNull {
+            get {
+                return ResourceManager.GetString("ErrorNotNull", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The data was changed by another operation. Please try again..
+        /// </summary>
+        public static string ErrorConcurrency {
+            get {
+                return ResourceManager.GetString("ErrorConcurrency", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The operation could not be completed..
+        /// </summary>
+        public static string ErrorDomain {
+            get {
+                return ResourceManager.GetString("ErrorDomain", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to An unexpected error occurred..
+        /// </summary>
+        public static string ErrorUnknown {
+            get {
+                return ResourceManager.GetString("ErrorUnknown", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The store is not initialized. Restart the application to set it up..
+        /// </summary>
+        public static string StoreNotInitialized {
+            get {
+                return ResourceManager.GetString("StoreNotInitialized", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Details.
+        /// </summary>
+        public static string ErrorDetails {
+            get {
+                return ResourceManager.GetString("ErrorDetails", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Copy.
+        /// </summary>
+        public static string ErrorCopyDetails {
+            get {
+                return ResourceManager.GetString("ErrorCopyDetails", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Copied.
+        /// </summary>
+        public static string ErrorDetailsCopied {
+            get {
+                return ResourceManager.GetString("ErrorDetailsCopied", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to A copy of the error was saved to the log file..
+        /// </summary>
+        public static string ErrorLoggedToFile {
+            get {
+                return ResourceManager.GetString("ErrorLoggedToFile", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Percent.
+        /// </summary>
+        public static string DiscountModePercent {
+            get {
+                return ResourceManager.GetString("DiscountModePercent", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Amount.
+        /// </summary>
+        public static string DiscountModeAmount {
+            get {
+                return ResourceManager.GetString("DiscountModeAmount", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to After discount.
+        /// </summary>
+        public static string AfterDiscount {
+            get {
+                return ResourceManager.GetString("AfterDiscount", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Tax.
+        /// </summary>
+        public static string TaxAmount {
+            get {
+                return ResourceManager.GetString("TaxAmount", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Change.
+        /// </summary>
+        public static string Change {
+            get {
+                return ResourceManager.GetString("Change", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Pay in full.
+        /// </summary>
+        public static string PayInFull {
+            get {
+                return ResourceManager.GetString("PayInFull", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to A customer is required when the sale is not paid in full..
+        /// </summary>
+        public static string CreditSaleRequiresCustomer {
+            get {
+                return ResourceManager.GetString("CreditSaleRequiresCustomer", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The outstanding balance for {0} is {1}. Continue?.
+        /// </summary>
+        public static string CreditSaleConfirm {
+            get {
+                return ResourceManager.GetString("CreditSaleConfirm", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Discount exceeds the allowed maximum..
+        /// </summary>
+        public static string DiscountExceedsLimit {
+            get {
+                return ResourceManager.GetString("DiscountExceedsLimit", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Other.
+        /// </summary>
+        public static string Other {
+            get {
+                return ResourceManager.GetString("Other", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Walk-in customer.
+        /// </summary>
+        public static string WalkInCustomer {
+            get {
+                return ResourceManager.GetString("WalkInCustomer", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Sale.
+        /// </summary>
+        public static string TransactionSale {
+            get {
+                return ResourceManager.GetString("TransactionSale", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Purchase.
+        /// </summary>
+        public static string TransactionPurchase {
+            get {
+                return ResourceManager.GetString("TransactionPurchase", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Minimum.
+        /// </summary>
+        public static string MinimumLabel {
+            get {
+                return ResourceManager.GetString("MinimumLabel", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Discount cannot exceed the subtotal..
+        /// </summary>
+        public static string DiscountExceedsSubtotal {
+            get {
+                return ResourceManager.GetString("DiscountExceedsSubtotal", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The tax rate must be between 0 and 100..
+        /// </summary>
+        public static string InvalidTaxRate {
+            get {
+                return ResourceManager.GetString("InvalidTaxRate", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Not enough stock to complete this operation..
+        /// </summary>
+        public static string InsufficientStock {
+            get {
+                return ResourceManager.GetString("InsufficientStock", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Invoice.
+        /// </summary>
+        public static string ReceiptInvoice {
+            get {
+                return ResourceManager.GetString("ReceiptInvoice", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to This cash session is already closed..
+        /// </summary>
+        public static string SessionAlreadyClosed {
+            get {
+                return ResourceManager.GetString("SessionAlreadyClosed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Open Cash Session.
+        /// </summary>
+        public static string OpenCashDrawer {
+            get {
+                return ResourceManager.GetString("OpenCashDrawer", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Cash Drawer.
+        /// </summary>
+        public static string CashDrawer {
+            get {
+                return ResourceManager.GetString("CashDrawer", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Drawer Open.
+        /// </summary>
+        public static string DrawerOpen {
+            get {
+                return ResourceManager.GetString("DrawerOpen", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Drawer Closed.
+        /// </summary>
+        public static string DrawerClosed {
+            get {
+                return ResourceManager.GetString("DrawerClosed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Open the cash drawer before making a sale..
+        /// </summary>
+        public static string DrawerNotOpen {
+            get {
+                return ResourceManager.GetString("DrawerNotOpen", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Session Summary.
+        /// </summary>
+        public static string SessionSummary {
+            get {
+                return ResourceManager.GetString("SessionSummary", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Total Sales.
+        /// </summary>
+        public static string TotalSales {
+            get {
+                return ResourceManager.GetString("TotalSales", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Cash Sales.
+        /// </summary>
+        public static string CashSales {
+            get {
+                return ResourceManager.GetString("CashSales", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Card / Other.
+        /// </summary>
+        public static string NonCashSales {
+            get {
+                return ResourceManager.GetString("NonCashSales", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Invoices.
+        /// </summary>
+        public static string Invoices {
+            get {
+                return ResourceManager.GetString("Invoices", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Voids.
+        /// </summary>
+        public static string Voids {
+            get {
+                return ResourceManager.GetString("Voids", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Pay In.
+        /// </summary>
+        public static string PayIn {
+            get {
+                return ResourceManager.GetString("PayIn", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Pay Out.
+        /// </summary>
+        public static string PayOut {
+            get {
+                return ResourceManager.GetString("PayOut", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Cash session opened..
+        /// </summary>
+        public static string SessionOpenedSuccess {
+            get {
+                return ResourceManager.GetString("SessionOpenedSuccess", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Cash session closed..
+        /// </summary>
+        public static string SessionClosedSuccess {
+            get {
+                return ResourceManager.GetString("SessionClosedSuccess", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The cash drawer was opened on a previous business day. Close it before continuing..
+        /// </summary>
+        public static string PreviousBusinessDayWarning {
+            get {
+                return ResourceManager.GetString("PreviousBusinessDayWarning", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Close the current cash session?.
+        /// </summary>
+        public static string ConfirmCloseSession {
+            get {
+                return ResourceManager.GetString("ConfirmCloseSession", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Open Session.
+        /// </summary>
+        public static string OpenSession {
+            get {
+                return ResourceManager.GetString("OpenSession", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Close Session.
+        /// </summary>
+        public static string CloseSession {
+            get {
+                return ResourceManager.GetString("CloseSession", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to K.
+        /// </summary>
+        public static string KpiSuffixThousand {
+            get {
+                return ResourceManager.GetString("KpiSuffixThousand", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to M.
+        /// </summary>
+        public static string KpiSuffixMillion {
+            get {
+                return ResourceManager.GetString("KpiSuffixMillion", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to B.
+        /// </summary>
+        public static string KpiSuffixBillion {
+            get {
+                return ResourceManager.GetString("KpiSuffixBillion", resourceCulture);
+            }
+        }
     }
 }

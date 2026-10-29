@@ -28,6 +28,7 @@ namespace DzentoPOS2.App.Services.Sales
         private readonly RegionalContext _regional;
         private readonly ISalesPolicy _salesPolicy;
         private readonly ISalesEventPublisher _events;
+        private readonly DzentoPOS2.App.Authorization.IAuthorizationGuard _authorizationGuard;
 
         public SaleService(
             ISalesInvoiceRepository invoiceRepo,
@@ -40,7 +41,8 @@ namespace DzentoPOS2.App.Services.Sales
             ICurrentUserService currentUser,
             RegionalContext regional,
             ISalesPolicy salesPolicy,
-            ISalesEventPublisher events)
+            ISalesEventPublisher events,
+            DzentoPOS2.App.Authorization.IAuthorizationGuard authorizationGuard)
         {
             _invoiceRepo = invoiceRepo;
             _unitOfWork = unitOfWork;
@@ -53,6 +55,7 @@ namespace DzentoPOS2.App.Services.Sales
             _regional = regional;
             _salesPolicy = salesPolicy;
             _events = events;
+            _authorizationGuard = authorizationGuard;
         }
 
         public async Task<List<SaleDto>> GetAllAsync()
@@ -136,6 +139,9 @@ namespace DzentoPOS2.App.Services.Sales
 
         public async Task<SaleDto> CreateAsync(CreateSaleDto dto)
         {
+            await _authorizationGuard.DemandAsync(
+                DzentoPOS2.Core.Constants.Permissions.SalesCreate);
+
             // The whole body is wrapped so that a failure during the
             // pre-transaction lookups (which used to run outside any guard)
             // still rolls back and clears the shared change tracker. Otherwise
@@ -346,6 +352,9 @@ namespace DzentoPOS2.App.Services.Sales
 
         public async Task VoidAsync(Guid id, string reason)
         {
+            await _authorizationGuard.DemandAsync(
+                DzentoPOS2.Core.Constants.Permissions.SalesReturn);
+
             var invoice = await _invoiceRepo.GetWithItemsAsync(id);
             if (invoice == null || invoice.IsVoided)
                 return;

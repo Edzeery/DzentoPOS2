@@ -15,5 +15,6 @@ namespace DzentoPOS2.App.Session
         public string BranchName { get; set; } = "";
         public Guid? BranchId { get; set; }
         public bool IsAdmin { get; set; }
+        public bool MustChangePassword { get; set; }
     }
 }

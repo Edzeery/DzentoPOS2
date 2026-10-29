@@ -27,6 +27,7 @@ public class ProductService : IProductService
     private readonly IStockService _stockService;
     private readonly IStoreContextService _storeContext;
     private readonly ICurrentUserService _currentUser;
+    private readonly DzentoPOS2.App.Authorization.IAuthorizationGuard _authorizationGuard;
 
     public ProductService(
         IProductRepository productRepo,
@@ -39,7 +40,8 @@ public class ProductService : IProductService
         AppDbContext context,
         IStockService stockService,
         IStoreContextService storeContext,
-        ICurrentUserService currentUser)
+        ICurrentUserService currentUser,
+        DzentoPOS2.App.Authorization.IAuthorizationGuard authorizationGuard)
     {
         _productRepo = productRepo;
         _categoryRepo = categoryRepo;
@@ -52,6 +54,7 @@ public class ProductService : IProductService
         _stockService = stockService;
         _storeContext = storeContext;
         _currentUser = currentUser;
+        _authorizationGuard = authorizationGuard;
     }
 
     public async Task<List<ProductDto>> GetAllAsync()
@@ -85,6 +88,9 @@ public class ProductService : IProductService
 
     public async Task<ProductDto> CreateAsync(CreateProductDto dto)
     {
+        await _authorizationGuard.DemandAsync(
+            DzentoPOS2.Core.Constants.Permissions.ProductsCreate);
+
         var product = new Product
         {
             Name = dto.Name,
@@ -138,6 +144,9 @@ public class ProductService : IProductService
 
     public async Task<ProductDto> UpdateAsync(UpdateProductDto dto)
     {
+        await _authorizationGuard.DemandAsync(
+            DzentoPOS2.Core.Constants.Permissions.ProductsEdit);
+
         // The shared context can still track this product from an earlier read.
         // Reading it tracked (instead of attaching a detached copy) avoids the
         // "another instance with the same key is already being tracked" error.
@@ -168,6 +177,9 @@ public class ProductService : IProductService
 
     public async Task DeleteAsync(Guid id)
     {
+        await _authorizationGuard.DemandAsync(
+            DzentoPOS2.Core.Constants.Permissions.ProductsDelete);
+
         var product = await _context.Products
             .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
         if (product == null) return;

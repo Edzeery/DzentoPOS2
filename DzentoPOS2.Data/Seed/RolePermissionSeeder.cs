@@ -53,6 +53,8 @@ namespace DzentoPOS2.Data.Seed
 
                     Permissions.CategoriesView,
                     Permissions.UnitsView,
+                    Permissions.UnitsCreate,
+                    Permissions.UnitsEdit,
 
                     Permissions.InventoryView,
                     Permissions.InventoryAdjust,
@@ -75,6 +77,8 @@ namespace DzentoPOS2.Data.Seed
                     Permissions.ExpensesCreate,
 
                     Permissions.CashSessionsView,
+                    Permissions.CashSessionsOpen,
+                    Permissions.CashSessionsClose,
 
                     Permissions.ReportsView,
                     Permissions.SettingsView
@@ -95,7 +99,9 @@ namespace DzentoPOS2.Data.Seed
                     Permissions.CustomersCreate,
 
                     Permissions.ProductsView,
-                    Permissions.CashSessionsView
+                    Permissions.CashSessionsView,
+                    Permissions.CashSessionsOpen,
+                    Permissions.CashSessionsClose
                 });
         }
 

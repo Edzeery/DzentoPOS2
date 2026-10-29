@@ -75,9 +75,14 @@ namespace DzentoPOS2.Core.Constants
 
         // Cash Sessions
         public const string CashSessionsView = "permissions.cashsessions.view";
+        public const string CashSessionsOpen = "permissions.cashsessions.open";
+        public const string CashSessionsClose = "permissions.cashsessions.close";
 
         // Units
         public const string UnitsView = "permissions.units.view";
+        public const string UnitsCreate = "permissions.units.create";
+        public const string UnitsEdit = "permissions.units.edit";
+        public const string UnitsDelete = "permissions.units.delete";
 
         // Settings
         public const string SettingsView = "permissions.settings.view";

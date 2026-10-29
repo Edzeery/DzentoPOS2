@@ -26,6 +26,17 @@ namespace DzentoPOS2.Data.Seed
                 // Never overwrite the administrator password on every startup.
                 // The password may be changed by an authorized administrator
                 // and must remain exactly as stored.
+                //
+                // But an account that still uses the well-known seeded password
+                // keeps the default credentials working, so it is flagged for a
+                // forced change on the next sign-in.
+                if (!adminUser.MustChangePassword &&
+                    PasswordHelper.Verify(DefaultPassword, adminUser.PasswordHash))
+                {
+                    adminUser.MustChangePassword = true;
+                    await context.SaveChangesAsync();
+                }
+
                 return;
             }
 
@@ -47,7 +58,11 @@ namespace DzentoPOS2.Data.Seed
 
                 PasswordHash = PasswordHelper.Hash(DefaultPassword),
 
-                IsActive = true
+                IsActive = true,
+
+                // The seeded password is well known: the first sign-in must set
+                // a real one before the shell opens.
+                MustChangePassword = true
             };
 
             await context.Users.AddAsync(adminUser);

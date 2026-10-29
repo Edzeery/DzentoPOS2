@@ -16,6 +16,11 @@ namespace DzentoPOS2.App.Session
 
         Guid? BranchId { get; }
 
+        /// <summary>
+        /// Whether the signed-in account belongs to a full-access admin role.
+        /// </summary>
+        bool IsAdmin { get; }
+
         void SetUser(UserSession user);
 
         void Clear();

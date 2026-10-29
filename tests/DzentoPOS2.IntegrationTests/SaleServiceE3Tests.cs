@@ -188,6 +188,8 @@ public sealed class SaleServiceE3Tests
             {
                 UserId = Guid.NewGuid(),
                 UserName = "cashier",
+                RoleName = "Cashier",
+                IsAdmin = true,
                 BranchId = null
             });
 
@@ -271,6 +273,8 @@ public sealed class SaleServiceE3Tests
             {
                 UserId = Guid.NewGuid(),
                 UserName = "cashier",
+                RoleName = "Cashier",
+                IsAdmin = true,
                 BranchId = null
             });
 

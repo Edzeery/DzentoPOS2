@@ -27,6 +27,9 @@ namespace DzentoPOS2.Data.Configurations.Identity
             builder.Property(x => x.IsActive)
                 .HasDefaultValue(true);
 
+            builder.Property(x => x.MustChangePassword)
+                .HasDefaultValue(false);
+
             builder.HasIndex(x => x.UserName)
                 .IsUnique();
 

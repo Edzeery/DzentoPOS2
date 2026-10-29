@@ -24,12 +24,15 @@ namespace DzentoPOS2.App.Services.Identity
 
         private readonly IMapper _mapper;
 
+        private readonly DzentoPOS2.App.Authorization.IAuthorizationGuard _authorizationGuard;
+
         public RoleService(
             IRoleRepository roleRepository,
             IPermissionRepository permissionRepository,
             IRolePermissionRepository rolePermissionRepository,
             IUnitOfWork unitOfWork,
-            IMapper mapper)
+            IMapper mapper,
+            DzentoPOS2.App.Authorization.IAuthorizationGuard authorizationGuard)
         {
             _roleRepository = roleRepository;
 
@@ -41,11 +44,16 @@ namespace DzentoPOS2.App.Services.Identity
             _unitOfWork = unitOfWork;
 
             _mapper = mapper;
+
+            _authorizationGuard = authorizationGuard;
         }
 
         public async Task<Result> CreateAsync(
             CreateRoleDto dto)
         {
+            await _authorizationGuard.DemandAsync(
+                DzentoPOS2.Core.Constants.Permissions.RolesCreate);
+
             var exists =
                 await _roleRepository.ExistsAsync(x =>
                     x.Name == dto.Name);
@@ -90,6 +98,9 @@ namespace DzentoPOS2.App.Services.Identity
         public async Task<Result> UpdateAsync(
             UpdateRoleDto dto)
         {
+            await _authorizationGuard.DemandAsync(
+                DzentoPOS2.Core.Constants.Permissions.RolesEdit);
+
             var role =
                 await _roleRepository
                     .GetWithPermissionsAsync(dto.Id);
@@ -161,6 +172,9 @@ namespace DzentoPOS2.App.Services.Identity
         public async Task<Result> DeleteAsync(
             Guid id)
         {
+            await _authorizationGuard.DemandAsync(
+                DzentoPOS2.Core.Constants.Permissions.RolesDelete);
+
             var role =
                 await _roleRepository
                     .GetWithPermissionsAsync(id);

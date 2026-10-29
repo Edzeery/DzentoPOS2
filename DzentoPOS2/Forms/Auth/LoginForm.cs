@@ -20,6 +20,8 @@ namespace DzentoPOS2.WinForms.Forms.Auth
 
         private readonly IValidator<LoginDto> _validator;
 
+        private readonly IValidator<ChangePasswordDto> _changePasswordValidator;
+
         public event EventHandler<UserSession>? LoginSuccess;
 
         private readonly ILanguageService _languageService;
@@ -34,12 +36,14 @@ namespace DzentoPOS2.WinForms.Forms.Auth
         public LoginForm(
             IAuthService authService,
             IValidator<LoginDto> validator,
+            IValidator<ChangePasswordDto> changePasswordValidator,
             ILanguageService languageService,
             IUserPreferencesService? preferences)
         {
             InitializeComponent();
             _authService = authService;
             _validator = validator;
+            _changePasswordValidator = changePasswordValidator;
 
             _languageService = languageService;
             _preferences = preferences;
@@ -493,6 +497,24 @@ namespace DzentoPOS2.WinForms.Forms.Auth
                     return;
                 }
 
+                // Accounts that still use a seeded/assigned password must set a
+                // real one before the shell opens.
+                if (result.Data!.MustChangePassword)
+                {
+                    using var changePassword = new ChangePasswordDialog(
+                        _authService,
+                        _changePasswordValidator,
+                        _languageService,
+                        result.Data.UserId);
+
+                    if (changePassword.ShowDialog(this) != DialogResult.OK)
+                    {
+                        // Cancelled: stay signed out and on the login screen.
+                        await _authService.LogoutAsync();
+                        return;
+                    }
+                }
+
                 // 🔥 تحويل DTO → Session (مهم جدًا)
                 var session = new UserSession
                 {
@@ -502,7 +524,8 @@ namespace DzentoPOS2.WinForms.Forms.Auth
                     RoleName = result.Data.RoleName,
                     BranchName = result.Data.BranchName,
                     BranchId = result.Data.BranchId,
-                    IsAdmin = result.Data.IsAdmin
+                    IsAdmin = result.Data.IsAdmin,
+                    MustChangePassword = result.Data.MustChangePassword
                 };
                 _settings.RememberMe = ckbRememberMe.Checked;
 

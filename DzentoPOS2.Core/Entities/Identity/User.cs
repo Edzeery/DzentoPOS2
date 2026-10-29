@@ -18,6 +18,13 @@ namespace DzentoPOS2.Core.Entities.Identity
 
         public bool IsActive { get; set; } = true;
 
+        /// <summary>
+        /// Set when an account still uses a seeded/administrator-assigned
+        /// password. The shell must force a password change before the user can
+        /// work, and a successful change clears the flag.
+        /// </summary>
+        public bool MustChangePassword { get; set; }
+
         public Guid? BranchId { get; set; }
 
         public virtual Branch? Branch { get; set; }

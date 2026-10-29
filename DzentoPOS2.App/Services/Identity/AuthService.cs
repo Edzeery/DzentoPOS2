@@ -7,6 +7,7 @@ using DzentoPOS2.Data.Repositories.Identity.Interfaces;
 using DzentoPOS2.Shared.Results;
 using DzentoPOS2.Shared.Helpers;
 using DzentoPOS2.Localization.Resources;
+using Microsoft.Extensions.Logging;
 
 namespace DzentoPOS2.App.Services.Identity
 {
@@ -22,18 +23,30 @@ namespace DzentoPOS2.App.Services.Identity
 
         private readonly ICurrentUserService _currentUser;
 
+        private readonly IPermissionService _permissionService;
+
+        private readonly IAuditService _auditService;
+
+        private readonly ILogger<AuthService> _logger;
+
         public AuthService(
             IUserRepository userRepository,
             IUserRoleRepository userRoleRepository,
             IRoleRepository roleRepository,
             IUnitOfWork unitOfWork,
-            ICurrentUserService currentUser)
+            ICurrentUserService currentUser,
+            IPermissionService permissionService,
+            IAuditService auditService,
+            ILogger<AuthService> logger)
         {
             _userRepository = userRepository;
             _userRoleRepository = userRoleRepository;
             _roleRepository = roleRepository;
             _unitOfWork = unitOfWork;
             _currentUser = currentUser;
+            _permissionService = permissionService;
+            _auditService = auditService;
+            _logger = logger;
         }
 
         public async Task<Result<LoginResponseDto>> LoginAsync(
@@ -56,7 +69,6 @@ namespace DzentoPOS2.App.Services.Identity
                         .Failed(AppStrings.AccountDeactivated);
                 }
 
-                // مؤقتًا إلى حين إضافة Hashing
                 bool isPasswordValid = PasswordHelper.Verify(dto.Password, user.PasswordHash);
 
                 // Legacy accounts (created before password hashing was introduced)
@@ -99,20 +111,24 @@ namespace DzentoPOS2.App.Services.Identity
                         isAdmin = role.Name
                             .Equals(
                                 "Admin",
+                                StringComparison.OrdinalIgnoreCase)
+                            || role.Name.Equals(
+                                "SuperAdmin",
                                 StringComparison.OrdinalIgnoreCase);
                     }
                 }
 
-               var response = new LoginResponseDto
-               {
-                   UserId = user.Id,
-                   UserName = user.UserName,
-                   FullName = user.FullName,
-                   RoleName = roleName,
-                   BranchId = user.BranchId,
-                   IsAdmin = isAdmin,
-                   LoginTime = DateTime.Now
-               };
+                var response = new LoginResponseDto
+                {
+                    UserId = user.Id,
+                    UserName = user.UserName,
+                    FullName = user.FullName,
+                    RoleName = roleName,
+                    BranchId = user.BranchId,
+                    IsAdmin = isAdmin,
+                    MustChangePassword = user.MustChangePassword,
+                    LoginTime = DateTime.Now
+                };
 
                 _currentUser.SetUser(new UserSession
                 {
@@ -121,15 +137,43 @@ namespace DzentoPOS2.App.Services.Identity
                     FullName = response.FullName,
                     RoleName = response.RoleName,
                     BranchId = response.BranchId,
-                    IsAdmin = response.IsAdmin
+                    IsAdmin = response.IsAdmin,
+                    MustChangePassword = response.MustChangePassword
                 });
 
+                // The cache is an optimization: a failure here must not block a
+                // valid login, but it must be visible in the log.
                 try
                 {
-                    var permissionService = new PermissionService(_currentUser, _userRepository);
-                    await permissionService.RefreshCacheAsync(response.UserId);
+                    await _permissionService.RefreshCacheAsync(response.UserId);
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(
+                        ex,
+                        "Could not refresh the permission cache for {UserName}.",
+                        response.UserName);
+                }
+
+                await _auditService.LogAsync(
+                    "Login",
+                    "User",
+                    newValues: response.UserName,
+                    userId: response.UserId);
+
+                if (string.Equals(
+                        roleName,
+                        "SuperAdmin",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    // The full-access role bypasses the permission table; keep
+                    // one auditable record that this session could do anything.
+                    await _auditService.LogAsync(
+                        "SuperAdminBypass",
+                        "Role",
+                        newValues: roleName,
+                        userId: response.UserId);
+                }
 
                 return Result<LoginResponseDto>
                     .Succeeded(
@@ -146,8 +190,18 @@ namespace DzentoPOS2.App.Services.Identity
         {
             try
             {
+                var userId = _currentUser.UserId;
+                var userName = _currentUser.UserName;
+
                 _currentUser.Clear();
                 await Task.CompletedTask;
+
+                await _auditService.LogAsync(
+                    "Logout",
+                    "User",
+                    newValues: userName ?? string.Empty,
+                    userId: userId);
+
                 return Result.Succeeded(AppStrings.Logout);
             }
             catch (Exception ex)
@@ -161,8 +215,11 @@ namespace DzentoPOS2.App.Services.Identity
         {
             try
             {
+                // Read the tracked instance: the same page scope may already be
+                // tracking this user (the login call did), and attaching a
+                // detached copy with the same key would throw.
                 var user = await _userRepository
-                    .GetByIdAsync(dto.UserId);
+                    .GetWithRolesAsync(dto.UserId);
 
                 if (user is null)
                 {
@@ -173,16 +230,24 @@ namespace DzentoPOS2.App.Services.Identity
 
                 if (!isPasswordValid)
                 {
-                    return Result<LoginResponseDto>
+                    return Result
                         .Failed(AppStrings.InvalidCurrentPassword);
                 }
-                 
 
                 user.PasswordHash = PasswordHelper.Hash(dto.NewPassword);
+
+                // The account no longer uses a seeded/assigned password.
+                user.MustChangePassword = false;
 
                 _userRepository.Update(user);
 
                 await _unitOfWork.SaveChangesAsync();
+
+                await _auditService.LogAsync(
+                    "ChangePassword",
+                    "User",
+                    newValues: user.UserName,
+                    userId: user.Id);
 
                 return Result.Succeeded(AppStrings.PasswordChangedSuccessfully);
             }

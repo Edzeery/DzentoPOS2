@@ -2,6 +2,34 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] — 2026-10-29 (G1.3 security, authorization, audit)
+
+### Added
+
+#### G1.3 — Security hardening (E7)
+
+- **Forced password change** — `User.MustChangePassword` (`DzentoPOS2.Core/Entities/Identity/User.cs:26`, default `false` in `DzentoPOS2.Data/Configurations/Identity/UserConfiguration.cs:30`, migration `20261029145702_G1_3_MustChangePassword`). `AdminSeeder` flags the seeded account and re-flags any admin that still verifies against the well-known default password (`DzentoPOS2.Data/Seed/AdminSeeder.cs:24-47`). `LoginResponseDto`/`UserSession` carry the flag, `LoginForm` opens the new blocking `ChangePasswordDialog` (`DzentoPOS2/Forms/Auth/ChangePasswordDialog.cs:16`) before raising `LoginSuccess`, and cancelling signs the user back out (`DzentoPOS2/Forms/Auth/LoginForm.cs:502-545`). `AuthService.ChangePasswordAsync` clears the flag.
+- **Service-layer authorization** — new `IAuthorizationGuard` (`DzentoPOS2.App/Authorization/AuthorizationGuard.cs:25`). `DemandAsync` throws a coded domain exception (`DomainErrorCodes.PermissionDenied = "auth.permission_denied"`, `DzentoPOS2.Core/Exceptions/CodedDomainException.cs:27`) that `ExceptionFormatter` maps to `AppStrings.AccessDenied` (`DzentoPOS2.App/Diagnostics/ExceptionFormatter.cs:141`), so the UI shows a translated message instead of an English exception. SuperAdmin/`IsAdmin` keep the full-access bypass. Enforced in `UserService` (create/update/delete, L58/118/178), `RoleService` (L54/101/175), `ProductService` (L91/147/180) and `SaleService` (create L142, void L355).
+- **Audit log** — new `IAuditService` (`DzentoPOS2.App/Authorization/AuditService.cs:28`) writes through its own short-lived `AppDbContext` so an audit row never commits the caller's pending work and a failed write only logs a warning. Records `Login`, `Logout`, `ChangePassword`, one `SuperAdminBypass` per privileged sign-in and every `PermissionDenied` (`NewValues` = permission code).
+- **Permission catalog** — added `CashSessionsOpen`, `CashSessionsClose`, `UnitsCreate`, `UnitsEdit`, `UnitsDelete` (`DzentoPOS2.Core/Constants/Permissions.cs`) and granted them in `RolePermissionSeeder`.
+
+### Fixed
+
+- `AuthService.ChangePasswordAsync` now reads the tracked user (`GetWithRolesAsync`) instead of the no-tracking `GetByIdAsync`; with the G1.2 scope-per-page change the login call already tracks that user in the same page scope, so attaching a detached copy threw "another instance with the same key is already being tracked".
+- `SaleServiceE3Tests` fixtures now sign in an admin session explicitly, because sales/product creation is a guarded operation.
+
+### Verified
+
+- `SecurityG13Tests` (new, `tests/DzentoPOS2.IntegrationTests/SecurityG13Tests.cs`) — 7 integration tests:
+  - forced change flagged at login and cleared after the change, including re-login,
+  - `Login` and `ChangePassword` rows in `AuditLogs`,
+  - guard denies a user without the permission, writes a `PermissionDenied` row, and returns `auth.permission_denied`,
+  - guard allows an admin without a permission row,
+  - guard denies an unauthenticated caller,
+  - seeded admin flagged, re-seed idempotent (no duplicate account),
+  - re-seed does not force a change after the password was replaced.
+- Build **0 errors / 21 warnings** (all `NU1701`), Unit **84/84**, Integration **51/51**, `dotnet ef migrations has-pending-model-changes` clean, application starts with scope validation enabled and no logged exceptions (25 s run).
+
 ## [Unreleased] — 2026-10-29 (G1.2 scope per page)
 
 ### Fixed

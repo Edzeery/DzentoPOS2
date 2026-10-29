@@ -16,6 +16,8 @@ namespace DzentoPOS2.App.Session
 
         public Guid? BranchId => User?.BranchId;
 
+        public bool IsAdmin => User?.IsAdmin ?? false;
+
         public void SetUser(UserSession user)
         {
             User = user;

@@ -48,6 +48,12 @@ namespace DzentoPOS2.App
             services.AddScoped<IPermissionService,
                 PermissionService>();
 
+            services.AddScoped<IAuthorizationGuard,
+                AuthorizationGuard>();
+
+            services.AddScoped<IAuditService,
+                AuditService>();
+
     services.AddScoped<IPasswordHasher,
         PasswordHasher>();
 

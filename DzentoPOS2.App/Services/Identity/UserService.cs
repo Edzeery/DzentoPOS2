@@ -29,12 +29,15 @@ namespace DzentoPOS2.App.Services.Identity
 
         private readonly IMapper _mapper;
 
+        private readonly DzentoPOS2.App.Authorization.IAuthorizationGuard _authorizationGuard;
+
         public UserService(
             IUserRepository userRepository,
             IUserRoleRepository userRoleRepository,
             IUnitOfWork unitOfWork,
             IPasswordHasher passwordHasher,
-            IMapper mapper)
+            IMapper mapper,
+            DzentoPOS2.App.Authorization.IAuthorizationGuard authorizationGuard)
         {
             _userRepository = userRepository;
 
@@ -45,11 +48,16 @@ namespace DzentoPOS2.App.Services.Identity
             _passwordHasher = passwordHasher;
 
             _mapper = mapper;
+
+            _authorizationGuard = authorizationGuard;
         }
 
         public async Task<Result> CreateAsync(
             CreateUserDto dto)
         {
+            await _authorizationGuard.DemandAsync(
+                DzentoPOS2.Core.Constants.Permissions.UsersCreate);
+
             var existingUser =
                 await _userRepository
                     .GetByUserNameAsync(dto.UserName);
@@ -107,6 +115,9 @@ namespace DzentoPOS2.App.Services.Identity
         public async Task<Result> UpdateAsync(
             UpdateUserDto dto)
         {
+            await _authorizationGuard.DemandAsync(
+                DzentoPOS2.Core.Constants.Permissions.UsersEdit);
+
             var user =
                 await _userRepository
                     .GetWithRolesAsync(dto.Id);
@@ -164,6 +175,9 @@ namespace DzentoPOS2.App.Services.Identity
         public async Task<Result> DeleteAsync(
             Guid id)
         {
+            await _authorizationGuard.DemandAsync(
+                DzentoPOS2.Core.Constants.Permissions.UsersDelete);
+
             var user =
                 await _userRepository
                     .GetByIdAsync(id);

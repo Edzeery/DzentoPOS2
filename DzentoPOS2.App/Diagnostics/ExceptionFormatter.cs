@@ -138,6 +138,7 @@ public static class ExceptionFormatter
         DomainErrorCodes.SessionAlreadyClosed => AppStrings.SessionAlreadyClosed,
         DomainErrorCodes.SessionNotFound => AppStrings.NoOpenSession,
         DomainErrorCodes.CashboxNotFound => AppStrings.ErrorDomain,
+        DomainErrorCodes.PermissionDenied => AppStrings.AccessDenied,
         _ => null
     };
 }

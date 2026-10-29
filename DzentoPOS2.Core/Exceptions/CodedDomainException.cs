@@ -24,6 +24,7 @@ public static class DomainErrorCodes
     public const string SessionAlreadyClosed = "cash.session_already_closed";
     public const string SessionNotFound = "cash.session_not_found";
     public const string CashboxNotFound = "cash.cashbox_not_found";
+    public const string PermissionDenied = "auth.permission_denied";
 }
 
 /// <summary>

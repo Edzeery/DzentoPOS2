@@ -2,6 +2,17 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] — 2026-10-29 (G1.1 camera discovery/fixes)
+
+### Fixed
+
+#### G1.1 — Camera discovery (E6)
+- **CameraDeviceEnumerator** (`DzentoPOS2/Services/Barcodes/CameraDeviceEnumerator.cs`): replaced broken DirectShow GUID/COM enumeration with **AForge `FilterInfoCollection(FilterCategory.VideoInputDevice)`** (commits `5a05f17`, `54794df`). Enumerates on demand; returns empty safely when subsystem missing.
+- **BarcodeScannerOverlay** (`DzentoPOS2/Forms/Sales/BarcodeScannerOverlay.cs`): re-enumerates on open/refresh with **Refresh** button, persists selection by moniker with fallback, shows no-device message with hint `"Start DroidCam Client first; the app must match its 32/64-bit filter"` including process bitness (64/32-bit), improved error reporting.
+- **SettingsForm** (`DzentoPOS2/Forms/Settings/SettingsForm.cs`): Refresh re-enumerates cameras and re-selects by moniker.
+- **BarcodeCameraService** (`DzentoPOS2/Services/Barcodes/BarcodeCameraService.cs`): supports **IP/MJPEG** sources (`http://`/`https://`) via AForge `MJPEGStream` through same pipeline; `IVideoSource` abstraction; robust stop/dispose.
+- **Verification**: build 0 errors / 21 warnings (all NU1701), Unit **84/84**, Integration **41/41**, `dotnet ef migrations has-pending-model-changes` clean.
+
 ## [Unreleased] — 2026-10-27 (retarget to .NET 9 for Visual Studio 2022)
 
 ### Changed

@@ -8,10 +8,14 @@ namespace DzentoPOS2.WinForms.Navigation
 {
     public class NavigationService : INavigationService
     {
-        private readonly IServiceProvider _serviceProvider;
+        // Pages must not share one DbContext (or one scope) for the whole
+        // session: every navigation gets its own scope, which is disposed
+        // together with the previous page.
+        private readonly IServiceScopeFactory _scopeFactory;
         private Panel? _container;
         private Label? _titleLabel;
         private Form? _activeForm;
+        private IServiceScope? _activeScope;
         private IconButton? _activeButton;
 
         // Colors — sourced from the central design tokens.
@@ -20,9 +24,9 @@ namespace DzentoPOS2.WinForms.Navigation
         private static Color ActiveFg => Color.White;
         private static Color InactiveFg => Color.White;
 
-        public NavigationService(IServiceProvider serviceProvider)
+        public NavigationService(IServiceScopeFactory scopeFactory)
         {
-            _serviceProvider = serviceProvider;
+            _scopeFactory = scopeFactory;
             ThemeManager.ThemeChanged += OnThemeChanged;
         }
 
@@ -43,8 +47,12 @@ namespace DzentoPOS2.WinForms.Navigation
                     _activeForm.Invalidate(true);
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                // A theme repaint must never take the shell down; record it.
+                DzentoPOS2.App.Diagnostics.ExceptionLogger.Write(
+                    ex,
+                    "NavigationService theme reapply");
             }
         }
 
@@ -79,10 +87,12 @@ public void Navigate<TForm>() where TForm : Form
 
             // Resolve the new page before touching the current one so a failure
             // (missing DI registration) never leaves the shell with a blank page.
+            IServiceScope scope;
             TForm form;
             try
             {
-                form = _serviceProvider.GetRequiredService<TForm>();
+                scope = _scopeFactory.CreateScope();
+                form = scope.ServiceProvider.GetRequiredService<TForm>();
             }
             catch (Exception ex)
             {
@@ -100,6 +110,11 @@ public void Navigate<TForm>() where TForm : Form
                     _activeForm.Dispose();
                     _activeForm = null;
                 }
+
+                // The previous page's scope owns its DbContext / unit of work;
+                // dispose it only after the page it belongs to is gone.
+                _activeScope?.Dispose();
+                _activeScope = scope;
 
                 // Clear container
                 _container.SuspendLayout();

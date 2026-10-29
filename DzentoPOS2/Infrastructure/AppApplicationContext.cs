@@ -8,15 +8,21 @@ namespace DzentoPOS2.WinForms.Infrastructure;
 public class AppApplicationContext : ApplicationContext
 {
     private Form? _currentForm;
-     
-    private readonly IServiceProvider _serviceProvider;
+
+    // A top-level window (login, shell) owns the DI scope it was resolved
+    // from; the scope is disposed when the window is replaced or the login
+    // fails, so no scoped service (DbContext, unit of work, ...) is kept
+    // alive for the whole application lifetime.
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly ICurrentUserService _currentUser;
+    private IServiceScope? _currentScope;
     private bool _loginSucceeded;
+
     public AppApplicationContext(
-        IServiceProvider serviceProvider,
+        IServiceScopeFactory scopeFactory,
         ICurrentUserService currentUser)
     {
-        _serviceProvider = serviceProvider;
+        _scopeFactory = scopeFactory;
         _currentUser = currentUser;
 
         ShowSplash();
@@ -34,7 +40,9 @@ public class AppApplicationContext : ApplicationContext
 
     private void ShowLogin()
     {
-        var login = _serviceProvider.GetRequiredService<LoginForm>();
+        _currentScope = _scopeFactory.CreateScope();
+
+        var login = _currentScope.ServiceProvider.GetRequiredService<LoginForm>();
 
         login.LoginSuccess += OnLoginSuccess;
         login.FormClosed += Login_FormClosed;
@@ -42,12 +50,14 @@ public class AppApplicationContext : ApplicationContext
         _currentForm = login;
         login.Show();
     }
+
     private void Login_FormClosed(
-    object? sender,
-    FormClosedEventArgs e)
+        object? sender,
+        FormClosedEventArgs e)
     {
         if (!_loginSucceeded)
         {
+            DisposeCurrentScope();
             ExitThread();
         }
     }
@@ -60,14 +70,38 @@ public class AppApplicationContext : ApplicationContext
 
         _currentUser.SetUser(session);
 
-        var main = _serviceProvider.GetRequiredService<MainForm>();
+        var loginForm = _currentForm;
+        var loginScope = _currentScope;
 
-        main.FormClosed += (_, _) => ExitThread();
+        _currentScope = _scopeFactory.CreateScope();
 
-        _currentForm?.Hide();
+        var main = _currentScope.ServiceProvider.GetRequiredService<MainForm>();
+
+        main.FormClosed += (_, _) =>
+        {
+            DisposeCurrentScope();
+            ExitThread();
+        };
+
+        loginForm?.Hide();
 
         _currentForm = main;
 
         main.Show();
+
+        // The login form raised this event, so it (and its scope) must not be
+        // disposed while the event is still unwinding. Queue the teardown
+        // until the current message is processed.
+        main.BeginInvoke(new Action(() =>
+        {
+            loginForm?.Dispose();
+            loginScope?.Dispose();
+        }));
+    }
+
+    private void DisposeCurrentScope()
+    {
+        _currentScope?.Dispose();
+        _currentScope = null;
     }
 }

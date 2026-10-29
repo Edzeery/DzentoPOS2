@@ -49,7 +49,6 @@ namespace DzentoPOS2.WinForms.Forms.Layout
 
         private readonly INavigationService _navigation;
         private readonly ICurrentUserService _currentUser;
-        private readonly AppDbContext _context;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly DzentoPOS2.App.Authorization.IPermissionService _permissionService;
 
@@ -91,7 +90,6 @@ namespace DzentoPOS2.WinForms.Forms.Layout
              ISalesEventPublisher salesEvents,
              IBusinessClock clock,
              IServiceProvider services,
-             AppDbContext context,
              IDbContextFactory<AppDbContext> contextFactory,
              DzentoPOS2.App.Authorization.IPermissionService permissionService)
         {
@@ -99,7 +97,6 @@ namespace DzentoPOS2.WinForms.Forms.Layout
 
             _currentUser = currentUser;
             _navigation = navigation;
-            _context = context;
             _contextFactory = contextFactory;
             _permissionService = permissionService;
             _languageService = languageService;
@@ -865,7 +862,13 @@ namespace DzentoPOS2.WinForms.Forms.Layout
                     settingsButton1.Visible = false;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                // Permission probing must never block the shell; record it.
+                DzentoPOS2.App.Diagnostics.ExceptionLogger.Write(
+                    ex,
+                    "MainForm permission enforcement");
+            }
         }
 
         private void NavigateTo<TForm>(IconButton button)

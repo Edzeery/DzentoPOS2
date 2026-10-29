@@ -31,7 +31,15 @@ internal static class Program
 
         services.AddWinForms(configuration);
 
+#if DEBUG
+        ServiceProvider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateScopes = true,
+            ValidateOnBuild = true
+        });
+#else
         ServiceProvider = services.BuildServiceProvider();
+#endif
 
         // Language: the persisted user preference always wins, the
         // appsettings value is only the fallback for a fresh installation.

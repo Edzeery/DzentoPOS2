@@ -2,6 +2,27 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] — 2026-10-29 (G1.2 scope per page)
+
+### Fixed
+
+#### G1.2 — No single `DbContext` for the whole session (E5)
+
+- **DI scope validation** (`DzentoPOS2/Program.cs:34-39`): the DEBUG service provider is built with `ValidateScopes = true` and `ValidateOnBuild = true`, so any singleton capturing a scoped dependency now fails fast at startup instead of silently sharing state.
+- **Data lifetimes** (`DzentoPOS2.Data/DependencyInjection.cs:43-71`): `AddDbContext<AppDbContext>` and `AddDbContextFactory<AppDbContext>` are both registered as `ServiceLifetime.Scoped`. Previously the singleton `IDbContextFactory<AppDbContext>` consumed the scoped `DbContextOptions<AppDbContext>`, which is exactly how one context leaked across the whole session.
+- **`MainForm`** (`DzentoPOS2/Forms/Layout/MainForm.cs:50-53`, `84-103`): removed the unused, root-captured `AppDbContext` field/parameter. The shell only uses `IDbContextFactory<AppDbContext>.CreateDbContext()` for short-lived reads (`MainForm.cs:997`).
+- **`NavigationService`** (`DzentoPOS2/Navigation/NavigationService.cs:9-30`, `75-115`): injects `IServiceScopeFactory` and creates one DI scope per page. The new page is resolved from its own scope; the previous page's scope is disposed right after the previous page is disposed, so its `DbContext`/unit of work never outlives the page.
+- **`AppApplicationContext`** (`DzentoPOS2/Infrastructure/AppApplicationContext.cs`): injects `IServiceScopeFactory` and owns one scope per top-level window (login, shell). The login scope is disposed only after the login event has unwound (queued via `BeginInvoke`), and the shell scope is disposed when the main window closes.
+
+### Verified
+
+- `ScopeLifetimeTests` (new, `tests/DzentoPOS2.IntegrationTests/ScopeLifetimeTests.cs`) — 3 integration tests:
+  - `ServiceProvider_BuildsWithScopeValidationEnabled` — validates the whole graph with `ValidateScopes`/`ValidateOnBuild`.
+  - `AppDbContext_IsScoped_NotSharedBetweenScopes` — same instance inside a scope, different instance between scopes.
+  - `ContextFactory_IsScoped_NotSharedBetweenScopes` — factory differs per scope and returns a fresh context every call.
+- Build **0 errors / 21 warnings** (all `NU1701`), Unit **84/84**, Integration **44/44**, `dotnet ef migrations has-pending-model-changes` clean.
+- Application starts with scope validation enabled and no exceptions logged (30 s run).
+
 ## [Unreleased] — 2026-10-29 (G1.1 camera discovery/fixes)
 
 ### Fixed

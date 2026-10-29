@@ -40,7 +40,7 @@ namespace DzentoPOS2.Data
             IConfiguration configuration)
         {
 
-            services.AddDbContext<AppDbContext>((serviceProvider, options) =>
+            services.AddDbContext<AppDbContext>(options =>
             {
                 var connectionString =
                     configuration.GetConnectionString("DefaultConnection");
@@ -48,17 +48,14 @@ namespace DzentoPOS2.Data
                 options.UseSqlite(
                     ResolveSqliteConnectionString(connectionString));
 
-                options.AddInterceptors(
-                    serviceProvider.GetServices<IInterceptor>());
-
 #if DEBUG
                 options.EnableSensitiveDataLogging();
 
                 options.EnableDetailedErrors();
 #endif
-            });
+            }, ServiceLifetime.Scoped);
 
-            services.AddDbContextFactory<AppDbContext>((serviceProvider, options) =>
+            services.AddDbContextFactory<AppDbContext>(options =>
             {
                 var connectionString =
                     configuration.GetConnectionString("DefaultConnection");
@@ -66,15 +63,12 @@ namespace DzentoPOS2.Data
                 options.UseSqlite(
                     ResolveSqliteConnectionString(connectionString));
 
-                options.AddInterceptors(
-                    serviceProvider.GetServices<IInterceptor>());
-
 #if DEBUG
                 options.EnableSensitiveDataLogging();
 
                 options.EnableDetailedErrors();
 #endif
-            });
+            }, ServiceLifetime.Scoped);
 
             #region Common Repositories
 

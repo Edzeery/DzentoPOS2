@@ -2,6 +2,7 @@ using DzentoPOS2.App.Services.Events;
 using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.App.Session;
+using DzentoPOS2.Core.Constants;
 using DzentoPOS2.Core.Entities.Sales;
 using DzentoPOS2.Core.Enums;
 using DzentoPOS2.Core.Exceptions;
@@ -340,9 +341,16 @@ namespace DzentoPOS2.App.Services.Sales
 
             var max = await _salesPolicy.GetMaxDiscountPercentAsync();
             if (effectivePercent > max)
+            {
+                // Allow an authorised user to bypass the ceiling.
+                if (await _authorizationGuard.IsAllowedAsync(
+                        Permissions.SalesDiscountOverride))
+                    return;
+
                 throw new CodedDomainException(
                     DomainErrorCodes.DiscountExceedsLimit,
                     $"Discount exceeds the allowed maximum of {max:0.##}%.");
+            }
         }
 
         public Task DeleteAsync(Guid id)

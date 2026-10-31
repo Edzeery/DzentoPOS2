@@ -35,16 +35,20 @@ public static class CameraDeviceEnumerator
                         string.IsNullOrWhiteSpace(name) ? moniker : name,
                         description));
                 }
-                catch
+                catch (Exception ex)
                 {
                     // A single broken device must not hide the other ones.
+                    System.Diagnostics.Debug.WriteLine(
+                        $"CameraDeviceEnumerator: skipping broken device: {ex.Message}");
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
             // DirectShow is not available (no camera subsystem) - the caller
             // shows the "no camera" message instead of failing.
+            System.Diagnostics.Debug.WriteLine(
+                $"CameraDeviceEnumerator: DirectShow unavailable: {ex.Message}");
         }
 
         return devices;

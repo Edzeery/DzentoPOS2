@@ -242,7 +242,7 @@ namespace DzentoPOS2.WinForms.Themes
                     {
                         btn.BackColor = AppColors.Primary;
                         btn.ForeColor = Color.White;
-                        try { RadiusControl.Bind(btn, AppStyle.RadiusSmall); } catch { }
+                        try { RadiusControl.Bind(btn, AppStyle.RadiusSmall); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"RadiusControl.Bind failed: {ex.Message}"); }
                     }
                 }
                 // =========================

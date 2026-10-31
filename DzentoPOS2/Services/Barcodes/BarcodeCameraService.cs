@@ -159,17 +159,17 @@ public sealed class BarcodeCameraService : IDisposable
                     try
                     {
                         vcd.SignalToStop();
-                        try { vcd.WaitForStop(); } catch { }
+                        try { vcd.WaitForStop(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"vcd.WaitForStop failed: {ex.Message}"); }
                     }
                     catch
                     {
-                        try { vcd.Stop(); } catch { }
+                        try { vcd.Stop(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"vcd.Stop failed: {ex.Message}"); }
                     }
                 }
                 else
                 {
-                    try { device.SignalToStop(); } catch { }
-                    try { device.WaitForStop(); } catch { }
+                    try { device.SignalToStop(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"device.SignalToStop failed: {ex.Message}"); }
+                    try { device.WaitForStop(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"device.WaitForStop failed: {ex.Message}"); }
                 }
             }
             catch
@@ -184,7 +184,7 @@ public sealed class BarcodeCameraService : IDisposable
                 }
             }
 
-            try { (device as IDisposable)?.Dispose(); } catch { }
+            try { (device as IDisposable)?.Dispose(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"device.Dispose failed: {ex.Message}"); }
         }
 
         try

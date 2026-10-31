@@ -27,6 +27,10 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        // Make the configuration available to scoped services (e.g. AdminSeeder
+        // reads Admin:EmergencyReset from it).
+        services.AddSingleton(configuration);
+
         // Localization
         services.AddLocalizationModule();
 

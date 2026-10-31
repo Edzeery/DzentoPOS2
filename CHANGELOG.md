@@ -55,11 +55,25 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 
 ### Usage
 
+**Method A — Environment variable (recommended):**
 1. Close the application.
-2. Set environment variable `ADMIN_EMERGENCY_RESET=true` (or add `"Admin": { "EmergencyReset": true }` to `appsettings.json`).
-3. Start the application once — the admin password is reset to `admin` and the user is flagged for a forced change.
+2. Open Command Prompt and run: `set ADMIN_EMERGENCY_RESET=true`
+3. Start the application from the same Command Prompt window.
 4. Log in with `admin` / `admin` — the forced password-change dialog appears.
-5. Set a new password and remove the environment variable / config flag.
+5. Set a new password and close the Command Prompt.
+
+**Method B — appsettings.json:**
+1. Close the application.
+2. Open `appsettings.json` in the application folder (e.g. `bin\Debug\net9.0-windows\`).
+3. Add `"Admin": { "EmergencyReset": true }` to the JSON.
+4. Start the application → log in with `admin` / `admin` → change password.
+5. Remove the `"EmergencyReset": true` line from `appsettings.json`.
+
+**Method C — Sentinel file (simplest, no editing):**
+1. Close the application.
+2. Create an empty text file named `reset-admin-password.txt` in the application folder (next to the `.exe`).
+3. Start the application — the file is consumed automatically and the password is reset.
+4. Log in with `admin` / `admin` → change password.
 
 ### Suggested future recovery methods (not yet implemented)
 - **Email-based password reset**: Send a time-limited token to the registered email, verify it, then allow password change.

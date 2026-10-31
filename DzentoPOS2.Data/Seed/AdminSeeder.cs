@@ -130,6 +130,27 @@ namespace DzentoPOS2.Data.Seed
                     || configValue == "1";
             }
 
+            // 3. Sentinel file in the application directory (simplest for
+            //    non-technical users): create an empty file named
+            //    "reset-admin-password.txt" next to the executable and restart.
+            try
+            {
+                var sentinelPath = Path.Combine(
+                    AppContext.BaseDirectory,
+                    "reset-admin-password.txt");
+
+                if (File.Exists(sentinelPath))
+                {
+                    // Consume the sentinel so the reset happens only once.
+                    File.Delete(sentinelPath);
+                    return true;
+                }
+            }
+            catch
+            {
+                // File-system errors must never block startup.
+            }
+
             return false;
         }
     }

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DzentoPOS2.Data.Repositories.Common
 {
-    public class UnitOfWork : IUnitOfWork, IAsyncDisposable
+    public class UnitOfWork : IUnitOfWork, IDisposable, IAsyncDisposable
     {
         private readonly AppDbContext _context;
         private readonly ILogger<UnitOfWork> _logger;
@@ -89,10 +89,24 @@ namespace DzentoPOS2.Data.Repositories.Common
             }
         }
 
+        public void Dispose()
+        {
+            if (_transaction is not null)
+            {
+                _transaction.Dispose();
+                _transaction = null;
+            }
+
+            _context.Dispose();
+        }
+
         public async ValueTask DisposeAsync()
         {
             if (_transaction is not null)
+            {
                 await _transaction.DisposeAsync();
+                _transaction = null;
+            }
 
             await _context.DisposeAsync();
         }

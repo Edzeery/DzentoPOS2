@@ -92,10 +92,19 @@ public class AppApplicationContext : ApplicationContext
         // The login form raised this event, so it (and its scope) must not be
         // disposed while the event is still unwinding. Queue the teardown
         // until the current message is processed.
-        main.BeginInvoke(new Action(() =>
+        main.BeginInvoke(new Action(async () =>
         {
             loginForm?.Dispose();
-            loginScope?.Dispose();
+            if (loginScope is not null)
+            {
+                // UnitOfWork (and other scoped services) may only implement
+                // IAsyncDisposable; dispose the scope asynchronously to avoid
+                // "Use DisposeAsync to dispose the container."
+                if (loginScope is IAsyncDisposable asyncDisposable)
+                    await asyncDisposable.DisposeAsync();
+                else
+                    loginScope.Dispose();
+            }
         }));
     }
 

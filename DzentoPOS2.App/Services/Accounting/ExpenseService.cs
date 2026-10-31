@@ -1,6 +1,8 @@
 using AutoMapper;
+using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Accounting;
 using DzentoPOS2.App.Session;
+using DzentoPOS2.Core.Constants;
 using DzentoPOS2.Core.Entities.Accounting;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Data.Repositories.Accounting.Interfaces;
@@ -19,6 +21,7 @@ namespace DzentoPOS2.App.Services.Accounting;
         private readonly ICurrentUserService _currentUser;
         private readonly AppDbContext _context;
         private readonly DzentoPOS2.App.Services.Systems.IStoreContextService _storeContext;
+        private readonly IAuthorizationGuard _guard;
 
     public ExpenseService(
         IExpenseRepository expenseRepo,
@@ -27,7 +30,8 @@ namespace DzentoPOS2.App.Services.Accounting;
         IMapper mapper,
         ICurrentUserService currentUser,
         AppDbContext context,
-        DzentoPOS2.App.Services.Systems.IStoreContextService storeContext)
+        DzentoPOS2.App.Services.Systems.IStoreContextService storeContext,
+        IAuthorizationGuard guard)
     {
         _expenseRepo = expenseRepo;
         _categoryRepo = categoryRepo;
@@ -36,6 +40,7 @@ namespace DzentoPOS2.App.Services.Accounting;
         _currentUser = currentUser;
         _context = context;
         _storeContext = storeContext;
+        _guard = guard;
     }
 
     public async Task<List<ExpenseDto>> GetAllAsync()
@@ -64,6 +69,8 @@ namespace DzentoPOS2.App.Services.Accounting;
 
     public async Task<ExpenseDto> CreateAsync(CreateExpenseDto dto)
     {
+        await _guard.DemandAsync(Permissions.ExpensesCreate);
+
         // Wrapped so a failure during the pre-transaction lookups also rolls
         // back and clears the shared change tracker.
         try
@@ -136,6 +143,8 @@ namespace DzentoPOS2.App.Services.Accounting;
 
     public async Task<ExpenseDto> UpdateAsync(UpdateExpenseDto dto)
     {
+        await _guard.DemandAsync(Permissions.ExpensesEdit);
+
         var expense = await _context.Expenses
             .FirstOrDefaultAsync(e => e.Id == dto.Id && !e.IsDeleted);
         if (expense == null)
@@ -155,6 +164,8 @@ namespace DzentoPOS2.App.Services.Accounting;
 
     public async Task DeleteAsync(Guid id)
     {
+        await _guard.DemandAsync(Permissions.ExpensesDelete);
+
         var expense = await _context.Expenses
             .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
         if (expense == null) return;

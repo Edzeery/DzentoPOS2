@@ -1,4 +1,6 @@
 using DzentoPOS2.App.Services.Partners;
+using DzentoPOS2.App.Authorization;
+using DzentoPOS2.Core.Constants;
 using DzentoPOS2.Core.Entities.Partners;
 using DzentoPOS2.Core.ValueObjects.Business;
 using DzentoPOS2.Core.ValueObjects.Identity;
@@ -15,15 +17,18 @@ namespace DzentoPOS2.App.Services.Partners
         private readonly ISupplierRepository _supplierRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly AppDbContext _context;
+        private readonly IAuthorizationGuard _guard;
 
         public SupplierService(
             ISupplierRepository supplierRepo,
             IUnitOfWork unitOfWork,
-            AppDbContext context)
+            AppDbContext context,
+            IAuthorizationGuard guard)
         {
             _supplierRepo = supplierRepo;
             _unitOfWork = unitOfWork;
             _context = context;
+            _guard = guard;
         }
 
         public async Task<List<SupplierDto>> GetAllAsync()
@@ -66,6 +71,8 @@ namespace DzentoPOS2.App.Services.Partners
 
         public async Task<SupplierDto> CreateAsync(CreateSupplierDto dto)
         {
+            await _guard.DemandAsync(Permissions.SuppliersCreate);
+
             var supplier = new Supplier
             {
                 Name = dto.Name,
@@ -86,6 +93,8 @@ namespace DzentoPOS2.App.Services.Partners
 
         public async Task<SupplierDto> UpdateAsync(UpdateSupplierDto dto)
         {
+            await _guard.DemandAsync(Permissions.SuppliersEdit);
+
             var supplier = await _context.Suppliers
                 .FirstOrDefaultAsync(x => x.Id == dto.Id && !x.IsDeleted)
                 ?? throw new KeyNotFoundException("Supplier not found");
@@ -107,6 +116,8 @@ namespace DzentoPOS2.App.Services.Partners
 
         public async Task DeleteAsync(Guid id)
         {
+            await _guard.DemandAsync(Permissions.SuppliersDelete);
+
             var supplier = await _context.Suppliers
                 .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
 

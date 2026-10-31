@@ -1,6 +1,8 @@
 using DzentoPOS2.App.Services.Partners;
 using DzentoPOS2.Core.Entities.Partners;
 using DzentoPOS2.Core.ValueObjects.Business;
+using DzentoPOS2.App.Authorization;
+using DzentoPOS2.Core.Constants;
 using DzentoPOS2.Core.ValueObjects.Identity;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Data.Repositories.Common.Interfaces;
@@ -15,15 +17,18 @@ namespace DzentoPOS2.App.Services.Partners
         private readonly ICustomerRepository _customerRepo;
         private readonly IUnitOfWork _unitOfWork;
         private readonly AppDbContext _context;
+        private readonly IAuthorizationGuard _guard;
 
         public CustomerService(
             ICustomerRepository customerRepo,
             IUnitOfWork unitOfWork,
-            AppDbContext context)
+            AppDbContext context,
+            IAuthorizationGuard guard)
         {
             _customerRepo = customerRepo;
             _unitOfWork = unitOfWork;
             _context = context;
+            _guard = guard;
         }
 
         public async Task<List<CustomerDto>> GetAllAsync()
@@ -66,6 +71,8 @@ namespace DzentoPOS2.App.Services.Partners
 
         public async Task<CustomerDto> CreateAsync(CreateCustomerDto dto)
         {
+            await _guard.DemandAsync(Permissions.CustomersCreate);
+
             var customer = new Customer
             {
                 FullName = dto.FullName,
@@ -86,6 +93,8 @@ namespace DzentoPOS2.App.Services.Partners
 
         public async Task<CustomerDto> UpdateAsync(UpdateCustomerDto dto)
         {
+            await _guard.DemandAsync(Permissions.CustomersEdit);
+
             var customer = await _context.Customers
                 .FirstOrDefaultAsync(x => x.Id == dto.Id && !x.IsDeleted)
                 ?? throw new KeyNotFoundException("Customer not found");
@@ -107,6 +116,8 @@ namespace DzentoPOS2.App.Services.Partners
 
         public async Task DeleteAsync(Guid id)
         {
+            await _guard.DemandAsync(Permissions.CustomersDelete);
+
             var customer = await _context.Customers
                 .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
 

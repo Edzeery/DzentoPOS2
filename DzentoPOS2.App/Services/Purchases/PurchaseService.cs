@@ -1,6 +1,8 @@
 using DzentoPOS2.App.Services.Inventory;
+using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Purchases;
 using DzentoPOS2.App.Services.Systems;
+using DzentoPOS2.Core.Constants;
 using DzentoPOS2.App.Session;
 using DzentoPOS2.Core.Entities.Purchases;
 using DzentoPOS2.Core.Enums;
@@ -22,6 +24,7 @@ namespace DzentoPOS2.App.Services.Purchases
         private readonly IDocumentNumberService _documentNumbers;
         private readonly IStockService _stockService;
         private readonly ICurrentUserService _currentUser;
+        private readonly IAuthorizationGuard _guard;
 
         public PurchaseService(
             IPurchaseInvoiceRepository invoiceRepo,
@@ -31,7 +34,8 @@ namespace DzentoPOS2.App.Services.Purchases
             IStoreContextService storeContext,
             IDocumentNumberService documentNumbers,
             IStockService stockService,
-            ICurrentUserService currentUser)
+            ICurrentUserService currentUser,
+            IAuthorizationGuard guard)
         {
             _invoiceRepo = invoiceRepo;
             _unitOfWork = unitOfWork;
@@ -41,6 +45,7 @@ namespace DzentoPOS2.App.Services.Purchases
             _documentNumbers = documentNumbers;
             _stockService = stockService;
             _currentUser = currentUser;
+            _guard = guard;
         }
 
         public async Task<List<PurchaseInvoiceDto>> GetAllAsync()
@@ -85,6 +90,8 @@ namespace DzentoPOS2.App.Services.Purchases
 
         public async Task<PurchaseInvoiceDto> CreateAsync(CreatePurchaseInvoiceDto dto)
         {
+            await _guard.DemandAsync(Permissions.PurchasesCreate);
+
             if (dto.Items.Count == 0)
                 throw new InvalidOperationException("Purchase must have at least one item");
 
@@ -159,6 +166,8 @@ namespace DzentoPOS2.App.Services.Purchases
 
         public async Task DeleteAsync(Guid id)
         {
+            await _guard.DemandAsync(Permissions.PurchasesDelete);
+
             var invoice = await _invoiceRepo.GetWithItemsAsync(id);
             if (invoice == null) return;
 

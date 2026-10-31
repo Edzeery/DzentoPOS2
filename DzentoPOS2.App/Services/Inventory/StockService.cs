@@ -1,4 +1,6 @@
+using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Systems;
+using DzentoPOS2.Core.Constants;
 using DzentoPOS2.Core.Entities.Inventory;
 using DzentoPOS2.Core.Enums;
 using DzentoPOS2.Core.Exceptions;
@@ -14,11 +16,18 @@ public sealed class StockService : IStockService
 
     private readonly AppDbContext _context;
     private readonly IBusinessClock _clock;
+    private readonly IAuthorizationGuard? _guard;
 
     public StockService(AppDbContext context, IBusinessClock clock)
+        : this(context, clock, guard: null)
+    {
+    }
+
+    public StockService(AppDbContext context, IBusinessClock clock, IAuthorizationGuard? guard)
     {
         _context = context;
         _clock = clock;
+        _guard = guard;
     }
 
     public Task ApplySaleAsync(
@@ -94,6 +103,9 @@ public sealed class StockService : IStockService
         bool isOpening,
         CancellationToken cancellationToken = default)
     {
+        if (_guard is not null)
+            await _guard.DemandAsync(Permissions.InventoryAdjust);
+
         if (targetQuantity < 0)
             throw new DomainException("Stock quantity cannot be negative");
 

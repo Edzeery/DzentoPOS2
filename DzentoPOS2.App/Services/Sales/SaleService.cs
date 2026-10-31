@@ -1,4 +1,5 @@
 using DzentoPOS2.App.Services.Events;
+using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.App.Session;
@@ -30,6 +31,7 @@ namespace DzentoPOS2.App.Services.Sales
         private readonly ISalesPolicy _salesPolicy;
         private readonly ISalesEventPublisher _events;
         private readonly DzentoPOS2.App.Authorization.IAuthorizationGuard _authorizationGuard;
+        private readonly IPermissionService _permissionService;
 
         public SaleService(
             ISalesInvoiceRepository invoiceRepo,
@@ -43,7 +45,8 @@ namespace DzentoPOS2.App.Services.Sales
             RegionalContext regional,
             ISalesPolicy salesPolicy,
             ISalesEventPublisher events,
-            DzentoPOS2.App.Authorization.IAuthorizationGuard authorizationGuard)
+            DzentoPOS2.App.Authorization.IAuthorizationGuard authorizationGuard,
+            IPermissionService permissionService)
         {
             _invoiceRepo = invoiceRepo;
             _unitOfWork = unitOfWork;
@@ -57,6 +60,7 @@ namespace DzentoPOS2.App.Services.Sales
             _salesPolicy = salesPolicy;
             _events = events;
             _authorizationGuard = authorizationGuard;
+            _permissionService = permissionService;
         }
 
         public async Task<List<SaleDto>> GetAllAsync()
@@ -342,9 +346,13 @@ namespace DzentoPOS2.App.Services.Sales
             var max = await _salesPolicy.GetMaxDiscountPercentAsync();
             if (effectivePercent > max)
             {
-                // Allow an authorised user to bypass the ceiling.
-                if (await _authorizationGuard.IsAllowedAsync(
-                        Permissions.SalesDiscountOverride))
+                // Allow an authorised user to bypass the ceiling. Uses the
+                // permission service directly (not IsAllowedAsync) so the
+                // IsAdmin shortcut does not silently bypass the ceiling for
+                // every admin; only users with the explicit permission can.
+                var hasOverride = await _permissionService
+                    .HasPermissionAsync(Permissions.SalesDiscountOverride);
+                if (hasOverride)
                     return;
 
                 throw new CodedDomainException(

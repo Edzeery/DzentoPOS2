@@ -12,6 +12,8 @@ using DzentoPOS2.App.Services.Reports.Interfaces;
 using DzentoPOS2.App.Services.Sales;
 using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.App.Session;
+using DzentoPOS2.Data.Context;
+using Microsoft.EntityFrameworkCore;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
@@ -35,7 +37,11 @@ namespace DzentoPOS2.App
             services.AddSingleton<IBusinessClock, BusinessClock>();
             services.AddScoped<IStoreContextService, StoreContextService>();
             services.AddScoped<IDocumentNumberService, DocumentNumberService>();
-            services.AddScoped<IBackupService, BackupService>();
+            services.AddScoped<IBackupService>(sp =>
+    new BackupService(
+        sp.GetRequiredService<IDbContextFactory<AppDbContext>>(),
+        backupDirectory: null,
+        guard: sp.GetService<IAuthorizationGuard>()));
 
             services.AddScoped<IAuthService, AuthService>();
 

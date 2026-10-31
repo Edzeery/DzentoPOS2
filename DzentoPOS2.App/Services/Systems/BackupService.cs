@@ -1,4 +1,6 @@
+using DzentoPOS2.App.Authorization;
 using DzentoPOS2.Core.Configuration;
+using DzentoPOS2.Core.Constants;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Localization.Resources;
 using Microsoft.Data.Sqlite;
@@ -65,10 +67,11 @@ public sealed class BackupService : IBackupService
     };
 
     private readonly IDbContextFactory<AppDbContext> _contextFactory;
+    private readonly IAuthorizationGuard? _guard;
 
     /// <param name="contextFactory">Factory used to reach the live database.</param>
     public BackupService(IDbContextFactory<AppDbContext> contextFactory)
-        : this(contextFactory, backupDirectory: null)
+        : this(contextFactory, backupDirectory: null, guard: null)
     {
     }
 
@@ -79,8 +82,22 @@ public sealed class BackupService : IBackupService
     public BackupService(
         IDbContextFactory<AppDbContext> contextFactory,
         string? backupDirectory)
+        : this(contextFactory, backupDirectory, guard: null)
+    {
+    }
+
+    /// <param name="contextFactory">Factory used to reach the live database.</param>
+    /// <param name="backupDirectory">
+    /// Optional override of the backup folder (tests use a temp directory).
+    /// </param>
+    /// <param name="guard">Authorization guard (optional for tests).</param>
+    public BackupService(
+        IDbContextFactory<AppDbContext> contextFactory,
+        string? backupDirectory,
+        IAuthorizationGuard? guard)
     {
         _contextFactory = contextFactory;
+        _guard = guard;
 
         BackupDirectory = string.IsNullOrWhiteSpace(backupDirectory)
             ? AppPaths.BackupsFolder
@@ -92,6 +109,9 @@ public sealed class BackupService : IBackupService
     public async Task<BackupFile> CreateBackupAsync(
         CancellationToken cancellationToken = default)
     {
+        if (_guard is not null)
+            await _guard.DemandAsync(Permissions.BackupCreate);
+
         Directory.CreateDirectory(BackupDirectory);
 
         string destinationPath = BuildUniquePath();
@@ -239,6 +259,9 @@ public sealed class BackupService : IBackupService
         string backupPath,
         CancellationToken cancellationToken = default)
     {
+        if (_guard is not null)
+            await _guard.DemandAsync(Permissions.BackupRestore);
+
         await ValidateBackupAsync(backupPath, cancellationToken);
 
         // The live data is replaceable, but only after it is backed up.

@@ -8,6 +8,7 @@ using DzentoPOS2.WinForms.Services;
 using DzentoPOS2.WinForms.Services.Barcodes;
 using DzentoPOS2.WinForms.Themes;
 using Microsoft.Extensions.DependencyInjection;
+using DzentoPOS2.App.Services.Barcodes;
 using DzentoPOS2.App.Services.Systems;
 
 namespace DzentoPOS2.WinForms.Forms.Settings;
@@ -54,6 +55,10 @@ public partial class SettingsForm : LocalizableFormBase
     private readonly CheckBox _chkCameraBarcode;
     private readonly ThemedComboBox _cmbCamera;
     private readonly ThemedButton _btnRefreshCameras;
+
+    private readonly ThemedComboBox _cmbCameraSource;
+    private readonly TextBox _txtCameraUrl;
+    private readonly ThemedButton _btnTestCamera;
 
     private readonly Label _lblBackupHint;
     private readonly Label _lblBackupFolder;
@@ -289,6 +294,24 @@ public partial class SettingsForm : LocalizableFormBase
         _barcodeCard.AddFields(
             new SettingsField("cameraEnabled", AppStrings.EnableCameraScanning, _chkCameraBarcode),
             new SettingsField("cameraDevice", AppStrings.CameraDevice, _cmbCamera));
+
+        _cmbCameraSource = new ThemedComboBox();
+        _cmbCameraSource.Add(AppStrings.CameraSourceLocal, AppStrings.CameraSourceIp);
+        _cmbCameraSource.SelectedIndexChanged += (_, _) => UpdateCameraSourceVisibility();
+
+        _txtCameraUrl = new TextBox
+        {
+            Font = AppStyle.BodyFont,
+            Width = 300
+        };
+        _txtCameraUrl.TextChanged += (_, _) => ValidateCameraUrl();
+
+        _btnTestCamera = ButtonFactory.Neutral(AppStrings.TestConnection, ButtonFactory.ButtonSize.Small);
+        _btnTestCamera.Click += async (_, _) => await TestCameraConnectionAsync();
+
+        _barcodeCard.AddFields(new SettingsField("cameraSource", AppStrings.CameraSource, _cmbCameraSource));
+        _barcodeCard.AddControl(_txtCameraUrl);
+        _barcodeCard.AddControl(_btnTestCamera);
         _barcodeCard.AddControl(_btnRefreshCameras);
 
         // ── Backup & Restore ───────────────────────────────────────────────
@@ -423,6 +446,10 @@ public partial class SettingsForm : LocalizableFormBase
         SelectValue(_cmbReceiptWidth, _receipts, r => r.Value, _settings.ReceiptWidthMm.ToString());
         SelectValue(_cmbCamera, _cameras, c => c.Moniker, _settings.BarcodeCameraDevice);
 
+        _cmbCameraSource.SelectedIndex = string.Equals(_settings.BarcodeCameraSource, "Ip", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+        _txtCameraUrl.Text = _settings.BarcodeCameraUrl;
+        UpdateCameraSourceVisibility();
+
         _txtStoreName.Text = _settings.StoreName;
         _chkDarkMode.Checked = ThemeManager.Mode == ThemeMode.Dark;
         _chkRememberMe.Checked = _settings.RememberMe;
@@ -467,6 +494,10 @@ public partial class SettingsForm : LocalizableFormBase
         _barcodeCard.SetFieldLabel("cameraDevice", AppStrings.CameraDevice);
         _chkCameraBarcode.Text = AppStrings.EnableCameraScanning;
         _btnRefreshCameras.Text = AppStrings.Refresh;
+        _btnTestCamera.Text = AppStrings.TestConnection;
+
+        _cmbCameraSource.ClearItems();
+        _cmbCameraSource.Add(AppStrings.CameraSourceLocal, AppStrings.CameraSourceIp);
 
         _backupCard.Title = AppStrings.Backup;
         _backupCard.Hint = AppStrings.BackupHint;
@@ -675,6 +706,71 @@ public partial class SettingsForm : LocalizableFormBase
         }
     }
 
+    private void UpdateCameraSourceVisibility()
+    {
+        bool isIp = _cmbCameraSource.SelectedIndex == 1;
+        _txtCameraUrl.Visible = isIp;
+        _btnTestCamera.Visible = isIp;
+        _cmbCamera.Enabled = !isIp;
+        _btnRefreshCameras.Enabled = !isIp;
+    }
+
+    private void ValidateCameraUrl()
+    {
+        if (_txtCameraUrl.Visible)
+        {
+            bool valid = CameraUrlValidator.IsValid(_txtCameraUrl.Text);
+            _txtCameraUrl.BackColor = valid ? Color.White : Color.MistyRose;
+        }
+    }
+
+    private async Task TestCameraConnectionAsync()
+    {
+        string url = _txtCameraUrl.Text.Trim();
+        if (!CameraUrlValidator.IsValid(url))
+        {
+            AppMessageBox.Error(AppStrings.CameraUrlInvalid);
+            return;
+        }
+
+        _btnTestCamera.Enabled = false;
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var result = await Task.Run(() =>
+            {
+                // Simple HTTP HEAD/GET to verify connectivity.
+                try
+                {
+                    using var client = new System.Net.Http.HttpClient
+                    {
+                        Timeout = TimeSpan.FromSeconds(5)
+                    };
+                    var response = client.GetAsync(url, cts.Token).GetAwaiter().GetResult();
+                    return response.IsSuccessStatusCode;
+                }
+                catch
+                {
+                    return false;
+                }
+            }, cts.Token);
+
+            if (result)
+                AppMessageBox.Success(AppStrings.ConnectionSuccess);
+            else
+                AppMessageBox.Error(AppStrings.ConnectionFailed);
+        }
+        catch (Exception ex)
+        {
+            AppMessageBox.Error(ex.Message);
+        }
+        finally
+        {
+            if (!IsDisposed)
+                _btnTestCamera.Enabled = true;
+        }
+    }
+
     private void RefreshPaperSizes()
     {
         string printer = _cmbPrinter.SelectedItem is PrinterItem item ? item.Name : string.Empty;
@@ -784,6 +880,8 @@ public partial class SettingsForm : LocalizableFormBase
         settings.ReceiptWidthMm = int.TryParse(_cmbReceiptWidth.SelectedItem is ReceiptItem receipt ? receipt.Value : _settings.ReceiptWidthMm.ToString(), out int width) ? width : _settings.ReceiptWidthMm;
         settings.CameraBarcodeEnabled = _chkCameraBarcode.Checked;
         settings.BarcodeCameraDevice = _cmbCamera.SelectedItem is CameraItem camera ? camera.Moniker : _settings.BarcodeCameraDevice;
+        settings.BarcodeCameraSource = _cmbCameraSource.SelectedIndex == 1 ? "Ip" : "Local";
+        settings.BarcodeCameraUrl = _txtCameraUrl.Text.Trim();
 
         var desiredMode = _chkDarkMode.Checked ? ThemeMode.Dark : ThemeMode.Light;
         if (ThemeManager.Mode != desiredMode)

@@ -1269,4 +1269,13 @@
   <data name="RestoreConfirm" xml:space="preserve">
     <value>The current data will be replaced by the selected backup and the application will restart. Continue?</value>
   </data>
+  <data name="InvalidRecoveryKey" xml:space="preserve">
+    <value>Invalid or expired recovery key.</value>
+  </data>
+  <data name="RecoveryKeyLockedOut" xml:space="preserve">
+    <value>Too many failed attempts. Try again in 15 minutes.</value>
+  </data>
+  <data name="PasswordMustDiffer" xml:space="preserve">
+    <value>New password must differ from the current one.</value>
+  </data>
 </root>

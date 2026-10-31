@@ -25,6 +25,13 @@ namespace DzentoPOS2.Core.Entities.Identity
         /// </summary>
         public bool MustChangePassword { get; set; }
 
+        /// <summary>
+        /// BCrypt hash of the recovery key. The key itself is shown once at
+        /// generation time and is never stored in clear text. Null means no
+        /// recovery key has been issued yet.
+        /// </summary>
+        public string? RecoveryKeyHash { get; set; }
+
         public Guid? BranchId { get; set; }
 
         public virtual Branch? Branch { get; set; }

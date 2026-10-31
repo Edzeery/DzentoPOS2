@@ -1,4 +1,5 @@
-﻿using DzentoPOS2.Shared.Contracts.DTOs.Identity.Auth;
+﻿using DzentoPOS2.Core.Entities.Identity;
+using DzentoPOS2.Shared.Contracts.DTOs.Identity.Auth;
 using DzentoPOS2.App.Services.Identity.Interfaces;
 using DzentoPOS2.App.Session;
 using DzentoPOS2.App.Authorization;
@@ -255,6 +256,280 @@ namespace DzentoPOS2.App.Services.Identity
             {
                 return Result.Failed(ex.Message);
             }
+        }
+
+        public async Task<Result<string>> GenerateRecoveryKeyAsync(Guid userId)
+        {
+            try
+            {
+                var user = await _userRepository
+                    .GetWithRolesAsync(userId);
+
+                if (user is null)
+                {
+                    return Result<string>.Failed(AppStrings.Usernotfound);
+                }
+
+                var keyResult = await GenerateRecoveryKeyInternalAsync(user);
+                if (!keyResult.Success)
+                {
+                    return Result<string>.Failed(keyResult.Message);
+                }
+
+                _userRepository.Update(user);
+                await _unitOfWork.SaveChangesAsync();
+
+                await _auditService.LogAsync(
+                    "RecoveryKeyGenerated",
+                    "User",
+                    newValues: user.UserName,
+                    userId: user.Id);
+
+                return Result<string>.Succeeded(keyResult.Data!);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to generate recovery key.");
+                return Result<string>.Failed(ex.Message);
+            }
+        }
+
+        private async Task<Result<string>> GenerateRecoveryKeyInternalAsync(User user)
+        {
+            try
+            {
+                var bytes = new byte[16];
+                using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
+                {
+                    rng.GetBytes(bytes);
+                }
+
+                var hex = Convert.ToHexString(bytes);
+                var groups = new List<string>();
+                for (int i = 0; i < hex.Length; i += 4)
+                {
+                    groups.Add(hex.Substring(i, 4));
+                }
+                var plainKey = string.Join("-", groups);
+
+                user.RecoveryKeyHash = PasswordHelper.Hash(plainKey);
+
+                return Result<string>.Succeeded(plainKey);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to generate recovery key.");
+                return Result<string>.Failed(ex.Message);
+            }
+        }
+
+        public async Task<Result<string>> ResetPasswordWithRecoveryKeyAsync(
+            string userName,
+            string recoveryKey,
+            string newPassword)
+        {
+            try
+            {
+                var user = await _userRepository
+                    .GetByUserNameAsync(userName);
+
+                if (user is null || string.IsNullOrWhiteSpace(user.RecoveryKeyHash))
+                {
+                    RecordFailedAttempt(userName);
+                    await _auditService.LogAsync(
+                        "RecoveryKeyFailed",
+                        "User",
+                        newValues: userName,
+                        userId: null);
+                    return Result<string>.Failed(AppStrings.InvalidRecoveryKey);
+                }
+
+                if (IsLockedOut(userName))
+                {
+                    return Result<string>.Failed(AppStrings.RecoveryKeyLockedOut);
+                }
+
+                if (!PasswordHelper.Verify(recoveryKey, user.RecoveryKeyHash))
+                {
+                    RecordFailedAttempt(userName);
+                    await _auditService.LogAsync(
+                        "RecoveryKeyFailed",
+                        "User",
+                        newValues: userName,
+                        userId: user.Id);
+                    return Result<string>.Failed(AppStrings.InvalidRecoveryKey);
+                }
+
+                if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 8)
+                {
+                    return Result<string>.Failed(AppStrings.PasswordTooShort);
+                }
+
+                if (PasswordHelper.Verify(newPassword, user.PasswordHash))
+                {
+                    return Result<string>.Failed(AppStrings.PasswordMustDiffer);
+                }
+
+                user.PasswordHash = PasswordHelper.Hash(newPassword);
+                user.MustChangePassword = false;
+
+                var keyResult = await GenerateRecoveryKeyInternalAsync(user);
+                if (!keyResult.Success)
+                {
+                    _logger.LogWarning(
+                        "Could not generate new recovery key: {Error}",
+                        keyResult.Message);
+                }
+
+                _userRepository.Update(user);
+                await _unitOfWork.SaveChangesAsync();
+
+                ClearLockout(userName);
+
+                await _auditService.LogAsync(
+                    "RecoveryKeySuccess",
+                    "User",
+                    newValues: userName,
+                    userId: user.Id);
+
+                return Result<string>.Succeeded(
+                    keyResult.Data ?? string.Empty);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to reset password with recovery key.");
+                return Result<string>.Failed(ex.Message);
+            }
+        }
+
+        // ── Lockout persistence (file-based, survives restarts) ──────────
+
+        private static string LockoutFilePath =>
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "DzentoPOS2",
+                "recovery-lockout.json");
+
+        private static readonly object _lockoutLock = new();
+
+        private static void RecordFailedAttempt(string userName)
+        {
+            lock (_lockoutLock)
+            {
+                try
+                {
+                    var state = LoadLockoutState();
+                    if (!state.TryGetValue(userName, out var info))
+                    {
+                        info = new LockoutInfo();
+                        state[userName] = info;
+                    }
+                    info.FailedCount++;
+                    info.LastFailedUtc = DateTime.UtcNow;
+                    if (info.FailedCount >= 5)
+                    {
+                        info.LockedUntilUtc = DateTime.UtcNow.AddMinutes(15);
+                    }
+                    SaveLockoutState(state);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(
+                        $"Failed to persist lockout state: {ex.Message}");
+                }
+            }
+        }
+
+        private static void ClearLockout(string userName)
+        {
+            lock (_lockoutLock)
+            {
+                try
+                {
+                    var state = LoadLockoutState();
+                    state.Remove(userName);
+                    SaveLockoutState(state);
+                }
+                catch
+                {
+                    // Best effort.
+                }
+            }
+        }
+
+        private static bool IsLockedOut(string userName)
+        {
+            lock (_lockoutLock)
+            {
+                try
+                {
+                    var state = LoadLockoutState();
+                    if (state.TryGetValue(userName, out var info))
+                    {
+                        if (info.LockedUntilUtc.HasValue &&
+                            info.LockedUntilUtc.Value > DateTime.UtcNow)
+                        {
+                            return true;
+                        }
+                        if (info.LockedUntilUtc.HasValue &&
+                            info.LockedUntilUtc.Value <= DateTime.UtcNow)
+                        {
+                            info.FailedCount = 0;
+                            info.LockedUntilUtc = null;
+                            SaveLockoutState(state);
+                        }
+                    }
+                }
+                catch
+                {
+                    // Best effort.
+                }
+                return false;
+            }
+        }
+
+        private static Dictionary<string, LockoutInfo> LoadLockoutState()
+        {
+            try
+            {
+                if (File.Exists(LockoutFilePath))
+                {
+                    var json = File.ReadAllText(LockoutFilePath);
+                    return System.Text.Json.JsonSerializer
+                        .Deserialize<Dictionary<string, LockoutInfo>>(json)
+                        ?? new Dictionary<string, LockoutInfo>();
+                }
+            }
+            catch
+            {
+                // Corrupt file — start fresh.
+            }
+            return new Dictionary<string, LockoutInfo>();
+        }
+
+        private static void SaveLockoutState(Dictionary<string, LockoutInfo> state)
+        {
+            try
+            {
+                var dir = Path.GetDirectoryName(LockoutFilePath);
+                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+                {
+                    Directory.CreateDirectory(dir);
+                }
+                var json = System.Text.Json.JsonSerializer.Serialize(state);
+                File.WriteAllText(LockoutFilePath, json);
+            }
+            catch
+            {
+                // Best effort.
+            }
+        }
+
+        private sealed class LockoutInfo
+        {
+            public int FailedCount { get; set; }
+            public DateTime? LastFailedUtc { get; set; }
+            public DateTime? LockedUntilUtc { get; set; }
         }
     }
 }

@@ -2237,6 +2237,33 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("PasswordTooShort", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid or expired recovery key..
+        /// </summary>
+        public static string InvalidRecoveryKey {
+            get {
+                return ResourceManager.GetString("InvalidRecoveryKey", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Too many failed attempts. Try again in 15 minutes..
+        /// </summary>
+        public static string RecoveryKeyLockedOut {
+            get {
+                return ResourceManager.GetString("RecoveryKeyLockedOut", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to New password must differ from the current one..
+        /// </summary>
+        public static string PasswordMustDiffer {
+            get {
+                return ResourceManager.GetString("PasswordMustDiffer", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Pay In.

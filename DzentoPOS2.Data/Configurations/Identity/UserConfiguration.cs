@@ -30,6 +30,9 @@ namespace DzentoPOS2.Data.Configurations.Identity
             builder.Property(x => x.MustChangePassword)
                 .HasDefaultValue(false);
 
+            builder.Property(x => x.RecoveryKeyHash)
+                .HasMaxLength(100);
+
             builder.HasIndex(x => x.UserName)
                 .IsUnique();
 

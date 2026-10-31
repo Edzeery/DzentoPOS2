@@ -10,7 +10,7 @@ namespace DzentoPOS2.App.Services.Identity.Interfaces
 
         Task<Result> LogoutAsync();
 
-        Task<Result> ChangePasswordAsync(
+        Task<Result<string>> ChangePasswordAsync(
             ChangePasswordDto dto);
 
         /// <summary>

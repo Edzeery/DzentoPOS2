@@ -123,7 +123,14 @@ public sealed partial class ChangePasswordDialog : Form
                 return;
             }
 
-            AppMessageBox.Success(result.Message ?? AppStrings.PasswordChangedSuccessfully);
+            // Show the recovery key ONCE if one was generated.
+            if (!string.IsNullOrWhiteSpace(result.Data))
+            {
+                using var keyDialog = new RecoveryKeyDisplayDialog(result.Data!);
+                keyDialog.ShowDialog(this);
+            }
+
+            AppMessageBox.Success(AppStrings.PasswordChangedSuccessfully);
 
             DialogResult = DialogResult.OK;
             Close();

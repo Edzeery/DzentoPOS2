@@ -196,7 +196,7 @@ namespace DzentoPOS2.App.Services.Identity
             }
         }
 
-        public async Task<Result> ChangePasswordAsync(
+        public async Task<Result<string>> ChangePasswordAsync(
             ChangePasswordDto dto)
         {
             try
@@ -206,14 +206,14 @@ namespace DzentoPOS2.App.Services.Identity
 
                 if (user is null)
                 {
-                    return Result
+                    return Result<string>
                         .Failed(AppStrings.Usernotfound);
                 }
                 bool isPasswordValid = PasswordHelper.Verify(dto.CurrentPassword, user.PasswordHash);
 
                 if (!isPasswordValid)
                 {
-                    return Result
+                    return Result<string>
                         .Failed(AppStrings.InvalidCurrentPassword);
                 }
 
@@ -221,12 +221,6 @@ namespace DzentoPOS2.App.Services.Identity
                 user.MustChangePassword = false;
 
                 var keyResult = await GenerateRecoveryKeyInternalAsync(user);
-                if (!keyResult.Success)
-                {
-                    _logger.LogWarning(
-                        "Could not generate recovery key: {Error}",
-                        keyResult.Message);
-                }
 
                 _userRepository.Update(user);
                 await _unitOfWork.SaveChangesAsync();
@@ -237,12 +231,20 @@ namespace DzentoPOS2.App.Services.Identity
                     newValues: user.UserName,
                     userId: user.Id);
 
-                return Result.Succeeded(AppStrings.PasswordChangedSuccessfully);
+                if (!keyResult.Success)
+                {
+                    _logger.LogWarning(
+                        "Could not generate recovery key: {Error}",
+                        keyResult.Message);
+                    return Result<string>.Succeeded(string.Empty);
+                }
+
+                return Result<string>.Succeeded(keyResult.Data!);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "ChangePasswordAsync failed.");
-                return Result.Failed(AppStrings.ErrorMsg);
+                return Result<string>.Failed(AppStrings.ErrorMsg);
             }
         }
 

@@ -1,6 +1,7 @@
 ﻿using DzentoPOS2.Data.Context;
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -49,7 +50,14 @@ namespace DzentoPOS2.Data.Seed
 
             await RolePermissionSeeder.SeedAsync(context);
 
-            await AdminSeeder.SeedAsync(context);
+            var configuration = scope.ServiceProvider
+                .GetService<IConfiguration>();
+
+            var seederLogger = scope.ServiceProvider
+                .GetService<ILoggerFactory>()
+                ?.CreateLogger("DzentoPOS2.Data.Seed.AdminSeeder");
+
+            await AdminSeeder.SeedAsync(context, configuration, seederLogger);
 
             await AppSettingSeeder.SeedAsync(context);
 

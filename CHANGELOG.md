@@ -46,6 +46,27 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 - `LocalizationParityTests.Every_culture_has_the_same_keys_as_the_base` — base vs ar/en/fr diff = 0.
 - Build **0 errors / 21 warnings** (all `NU1701`), Unit **84/84**, Integration **51/51**, `dotnet ef migrations has-pending-model-changes` clean.
 
+## [Unreleased] — 2026-10-29 (Admin emergency password reset)
+
+### Added
+
+#### Admin emergency password reset
+- **Emergency reset via env var / config** — `AdminSeeder` now supports an opt-in reset triggered by setting `ADMIN_EMERGENCY_RESET=true` (environment variable) or `Admin:EmergencyReset=true` (appsettings.json / command line). When enabled, the built-in admin password is reset to the default (`admin`) and `MustChangePassword` is set, so the next sign-in forces a password change before the shell opens. The reset is logged via `ILogger.LogWarning`. Normal startup (flag absent) never overwrites the password, so the mechanism is safe to leave wired in.
+
+### Usage
+
+1. Close the application.
+2. Set environment variable `ADMIN_EMERGENCY_RESET=true` (or add `"Admin": { "EmergencyReset": true }` to `appsettings.json`).
+3. Start the application once — the admin password is reset to `admin` and the user is flagged for a forced change.
+4. Log in with `admin` / `admin` — the forced password-change dialog appears.
+5. Set a new password and remove the environment variable / config flag.
+
+### Suggested future recovery methods (not yet implemented)
+- **Email-based password reset**: Send a time-limited token to the registered email, verify it, then allow password change.
+- **Security questions**: Set during account creation, used for self-service reset.
+- **Recovery code**: A one-time code generated at first setup, stored securely offline.
+- **Super-admin reset**: An already-logged-in super admin can reset another user's password via the Users page (already possible once logged in).
+
 ## [Unreleased] — 2026-10-29 (G1.2 scope per page)
 
 ### Fixed

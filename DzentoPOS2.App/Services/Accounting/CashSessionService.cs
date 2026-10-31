@@ -1,7 +1,9 @@
 using DzentoPOS2.App.Services.Accounting;
+using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Events;
 using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.App.Session;
+using DzentoPOS2.Core.Constants;
 using DzentoPOS2.Core.Entities.Accounting;
 using DzentoPOS2.Core.Enums;
 using DzentoPOS2.Core.Exceptions;
@@ -32,6 +34,7 @@ namespace DzentoPOS2.App.Services.Accounting
         private readonly AppDbContext _context;
         private readonly IBusinessClock _clock;
         private readonly ISalesEventPublisher _events;
+        private readonly IAuthorizationGuard _guard;
 
         public CashSessionService(
             ICashSessionRepository sessionRepo,
@@ -41,7 +44,8 @@ namespace DzentoPOS2.App.Services.Accounting
             ICurrentUserService currentUser,
             AppDbContext context,
             IBusinessClock clock,
-            ISalesEventPublisher events)
+            ISalesEventPublisher events,
+            IAuthorizationGuard guard)
         {
             _sessionRepo = sessionRepo;
             _cashboxRepo = cashboxRepo;
@@ -51,6 +55,7 @@ namespace DzentoPOS2.App.Services.Accounting
             _context = context;
             _clock = clock;
             _events = events;
+            _guard = guard;
         }
 
         public async Task<List<CashboxDto>> GetCashboxesAsync()
@@ -85,6 +90,8 @@ namespace DzentoPOS2.App.Services.Accounting
 
         public async Task<CashSessionDto> OpenSessionAsync(OpenCashSessionDto dto)
         {
+            await _guard.DemandAsync(Permissions.CashSessionsOpen);
+
             // The filtered unique index is the last line of defence, but the
             // service still rejects a second open session with a stable code so
             // the UI can show a localized message instead of a raw UNIQUE error.
@@ -122,6 +129,8 @@ namespace DzentoPOS2.App.Services.Accounting
         /// </summary>
         public async Task<CashSessionDto> CloseSessionAsync(CloseCashSessionDto dto)
         {
+            await _guard.DemandAsync(Permissions.CashSessionsClose);
+
             var session = await _context.CashSessions
                 .FirstOrDefaultAsync(s => s.Id == dto.SessionId && !s.IsDeleted)
                 ?? throw new CodedDomainException(
@@ -293,6 +302,7 @@ namespace DzentoPOS2.App.Services.Accounting
             CashMovementDto dto,
             CancellationToken cancellationToken = default)
         {
+            await _guard.DemandAsync(Permissions.CashSessionsMovements);
             return await RecordMovementAsync(dto, MovementType.SessionPayIn, cancellationToken);
         }
 
@@ -300,6 +310,7 @@ namespace DzentoPOS2.App.Services.Accounting
             CashMovementDto dto,
             CancellationToken cancellationToken = default)
         {
+            await _guard.DemandAsync(Permissions.CashSessionsMovements);
             return await RecordMovementAsync(dto, MovementType.SessionPayOut, cancellationToken);
         }
 

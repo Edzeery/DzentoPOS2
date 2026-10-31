@@ -7,12 +7,16 @@ using DzentoPOS2.WinForms.Helpers;
 using DzentoPOS2.WinForms.Services;
 using DzentoPOS2.WinForms.Services.Barcodes;
 using DzentoPOS2.WinForms.Themes;
+using Microsoft.Extensions.DependencyInjection;
+using DzentoPOS2.App.Services.Systems;
 
 namespace DzentoPOS2.WinForms.Forms.Settings;
 
 public partial class SettingsForm : LocalizableFormBase
 {
     private readonly ICurrentSettingsService _currentSettings;
+    private readonly IBackupService _backupService;
+    private readonly IServiceProvider _services;
 
     private readonly TableLayoutPanel _root;
     private readonly TableLayoutPanel _page;
@@ -24,6 +28,7 @@ public partial class SettingsForm : LocalizableFormBase
     private readonly SettingsCard _appearanceCard;
     private readonly SettingsCard _printingCard;
     private readonly SettingsCard _barcodeCard;
+    private readonly SettingsCard _backupCard;
     private readonly SettingsCard _aboutCard;
 
     private readonly PictureBox _picLogo;
@@ -50,6 +55,11 @@ public partial class SettingsForm : LocalizableFormBase
     private readonly ThemedComboBox _cmbCamera;
     private readonly ThemedButton _btnRefreshCameras;
 
+    private readonly Label _lblBackupHint;
+    private readonly Label _lblBackupFolder;
+    private readonly ThemedButton _btnBackupNow;
+    private readonly ThemedButton _btnRestoreBackup;
+
     private readonly Label _lblVersion;
 
     private readonly ThemedButton _btnSave;
@@ -67,12 +77,28 @@ public partial class SettingsForm : LocalizableFormBase
     private readonly List<ReceiptItem> _receipts = new();
     private readonly List<CameraItem> _cameras = new();
 
-    public SettingsForm(
+    // FormDesigner must not know about the extra constructor params; build
+        // via the service provider at runtime (NavigationService does). This
+        // parameterless ctor keeps the designer working if opened.
+        public SettingsForm()
+            : this(
+                Program.ServiceProvider?.GetRequiredService<ICurrentSettingsService>()!,
+                Program.ServiceProvider?.GetRequiredService<ILanguageService>()!,
+                Program.ServiceProvider?.GetRequiredService<IBackupService>()!,
+                Program.ServiceProvider!)
+        {
+        }
+
+        public SettingsForm(
         ICurrentSettingsService currentSettings,
-        ILanguageService languageService)
+        ILanguageService languageService,
+        IBackupService backupService,
+        IServiceProvider services)
         : base(languageService)
     {
         _currentSettings = currentSettings;
+        _backupService = backupService;
+        _services = services;
 
         BackColor = AppColors.Background;
         Size = new Size(940, 720);
@@ -283,6 +309,7 @@ public partial class SettingsForm : LocalizableFormBase
         _cards.Add(_appearanceCard);
         _cards.Add(_printingCard);
         _cards.Add(_barcodeCard);
+        _cards.Add(_backupCard);
         _cards.Add(_aboutCard);
 
         // ── Footer ─────────────────────────────────────────────────────────
@@ -397,6 +424,15 @@ public partial class SettingsForm : LocalizableFormBase
         _chkCameraBarcode.Text = AppStrings.EnableCameraScanning;
         _btnRefreshCameras.Text = AppStrings.Refresh;
 
+        _backupCard.Title = AppStrings.Backup;
+        _backupCard.Hint = AppStrings.BackupHint;
+        _lblBackupHint.Text = AppStrings.BackupHint;
+        _lblBackupFolder.Text = AppStrings.BackupFolder + ": " + _backupService.BackupDirectory;
+        _btnBackupNow.Text = AppStrings.BackupNow;
+        _btnRestoreBackup.Text = AppStrings.RestoreBackup;
+        _btnBackupNow.Text = AppStrings.BackupNow;
+        _btnRestoreBackup.Text = AppStrings.RestoreBackup;
+
         _aboutCard.Title = AppStrings.About;
         _lblVersion.Text = $"{AppStrings.Version}: {Application.ProductVersion}   |   DzentoPOS2";
 
@@ -420,7 +456,72 @@ public partial class SettingsForm : LocalizableFormBase
     {
         SelectValue(_cmbLanguage, _languages, l => l.Code, _settings.Language);
         SelectValue(_cmbCountry, _countries, c => c.Code, _settings.CountryCode);
+        _backupCard.Title = AppStrings.Backup;
+        _backupCard.Hint = AppStrings.BackupHint;
+        _lblBackupHint.Text = AppStrings.BackupHint;
+        _lblBackupFolder.Text = AppStrings.BackupFolder + ": " + _backupService.BackupDirectory;
+        _btnBackupNow.Text = AppStrings.BackupNow;
+        _btnRestoreBackup.Text = AppStrings.RestoreBackup;
+        _btnBackupNow.Text = AppStrings.BackupNow;
+        _btnRestoreBackup.Text = AppStrings.RestoreBackup;
         LayoutCards();
+    }
+
+    private async Task BackupNowAsync()
+    {
+        _btnBackupNow.Enabled = false;
+
+        try
+        {
+            await _backupService.CreateBackupAsync();
+            _backupService.ApplyRetention();
+            AppMessageBox.Success(AppStrings.BackupCreated);
+            _lblBackupFolder.Text = AppStrings.BackupFolder + ": " + _backupService.BackupDirectory;
+        }
+        catch (Exception ex)
+        {
+            AppMessageBox.Error(ex.Message);
+        }
+        finally
+        {
+            if (!IsDisposed)
+                _btnBackupNow.Enabled = true;
+        }
+    }
+
+    private async Task RestoreBackupAsync()
+    {
+        using var dialog = new OpenFileDialog
+        {
+            Title = AppStrings.RestoreBackup,
+            Filter = "Backup|*.db|All files|*.*",
+            InitialDirectory = Directory.Exists(_backupService.BackupDirectory)
+                ? _backupService.BackupDirectory
+                : Environment.CurrentDirectory
+        };
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+            return;
+
+        if (!AppMessageBox.Confirm(AppStrings.RestoreConfirm))
+            return;
+
+        try
+        {
+            await _backupService.ValidateBackupAsync(dialog.FileName);
+            await _backupService.RestoreAsync(dialog.FileName);
+
+            AppMessageBox.Success(AppStrings.DataSaved);
+
+            // The restored database replaces the live file; running
+            // services/cache cannot be trusted anymore, restart cleanly.
+            Application.Restart();
+            Environment.Exit(0);
+        }
+        catch (Exception ex)
+        {
+            AppMessageBox.Error(ex.Message);
+        }
     }
 
     // ── Data loading ───────────────────────────────────────────────────────

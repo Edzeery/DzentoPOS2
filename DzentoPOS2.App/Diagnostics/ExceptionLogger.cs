@@ -12,10 +12,7 @@ public static class ExceptionLogger
     private static readonly object Gate = new();
 
     public static string LogDirectory =>
-        Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "DzentoPOS2",
-            "logs");
+        DzentoPOS2.Core.Configuration.AppPaths.LogsFolder;
 
     /// <summary>
     /// Appends the exception (with full details) to today's log file and returns

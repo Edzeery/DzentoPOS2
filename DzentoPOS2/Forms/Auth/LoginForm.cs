@@ -401,7 +401,7 @@ namespace DzentoPOS2.WinForms.Forms.Auth
         {
             HeaderComboBoxStyle.Apply(comboBoxLang);
             comboBoxLang.Items = new[] { "العربية", "English", "Français" };
-          
+
             iconPictureBoxlanguage.BackColor = Color.Transparent;
             iconPictureBoxlanguage.IconColor = HeaderColors.Accent;
         }
@@ -465,7 +465,7 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             if (!ckbRememberMe.Checked)
                 CredentialStore.Delete();
         }
-         
+
 
         private async void ButtonLogin_Click(object sender, EventArgs e)
         {
@@ -566,8 +566,8 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             //combo.Add(items.ToArray());
 
 
-             comboBoxLang.ItemHeight = 30;
-             comboBoxLang.MaxDropDownItems = 6; 
+            comboBoxLang.ItemHeight = 30;
+            comboBoxLang.MaxDropDownItems = 6;
         }
 
         private void comboBoxLang_SelectedIndexChanged(object sender, EventArgs e)
@@ -588,6 +588,11 @@ namespace DzentoPOS2.WinForms.Forms.Auth
 
             FormLocalizationHelper.ApplyDirection(this, _languageService);
             LoadText();
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }

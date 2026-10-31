@@ -1245,4 +1245,10 @@
   <data name="KpiSuffixBillion" xml:space="preserve">
     <value>B</value>
   </data>
+  <data name="RestoreBackup" xml:space="preserve">
+    <value>Restore backup</value>
+  </data>
+  <data name="RestoreConfirm" xml:space="preserve">
+    <value>The current data will be replaced by the selected backup and the application will restart. Continue?</value>
+  </data>
 </root>

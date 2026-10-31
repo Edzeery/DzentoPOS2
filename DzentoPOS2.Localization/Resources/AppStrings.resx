@@ -1245,4 +1245,28 @@
   <data name="KpiSuffixBillion" xml:space="preserve">
     <value>B</value>
   </data>
+  <data name="Backup" xml:space="preserve">
+    <value>Backup</value>
+  </data>
+  <data name="BackupHint" xml:space="preserve">
+    <value>A consistent snapshot of the database. A backup is also taken automatically once a day when the application closes, and the last seven are kept.</value>
+  </data>
+  <data name="BackupNow" xml:space="preserve">
+    <value>Back up now</value>
+  </data>
+  <data name="RestoreBackup" xml:space="preserve">
+    <value>Restore backup</value>
+  </data>
+  <data name="BackupFolder" xml:space="preserve">
+    <value>Backup folder</value>
+  </data>
+  <data name="BackupCreated" xml:space="preserve">
+    <value>Backup created</value>
+  </data>
+  <data name="BackupFileInvalid" xml:space="preserve">
+    <value>The selected file is not a valid backup</value>
+  </data>
+  <data name="RestoreConfirm" xml:space="preserve">
+    <value>The current data will be replaced by the selected backup and the application will restart. Continue?</value>
+  </data>
 </root>

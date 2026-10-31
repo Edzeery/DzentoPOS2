@@ -15,15 +15,26 @@ public static class StoreBranding
 
     /// <summary>Folder that stores the imported logo.</summary>
     public static string LogoDirectory =>
-        Path.Combine(Application.StartupPath, "branding");
+        DzentoPOS2.Core.Configuration.AppPaths.BrandingFolder;
 
     /// <summary>Full path of the stored logo file.</summary>
     public static string LogoFile =>
         Path.Combine(LogoDirectory, "store-logo.png");
 
     /// <summary>True when a custom logo was imported by the user.</summary>
-    public static bool HasCustomLogo =>
-        File.Exists(LogoFile);
+    public static bool HasCustomLogo
+    {
+        get
+        {
+            // One-time copy of a logo an older version kept next to the
+            // executable; the old copy is left in place.
+            DzentoPOS2.Core.Configuration.AppPaths.MigrateLegacyFile(
+                Path.Combine(Application.StartupPath, "branding", "store-logo.png"),
+                LogoFile);
+
+            return File.Exists(LogoFile);
+        }
+    }
 
     /// <summary>
     /// Imports an image as the store logo. The image is scaled down to a

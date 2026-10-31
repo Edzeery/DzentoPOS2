@@ -1,4 +1,5 @@
-﻿using DzentoPOS2.Data.Context;
+﻿using DzentoPOS2.Core.Configuration;
+using DzentoPOS2.Data.Context;
 using DzentoPOS2.Data.Repositories.Accounting;
 using DzentoPOS2.Data.Repositories.Accounting.Interfaces;
 using DzentoPOS2.Data.Repositories.Businesses;
@@ -27,9 +28,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using DzentoPOS2.Data.Interceptors;
 
 namespace DzentoPOS2.Data
 {
@@ -48,6 +47,9 @@ namespace DzentoPOS2.Data
                 options.UseSqlite(
                     ResolveSqliteConnectionString(connectionString));
 
+                options.AddInterceptors(
+                    SqliteConnectionInterceptor.Instance);
+
 #if DEBUG
                 options.EnableSensitiveDataLogging();
 
@@ -62,6 +64,9 @@ namespace DzentoPOS2.Data
 
                 options.UseSqlite(
                     ResolveSqliteConnectionString(connectionString));
+
+                options.AddInterceptors(
+                    SqliteConnectionInterceptor.Instance);
 
 #if DEBUG
                 options.EnableSensitiveDataLogging();
@@ -214,10 +219,11 @@ namespace DzentoPOS2.Data
 
         /// <summary>
         /// Makes a relative SQLite <c>Data Source</c> absolute against the
-        /// application base directory. This keeps the database next to the
-        /// executable regardless of the process working directory (which differs
-        /// between launching from the output folder, from Visual Studio or from a
-        /// shortcut), so every launch uses the same file.
+        /// per-user data folder (<c>%LocalAppData%\DzentoPOS2\Database</c>) so
+        /// the database is never written inside the installation directory
+        /// (which may be read-only, and must survive an upgrade).
+        /// A database left next to the executable by an older version is copied
+        /// there once, verified, and the original is kept.
         /// </summary>
         private static string ResolveSqliteConnectionString(string? connectionString)
         {
@@ -239,13 +245,16 @@ namespace DzentoPOS2.Data
             if (string.IsNullOrWhiteSpace(value) || Path.IsPathRooted(value))
                 return connectionString;
 
-            string absolute = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, value));
+            AppPaths.EnsureCreated();
 
-            // The folder of the database is created when it is missing, so a
-            // fresh installation can start without any manual step.
-            string? folder = Path.GetDirectoryName(absolute);
-            if (!string.IsNullOrEmpty(folder) && !Directory.Exists(folder))
-                Directory.CreateDirectory(folder);
+            string legacy = Path.GetFullPath(
+                Path.Combine(AppContext.BaseDirectory, value));
+
+            string absolute = Path.Combine(
+                AppPaths.DatabaseFolder,
+                Path.GetFileName(value));
+
+            AppPaths.MigrateLegacyDatabase(legacy, absolute);
 
             return valueEnd < 0
                 ? connectionString.Substring(0, valueStart) + absolute

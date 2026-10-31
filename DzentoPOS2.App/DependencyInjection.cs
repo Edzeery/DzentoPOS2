@@ -35,6 +35,7 @@ namespace DzentoPOS2.App
             services.AddSingleton<IBusinessClock, BusinessClock>();
             services.AddScoped<IStoreContextService, StoreContextService>();
             services.AddScoped<IDocumentNumberService, DocumentNumberService>();
+            services.AddScoped<IBackupService, BackupService>();
 
             services.AddScoped<IAuthService, AuthService>();
 

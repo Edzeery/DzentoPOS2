@@ -12,10 +12,15 @@
 		<FileVersion>1.0.0.0</FileVersion>
 		<InformationalVersion>1.0.0</InformationalVersion>
 		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+		<ApplicationIcon>FMZS_logo.ico</ApplicationIcon>
 	</PropertyGroup>
 
 	<ItemGroup>
 	  <None Remove="Database\DzentoPOS.db" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="FMZS_logo.ico" />
 	</ItemGroup>
 
 	<ItemGroup>

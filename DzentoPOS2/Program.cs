@@ -21,6 +21,10 @@ internal static class Program
 
         RegisterGlobalExceptionHandlers();
 
+        // Every writable location (database, preferences, theme, logs,
+        // backups) lives under %LocalAppData%\DzentoPOS2.
+        DzentoPOS2.Core.Configuration.AppPaths.EnsureCreated();
+
         var services = new ServiceCollection();
 
         IConfiguration configuration =

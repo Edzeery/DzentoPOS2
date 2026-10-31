@@ -10,9 +10,7 @@ namespace DzentoPOS2.WinForms.Themes
     public static class ThemeManager
     {
         private static readonly string ThemeFile =
-            Path.Combine(
-             Application.StartupPath,
-            "theme.config");
+            DzentoPOS2.Core.Configuration.AppPaths.ThemeFile;
         // =========================
         // Mode
         // =========================
@@ -109,6 +107,8 @@ namespace DzentoPOS2.WinForms.Themes
         {
             try
             {
+                DzentoPOS2.Core.Configuration.AppPaths.EnsureCreated();
+
                 File.WriteAllText(
                     ThemeFile,
                     Mode.ToString());
@@ -121,6 +121,15 @@ namespace DzentoPOS2.WinForms.Themes
 
         public static void LoadTheme()
         {
+            if (!File.Exists(ThemeFile))
+            {
+                // One-time move of a theme file an older version kept next to
+                // the executable; the old copy is left in place.
+                DzentoPOS2.Core.Configuration.AppPaths.MigrateLegacyFile(
+                    Path.Combine(Application.StartupPath, "theme.config"),
+                    ThemeFile);
+            }
+
             if (!File.Exists(ThemeFile))
                 return;
 

@@ -30,6 +30,22 @@ All notable changes to the DzentoPOS2 project are documented in this file.
   - re-seed does not force a change after the password was replaced.
 - Build **0 errors / 21 warnings** (all `NU1701`), Unit **84/84**, Integration **51/51**, `dotnet ef migrations has-pending-model-changes` clean, application starts with scope validation enabled and no logged exceptions (25 s run).
 
+## [Unreleased] — 2026-10-29 (G1.4 data paths, PRAGMA interceptor, online backup)
+
+### Added
+
+#### G1.4 — Data paths, PRAGMA interceptor, online backup (E4/E5)
+
+- **Per-user data paths** — new `AppPaths` (`DzentoPOS2.Core/Configuration/AppPaths.cs`) relocates the SQLite DB, `user-settings.json`, theme file, store branding and logs to `%LocalAppData%\DzentoPOS2\`. One-time migration from the legacy BaseDirectory copies + verifies (length + contents) without overwriting or moving the original; the `-wal` sidecar is included. `UserPreferencesService` reads from `AppPaths.UserSettingsPath`, `ThemeManager` stores `theme.json`, `StoreBranding` reads/writes `branding.json`, `ExceptionLogger` writes to `logs\` — all under `%LocalAppData%\DzentoPOS2\`.
+- **PRAGMA interceptor** — new `SqliteConnectionInterceptor` (`DzentoPOS2.Data/Interceptors/SqliteConnectionInterceptor.cs`) sets `foreign_keys=ON`, `busy_timeout=5000`, `synchronous=NORMAL` on `ConnectionOpened`; the `SaveChangesAsync` PRAGMA override was removed from `AppDbContext`. `SqliteStartup` (`DzentoPOS2.Data/SqliteStartup.cs`) sets `journal_mode=WAL` once at startup via `EnsureWalModeAsync` outside transactions, called from `DbInitializer` and `Program`.
+- **Online backup** — new `BackupService` (`DzentoPOS2.App/Services/Systems/BackupService.cs`) uses the SQLite online backup API (`SqliteConnection.BackupDatabase`, not raw file copy) with retention of the last 7 backups, automatic backup on close (max once per day), backup-file validation before restore, and restore with a safety backup + validation + application restart. `SettingsForm` gained a Backup/Restore card (`CreateBackupAsync`, `RestoreAsync`, `ApplyRetention`, `ValidateBackupAsync`).
+- **Localization keys** — added `Backup`, `BackupFolder`, `BackupNow`, `BackupFileInvalid`, `BackupHint`, `BackupCreated`, `RestoreBackup`, `RestoreConfirm` to base/`ar`/`en`/`fr` + `AppStrings.Designer.cs` (parity diff 0).
+
+### Verified
+
+- `LocalizationParityTests.Every_culture_has_the_same_keys_as_the_base` — base vs ar/en/fr diff = 0.
+- Build **0 errors / 21 warnings** (all `NU1701`), Unit **84/84**, Integration **51/51**, `dotnet ef migrations has-pending-model-changes` clean.
+
 ## [Unreleased] — 2026-10-29 (G1.2 scope per page)
 
 ### Fixed

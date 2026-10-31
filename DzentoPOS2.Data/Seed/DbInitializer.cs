@@ -18,6 +18,18 @@ namespace DzentoPOS2.Data.Seed
                 scope.ServiceProvider
                     .GetRequiredService<AppDbContext>();
 
+            var logger = scope.ServiceProvider
+                .GetService<ILoggerFactory>()
+                ?.CreateLogger("DzentoPOS2.Data.Seed.DbInitializer");
+
+            // WAL is a property of the file, not of a connection, and it cannot
+            // be switched inside a transaction. Set it once, before any work.
+            string journalMode = await SqliteStartup.EnsureWalModeAsync(
+                context.Database.GetDbConnection());
+
+            logger?.LogInformation(
+                "SQLite journal mode is {JournalMode}.", journalMode);
+
             // Repair the physical schema before the migrations run. This makes
             // upgrades deterministic for every starting state (fresh DB, DB at
             // AddCashSessions, DB whose history still contains the removed E3

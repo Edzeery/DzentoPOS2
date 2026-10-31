@@ -1245,4 +1245,10 @@
   <data name="KpiSuffixBillion" xml:space="preserve">
     <value>Md</value>
   </data>
+  <data name="RestoreBackup" xml:space="preserve">
+    <value>Restaurer la sauvegarde</value>
+  </data>
+  <data name="RestoreConfirm" xml:space="preserve">
+    <value>Les donnأ©es actuelles seront remplacأ©es par la sauvegarde sأ©lectionnأ©e et l'application redأ©marrera. Continuer ?</value>
+  </data>
 </root>

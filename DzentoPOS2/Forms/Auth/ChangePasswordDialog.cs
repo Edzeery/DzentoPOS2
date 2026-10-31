@@ -13,7 +13,7 @@ namespace DzentoPOS2.WinForms.Forms.Auth;
 /// seeded/assigned password (<see cref="App.Session.UserSession.MustChangePassword"/>).
 /// The shell is not opened until the password has been changed.
 /// </summary>
-public sealed class ChangePasswordDialog : Form
+public sealed partial class ChangePasswordDialog : Form
 {
     private readonly IAuthService _authService;
     private readonly IValidator<ChangePasswordDto> _validator;
@@ -21,15 +21,15 @@ public sealed class ChangePasswordDialog : Form
     private readonly Guid _userId;
     private bool _languageSubscribed;
 
-    private readonly Label _lblCurrent;
-    private readonly Label _lblNew;
-    private readonly Label _lblConfirm;
-    private readonly Label _lblHint;
-    private readonly TextBox _txtCurrent;
-    private readonly TextBox _txtNew;
-    private readonly TextBox _txtConfirm;
-    private readonly Button _btnSave;
-    private readonly Button _btnCancel;
+    private Label _lblCurrent = null!;
+    private Label _lblNew = null!;
+    private Label _lblConfirm = null!;
+    private Label _lblHint = null!;
+    private TextBox _txtCurrent = null!;
+    private TextBox _txtNew = null!;
+    private TextBox _txtConfirm = null!;
+    private Button _btnSave = null!;
+    private Button _btnCancel = null!;
 
     public ChangePasswordDialog(
         IAuthService authService,
@@ -42,46 +42,9 @@ public sealed class ChangePasswordDialog : Form
         _languageService = languageService;
         _userId = userId;
 
-        Size = new Size(560, 400);
-        StartPosition = FormStartPosition.CenterScreen;
-        FormBorderStyle = FormBorderStyle.FixedDialog;
-        MaximizeBox = false;
-        MinimizeBox = false;
-        BackColor = AppColors.Surface;
+        InitializeComponent();
 
-        var lbl = (int y) => new Label
-        {
-            Location = new Point(24, y),
-            Size = new Size(150, 28),
-            Font = new Font("Segoe UI", 10F),
-            TextAlign = ContentAlignment.MiddleLeft
-        };
-
-        var passwordBox = (int y) => new TextBox
-        {
-            Location = new Point(190, y),
-            Size = new Size(330, 28),
-            Font = new Font("Segoe UI", 10F),
-            UseSystemPasswordChar = true
-        };
-
-        _lblHint = new Label
-        {
-            Location = new Point(24, 16),
-            Size = new Size(496, 40),
-            Font = new Font("Segoe UI", 9.5F),
-            ForeColor = AppColors.InkMuted
-        };
-
-        _lblCurrent = lbl(70);
-        _txtCurrent = passwordBox(70);
-
-        _lblNew = lbl(114);
-        _txtNew = passwordBox(114);
-
-        _lblConfirm = lbl(158);
-        _txtConfirm = passwordBox(158);
-
+        // Apply themed buttons after designer layout.
         _btnSave = ButtonFactory.Primary(AppStrings.Save);
         _btnSave.Location = new Point(190, 214);
         _btnSave.Size = new Size(160, 40);
@@ -94,15 +57,6 @@ public sealed class ChangePasswordDialog : Form
 
         AcceptButton = _btnSave;
         CancelButton = _btnCancel;
-
-        Controls.AddRange(new Control[]
-        {
-            _lblHint,
-            _lblCurrent, _txtCurrent,
-            _lblNew, _txtNew,
-            _lblConfirm, _txtConfirm,
-            _btnSave, _btnCancel
-        });
 
         LoadText();
 

@@ -1260,4 +1260,28 @@
   <data name="PasswordMustDiffer" xml:space="preserve">
     <value>يجب أن تختلف كلمة المرور الجديدة عن الحالية.</value>
   </data>
+  <data name="CameraSource" xml:space="preserve">
+    <value>مصدر الكاميرا</value>
+  </data>
+  <data name="CameraSourceLocal" xml:space="preserve">
+    <value>كاميرا محلية</value>
+  </data>
+  <data name="CameraSourceIp" xml:space="preserve">
+    <value>كاميرا IP (رابط MJPEG)</value>
+  </data>
+  <data name="CameraUrl" xml:space="preserve">
+    <value>رابط الكاميرا</value>
+  </data>
+  <data name="CameraUrlInvalid" xml:space="preserve">
+    <value>أدخل رابط http/https صالح (مثال: http://192.168.1.20:4747/video).</value>
+  </data>
+  <data name="TestConnection" xml:space="preserve">
+    <value>اختبار الاتصال</value>
+  </data>
+  <data name="ConnectionSuccess" xml:space="preserve">
+    <value>الاتصال ناجح.</value>
+  </data>
+  <data name="ConnectionFailed" xml:space="preserve">
+    <value>فشل الاتصال.</value>
+  </data>
 </root>

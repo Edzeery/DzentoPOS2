@@ -1260,4 +1260,28 @@
   <data name="PasswordMustDiffer" xml:space="preserve">
     <value>New password must differ from the current one.</value>
   </data>
+  <data name="CameraSource" xml:space="preserve">
+    <value>Camera source</value>
+  </data>
+  <data name="CameraSourceLocal" xml:space="preserve">
+    <value>Local camera</value>
+  </data>
+  <data name="CameraSourceIp" xml:space="preserve">
+    <value>IP camera (MJPEG URL)</value>
+  </data>
+  <data name="CameraUrl" xml:space="preserve">
+    <value>Camera URL</value>
+  </data>
+  <data name="CameraUrlInvalid" xml:space="preserve">
+    <value>Enter a valid http/https URL (e.g. http://192.168.1.20:4747/video).</value>
+  </data>
+  <data name="TestConnection" xml:space="preserve">
+    <value>Test connection</value>
+  </data>
+  <data name="ConnectionSuccess" xml:space="preserve">
+    <value>Connection successful.</value>
+  </data>
+  <data name="ConnectionFailed" xml:space="preserve">
+    <value>Connection failed.</value>
+  </data>
 </root>

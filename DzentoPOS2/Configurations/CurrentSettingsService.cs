@@ -79,6 +79,8 @@ public sealed class CurrentSettingsService : ICurrentSettingsService
         Landscape = source.Landscape,
         ReceiptWidthMm = source.ReceiptWidthMm,
         CameraBarcodeEnabled = source.CameraBarcodeEnabled,
-        BarcodeCameraDevice = source.BarcodeCameraDevice
+        BarcodeCameraDevice = source.BarcodeCameraDevice,
+        BarcodeCameraSource = source.BarcodeCameraSource,
+        BarcodeCameraUrl = source.BarcodeCameraUrl
     };
 }

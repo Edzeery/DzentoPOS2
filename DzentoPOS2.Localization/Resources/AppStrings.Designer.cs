@@ -3542,5 +3542,52 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("Yes", resourceCulture);
             }
         }
+        public static string CameraSource {
+            get {
+                return ResourceManager.GetString("CameraSource", resourceCulture);
+            }
+        }
+
+        public static string CameraSourceLocal {
+            get {
+                return ResourceManager.GetString("CameraSourceLocal", resourceCulture);
+            }
+        }
+
+        public static string CameraSourceIp {
+            get {
+                return ResourceManager.GetString("CameraSourceIp", resourceCulture);
+            }
+        }
+
+        public static string CameraUrl {
+            get {
+                return ResourceManager.GetString("CameraUrl", resourceCulture);
+            }
+        }
+
+        public static string CameraUrlInvalid {
+            get {
+                return ResourceManager.GetString("CameraUrlInvalid", resourceCulture);
+            }
+        }
+
+        public static string TestConnection {
+            get {
+                return ResourceManager.GetString("TestConnection", resourceCulture);
+            }
+        }
+
+        public static string ConnectionSuccess {
+            get {
+                return ResourceManager.GetString("ConnectionSuccess", resourceCulture);
+            }
+        }
+
+        public static string ConnectionFailed {
+            get {
+                return ResourceManager.GetString("ConnectionFailed", resourceCulture);
+            }
+        }
     }
 }

@@ -15,7 +15,7 @@ namespace DzentoPOS2.WinForms.Forms.Settings;
 public partial class SettingsForm : LocalizableFormBase
 {
     private readonly ICurrentSettingsService _currentSettings;
-    private readonly IBackupService _backupService;
+    private readonly IBackupService? _backupService;
     private readonly IServiceProvider _services;
 
     private readonly TableLayoutPanel _root;
@@ -291,6 +291,50 @@ public partial class SettingsForm : LocalizableFormBase
             new SettingsField("cameraDevice", AppStrings.CameraDevice, _cmbCamera));
         _barcodeCard.AddControl(_btnRefreshCameras);
 
+        // ── Backup & Restore ───────────────────────────────────────────────
+        _backupCard = new SettingsCard(AppStrings.Backup, AppStrings.SettingsDescription);
+
+        _lblBackupHint = new Label
+        {
+            Font = AppStyle.BodyFont,
+            ForeColor = AppColors.InkMuted,
+            AutoSize = true,
+            MaximumSize = new Size(620, 0),
+            UseMnemonic = false
+        };
+
+        _lblBackupFolder = new Label
+        {
+            Font = AppStyle.BodyFont,
+            ForeColor = AppColors.Ink,
+            AutoSize = true,
+            MaximumSize = new Size(620, 0),
+            UseMnemonic = false
+        };
+
+        _btnBackupNow = ButtonFactory.Primary(AppStrings.BackupNow, ButtonFactory.ButtonSize.Small);
+        _btnBackupNow.Click += async (_, _) => await BackupNowAsync();
+        _btnBackupNow.Margin = new Padding(0, 0, 8, 0);
+
+        _btnRestoreBackup = ButtonFactory.Neutral(AppStrings.RestoreBackup, ButtonFactory.ButtonSize.Small);
+        _btnRestoreBackup.Click += async (_, _) => await RestoreBackupAsync();
+
+        var backupButtons = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = true,
+            AutoSize = false,
+            BackColor = Color.Transparent,
+            Margin = Padding.Empty
+        };
+        backupButtons.Controls.Add(_btnBackupNow);
+        backupButtons.Controls.Add(_btnRestoreBackup);
+
+        _backupCard.AddControl(_lblBackupHint);
+        _backupCard.AddControl(_lblBackupFolder);
+        _backupCard.AddControl(backupButtons);
+
         // ── About ──────────────────────────────────────────────────────────
         _aboutCard = new SettingsCard(AppStrings.About, AppStrings.SettingsDescription);
 
@@ -427,7 +471,7 @@ public partial class SettingsForm : LocalizableFormBase
         _backupCard.Title = AppStrings.Backup;
         _backupCard.Hint = AppStrings.BackupHint;
         _lblBackupHint.Text = AppStrings.BackupHint;
-        _lblBackupFolder.Text = AppStrings.BackupFolder + ": " + _backupService.BackupDirectory;
+        _lblBackupFolder.Text = AppStrings.BackupFolder + ": " + (_backupService?.BackupDirectory ?? string.Empty);
         _btnBackupNow.Text = AppStrings.BackupNow;
         _btnRestoreBackup.Text = AppStrings.RestoreBackup;
         _btnBackupNow.Text = AppStrings.BackupNow;
@@ -459,7 +503,7 @@ public partial class SettingsForm : LocalizableFormBase
         _backupCard.Title = AppStrings.Backup;
         _backupCard.Hint = AppStrings.BackupHint;
         _lblBackupHint.Text = AppStrings.BackupHint;
-        _lblBackupFolder.Text = AppStrings.BackupFolder + ": " + _backupService.BackupDirectory;
+        _lblBackupFolder.Text = AppStrings.BackupFolder + ": " + (_backupService?.BackupDirectory ?? string.Empty);
         _btnBackupNow.Text = AppStrings.BackupNow;
         _btnRestoreBackup.Text = AppStrings.RestoreBackup;
         _btnBackupNow.Text = AppStrings.BackupNow;
@@ -469,6 +513,8 @@ public partial class SettingsForm : LocalizableFormBase
 
     private async Task BackupNowAsync()
     {
+        if (_backupService is null) return;
+
         _btnBackupNow.Enabled = false;
 
         try
@@ -476,7 +522,7 @@ public partial class SettingsForm : LocalizableFormBase
             await _backupService.CreateBackupAsync();
             _backupService.ApplyRetention();
             AppMessageBox.Success(AppStrings.BackupCreated);
-            _lblBackupFolder.Text = AppStrings.BackupFolder + ": " + _backupService.BackupDirectory;
+            _lblBackupFolder.Text = AppStrings.BackupFolder + ": " + (_backupService?.BackupDirectory ?? string.Empty);
         }
         catch (Exception ex)
         {
@@ -491,11 +537,13 @@ public partial class SettingsForm : LocalizableFormBase
 
     private async Task RestoreBackupAsync()
     {
+        if (_backupService is null) return;
+
         using var dialog = new OpenFileDialog
         {
             Title = AppStrings.RestoreBackup,
             Filter = "Backup|*.db|All files|*.*",
-            InitialDirectory = Directory.Exists(_backupService.BackupDirectory)
+            InitialDirectory = _backupService is not null && Directory.Exists(_backupService.BackupDirectory)
                 ? _backupService.BackupDirectory
                 : Environment.CurrentDirectory
         };

@@ -15,19 +15,12 @@ namespace DzentoPOS2.App.Services.Identity
     public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;
-
         private readonly IUserRoleRepository _userRoleRepository;
-
         private readonly IRoleRepository _roleRepository;
-
         private readonly IUnitOfWork _unitOfWork;
-
         private readonly ICurrentUserService _currentUser;
-
         private readonly IPermissionService _permissionService;
-
         private readonly IAuditService _auditService;
-
         private readonly ILogger<AuthService> _logger;
 
         public AuthService(
@@ -72,10 +65,6 @@ namespace DzentoPOS2.App.Services.Identity
 
                 bool isPasswordValid = PasswordHelper.Verify(dto.Password, user.PasswordHash);
 
-                // Legacy accounts (created before password hashing was introduced)
-                // stored the password in clear text, so BCrypt.Verify always fails
-                // for them. Accept the match once and upgrade the stored value to a
-                // hash so the account keeps working from then on.
                 if (!isPasswordValid && !PasswordHelper.IsHashed(user.PasswordHash))
                 {
                     if (string.Equals(user.PasswordHash, dto.Password, StringComparison.Ordinal))
@@ -142,8 +131,6 @@ namespace DzentoPOS2.App.Services.Identity
                     MustChangePassword = response.MustChangePassword
                 });
 
-                // The cache is an optimization: a failure here must not block a
-                // valid login, but it must be visible in the log.
                 try
                 {
                     await _permissionService.RefreshCacheAsync(response.UserId);
@@ -167,8 +154,6 @@ namespace DzentoPOS2.App.Services.Identity
                         "SuperAdmin",
                         StringComparison.OrdinalIgnoreCase))
                 {
-                    // The full-access role bypasses the permission table; keep
-                    // one auditable record that this session could do anything.
                     await _auditService.LogAsync(
                         "SuperAdminBypass",
                         "Role",
@@ -216,9 +201,6 @@ namespace DzentoPOS2.App.Services.Identity
         {
             try
             {
-                // Read the tracked instance: the same page scope may already be
-                // tracking this user (the login call did), and attaching a
-                // detached copy with the same key would throw.
                 var user = await _userRepository
                     .GetWithRolesAsync(dto.UserId);
 
@@ -236,12 +218,17 @@ namespace DzentoPOS2.App.Services.Identity
                 }
 
                 user.PasswordHash = PasswordHelper.Hash(dto.NewPassword);
-
-                // The account no longer uses a seeded/assigned password.
                 user.MustChangePassword = false;
 
-                _userRepository.Update(user);
+                var keyResult = await GenerateRecoveryKeyInternalAsync(user);
+                if (!keyResult.Success)
+                {
+                    _logger.LogWarning(
+                        "Could not generate recovery key: {Error}",
+                        keyResult.Message);
+                }
 
+                _userRepository.Update(user);
                 await _unitOfWork.SaveChangesAsync();
 
                 await _auditService.LogAsync(
@@ -254,7 +241,8 @@ namespace DzentoPOS2.App.Services.Identity
             }
             catch (Exception ex)
             {
-                return Result.Failed(ex.Message);
+                _logger.LogError(ex, "ChangePasswordAsync failed.");
+                return Result.Failed(AppStrings.ErrorMsg);
             }
         }
 
@@ -290,7 +278,7 @@ namespace DzentoPOS2.App.Services.Identity
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to generate recovery key.");
-                return Result<string>.Failed(ex.Message);
+                return Result<string>.Failed(AppStrings.ErrorMsg);
             }
         }
 
@@ -319,7 +307,7 @@ namespace DzentoPOS2.App.Services.Identity
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to generate recovery key.");
-                return Result<string>.Failed(ex.Message);
+                return Result<string>.Failed(AppStrings.ErrorMsg);
             }
         }
 
@@ -335,7 +323,7 @@ namespace DzentoPOS2.App.Services.Identity
 
                 if (user is null || string.IsNullOrWhiteSpace(user.RecoveryKeyHash))
                 {
-                    RecordFailedAttempt(userName);
+                    await RecordFailedAttemptAsync(user, userName);
                     await _auditService.LogAsync(
                         "RecoveryKeyFailed",
                         "User",
@@ -344,14 +332,22 @@ namespace DzentoPOS2.App.Services.Identity
                     return Result<string>.Failed(AppStrings.InvalidRecoveryKey);
                 }
 
-                if (IsLockedOut(userName))
+                if (user.RecoveryLockedUntilUtc.HasValue &&
+                    user.RecoveryLockedUntilUtc.Value > DateTime.UtcNow)
                 {
                     return Result<string>.Failed(AppStrings.RecoveryKeyLockedOut);
                 }
 
+                if (user.RecoveryLockedUntilUtc.HasValue &&
+                    user.RecoveryLockedUntilUtc.Value <= DateTime.UtcNow)
+                {
+                    user.RecoveryFailedCount = 0;
+                    user.RecoveryLockedUntilUtc = null;
+                }
+
                 if (!PasswordHelper.Verify(recoveryKey, user.RecoveryKeyHash))
                 {
-                    RecordFailedAttempt(userName);
+                    await RecordFailedAttemptAsync(user, userName);
                     await _auditService.LogAsync(
                         "RecoveryKeyFailed",
                         "User",
@@ -381,10 +377,11 @@ namespace DzentoPOS2.App.Services.Identity
                         keyResult.Message);
                 }
 
+                user.RecoveryFailedCount = 0;
+                user.RecoveryLockedUntilUtc = null;
+
                 _userRepository.Update(user);
                 await _unitOfWork.SaveChangesAsync();
-
-                ClearLockout(userName);
 
                 await _auditService.LogAsync(
                     "RecoveryKeySuccess",
@@ -398,138 +395,30 @@ namespace DzentoPOS2.App.Services.Identity
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to reset password with recovery key.");
-                return Result<string>.Failed(ex.Message);
+                return Result<string>.Failed(AppStrings.ErrorMsg);
             }
         }
 
-        // ── Lockout persistence (file-based, survives restarts) ──────────
-
-        private static string LockoutFilePath =>
-            Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "DzentoPOS2",
-                "recovery-lockout.json");
-
-        private static readonly object _lockoutLock = new();
-
-        private static void RecordFailedAttempt(string userName)
+        private async Task RecordFailedAttemptAsync(User? user, string userName)
         {
-            lock (_lockoutLock)
+            if (user is null) return;
+
+            user.RecoveryFailedCount++;
+            user.RecoveryLockedUntilUtc = null;
+            if (user.RecoveryFailedCount >= 5)
             {
-                try
-                {
-                    var state = LoadLockoutState();
-                    if (!state.TryGetValue(userName, out var info))
-                    {
-                        info = new LockoutInfo();
-                        state[userName] = info;
-                    }
-                    info.FailedCount++;
-                    info.LastFailedUtc = DateTime.UtcNow;
-                    if (info.FailedCount >= 5)
-                    {
-                        info.LockedUntilUtc = DateTime.UtcNow.AddMinutes(15);
-                    }
-                    SaveLockoutState(state);
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine(
-                        $"Failed to persist lockout state: {ex.Message}");
-                }
+                user.RecoveryLockedUntilUtc = DateTime.UtcNow.AddMinutes(15);
             }
-        }
 
-        private static void ClearLockout(string userName)
-        {
-            lock (_lockoutLock)
-            {
-                try
-                {
-                    var state = LoadLockoutState();
-                    state.Remove(userName);
-                    SaveLockoutState(state);
-                }
-                catch
-                {
-                    // Best effort.
-                }
-            }
-        }
-
-        private static bool IsLockedOut(string userName)
-        {
-            lock (_lockoutLock)
-            {
-                try
-                {
-                    var state = LoadLockoutState();
-                    if (state.TryGetValue(userName, out var info))
-                    {
-                        if (info.LockedUntilUtc.HasValue &&
-                            info.LockedUntilUtc.Value > DateTime.UtcNow)
-                        {
-                            return true;
-                        }
-                        if (info.LockedUntilUtc.HasValue &&
-                            info.LockedUntilUtc.Value <= DateTime.UtcNow)
-                        {
-                            info.FailedCount = 0;
-                            info.LockedUntilUtc = null;
-                            SaveLockoutState(state);
-                        }
-                    }
-                }
-                catch
-                {
-                    // Best effort.
-                }
-                return false;
-            }
-        }
-
-        private static Dictionary<string, LockoutInfo> LoadLockoutState()
-        {
+            _userRepository.Update(user);
             try
             {
-                if (File.Exists(LockoutFilePath))
-                {
-                    var json = File.ReadAllText(LockoutFilePath);
-                    return System.Text.Json.JsonSerializer
-                        .Deserialize<Dictionary<string, LockoutInfo>>(json)
-                        ?? new Dictionary<string, LockoutInfo>();
-                }
+                await _unitOfWork.SaveChangesAsync();
             }
-            catch
+            catch (Exception ex)
             {
-                // Corrupt file — start fresh.
+                _logger.LogWarning(ex, "Failed to persist recovery lockout state.");
             }
-            return new Dictionary<string, LockoutInfo>();
-        }
-
-        private static void SaveLockoutState(Dictionary<string, LockoutInfo> state)
-        {
-            try
-            {
-                var dir = Path.GetDirectoryName(LockoutFilePath);
-                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-                {
-                    Directory.CreateDirectory(dir);
-                }
-                var json = System.Text.Json.JsonSerializer.Serialize(state);
-                File.WriteAllText(LockoutFilePath, json);
-            }
-            catch
-            {
-                // Best effort.
-            }
-        }
-
-        private sealed class LockoutInfo
-        {
-            public int FailedCount { get; set; }
-            public DateTime? LastFailedUtc { get; set; }
-            public DateTime? LockedUntilUtc { get; set; }
         }
     }
 }

@@ -32,6 +32,17 @@ namespace DzentoPOS2.Core.Entities.Identity
         /// </summary>
         public string? RecoveryKeyHash { get; set; }
 
+        /// <summary>
+        /// Number of consecutive failed recovery-key attempts. Reset on success.
+        /// </summary>
+        public int RecoveryFailedCount { get; set; }
+
+        /// <summary>
+        /// UTC time until which recovery-key attempts are locked out.
+        /// Null means not locked.
+        /// </summary>
+        public DateTime? RecoveryLockedUntilUtc { get; set; }
+
         public Guid? BranchId { get; set; }
 
         public virtual Branch? Branch { get; set; }

@@ -33,6 +33,11 @@ namespace DzentoPOS2.Data.Configurations.Identity
             builder.Property(x => x.RecoveryKeyHash)
                 .HasMaxLength(100);
 
+            builder.Property(x => x.RecoveryFailedCount)
+                .HasDefaultValue(0);
+
+            builder.Property(x => x.RecoveryLockedUntilUtc);
+
             builder.HasIndex(x => x.UserName)
                 .IsUnique();
 

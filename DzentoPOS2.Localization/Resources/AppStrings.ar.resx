@@ -1284,4 +1284,28 @@
   <data name="ConnectionFailed" xml:space="preserve">
     <value>فشل الاتصال.</value>
   </data>
+  <data name="ForgotPassword" xml:space="preserve">
+    <value>نسيت كلمة المرور</value>
+  </data>
+  <data name="RecoveryKey" xml:space="preserve">
+    <value>مفتاح الاسترداد</value>
+  </data>
+  <data name="RecoveryKeyHint" xml:space="preserve">
+    <value>أدخل اسم المستخدم ومفتاح الاسترداد لإعادة تعيين كلمة المرور.</value>
+  </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>إعادة تعيين كلمة المرور</value>
+  </data>
+  <data name="FillAllFields" xml:space="preserve">
+    <value>يرجى ملء جميع الحقول.</value>
+  </data>
+  <data name="RecoveryKeyStoreWarning" xml:space="preserve">
+    <value>احفظ هذا المفتاح في مكان آمن. لن يُعرض مرة أخرى. ستحتاجه لإعادة تعيين كلمة المرور إذا نسيتها.</value>
+  </data>
+  <data name="IStoredIt" xml:space="preserve">
+    <value>لقد حفظت مفتاح الاسترداد في مكان آمن.</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>نسخ</value>
+  </data>
 </root>

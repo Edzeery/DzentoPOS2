@@ -3589,5 +3589,51 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("ConnectionFailed", resourceCulture);
             }
         }
+        public static string RecoveryKeyStoreWarning {
+            get {
+                return ResourceManager.GetString("RecoveryKeyStoreWarning", resourceCulture);
+            }
+        }
+
+        public static string IStoredIt {
+            get {
+                return ResourceManager.GetString("IStoredIt", resourceCulture);
+            }
+        }
+
+        public static string Copy {
+            get {
+                return ResourceManager.GetString("Copy", resourceCulture);
+            }
+        }
+        public static string ResetPassword {
+            get {
+                return ResourceManager.GetString("ResetPassword", resourceCulture);
+            }
+        }
+
+        public static string ForgotPassword {
+            get {
+                return ResourceManager.GetString("ForgotPassword", resourceCulture);
+            }
+        }
+
+        public static string RecoveryKeyHint {
+            get {
+                return ResourceManager.GetString("RecoveryKeyHint", resourceCulture);
+            }
+        }
+
+        public static string RecoveryKey {
+            get {
+                return ResourceManager.GetString("RecoveryKey", resourceCulture);
+            }
+        }
+
+        public static string FillAllFields {
+            get {
+                return ResourceManager.GetString("FillAllFields", resourceCulture);
+            }
+        }
     }
 }

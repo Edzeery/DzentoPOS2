@@ -1284,4 +1284,28 @@
   <data name="ConnectionFailed" xml:space="preserve">
     <value>Échec de la connexion.</value>
   </data>
+  <data name="ForgotPassword" xml:space="preserve">
+    <value>Mot de passe oublié</value>
+  </data>
+  <data name="RecoveryKey" xml:space="preserve">
+    <value>Clé de récupération</value>
+  </data>
+  <data name="RecoveryKeyHint" xml:space="preserve">
+    <value>Entrez votre nom d'utilisateur et votre clé de récupération pour réinitialiser votre mot de passe.</value>
+  </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>Réinitialiser le mot de passe</value>
+  </data>
+  <data name="FillAllFields" xml:space="preserve">
+    <value>Veuillez remplir tous les champs.</value>
+  </data>
+  <data name="RecoveryKeyStoreWarning" xml:space="preserve">
+    <value>Conservez cette clé dans un endroit sûr. Elle ne sera plus affichée. Vous en aurez besoin pour réinitialiser votre mot de passe si vous l'oubliez.</value>
+  </data>
+  <data name="IStoredIt" xml:space="preserve">
+    <value>J'ai conservé la clé de récupération dans un endroit sûr.</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Copier</value>
+  </data>
 </root>

@@ -1302,4 +1302,28 @@
   <data name="ConnectionFailed" xml:space="preserve">
     <value>Connection failed.</value>
   </data>
+  <data name="ForgotPassword" xml:space="preserve">
+    <value>Forgot password</value>
+  </data>
+  <data name="RecoveryKey" xml:space="preserve">
+    <value>Recovery key</value>
+  </data>
+  <data name="RecoveryKeyHint" xml:space="preserve">
+    <value>Enter your user name and recovery key to reset your password.</value>
+  </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>Reset password</value>
+  </data>
+  <data name="FillAllFields" xml:space="preserve">
+    <value>Please fill all fields.</value>
+  </data>
+  <data name="RecoveryKeyStoreWarning" xml:space="preserve">
+    <value>Store this key in a safe place. It will not be shown again. You will need it to reset your password if you forget it.</value>
+  </data>
+  <data name="IStoredIt" xml:space="preserve">
+    <value>I have stored the recovery key in a safe place.</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
 </root>

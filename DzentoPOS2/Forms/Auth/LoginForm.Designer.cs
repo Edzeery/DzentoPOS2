@@ -190,6 +190,7 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             // 
             panel1.Controls.Add(comboBoxLang);
             panel1.Controls.Add(ButtonLogin);
+            panel1.Controls.Add(LinkForgotPassword);
             panel1.Controls.Add(iconPictureBoxlanguage);
             panel1.Controls.Add(btnIconThemMode);
             panel1.Controls.Add(txtUserName);
@@ -250,6 +251,17 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             ButtonLogin.PressedColor = Color.FromArgb(0, 86, 82);
             ButtonLogin.TextColor = Color.White;
             ButtonLogin.Click += ButtonLogin_Click;
+            // 
+            // LinkForgotPassword
+            // 
+            LinkForgotPassword.ActiveLinkColor = Color.FromArgb(0, 122, 116);
+            LinkForgotPassword.LinkColor = Color.FromArgb(0, 122, 116);
+            LinkForgotPassword.Name = "LinkForgotPassword";
+            resources.ApplyResources(LinkForgotPassword, "LinkForgotPassword");
+            LinkForgotPassword.LinkBehavior = LinkBehavior.HoverUnderline;
+            LinkForgotPassword.LinkColor = Color.FromArgb(0, 122, 116);
+            LinkForgotPassword.VisitedLinkColor = Color.FromArgb(0, 104, 99);
+            LinkForgotPassword.Click += LinkForgotPassword_Click;
             // 
             // iconPictureBoxlanguage
             // 
@@ -315,6 +327,7 @@ namespace DzentoPOS2.WinForms.Forms.Auth
         private FontAwesome.Sharp.IconButton btnIconThemMode;
         private FontAwesome.Sharp.IconPictureBox iconPictureBoxlanguage;
         private EZControls.Controls.Buttons.EZButton ButtonLogin;
+        private System.Windows.Forms.LinkLabel LinkForgotPassword;
         private EZControls.Controls.Inputs.EZComboBox comboBoxLang;
     }
 }

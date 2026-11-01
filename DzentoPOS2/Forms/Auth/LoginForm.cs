@@ -412,6 +412,7 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             labelWelcomeBack.Text = AppStrings.WelcomeBack;
             labelWelcomeDes.Text = AppStrings.WelcomeDes;
             ButtonLogin.Text = AppStrings.Login;
+            LinkForgotPassword.Text = AppStrings.ForgotPassword;
             this.Text = AppStrings.Login;
             lblUserName.Text = AppStrings.Username;
             lblPassword.Text = AppStrings.Password;
@@ -552,6 +553,12 @@ namespace DzentoPOS2.WinForms.Forms.Auth
                 ButtonLogin.Enabled = true;
 
             }
+        }
+
+        private async void LinkForgotPassword_Click(object sender, EventArgs e)
+        {
+            using var forgot = new ForgotPasswordDialog(_authService, _languageService);
+            forgot.ShowDialog(this);
         }
 
         private void LoginForm_Load(object sender, EventArgs e)

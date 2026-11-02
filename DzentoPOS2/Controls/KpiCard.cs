@@ -22,6 +22,7 @@ namespace DzentoPOS2.WinForms.Controls
         private readonly Label _lblTrend;
     private readonly Label _lblDetail;
     private readonly Label _lblEstimated;
+    private readonly ToolTip _toolTip;
         private readonly IconPictureBox _iconBox;
         private readonly Panel _iconBadge;
         private readonly Panel _accentLeft;
@@ -187,8 +188,7 @@ namespace DzentoPOS2.WinForms.Controls
                 Text = string.Empty,
                 Font = new Font("Segoe UI", 8F),
                 ForeColor = AppColors.InkMuted,
-                Location = new Point(22, 112),
-                Size = new Size(250, 28),
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
                 AutoSize = false,
                 Visible = false,
                 BackColor = Color.Transparent,
@@ -200,13 +200,15 @@ namespace DzentoPOS2.WinForms.Controls
                 Text = "⚠",
                 Font = new Font("Segoe UI", 9F),
                 ForeColor = AppColors.Warning,
-                Location = new Point(22, 4),
-                Size = new Size(20, 16),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
                 AutoSize = false,
                 Visible = false,
                 BackColor = Color.Transparent,
                 Cursor = Cursors.Hand
             };
+
+            _toolTip = new ToolTip();
+            _toolTip.SetToolTip(_lblEstimated, AppStrings.EstimatedCostNote);
 
             Controls.AddRange([_accentLeft, _iconBadge, _lblTitle, _lblValue, _lblTrend, _lblDetail, _lblEstimated]);
 
@@ -249,6 +251,10 @@ namespace DzentoPOS2.WinForms.Controls
 
             _lblValue.Width = Math.Max(40, Width - 44);
             _lblValue.Location = new Point(22, Math.Max(60, Height - _lblValue.Height - 28));
+
+            _lblDetail.Width = Math.Max(40, Width - 44);
+            _lblDetail.Location = new Point(22, Math.Max(100, Height - 34));
+            _lblEstimated.Location = new Point(Math.Max(22, Width - 30), 6);
         }
 
         public void SetDetail(string text)

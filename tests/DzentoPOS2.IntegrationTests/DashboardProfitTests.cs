@@ -6,6 +6,7 @@ using DzentoPOS2.Core.ValueObjects.Common;
 using DzentoPOS2.Core.ValueObjects.Inventory;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Shared.Contracts.DTOs.Sales;
+using DzentoPOS2.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -77,7 +78,9 @@ public sealed class DashboardProfitTests
         var dashboard = scope.ServiceProvider.GetRequiredService<IDashboardService>();
 
         var product = await CreateProductAsync(ctx, 5, 10);
-        var prevMonth = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddMonths(-1).AddDays(5);
+        var regional = scope.ServiceProvider.GetRequiredService<RegionalContext>();
+        var localNow = regional.ToLocal(DateTime.UtcNow);
+        var prevMonth = regional.ToUtcSafe(new DateTime(localNow.Year, localNow.Month, 1).AddMonths(-1).AddDays(14));
         var inv = await CreateManualInvoiceAsync(ctx, product.Id, 2, 10, 5, 0, 0, false, prevMonth);
 
         var before = await dashboard.GetSummaryAsync();
@@ -116,7 +119,9 @@ public sealed class DashboardProfitTests
         var dashboard = scope.ServiceProvider.GetRequiredService<IDashboardService>();
 
         var product = await CreateProductAsync(ctx, 5, 10);
-        var prevMonth = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddMonths(-1).AddDays(5);
+        var regional = scope.ServiceProvider.GetRequiredService<RegionalContext>();
+        var localNow = regional.ToLocal(DateTime.UtcNow);
+        var prevMonth = regional.ToUtcSafe(new DateTime(localNow.Year, localNow.Month, 1).AddMonths(-1).AddDays(14));
         var inv = await CreateManualInvoiceAsync(ctx, product.Id, 2, 10, 5, 0, 0, false, prevMonth, voided: true);
 
         var before = await dashboard.GetSummaryAsync();
@@ -154,7 +159,9 @@ public sealed class DashboardProfitTests
         var dashboard = scope.ServiceProvider.GetRequiredService<IDashboardService>();
 
         var product = await CreateProductAsync(ctx, 5, 10);
-        var prevMonth = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddMonths(-1).AddDays(5);
+        var regional = scope.ServiceProvider.GetRequiredService<RegionalContext>();
+        var localNow = regional.ToLocal(DateTime.UtcNow);
+        var prevMonth = regional.ToUtcSafe(new DateTime(localNow.Year, localNow.Month, 1).AddMonths(-1).AddDays(14));
         var inv = await CreateManualInvoiceAsync(ctx, product.Id, 2, 10, 5, 4, 0, false, prevMonth);
 
         var before = await dashboard.GetSummaryAsync();
@@ -193,7 +200,9 @@ public sealed class DashboardProfitTests
         var dashboard = scope.ServiceProvider.GetRequiredService<IDashboardService>();
 
         var product = await CreateProductAsync(ctx, 600, 1000);
-        var now = DateTime.UtcNow;
+        var regional = scope.ServiceProvider.GetRequiredService<RegionalContext>();
+        var localNow = regional.ToLocal(DateTime.UtcNow);
+        var now = regional.ToUtcSafe(new DateTime(localNow.Year, localNow.Month, 15, 12, 0, 0));
 
         var before = await dashboard.GetSummaryAsync();
 
@@ -223,8 +232,10 @@ public sealed class DashboardProfitTests
         var ctx = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var dashboard = scope.ServiceProvider.GetRequiredService<IDashboardService>();
 
+        var regional = scope.ServiceProvider.GetRequiredService<RegionalContext>();
+        var localNow = regional.ToLocal(DateTime.UtcNow);
+        var now = regional.ToUtcSafe(new DateTime(localNow.Year, localNow.Month, 15, 12, 0, 0));
         var product = await CreateProductAsync(ctx, 5, 10);
-        var now = DateTime.UtcNow;
         await CreateManualInvoiceAsync(ctx, product.Id, 1, 10, 5, 0, 0, true, now);
 
         var summary = await dashboard.GetSummaryAsync();
@@ -242,7 +253,9 @@ public sealed class DashboardProfitTests
         var dashboard = scope.ServiceProvider.GetRequiredService<IDashboardService>();
 
         var product = await CreateProductAsync(ctx, 600, 1000);
-        // ensure cost frozen via sale service
+
+        var before = await dashboard.GetSummaryAsync();
+
         var sale = await sales.CreateAsync(new CreateSaleDto
         {
             CustomerId = Guid.Empty,
@@ -257,14 +270,13 @@ public sealed class DashboardProfitTests
             }
         });
 
-        var before = await dashboard.GetSummaryAsync();
-
-        // remove the sale from aggregates? It is current month. Compute deltas by re-running impossible; instead assert sale totals.
-        Assert.Equal(2142m, sale.Total);
-        Assert.Equal(400m, sale.Items[0].ListPrice - sale.Items[0].UnitCost); // per unit expected
-        // Dashboard expected profit includes 2*(1000-600)=800
-        // We can't isolate, but ensure at least one estimated false and values non-negative.
         var after = await dashboard.GetSummaryAsync();
-        Assert.True(after.ExpectedProfit.Value >= before.ExpectedProfit.Value);
+
+        Assert.Equal(2142m, sale.Total);
+        Assert.Equal(800m, after.ExpectedProfit.Value - before.ExpectedProfit.Value);
+        Assert.Equal(550m, after.ActualProfit.Value - before.ActualProfit.Value);
+        Assert.Equal(550m, after.NetProfit.Value - before.NetProfit.Value);
+        Assert.Equal(50m, after.MonthlyFeesAmount - before.MonthlyFeesAmount);
+        Assert.Equal(200m, after.MonthlyDiscountAmount - before.MonthlyDiscountAmount);
     }
 }

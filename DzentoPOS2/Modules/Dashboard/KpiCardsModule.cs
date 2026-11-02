@@ -78,22 +78,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             _monthlyFees = data.MonthlyFeesAmount;
             _netProfit = data.NetProfit.Value;
 
-            var map = new Dictionary<string, DashboardCardData>
-            {
-                [Keys[0]] = data.SalesToday,
-                [Keys[1]] = data.PurchasesToday,
-                [Keys[2]] = data.SalesCount,
-                [Keys[3]] = data.PurchasesCount,
-                [Keys[4]] = data.MonthlySales,
-                [Keys[5]] = data.MonthlyPurchases,
-                [Keys[6]] = data.ExpectedProfit,
-                [Keys[7]] = data.ActualProfit,
-                [Keys[8]] = data.ActiveProducts,
-                [Keys[9]] = data.LowStock,
-                [Keys[10]] = data.ActiveCustomers,
-                [Keys[11]] = data.ActiveSuppliers,
-                [Keys[12]] = data.NetProfit,
-            };
+            var map = DashboardKpiCardMap.Build(data);
 
             var digits = KpiCard.CurrencyDigits;
             var culture = System.Globalization.CultureInfo.CurrentCulture;

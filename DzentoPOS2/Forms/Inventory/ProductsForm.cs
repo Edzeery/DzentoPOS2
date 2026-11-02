@@ -1,4 +1,6 @@
+using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Inventory;
+using DzentoPOS2.Core.Constants;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
@@ -16,6 +18,7 @@ public partial class ProductsForm : LocalizableFormBase
 {
     private readonly IProductService _productService;
     private readonly ICurrentSettingsService _currentSettings;
+    private readonly IAuthorizationGuard _guard;
 
     // Top bar
     private readonly Panel _topBar;
@@ -61,11 +64,13 @@ public partial class ProductsForm : LocalizableFormBase
     public ProductsForm(
         IProductService productService,
         ICurrentSettingsService currentSettings,
-        ILanguageService languageService)
+        ILanguageService languageService,
+        IAuthorizationGuard guard)
         : base(languageService)
     {
         _productService = productService;
         _currentSettings = currentSettings;
+        _guard = guard;
         Size = new Size(1400, 800);
         MinimumSize = new Size(1000, 600);
         BackColor = AppColors.Background;
@@ -251,6 +256,23 @@ public partial class ProductsForm : LocalizableFormBase
     protected override async void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
+
+        // Affordance: disable create when the user lacks permission.
+        try
+        {
+            bool canCreate = await _guard.IsAllowedAsync(Permissions.ProductsCreate);
+            bool canEdit = await _guard.IsAllowedAsync(Permissions.ProductsEdit);
+            bool canDelete = await _guard.IsAllowedAsync(Permissions.ProductsDelete);
+            if (!IsDisposedOrDisposing)
+            {
+                _btnAdd.Enabled = canCreate;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"ProductsForm permission check failed: {ex.Message}");
+        }
+
         try
         {
             // Navigation can dispose this page while these are still running, so

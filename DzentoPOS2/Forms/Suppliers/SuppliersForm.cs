@@ -1,4 +1,6 @@
+using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Partners;
+using DzentoPOS2.Core.Constants;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Partners;
@@ -12,6 +14,7 @@ namespace DzentoPOS2.WinForms.Forms.Suppliers;
 public partial class SuppliersForm : LocalizableFormBase
 {
     private readonly ISupplierService _supplierService;
+    private readonly IAuthorizationGuard _guard;
     private readonly Panel _topPanel;
     private readonly IconButton _btnAdd;
     private readonly IconButton _btnEdit;
@@ -21,10 +24,11 @@ public partial class SuppliersForm : LocalizableFormBase
     private readonly DataGridView _grid;
     private List<SupplierDto> _suppliers = new();
 
-    public SuppliersForm(ISupplierService supplierService, ILanguageService languageService)
+    public SuppliersForm(ISupplierService supplierService, ILanguageService languageService, IAuthorizationGuard guard)
         : base(languageService)
     {
         _supplierService = supplierService;
+        _guard = guard;
         Size = new Size(1100, 650);
         BackColor = AppColors.Background;
         StartPosition = FormStartPosition.CenterParent;
@@ -78,7 +82,30 @@ public partial class SuppliersForm : LocalizableFormBase
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
+
+        _ = ApplyPermissionsAsync();
+
         RunSafe(LoadDataAsync);
+    }
+
+    private async Task ApplyPermissionsAsync()
+    {
+        try
+        {
+            bool canCreate = await _guard.IsAllowedAsync(Permissions.SuppliersCreate);
+            bool canEdit = await _guard.IsAllowedAsync(Permissions.SuppliersEdit);
+            bool canDelete = await _guard.IsAllowedAsync(Permissions.SuppliersDelete);
+            if (!IsDisposedOrDisposing)
+            {
+                _btnAdd.Enabled = canCreate;
+                _btnEdit.Enabled = canEdit;
+                _btnDelete.Enabled = canDelete;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"SuppliersForm permission check failed: {ex.Message}");
+        }
     }
 
     protected override void LoadText()

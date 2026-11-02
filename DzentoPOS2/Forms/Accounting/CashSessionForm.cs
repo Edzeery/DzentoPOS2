@@ -1,6 +1,8 @@
 using System.Globalization;
 using DzentoPOS2.App.Diagnostics;
+using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Accounting;
+using DzentoPOS2.Core.Constants;
 using DzentoPOS2.App.Services.Events;
 using DzentoPOS2.Core.Enums;
 using DzentoPOS2.Localization.Resources;
@@ -24,6 +26,7 @@ public partial class CashSessionForm : LocalizableFormBase
     private readonly ICashSessionService _sessionService;
     private readonly ISalesEventPublisher _events;
     private readonly RegionalContext _regional;
+    private readonly IAuthorizationGuard _guard;
 
     private CashSessionDto? _openSession;
     private CashSessionSummaryDto? _summary;
@@ -36,12 +39,14 @@ public partial class CashSessionForm : LocalizableFormBase
         ICashSessionService sessionService,
         ISalesEventPublisher events,
         RegionalContext regional,
-        ILanguageService languageService)
+        ILanguageService languageService,
+        IAuthorizationGuard guard)
         : base(languageService)
     {
         _sessionService = sessionService;
         _events = events;
         _regional = regional;
+        _guard = guard;
 
         InitializeComponent();
 
@@ -75,7 +80,24 @@ public partial class CashSessionForm : LocalizableFormBase
 
     protected override void OnInitialized()
     {
+        _ = ApplyPermissionsAsync();
         RunSafe(LoadCashboxesAsync);
+    }
+
+    private async Task ApplyPermissionsAsync()
+    {
+        try
+        {
+            _canOpen = await _guard.IsAllowedAsync(Permissions.CashSessionsOpen);
+            _canClose = await _guard.IsAllowedAsync(Permissions.CashSessionsClose);
+            _canMovements = await _guard.IsAllowedAsync(Permissions.CashSessionsMovements);
+            if (!IsDisposedOrDisposing)
+                UpdateState();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"CashSessionForm permission check failed: {ex.Message}");
+        }
     }
 
     protected override void LoadText()
@@ -268,15 +290,17 @@ public partial class CashSessionForm : LocalizableFormBase
         _kpiExpenses.SetValue(summary?.Expenses ?? 0m, KpiValueKind.Money, currencyDigits: digits);
     }
 
+    private bool _canOpen, _canClose, _canMovements;
+
     private void UpdateState()
     {
         var hasBox = _cmbCashbox.SelectedItem is CashboxDto;
         var isOpen = _openSession != null;
 
-        _btnOpen.Enabled = hasBox && !isOpen;
-        _btnClose.Enabled = hasBox && isOpen;
-        _btnPayIn.Enabled = hasBox && isOpen;
-        _btnPayOut.Enabled = hasBox && isOpen;
+        _btnOpen.Enabled = hasBox && !isOpen && _canOpen;
+        _btnClose.Enabled = hasBox && isOpen && _canClose;
+        _btnPayIn.Enabled = hasBox && isOpen && _canMovements;
+        _btnPayOut.Enabled = hasBox && isOpen && _canMovements;
 
         _cmbCashbox.Enabled = !isOpen;
         _numOpening.Enabled = !isOpen;

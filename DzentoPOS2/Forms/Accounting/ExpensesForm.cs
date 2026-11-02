@@ -1,4 +1,6 @@
+using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Accounting;
+using DzentoPOS2.Core.Constants;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Accounting;
@@ -11,6 +13,7 @@ namespace DzentoPOS2.WinForms.Forms.Accounting;
 public partial class ExpensesForm : LocalizableFormBase
 {
     private readonly IExpenseService _expenseService;
+    private readonly IAuthorizationGuard _guard;
     private readonly Panel _topPanel;
     private readonly Panel _filterPanel;
     private readonly ComboBox _cmbCategory;
@@ -27,10 +30,11 @@ public partial class ExpensesForm : LocalizableFormBase
     private List<ExpenseDto> _expenses = new();
     private List<ExpenseCategoryDto> _categories = new();
 
-    public ExpensesForm(IExpenseService expenseService, ILanguageService languageService)
+    public ExpensesForm(IExpenseService expenseService, ILanguageService languageService, IAuthorizationGuard guard)
         : base(languageService)
     {
         _expenseService = expenseService;
+        _guard = guard;
         Size = new Size(1100, 650);
         BackColor = AppColors.Background;
         StartPosition = FormStartPosition.CenterParent;
@@ -131,7 +135,30 @@ public partial class ExpensesForm : LocalizableFormBase
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
+
+        _ = ApplyPermissionsAsync();
+
         RunSafe(LoadLookupsAndDataAsync);
+    }
+
+    private async Task ApplyPermissionsAsync()
+    {
+        try
+        {
+            bool canCreate = await _guard.IsAllowedAsync(Permissions.ExpensesCreate);
+            bool canEdit = await _guard.IsAllowedAsync(Permissions.ExpensesEdit);
+            bool canDelete = await _guard.IsAllowedAsync(Permissions.ExpensesDelete);
+            if (!IsDisposedOrDisposing)
+            {
+                _btnAdd.Enabled = canCreate;
+                _btnEdit.Enabled = canEdit;
+                _btnDelete.Enabled = canDelete;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine("ExpensesForm permission check failed: " + ex.Message);
+        }
     }
 
     private async Task LoadLookupsAndDataAsync()

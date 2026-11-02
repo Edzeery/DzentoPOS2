@@ -40,6 +40,9 @@ namespace DzentoPOS2.Shared.Contracts.DTOs.Reports
         public decimal TrendPercent { get; set; }
 
         public bool IsUp => TrendPercent >= 0;
+
+        /// <summary>True when at least one invoice in the period has an estimated (backfilled) cost.</summary>
+        public bool HasEstimatedCost { get; set; }
     }
 
     /// <summary>Content of the small trend chip of a KPI card.</summary>

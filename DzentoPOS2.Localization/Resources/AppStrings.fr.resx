@@ -1134,6 +1134,9 @@
   <data name="TaxAmount" xml:space="preserve">
     <value>TVA</value>
   </data>
+  <data name="Fees" xml:space="preserve">
+    <value>Frais</value>
+  </data>
   <data name="Change" xml:space="preserve">
     <value>Rendu</value>
   </data>

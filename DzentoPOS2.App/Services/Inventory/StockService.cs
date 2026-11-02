@@ -7,6 +7,7 @@ using DzentoPOS2.Core.Exceptions;
 using DzentoPOS2.Core.ValueObjects.Inventory;
 using DzentoPOS2.Data.Context;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace DzentoPOS2.App.Services.Inventory;
 
@@ -17,17 +18,24 @@ public sealed class StockService : IStockService
     private readonly AppDbContext _context;
     private readonly IBusinessClock _clock;
     private readonly IAuthorizationGuard? _guard;
+    private readonly ILogger<StockService>? _logger;
 
     public StockService(AppDbContext context, IBusinessClock clock)
-        : this(context, clock, guard: null)
+        : this(context, clock, guard: null, logger: null)
     {
     }
 
     public StockService(AppDbContext context, IBusinessClock clock, IAuthorizationGuard? guard)
+        : this(context, clock, guard, logger: null)
+    {
+    }
+
+    public StockService(AppDbContext context, IBusinessClock clock, IAuthorizationGuard? guard, ILogger<StockService>? logger)
     {
         _context = context;
         _clock = clock;
         _guard = guard;
+        _logger = logger;
     }
 
     public Task ApplySaleAsync(
@@ -205,8 +213,6 @@ public sealed class StockService : IStockService
             .Select(x => new { x.Id, x.Name, x.TrackStock })
             .ToDictionaryAsync(x => x.Id, cancellationToken);
 
-        var allowNegative = await IsNegativeStockAllowedAsync(cancellationToken);
-
         foreach (var (productId, quantity) in aggregated)
         {
             if (quantity <= 0)
@@ -226,11 +232,12 @@ public sealed class StockService : IStockService
             var before = stock?.Quantity.Value ?? 0;
             var after = before + direction * quantity;
 
-            if (after < 0 && !allowNegative)
+            if (after < 0)
             {
-                throw new CodedDomainException(
-                    DomainErrorCodes.InsufficientStock,
-                    $"Insufficient stock for '{product.Name}'. Available: {before:N2}, requested: {quantity:N2}.");
+                // Insufficient stock does not block the sale by default; warn only.
+                _logger?.LogWarning(
+                    "Insufficient stock for '{Product}'. Available: {Available}, requested: {Requested}. Allowing negative stock.",
+                    product.Name, before, quantity);
             }
 
             if (stock is null)

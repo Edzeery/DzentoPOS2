@@ -1134,6 +1134,9 @@
   <data name="TaxAmount" xml:space="preserve">
     <value>الضريبة</value>
   </data>
+  <data name="Fees" xml:space="preserve">
+    <value>الرسوم</value>
+  </data>
   <data name="Change" xml:space="preserve">
     <value>الباقي</value>
   </data>

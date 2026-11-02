@@ -1,5 +1,6 @@
 using DzentoPOS2.App.Services.Reports.Interfaces;
 using DzentoPOS2.App.Services.Systems;
+using DzentoPOS2.Core.Services.Sales;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Shared.Contracts.DTOs.Reports;
@@ -92,53 +93,108 @@ namespace DzentoPOS2.App.Services.Reports
             SetCardData(dto.MonthlySales, (decimal)(salesStats?.MonthTotal ?? 0), (decimal)(salesStats?.LastMonthTotal ?? 0), KpiValueKind.Money);
             SetCardData(dto.MonthlyPurchases, (decimal)(purchaseStats?.MonthTotal ?? 0), (decimal)(purchaseStats?.LastMonthTotal ?? 0), KpiValueKind.Money);
 
-            // Revenue / COGS aggregated in SQL (no full table materialization).
-            var grossRevenue = await (
-                from item in _context.SalesInvoiceItems
-                join invoice in _context.SalesInvoices
-                    on item.SalesInvoiceId equals invoice.Id
-                where invoice.CreatedAt >= monthStart && invoice.CreatedAt < nextMonthStart
-                    && !invoice.IsVoided
-                select (double?)item.Total
-            ).SumAsync() is double gr ? (decimal)gr : 0m;
-
-            var cogs = await (
-                from item in _context.SalesInvoiceItems
-                join invoice in _context.SalesInvoices
-                    on item.SalesInvoiceId equals invoice.Id
-                join product in _context.Products
-                    on item.ProductId equals product.Id
-                where invoice.CreatedAt >= monthStart && invoice.CreatedAt < nextMonthStart
-                    && !invoice.IsVoided
-                select (double?)(item.Quantity * product.CostPrice.Amount)
-            ).SumAsync() is double cg ? (decimal)cg : 0m;
-
-            var monthlyReturns = await _context.SalesReturns
-                .Where(r => r.CreatedAt >= monthStart && r.CreatedAt < nextMonthStart)
-                .SumAsync(r => (double?)r.TotalAmount) is double mr ? (decimal)mr : 0m;
-
             var monthlyExpenses = await _context.Expenses
                 .Where(e => e.ExpenseDate >= monthStart && e.ExpenseDate < nextMonthStart)
                 .SumAsync(e => (double?)e.Amount) is double me ? (decimal)me : 0m;
 
-            // Gross profit = net revenue (sales − returns) − cost of goods sold.
-            var netRevenue = grossRevenue - monthlyReturns;
-            var grossProfit = netRevenue - cogs;
+            // Frozen-cost profit computation for the month.
+            var monthInvoiceIds = await _context.SalesInvoices
+                .AsNoTracking()
+                .Where(i => i.CreatedAt >= monthStart && i.CreatedAt < nextMonthStart && !i.IsVoided)
+                .Select(i => i.Id)
+                .ToListAsync();
 
-            // Actual profit = COGS-based gross profit − operating expenses.
-            var actualProfit = grossProfit - monthlyExpenses;
+            var itemRows = await (
+                from item in _context.SalesInvoiceItems
+                join invoice in _context.SalesInvoices on item.SalesInvoiceId equals invoice.Id
+                where invoice.CreatedAt >= monthStart && invoice.CreatedAt < nextMonthStart
+                    && !invoice.IsVoided
+                select new
+                {
+                    item.SalesInvoiceId,
+                    item.Quantity,
+                    item.Price,
+                    item.UnitCost,
+                    item.ListPrice,
+                    item.DiscountAmount,
+                    item.IsCostEstimated
+                }
+            ).ToListAsync();
 
-            var grossMargin = netRevenue > 0 ? Math.Round(grossProfit / netRevenue * 100, 1) : 0;
-            var netMargin = netRevenue > 0 ? Math.Round(actualProfit / netRevenue * 100, 1) : 0;
+            var invoiceFees = await _context.SalesInvoices
+                .AsNoTracking()
+                .Where(i => i.CreatedAt >= monthStart && i.CreatedAt < nextMonthStart && !i.IsVoided)
+                .Select(i => new { i.Id, Fees = i.FeesAmount.Amount })
+                .ToDictionaryAsync(x => x.Id, x => x.Fees);
 
-            SetCardData(dto.ExpectedProfit, grossProfit, 0, KpiValueKind.Money);
+            // Original (frozen) unit cost per (invoice, product) for returns reversal.
+            var itemRowsWithProduct = await (
+                from item in _context.SalesInvoiceItems
+                join invoice in _context.SalesInvoices on item.SalesInvoiceId equals invoice.Id
+                where invoice.CreatedAt >= monthStart && invoice.CreatedAt < nextMonthStart
+                    && !invoice.IsVoided
+                select new { item.SalesInvoiceId, item.ProductId, item.UnitCost }
+            ).ToListAsync();
+            var originalUnitCost = itemRowsWithProduct
+                .GroupBy(x => new { x.SalesInvoiceId, x.ProductId })
+                .ToDictionary(g => (g.Key.SalesInvoiceId, g.Key.ProductId), g => g.First().UnitCost);
+
+            var hasEstimated = itemRows.Any(x => x.IsCostEstimated);
+
+            // Per-invoice profit.
+            decimal revenue = 0m, cost = 0m, expected = 0m, fees = 0m;
+            var grouped = itemRows.GroupBy(x => x.SalesInvoiceId);
+            foreach (var g in grouped)
+            {
+                var profitLines = g.Select(x => new ProfitLine(
+                    x.Quantity,
+                    x.Price,
+                    x.ListPrice,
+                    x.UnitCost,
+                    x.DiscountAmount)).ToList();
+                var invProfit = ProfitCalculator.CalculateInvoice(profitLines, digits: _regional.CurrencyDecimalDigits);
+                revenue += invProfit.Revenue;
+                cost += invProfit.Cost;
+                expected += invProfit.ExpectedProfit;
+                fees += invoiceFees.TryGetValue(g.Key, out var f) ? f : 0m;
+            }
+
+            // Returns net effect: return line net − return qty × original line unit cost.
+            var returnRows = await (
+                from r in _context.SalesReturns
+                join i in _context.SalesReturnItems on r.Id equals i.SalesReturnId
+                where r.CreatedAt >= monthStart && r.CreatedAt < nextMonthStart
+                select new { r.SalesInvoiceId, i.ProductId, i.Quantity, i.Total, i.Price }
+            ).ToListAsync();
+            decimal returnsNetEffect = 0m;
+            foreach (var rr in returnRows)
+            {
+                var returnLineNet = rr.Total;
+                var uc = originalUnitCost.TryGetValue((rr.SalesInvoiceId, rr.ProductId), out var u) ? u : 0m;
+                returnsNetEffect += returnLineNet - rr.Quantity * uc;
+            }
+
+            var digits = _regional.CurrencyDecimalDigits;
+            revenue = decimal.Round(revenue, digits, MidpointRounding.AwayFromZero);
+            cost = decimal.Round(cost, digits, MidpointRounding.AwayFromZero);
+            expected = decimal.Round(expected, digits, MidpointRounding.AwayFromZero);
+            fees = decimal.Round(fees, digits, MidpointRounding.AwayFromZero);
+            returnsNetEffect = decimal.Round(returnsNetEffect, digits, MidpointRounding.AwayFromZero);
+
+            var grossProfit = ProfitCalculator.CalculateGrossProfit(revenue, cost, returnsNetEffect);
+            var actualProfit = ProfitCalculator.CalculateActualProfit(grossProfit, fees);
+
+            var expectedMargin = ProfitCalculator.CalculateMargin(expected, revenue, 1);
+            var actualMargin = ProfitCalculator.CalculateMargin(actualProfit, revenue, 1);
+
+            SetCardData(dto.ExpectedProfit, expected, 0, KpiValueKind.Money);
             SetCardData(dto.ActualProfit, actualProfit, 0, KpiValueKind.Money);
 
-            // Profit cards show the real margin (never a bare "%هامش" with no number).
-            dto.ExpectedProfit.TrendKind = netRevenue > 0 ? KpiTrendKind.Margin : KpiTrendKind.None;
-            dto.ExpectedProfit.TrendPercent = grossMargin;
-            dto.ActualProfit.TrendKind = netRevenue > 0 ? KpiTrendKind.Margin : KpiTrendKind.None;
-            dto.ActualProfit.TrendPercent = netMargin;
+            dto.ExpectedProfit.TrendKind = revenue > 0 ? KpiTrendKind.Margin : KpiTrendKind.None;
+            dto.ExpectedProfit.TrendPercent = expectedMargin;
+            dto.ActualProfit.TrendKind = revenue > 0 ? KpiTrendKind.Margin : KpiTrendKind.None;
+            dto.ActualProfit.TrendPercent = actualMargin;
+            dto.ExpectedProfit.HasEstimatedCost = hasEstimated;
 
             var productStats = await _context.Products
                 .GroupBy(_ => 1)

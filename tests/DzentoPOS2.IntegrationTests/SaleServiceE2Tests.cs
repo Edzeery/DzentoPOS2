@@ -68,7 +68,7 @@ public sealed class SaleServiceE2Tests
         var beforeStock = await GetStockAsync(scope, _fixture.Data.TrackedProductId);
         var beforeInvoices = await context.SalesInvoices.CountAsync();
 
-        await Assert.ThrowsAnyAsync<DomainException>(() => sales.CreateAsync(new CreateSaleDto
+        var sale = await sales.CreateAsync(new CreateSaleDto
         {
             PaidAmount = 1000000,
             Items =
@@ -80,10 +80,11 @@ public sealed class SaleServiceE2Tests
                     Price = 10
                 }
             }
-        }));
+        });
 
-        Assert.Equal(beforeStock, await GetStockAsync(scope, _fixture.Data.TrackedProductId));
-        Assert.Equal(beforeInvoices, await context.SalesInvoices.CountAsync());
+        // Insufficient stock no longer blocks the sale; stock goes negative.
+        Assert.True(await GetStockAsync(scope, _fixture.Data.TrackedProductId) < 0);
+        Assert.Equal(beforeInvoices + 1, await context.SalesInvoices.CountAsync());
     }
 
     [Fact]

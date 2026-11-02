@@ -68,7 +68,9 @@ public partial class SalesForm : LocalizableFormBase
     private readonly Label _lblAfterDiscountValue;
     private readonly Label _lblTax;
     private readonly NumericUpDown _numTax;
+    private readonly NumericUpDown _numFees;
     private readonly Label _lblTaxAmount;
+    private readonly Label _lblFees;
     private readonly Label _lblTaxAmountValue;
     private readonly Label _lblTotal;
     private readonly Label _lblTotalValue;
@@ -287,14 +289,14 @@ public partial class SalesForm : LocalizableFormBase
         {
             Dock = DockStyle.Fill,
             ColumnCount = 2,
-            RowCount = 8,
+            RowCount = 9,
             Margin = Padding.Empty,
             Padding = new Padding(0, TotalsPadding, 0, 0)
         };
         _totalsLayout = totals;
         totals.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         totals.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < 9; i++)
             totals.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
 
         _lblSubtotal = MakeLabel(AppStrings.Subtotal + ":");
@@ -341,6 +343,9 @@ public partial class SalesForm : LocalizableFormBase
         _lblTaxAmount = MakeLabel(AppStrings.TaxAmount + ":");
         _lblTaxAmountValue = MakeValueLabel("0.00");
 
+        _lblFees = MakeLabel(AppStrings.Fees + ":");
+        _numFees = MakeNumeric(0, 99999999);
+
         _lblTotal = MakeLabel(AppStrings.GrandTotal + ":");
         _lblTotalValue = MakeValueLabel("0.00");
         _lblTotalValue.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
@@ -383,12 +388,14 @@ public partial class SalesForm : LocalizableFormBase
         totals.Controls.Add(_numTax, 1, 3);
         totals.Controls.Add(_lblTaxAmount, 0, 4);
         totals.Controls.Add(_lblTaxAmountValue, 1, 4);
-        totals.Controls.Add(_lblTotal, 0, 5);
-        totals.Controls.Add(_lblTotalValue, 1, 5);
-        totals.Controls.Add(_lblPaid, 0, 6);
-        totals.Controls.Add(paidValuePanel, 1, 6);
-        totals.Controls.Add(_lblBalance, 0, 7);
-        totals.Controls.Add(_lblBalanceValue, 1, 7);
+        totals.Controls.Add(_lblFees, 0, 5);
+        totals.Controls.Add(_numFees, 1, 5);
+        totals.Controls.Add(_lblTotal, 0, 6);
+        totals.Controls.Add(_lblTotalValue, 1, 6);
+        totals.Controls.Add(_lblPaid, 0, 7);
+        totals.Controls.Add(paidValuePanel, 1, 7);
+        totals.Controls.Add(_lblBalance, 0, 8);
+        totals.Controls.Add(_lblBalanceValue, 1, 8);
 
         _btnCalculator = ButtonFactory.Tool(IconChar.Calculator, AppStrings.Calculator, ButtonTone.Primary, ButtonFactory.ButtonSize.Medium);
         _btnCalculator.Dock = DockStyle.Fill;
@@ -1303,6 +1310,7 @@ public partial class SalesForm : LocalizableFormBase
                 DiscountMode = discountMode,
                 DiscountValue = (decimal)_numDiscount.Value,
                 TaxRate = (decimal)_numTax.Value,
+                Fees = (decimal)_numFees.Value,
                 PaidAmount = (decimal)_numPaid.Value,
                 Items = _cart.Select(c => new CreateSaleItemDto
                 {
@@ -1322,6 +1330,7 @@ public partial class SalesForm : LocalizableFormBase
             _cart.Clear();
             _numDiscount.Value = 0;
             _numTax.Value = 0;
+            _numFees.Value = 0;
             _numPaid.Value = 0;
             _cmbDiscountMode.SelectedIndex = 0;
             _paidMode = PaidMode.FullPayment;

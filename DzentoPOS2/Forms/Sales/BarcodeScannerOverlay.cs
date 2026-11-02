@@ -1,6 +1,9 @@
+using DzentoPOS2.App.Services.Barcodes;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.WinForms.Controls;
+using DzentoPOS2.WinForms.Helpers;
 using DzentoPOS2.WinForms.Modules.Dashboard;
+using DzentoPOS2.WinForms.Services;
 using DzentoPOS2.WinForms.Services.Barcodes;
 using DzentoPOS2.WinForms.Themes;
 using FontAwesome.Sharp;
@@ -28,12 +31,16 @@ public sealed class BarcodeScannerOverlay : Form
     private readonly Label _lblStatus;
     private readonly Label _lblHint;
     private readonly ThemedComboBox _cmbDevice;
+    private readonly ThemedComboBox _cmbSource;
+    private readonly TextBox _txtCameraUrl;
     private readonly ThemedButton _btnRefresh;
+    private readonly ThemedButton _btnTestConnection;
     private readonly ThemedButton _btnClose;
     private readonly Button _btnCloseOverlay;
 
     private Bitmap? _frame;
     private bool _detected;
+    private bool _isIpSource;
 
     /// <summary>Raised when a barcode was recognised.</summary>
     public event Action<string>? BarcodeDetected;
@@ -115,8 +122,25 @@ public sealed class BarcodeScannerOverlay : Form
         root.Controls.Add(statusPanel, 0, 1);
 
         // ── Footer ─────────────────────────────────────────────────────────
+        _cmbSource = new ThemedComboBox { Width = 200 };
+        _cmbSource.ClearItems();
+        _cmbSource.Add(AppStrings.CameraSourceLocal, AppStrings.CameraSourceIp);
+        _cmbSource.SelectedIndexChanged += (_, _) => UpdateSourceVisibility();
+
         _cmbDevice = new ThemedComboBox { Width = 260 };
         _cmbDevice.SelectedIndexChanged += (_, _) => SwitchDevice();
+
+        _txtCameraUrl = new TextBox
+        {
+            Font = AppStyle.BodyFont,
+            Width = 260,
+            Visible = false
+        };
+        _txtCameraUrl.TextChanged += (_, _) => ValidateCameraUrl();
+
+        _btnTestConnection = ButtonFactory.Neutral(AppStrings.TestConnection, ButtonFactory.ButtonSize.Small);
+        _btnTestConnection.Visible = false;
+        _btnTestConnection.Click += async (_, _) => await TestCameraConnectionAsync();
 
         _btnRefresh = ButtonFactory.Neutral(AppStrings.Refresh, ButtonFactory.ButtonSize.Medium);
         _btnRefresh.Click += (_, _) => RefreshDevices();
@@ -135,8 +159,17 @@ public sealed class BarcodeScannerOverlay : Form
             Margin = Padding.Empty
         };
         footer.Controls.Add(_btnClose);
+        footer.Controls.Add(_btnTestConnection);
         footer.Controls.Add(_btnRefresh);
 
+        var sourceLabel = new Label
+        {
+            Text = AppStrings.CameraSource,
+            Font = AppStyle.BodyFont,
+            ForeColor = AppColors.Ink,
+            AutoSize = true,
+            Margin = new Padding(0, 8, 8, 0)
+        };
         var deviceLabel = new Label
         {
             Text = AppStrings.CameraDevice,
@@ -145,8 +178,11 @@ public sealed class BarcodeScannerOverlay : Form
             AutoSize = true,
             Margin = new Padding(0, 8, 8, 0)
         };
-        footer.Controls.Add(_cmbDevice);
+        footer.Controls.Add(sourceLabel);
+        footer.Controls.Add(_cmbSource);
+        footer.Controls.Add(_txtCameraUrl);
         footer.Controls.Add(deviceLabel);
+        footer.Controls.Add(_cmbDevice);
         root.Controls.Add(footer, 0, 2);
 
         Controls.Add(root);
@@ -165,6 +201,7 @@ public sealed class BarcodeScannerOverlay : Form
         _timer.Tick += (_, _) => RenderFrame();
 
         LoadDevices(preferredDevice);
+        UpdateSourceVisibility();
     }
 
     /// <summary>Opens the camera and starts the preview.</summary>
@@ -219,14 +256,16 @@ public sealed class BarcodeScannerOverlay : Form
             _devices.AddRange(BarcodeCameraService.GetDevices()
                 .Select(d => new CameraItem(d.Moniker, d.Name)));
         }
-        catch
+        catch (Exception ex)
         {
             // The camera subsystem is not available.
+            System.Diagnostics.Debug.WriteLine($"LoadDevices: {ex.Message}");
         }
 
         if (_devices.Count == 0)
         {
-            _cmbDevice.Items = new[] { AppStrings.NoCameraFound };
+            _cmbDevice.ClearItems();
+            _cmbDevice.Add(AppStrings.NoCameraFound);
             int bitness = Environment.Is64BitProcess ? 64 : 32;
             _lblStatus.Text = AppStrings.NoCameraFound;
             _lblHint.Text = $"Start DroidCam Client first; the app must match its 32/64-bit filter ({bitness}-bit)";
@@ -241,9 +280,92 @@ public sealed class BarcodeScannerOverlay : Form
         _cmbDevice.SelectedIndex = index >= 0 ? index : 0;
     }
 
+    private void UpdateSourceVisibility()
+    {
+        _isIpSource = _cmbSource.SelectedIndex == 1;
+        _txtCameraUrl.Visible = _isIpSource;
+        _btnTestConnection.Visible = _isIpSource;
+        _cmbDevice.Enabled = !_isIpSource;
+        _btnRefresh.Enabled = !_isIpSource;
+        ValidateCameraUrl();
+    }
+
+    private void ValidateCameraUrl()
+    {
+        if (_txtCameraUrl.Visible)
+        {
+            bool valid = CameraUrlValidator.IsValid(_txtCameraUrl.Text);
+            _txtCameraUrl.BackColor = valid ? Color.White : Color.MistyRose;
+        }
+    }
+
+    private async Task TestCameraConnectionAsync()
+    {
+        string url = _txtCameraUrl.Text.Trim();
+        if (!CameraUrlValidator.IsValid(url))
+        {
+            AppMessageBox.Error(AppStrings.CameraUrlInvalid);
+            return;
+        }
+
+        _btnTestConnection.Enabled = false;
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var result = await Task.Run(() =>
+            {
+                try
+                {
+                    using var client = new System.Net.Http.HttpClient
+                    {
+                        Timeout = TimeSpan.FromSeconds(5)
+                    };
+                    var response = client.GetAsync(url, cts.Token).GetAwaiter().GetResult();
+                    return response.IsSuccessStatusCode;
+                }
+                catch
+                {
+                    return false;
+                }
+            }, cts.Token);
+
+            if (result)
+                AppMessageBox.Success(AppStrings.ConnectionSuccess);
+            else
+                AppMessageBox.Error(AppStrings.ConnectionFailed);
+        }
+        catch (Exception ex)
+        {
+            AppMessageBox.Error(ex.Message);
+        }
+        finally
+        {
+            if (!IsDisposed)
+                _btnTestConnection.Enabled = true;
+        }
+    }
+
     private void StartSelectedDevice()
     {
         _camera.Stop();
+
+        if (_isIpSource)
+        {
+            string url = _txtCameraUrl.Text.Trim();
+            if (string.IsNullOrWhiteSpace(url) || !CameraUrlValidator.IsValid(url))
+            {
+                _lblStatus.Text = AppStrings.CameraUrlInvalid;
+                return;
+            }
+
+            if (!_camera.Start(url, out string ipError))
+            {
+                _lblStatus.Text = string.IsNullOrWhiteSpace(ipError)
+                    ? AppStrings.NoCameraFound
+                    : ipError;
+            }
+            return;
+        }
 
         if (_cmbDevice.SelectedItem is not CameraItem device) return;
         if (string.IsNullOrWhiteSpace(device.Moniker)) return;

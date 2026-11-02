@@ -1137,6 +1137,12 @@
   <data name="Fees" xml:space="preserve">
     <value>الرسوم</value>
   </data>
+  <data name="NetProfit" xml:space="preserve">
+    <value>الربح الصافي</value>
+  </data>
+  <data name="EstimatedCostNote" xml:space="preserve">
+    <value>يتضمن تكلفة مقدّرة</value>
+  </data>
   <data name="Change" xml:space="preserve">
     <value>الباقي</value>
   </data>

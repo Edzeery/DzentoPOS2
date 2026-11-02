@@ -1137,6 +1137,12 @@
   <data name="Fees" xml:space="preserve">
     <value>Frais</value>
   </data>
+  <data name="NetProfit" xml:space="preserve">
+    <value>Profit net</value>
+  </data>
+  <data name="EstimatedCostNote" xml:space="preserve">
+    <value>Comprend un coût estimé</value>
+  </data>
   <data name="Change" xml:space="preserve">
     <value>Rendu</value>
   </data>

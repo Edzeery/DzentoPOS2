@@ -242,30 +242,11 @@ namespace DzentoPOS2.App.Services.Sales
                         currency,
                         fees);
 
-                    // Distribute the invoice-level discount across lines proportionally
-                    // to each line's gross (Price × Qty), with the rounding remainder
-                    // added to the last line.
                     var lineGrosses = dto.Items
                         .Select(i => decimal.Round(i.Quantity * i.Price, digits, MidpointRounding.AwayFromZero))
                         .ToList();
-                    var grossSum = lineGrosses.Sum();
-                    var shares = new List<decimal>(dto.Items.Count);
-                    var allocated = 0m;
-                    for (int li = 0; li < dto.Items.Count; li++)
-                    {
-                        if (li == dto.Items.Count - 1)
-                        {
-                            shares.Add(totals.DiscountAmount - allocated);
-                        }
-                        else
-                        {
-                            var share = grossSum > 0
-                                ? decimal.Round(totals.DiscountAmount * lineGrosses[li] / grossSum, digits, MidpointRounding.AwayFromZero)
-                                : 0m;
-                            shares.Add(share);
-                            allocated += share;
-                        }
-                    }
+
+                    var shares = ProfitCalculator.DistributeDiscount(lineGrosses, totals.DiscountAmount, digits).ToList();
 
                     var itemIndex = 0;
                     foreach (var item in dto.Items)

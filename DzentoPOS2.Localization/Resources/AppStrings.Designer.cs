@@ -3107,6 +3107,18 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("Fees", resourceCulture);
             }
         }
+
+        public static string NetProfit {
+            get {
+                return ResourceManager.GetString("NetProfit", resourceCulture);
+            }
+        }
+
+        public static string EstimatedCostNote {
+            get {
+                return ResourceManager.GetString("EstimatedCostNote", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Tax Rate.

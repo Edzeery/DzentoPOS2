@@ -18,14 +18,15 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             IconChar.ShoppingCart, IconChar.Truck, IconChar.Receipt, IconChar.ClipboardList,
             IconChar.ChartLine, IconChar.BoxOpen, IconChar.ChartPie, IconChar.MoneyBillWave,
             IconChar.Boxes, IconChar.ExclamationTriangle, IconChar.Users,
-            IconChar.Handshake,
+            IconChar.Handshake, IconChar.ChartLine,
         ];
 
         private static readonly string[] Keys =
         [
             "SalesToday","PurchasesToday","SalesCount","PurchasesCount",
             "MonthlySales","MonthlyPurchases","ExpectedProfit","ActualProfit",
-            "ActiveProducts","LowStock","ActiveCustomers","ActiveSuppliers"
+            "ActiveProducts","LowStock","ActiveCustomers","ActiveSuppliers",
+            "NetProfit"
         ];
 
         public TableLayoutPanel Build()
@@ -36,25 +37,25 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
                 Dock = DockStyle.Top,
                 AutoSize = true,
                 ColumnCount = 4,
-                RowCount = 3,
+                RowCount = 4,
                 BackColor = Color.Transparent,
                 Margin = new Padding(0, 0, 0, 24)
             };
 
             for (int i = 0; i < 4; i++)
                 grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 4; i++)
                 grid.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
             var titles = GetTitles();
             for (int i = 0; i < Keys.Length; i++)
             {
-                var card = new KpiCard(Keys[i], titles[i], Icons[i], Colors[i]);
+                var card = new KpiCard(Keys[i], titles[i], Icons[i], Colors[i % Colors.Length]);
                 _cards.Add(card);
                 grid.Controls.Add(card, i % 4, i / 4);
             }
 
-            for (int i = Keys.Length; i < 12; i++)
+            for (int i = Keys.Length; i < 16; i++)
                 grid.Controls.Add(new Panel(), i % 4, i / 4);
 
             return grid;
@@ -64,7 +65,8 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
         [
             AppStrings.TodaySales,AppStrings.TodayPurchases,AppStrings.SalesInvoicesCount,AppStrings.PurchaseInvoicesCount,
             AppStrings.MonthlySales,AppStrings.MonthlyPurchases,AppStrings.ExpectedProfit,AppStrings.ActualProfit,
-            AppStrings.ActiveProductsKPI,AppStrings.LowStockKPI,AppStrings.ActiveCustomers,AppStrings.ActiveSuppliers
+            AppStrings.ActiveProductsKPI,AppStrings.LowStockKPI,AppStrings.ActiveCustomers,AppStrings.ActiveSuppliers,
+            AppStrings.NetProfit
         ];
 
         public void Update(DashboardSummaryDto data)
@@ -83,6 +85,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
                 [Keys[9]] = data.LowStock,
                 [Keys[10]] = data.ActiveCustomers,
                 [Keys[11]] = data.ActiveSuppliers,
+                [Keys[12]] = data.NetProfit,
             };
 
             foreach (var card in _cards)

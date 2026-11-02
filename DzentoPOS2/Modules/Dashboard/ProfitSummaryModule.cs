@@ -9,12 +9,21 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
 {
     internal class ProfitSummaryModule
     {
-        private readonly TableLayoutPanel _grid;
-        private readonly Label _title;
+        private TableLayoutPanel _grid = null!;
+        private Label _title = null!;
         private readonly Dictionary<string, Label> _values = new();
 
         public ProfitSummaryModule()
         {
+        }
+
+        private void EnsureBuilt()
+        {
+            if (_title != null && !_title.IsDisposed)
+                return;
+
+            _values.Clear();
+
             _title = new Label
             {
                 Text = AppStrings.ProfitSummaryTitle,
@@ -85,6 +94,8 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
 
         public Control Build()
         {
+            EnsureBuilt();
+
             var panel = new Panel
             {
                 Dock = DockStyle.Top,

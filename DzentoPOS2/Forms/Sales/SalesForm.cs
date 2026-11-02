@@ -1,5 +1,7 @@
 using DzentoPOS2.App.Services.Accounting;
+using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Inventory;
+using DzentoPOS2.Core.Constants;
 using DzentoPOS2.App.Services.Partners;
 using DzentoPOS2.App.Services.Sales;
 using DzentoPOS2.Core.Services.Sales;
@@ -566,7 +568,27 @@ public partial class SalesForm : LocalizableFormBase
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
+
+        _ = ApplyPermissionsAsync();
+
         RunSafe(InitializeAsync);
+    }
+
+    private async Task ApplyPermissionsAsync()
+    {
+        try
+        {
+            var guard = _services?.GetService<IAuthorizationGuard>();
+            if (guard is null) return;
+
+            bool canDelete = await guard.IsAllowedAsync(Permissions.SalesDelete);
+            if (!IsDisposedOrDisposing)
+                _btnDeleteInvoice.Enabled = canDelete;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"SalesForm permission check failed: {ex.Message}");
+        }
     }
 
     private async Task InitializeAsync()

@@ -56,6 +56,7 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             panel1 = new Panel();
             comboBoxLang = new EZControls.Controls.Inputs.EZComboBox();
             ButtonLogin = new EZControls.Controls.Buttons.EZButton();
+            LinkForgotPassword = new LinkLabel();
             iconPictureBoxlanguage = new FontAwesome.Sharp.IconPictureBox();
             btnIconThemMode = new FontAwesome.Sharp.IconButton();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();

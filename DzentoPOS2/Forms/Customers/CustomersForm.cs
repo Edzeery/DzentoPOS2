@@ -1,4 +1,6 @@
+using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Partners;
+using DzentoPOS2.Core.Constants;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Partners;
@@ -21,10 +23,13 @@ public partial class CustomersForm : LocalizableFormBase
     private readonly DataGridView _grid;
     private List<CustomerDto> _customers = new();
 
-    public CustomersForm(ICustomerService customerService, ILanguageService languageService)
+    private readonly IAuthorizationGuard _guard;
+
+    public CustomersForm(ICustomerService customerService, ILanguageService languageService, IAuthorizationGuard guard)
         : base(languageService)
     {
         _customerService = customerService;
+        _guard = guard;
         Size = new Size(1100, 650);
         BackColor = AppColors.Background;
         StartPosition = FormStartPosition.CenterParent;
@@ -78,7 +83,31 @@ public partial class CustomersForm : LocalizableFormBase
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
+
+        // Affordance: disable create/edit/delete when the user lacks permission.
+        _ = ApplyPermissionsAsync();
+
         RunSafe(LoadDataAsync);
+    }
+
+    private async Task ApplyPermissionsAsync()
+    {
+        try
+        {
+            bool canCreate = await _guard.IsAllowedAsync(Permissions.CustomersCreate);
+            bool canEdit = await _guard.IsAllowedAsync(Permissions.CustomersEdit);
+            bool canDelete = await _guard.IsAllowedAsync(Permissions.CustomersDelete);
+            if (!IsDisposedOrDisposing)
+            {
+                _btnAdd.Enabled = canCreate;
+                _btnEdit.Enabled = canEdit;
+                _btnDelete.Enabled = canDelete;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"CustomersForm permission check failed: {ex.Message}");
+        }
     }
 
     protected override void LoadText()

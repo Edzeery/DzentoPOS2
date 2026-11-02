@@ -48,6 +48,7 @@ public static class KpiValueFormatter
         KpiCompactSuffixes? compactSuffixes = null)
     {
         culture ??= CultureInfo.CurrentCulture;
+        culture = NormalizeCulture(culture);
 
         var digits = Math.Clamp(currencyDigits, 0, 4);
 
@@ -65,6 +66,24 @@ public static class KpiValueFormatter
             text = text + " " + currencySymbol;
 
         return text;
+    }
+
+    private static CultureInfo NormalizeCulture(CultureInfo culture)
+    {
+        if (culture == null)
+            culture = CultureInfo.CurrentCulture;
+
+        var name = string.IsNullOrWhiteSpace(culture.Name) ? "en-US" : culture.Name;
+        var ci = new CultureInfo(name, false);
+        var nf = (NumberFormatInfo)ci.NumberFormat.Clone();
+        if (string.Equals(nf.NumberDecimalSeparator, nf.NumberGroupSeparator, StringComparison.Ordinal))
+        {
+            nf.NumberGroupSeparator = nf.NumberDecimalSeparator == "," ? "." : ",";
+        }
+        nf.CurrencyDecimalSeparator = nf.NumberDecimalSeparator;
+        nf.CurrencyGroupSeparator = nf.NumberGroupSeparator;
+        ci.NumberFormat = nf;
+        return ci;
     }
 
     private static string Compact(

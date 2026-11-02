@@ -33,6 +33,7 @@ using FontAwesome.Sharp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
+using System.Diagnostics;
 using System.Runtime;
 using System.Runtime.InteropServices; 
 
@@ -46,6 +47,9 @@ namespace DzentoPOS2.WinForms.Forms.Layout
         private readonly System.Windows.Forms.Timer _collapseTimer;
         private bool _animating;
         private int _targetWidth;
+        private readonly Stopwatch _collapseStopwatch = new();
+        private int _collapseFrom;
+        private int _collapseTo;
 
         private readonly INavigationService _navigation;
         private readonly ICurrentUserService _currentUser;
@@ -1099,40 +1103,38 @@ namespace DzentoPOS2.WinForms.Forms.Layout
 
             if (_animating) return;
             _animating = true;
+            _collapseFrom = SidebarPanel.Width;
+            _collapseTo = _targetWidth;
+            _collapseStopwatch.Restart();
+            ShadowEngine.Suspend();
+            _collapseTimer.Interval = 16;
             _collapseTimer.Start();
         }
 
         private void AnimateCollapse(object? sender, EventArgs e)
         {
-            int step = AppStyle.AnimationStep;
-            bool expanding = _targetWidth > SidebarPanel.Width;
+            var elapsed = _collapseStopwatch.Elapsed.TotalMilliseconds;
+            const double duration = 180.0;
+            double t = Math.Min(1.0, elapsed / duration);
+            double eased = 1 - Math.Pow(1 - t, 3);
 
-            if (expanding)
-            {
-                SidebarPanel.Width += step;
-                if (SidebarPanel.Width >= _targetWidth)
-                {
-                    SidebarPanel.Width = _targetWidth;
-                    StopCollapseAnimation();
-                }
-            }
-            else
-            {
-                SidebarPanel.Width -= step;
-                if (SidebarPanel.Width <= _targetWidth)
-                {
-                    SidebarPanel.Width = _targetWidth;
-                    StopCollapseAnimation();
-                }
-            }
+            int width = _collapseFrom + (int)Math.Round((_collapseTo - _collapseFrom) * eased);
+            SidebarPanel.Width = Math.Clamp(width, AppStyle.SidebarCollapsedWidth, AppStyle.SidebarExpandedWidth);
 
             UpdateUserInfoVisibility(SidebarPanel.Width >= AppStyle.SidebarExpandedWidth - 10);
+
+            if (t >= 1.0)
+            {
+                SidebarPanel.Width = _targetWidth;
+                StopCollapseAnimation();
+            }
         }
 
         private void StopCollapseAnimation()
         {
             _collapseTimer.Stop();
             _animating = false;
+            _collapseStopwatch.Stop();
 
             bool expanded = SidebarPanel.Width >= AppStyle.SidebarExpandedWidth - 10;
             ApplyToSidebarButtons(btn =>
@@ -1150,7 +1152,9 @@ namespace DzentoPOS2.WinForms.Forms.Layout
                     btn.Padding = new Padding(13, 0, 0, 0);
                 }
             });
-            UpdateUserInfoVisibility(expanded);
+
+            ShadowEngine.Resume();
+            UpdateUserInfoVisibility(SidebarPanel.Width >= AppStyle.SidebarExpandedWidth - 10);
         }
 
         private void UpdateUserInfoVisibility(bool expanded)

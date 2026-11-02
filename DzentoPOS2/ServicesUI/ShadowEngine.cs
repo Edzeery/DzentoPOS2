@@ -12,6 +12,7 @@ namespace DzentoPOS2.WinForms.ServicesUI
     /// </summary>
     public static class ShadowEngine
     {
+        private static int _suspendDepth;
         private static readonly Dictionary<Control, ShadowEntry> Entries = new();
         private static readonly HashSet<Control> HookedParents = new();
 
@@ -53,6 +54,20 @@ namespace DzentoPOS2.WinForms.ServicesUI
             if (Entries.Remove(control, out var entry))
                 entry.Detach();
         }
+
+        public static void Suspend() => _suspendDepth++;
+
+        public static void Resume()
+        {
+            if (_suspendDepth > 0) _suspendDepth--;
+            if (_suspendDepth == 0)
+            {
+                foreach (var entry in Entries.Values.ToList())
+                    entry.Invalidate();
+            }
+        }
+
+        public static bool IsSuspended => _suspendDepth > 0;
 
         internal static bool TryGet(Control control, out ShadowEntry entry)
             => Entries.TryGetValue(control, out entry!);
@@ -139,6 +154,9 @@ namespace DzentoPOS2.WinForms.ServicesUI
 
             public void Invalidate()
             {
+                if (ShadowEngine.IsSuspended)
+                    return;
+
                 var parent = _control.Parent;
                 if (parent == null || parent.IsDisposed)
                     return;
@@ -156,6 +174,9 @@ namespace DzentoPOS2.WinForms.ServicesUI
 
             public void Draw(Graphics graphics)
             {
+                if (ShadowEngine.IsSuspended)
+                    return;
+
                 var elev = ScaledElevation();
                 var b = _control.Bounds;
 

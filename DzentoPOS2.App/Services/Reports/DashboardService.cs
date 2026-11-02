@@ -113,14 +113,15 @@ namespace DzentoPOS2.App.Services.Reports
                     item.ListPrice,
                     item.DiscountAmount,
                     item.IsCostEstimated,
-                    Fees = (double)invoice.FeesAmount.Amount
+                    Fees = invoice.FeesAmount.Amount
                 }
             ).ToListAsync();
 
-            // Aggregate fees per invoice in memory from the same rows.
-            var invoiceFees = monthRows
-                .GroupBy(x => x.SalesInvoiceId)
-                .ToDictionary(g => g.Key, g => (decimal)g.First().Fees);
+            // Fees come from the distinct invoice query (not repeated per line).
+            var invoiceFees = await _context.SalesInvoices
+                .AsNoTracking()
+                .Where(i => i.CreatedAt >= monthStart && i.CreatedAt < nextMonthStart && !i.IsVoided)
+                .ToDictionaryAsync(i => i.Id, i => i.FeesAmount.Amount);
 
             var hasEstimated = monthRows.Any(x => x.IsCostEstimated);
 
@@ -177,29 +178,44 @@ namespace DzentoPOS2.App.Services.Reports
                         item.IsCostEstimated
                     }
                 ).ToListAsync())
-                .Select(x => (x.SalesInvoiceId, x.ProductId, x.Quantity, x.UnitCost, x.DiscountAmount, x.IsCostEstimated))
+                .GroupBy(x => new { x.SalesInvoiceId, x.ProductId })
+                .Select(g => (
+                    InvoiceId: g.Key.SalesInvoiceId,
+                    ProductId: g.Key.ProductId,
+                    Qty: g.Sum(x => x.Quantity),
+                    UnitCost: g.Sum(x => x.Quantity * x.UnitCost) / (g.Sum(x => x.Quantity) == 0 ? 1 : g.Sum(x => x.Quantity)),
+                    DiscountAmount: g.Sum(x => x.DiscountAmount),
+                    IsEstimated: g.Any(x => x.IsCostEstimated)
+                ))
                 .ToList();
 
             var originalLookup = originalRows
-                .GroupBy(x => (x.Item1, x.Item2))
-                .ToDictionary(g => g.Key, g => g.First());
+                .ToDictionary(x => (x.InvoiceId, x.ProductId), x => x);
 
-            // Fallback product costs for missing original lines.
-            var productCosts = await _context.Products
-                .AsNoTracking()
-                .ToDictionaryAsync(p => p.Id, p => p.CostPrice.Amount);
+            // Fallback product costs only for products missing in originalLookup.
+            var missingProductIds = returnRows
+                .Select(r => r.ProductId)
+                .Distinct()
+                .Where(pid => !originalLookup.Keys.Any(k => k.Item2 == pid))
+                .ToList();
+            var productCosts = missingProductIds.Count == 0
+                ? new Dictionary<Guid, decimal>()
+                : await _context.Products
+                    .AsNoTracking()
+                    .Where(p => missingProductIds.Contains(p.Id))
+                    .ToDictionaryAsync(p => p.Id, p => p.CostPrice.Amount);
 
             decimal returnsNetEffect = 0m;
             foreach (var rr in returnRows)
             {
                 if (originalLookup.TryGetValue((rr.SalesInvoiceId, rr.ProductId), out var orig))
                 {
-                    if (orig.Item6) hasEstimated = true;
+                    if (orig.IsEstimated) hasEstimated = true;
                     decimal discountShare = 0m;
-                    if (orig.Item3 > 0)
-                        discountShare = orig.Item5 * rr.Quantity / orig.Item3;
+                    if (orig.Qty > 0)
+                        discountShare = orig.DiscountAmount * rr.Quantity / orig.Qty;
                     var returnLineNet = rr.Total - discountShare;
-                    returnsNetEffect += returnLineNet - rr.Quantity * orig.Item4;
+                    returnsNetEffect += returnLineNet - rr.Quantity * orig.UnitCost;
                 }
                 else
                 {

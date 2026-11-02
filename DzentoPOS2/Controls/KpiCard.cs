@@ -20,6 +20,8 @@ namespace DzentoPOS2.WinForms.Controls
         private readonly Label _lblTitle;
         private readonly Label _lblValue;
         private readonly Label _lblTrend;
+    private readonly Label _lblDetail;
+    private readonly Label _lblEstimated;
         private readonly IconPictureBox _iconBox;
         private readonly Panel _iconBadge;
         private readonly Panel _accentLeft;
@@ -180,7 +182,33 @@ namespace DzentoPOS2.WinForms.Controls
                 Cursor = Cursors.Hand
             };
 
-            Controls.AddRange([_accentLeft, _iconBadge, _lblTitle, _lblValue, _lblTrend]);
+            _lblDetail = new Label
+            {
+                Text = string.Empty,
+                Font = new Font("Segoe UI", 8F),
+                ForeColor = AppColors.InkMuted,
+                Location = new Point(22, 112),
+                Size = new Size(250, 28),
+                AutoSize = false,
+                Visible = false,
+                BackColor = Color.Transparent,
+                Cursor = Cursors.Hand
+            };
+
+            _lblEstimated = new Label
+            {
+                Text = "⚠",
+                Font = new Font("Segoe UI", 9F),
+                ForeColor = AppColors.Warning,
+                Location = new Point(22, 4),
+                Size = new Size(20, 16),
+                AutoSize = false,
+                Visible = false,
+                BackColor = Color.Transparent,
+                Cursor = Cursors.Hand
+            };
+
+            Controls.AddRange([_accentLeft, _iconBadge, _lblTitle, _lblValue, _lblTrend, _lblDetail, _lblEstimated]);
 
             Resize += (_, _) => UpdateLayout();
 
@@ -221,6 +249,21 @@ namespace DzentoPOS2.WinForms.Controls
 
             _lblValue.Width = Math.Max(40, Width - 44);
             _lblValue.Location = new Point(22, Math.Max(60, Height - _lblValue.Height - 28));
+        }
+
+        public void SetDetail(string text)
+        {
+            if (IsDisposed) return;
+            _lblDetail.Text = text ?? string.Empty;
+            _lblDetail.Visible = !string.IsNullOrWhiteSpace(text);
+        }
+
+        public void SetEstimated(bool value)
+        {
+            if (IsDisposed) return;
+            _lblEstimated.Visible = value;
+            if (value)
+                _lblEstimated.Text = "⚠";
         }
 
         public void ApplyTheme()

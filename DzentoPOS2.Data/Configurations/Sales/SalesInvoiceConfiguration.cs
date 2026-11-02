@@ -71,6 +71,18 @@ namespace DzentoPOS2.Data.Configurations.Sales
                     .HasMaxLength(10);
             });
 
+            builder.OwnsOne(x => x.FeesAmount, m =>
+            {
+                m.Property(p => p.Amount)
+                    .HasColumnName("FeesAmount")
+                    .HasPrecision(18, 2)
+                    .IsRequired();
+
+                m.Property(p => p.Currency)
+                    .HasColumnName("FeesCurrency")
+                    .HasMaxLength(10);
+            });
+
             builder.OwnsOne(x => x.Discount, d =>
             {
                 d.Property(p => p.Value)

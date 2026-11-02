@@ -19,6 +19,18 @@ namespace DzentoPOS2.Core.Entities.Sales
 
         public decimal Total { get; set; }
 
+        /// <summary>Cost per unit frozen at sale time (moving weighted average).</summary>
+        public decimal UnitCost { get; set; }
+
+        /// <summary>Product list (sale) price frozen at sale time.</summary>
+        public decimal ListPrice { get; set; }
+
+        /// <summary>This line's share of the invoice-level discount.</summary>
+        public decimal DiscountAmount { get; set; }
+
+        /// <summary>True when UnitCost/ListPrice were backfilled from current data (legacy invoices).</summary>
+        public bool IsCostEstimated { get; set; }
+
         /// <summary>Free text of the line (empty for regular product lines).</summary>
         public string Description { get; set; } = string.Empty;
     }

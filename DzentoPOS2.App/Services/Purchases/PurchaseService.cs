@@ -6,10 +6,12 @@ using DzentoPOS2.Core.Constants;
 using DzentoPOS2.App.Session;
 using DzentoPOS2.Core.Entities.Purchases;
 using DzentoPOS2.Core.Enums;
+using DzentoPOS2.Core.ValueObjects.Common;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Data.Repositories.Common.Interfaces;
 using DzentoPOS2.Data.Repositories.Purchases.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Purchases;
+using DzentoPOS2.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace DzentoPOS2.App.Services.Purchases
@@ -25,6 +27,7 @@ namespace DzentoPOS2.App.Services.Purchases
         private readonly IStockService _stockService;
         private readonly ICurrentUserService _currentUser;
         private readonly IAuthorizationGuard _guard;
+    private readonly RegionalContext _regional;
 
         public PurchaseService(
             IPurchaseInvoiceRepository invoiceRepo,
@@ -35,7 +38,8 @@ namespace DzentoPOS2.App.Services.Purchases
             IDocumentNumberService documentNumbers,
             IStockService stockService,
             ICurrentUserService currentUser,
-            IAuthorizationGuard guard)
+            IAuthorizationGuard guard,
+            RegionalContext regional)
         {
             _invoiceRepo = invoiceRepo;
             _unitOfWork = unitOfWork;
@@ -46,6 +50,7 @@ namespace DzentoPOS2.App.Services.Purchases
             _stockService = stockService;
             _currentUser = currentUser;
             _guard = guard;
+            _regional = regional;
         }
 
         public async Task<List<PurchaseInvoiceDto>> GetAllAsync()
@@ -127,6 +132,45 @@ namespace DzentoPOS2.App.Services.Purchases
                         CostPrice = item.CostPrice,
                         Total = item.Quantity * item.CostPrice
                     });
+                }
+
+                // Moving weighted average cost update (tracked products only).
+                var productIds = dto.Items.Select(i => i.ProductId).Distinct().ToList();
+                var products = await _context.Products
+                    .Where(p => productIds.Contains(p.Id) && !p.IsDeleted)
+                    .ToDictionaryAsync(p => p.Id);
+                var stockTotals = (await _context.ProductStocks
+                    .Where(s => productIds.Contains(s.ProductId))
+                    .GroupBy(s => s.ProductId)
+                    .Select(g => new { ProductId = g.Key, Qty = g.Sum(x => x.Quantity.Value) })
+                    .ToListAsync())
+                    .ToDictionary(x => x.ProductId, x => x.Qty);
+
+                foreach (var group in dto.Items.GroupBy(i => i.ProductId))
+                {
+                    if (!products.TryGetValue(group.Key, out var product) || !product.TrackStock)
+                        continue;
+
+                    var oldQty = stockTotals.TryGetValue(group.Key, out var q) ? q : 0m;
+                    var inQty = group.Sum(i => i.Quantity);
+                    if (inQty <= 0) continue;
+                    var inCostTotal = group.Sum(i => i.Quantity * i.CostPrice);
+                    var inCostAvg = inCostTotal / inQty;
+
+                    decimal newAvg;
+                    if (oldQty <= 0)
+                    {
+                        newAvg = inCostAvg;
+                    }
+                    else
+                    {
+                        var oldCost = product.CostPrice?.Amount ?? 0m;
+                        newAvg = (oldQty * oldCost + inQty * inCostAvg) / (oldQty + inQty);
+                    }
+
+                    product.CostPrice = new Money(
+                        decimal.Round(newAvg, _regional.CurrencyDecimalDigits, MidpointRounding.AwayFromZero),
+                        _regional.CurrencyCode);
                 }
 
                 await _context.PurchaseInvoices.AddAsync(invoice);

@@ -10,6 +10,7 @@ using DzentoPOS2.Data.Repositories.Businesses.Interfaces;
 using DzentoPOS2.Data.Repositories.Common.Interfaces;
 using DzentoPOS2.Data.Repositories.Inventory.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
+using DzentoPOS2.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace DzentoPOS2.App.Services.Inventory;
@@ -28,6 +29,7 @@ public class ProductService : IProductService
     private readonly IStoreContextService _storeContext;
     private readonly ICurrentUserService _currentUser;
     private readonly DzentoPOS2.App.Authorization.IAuthorizationGuard _authorizationGuard;
+    private readonly RegionalContext _regional;
 
     public ProductService(
         IProductRepository productRepo,
@@ -41,7 +43,8 @@ public class ProductService : IProductService
         IStockService stockService,
         IStoreContextService storeContext,
         ICurrentUserService currentUser,
-        DzentoPOS2.App.Authorization.IAuthorizationGuard authorizationGuard)
+        DzentoPOS2.App.Authorization.IAuthorizationGuard authorizationGuard,
+        RegionalContext regional)
     {
         _productRepo = productRepo;
         _categoryRepo = categoryRepo;
@@ -55,6 +58,7 @@ public class ProductService : IProductService
         _storeContext = storeContext;
         _currentUser = currentUser;
         _authorizationGuard = authorizationGuard;
+        _regional = regional;
     }
 
     public async Task<List<ProductDto>> GetAllAsync()
@@ -99,8 +103,8 @@ public class ProductService : IProductService
             Description = dto.Description,
             CategoryId = dto.CategoryId,
             UnitId = dto.UnitId,
-            CostPrice = new Money(dto.CostPrice, "SAR"),
-            SalePrice = new Money(dto.SalePrice, "SAR"),
+            CostPrice = new Money(dto.CostPrice, _regional.CurrencyCode),
+            SalePrice = new Money(dto.SalePrice, _regional.CurrencyCode),
             MinimumStock = new Quantity(dto.MinimumStock),
             TrackStock = dto.TrackStock,
             IsActive = dto.IsActive
@@ -163,8 +167,8 @@ public class ProductService : IProductService
         product.Description = dto.Description;
         product.CategoryId = dto.CategoryId;
         product.UnitId = dto.UnitId;
-        product.CostPrice = new Money(dto.CostPrice, "SAR");
-        product.SalePrice = new Money(dto.SalePrice, "SAR");
+        product.CostPrice = new Money(dto.CostPrice, _regional.CurrencyCode);
+        product.SalePrice = new Money(dto.SalePrice, _regional.CurrencyCode);
         product.MinimumStock = new Quantity(dto.MinimumStock);
         product.TrackStock = dto.TrackStock;
         product.IsActive = dto.IsActive;
@@ -316,6 +320,6 @@ public class ProductService : IProductService
         MinimumStock = product.MinimumStock?.Value ?? 0,
         TrackStock = product.TrackStock,
         IsActive = product.IsActive,
-        Currency = product.CostPrice?.Currency ?? "SAR"
+        Currency = product.CostPrice?.Currency ?? _regional.CurrencyCode
     };
 }

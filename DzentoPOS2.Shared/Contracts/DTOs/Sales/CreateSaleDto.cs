@@ -14,6 +14,9 @@ namespace DzentoPOS2.Shared.Contracts.DTOs.Sales
 
         public decimal TaxRate { get; set; }
 
+        /// <summary>Fixed fees entered manually by the cashier (>= 0).</summary>
+        public decimal Fees { get; set; }
+
         /// <summary>Cash handed over by the customer (may exceed the total).</summary>
         public decimal PaidAmount { get; set; }
 

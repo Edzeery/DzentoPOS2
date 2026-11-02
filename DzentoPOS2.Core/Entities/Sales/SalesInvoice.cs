@@ -24,6 +24,9 @@ namespace DzentoPOS2.Core.Entities.Sales
 
         public Money Total { get; private set; } = null!;
 
+        /// <summary>Fixed fees entered manually by the cashier (>= 0). Not part of revenue or tax.</summary>
+        public Money FeesAmount { get; private set; } = null!;
+
         public Percentage Discount { get; private set; } = null!;
 
         /// <summary>How <see cref="DiscountValue"/> is interpreted.</summary>
@@ -94,8 +97,12 @@ namespace DzentoPOS2.Core.Entities.Sales
             DiscountMode discountMode,
             decimal discountValue,
             decimal taxRate,
-            string currency)
+            string currency,
+            decimal feesAmount = 0m)
         {
+            if (feesAmount < 0)
+                throw new DomainException("Fees cannot be negative");
+
             return new SalesInvoice
             {
                 InvoiceNumber = new InvoiceNumber(invoiceNumber),
@@ -105,6 +112,7 @@ namespace DzentoPOS2.Core.Entities.Sales
                 DiscountAmount = new Money(totals.DiscountAmount, currency),
                 TaxAmount = new Money(totals.TaxAmount, currency),
                 Total = new Money(totals.Total, currency),
+                FeesAmount = new Money(feesAmount, currency),
                 DiscountMode = discountMode,
                 DiscountValue = discountValue,
                 Discount = new Percentage(discountMode == DiscountMode.Percent ? discountValue : 0m),

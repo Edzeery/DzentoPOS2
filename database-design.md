@@ -25,8 +25,8 @@ CashSessions ─┘     │  │                                  │
 
 | Table | Purpose | Key columns / links |
 |---|---|---|
-| `SalesInvoices` | One committed sale (or credit sale). | `CashSessionId` → `CashSessions` (`Restrict`), `CustomerId` → `Customers`, `IsVoided`, `Total`, `PaidAmount`, `RemainingAmount`, `InvoiceNumber` (from `DocumentSequences`). |
-| `SalesInvoiceItems` | Lines of a sale. | `SalesInvoiceId` → `SalesInvoices`, `ProductId` → `Products`, `Description` (≤ 1000). |
+| `SalesInvoices` | One committed sale (or credit sale). | `CashSessionId` → `CashSessions` (`Restrict`), `CustomerId` → `Customers`, `IsVoided`, `Subtotal`, `DiscountAmount`, `TaxAmount`, `Total`, `FeesAmount`, `PaidAmount`, `RemainingAmount`, `InvoiceNumber` (from `DocumentSequences`). |
+| `SalesInvoiceItems` | Lines of a sale. | `SalesInvoiceId` → `SalesInvoices`, `ProductId` → `Products`, `Quantity`, `Price`, `Total`, `UnitCost` (frozen moving avg), `ListPrice` (frozen product sale price), `DiscountAmount` (line share), `IsCostEstimated`, `Description` (≤ 1000). |
 | `SalesPayments` | Payments taken for a sale. | `SalesInvoiceId` → `SalesInvoices`, `PaymentMethod` (`Cash`, `Card`, …), `Amount`. Only **cash** rows affect the drawer. |
 | `CashSessions` | One open drawer per cashbox per business day. | `CashboxId`, `Status` (`CashSessionStatus`), `OpeningBalance`, `ClosingBalance`, `ExpectedBalance`, `Difference`, `OpenedAtUtc`. Filtered **unique** index `UX_CashSessions_OpenPerCashbox` on `CashboxId` where `"Status" = 0 AND "IsDeleted" = 0`. |
 | `CashTransactions` | Ledger of every drawer movement. | `CashboxId`, `CashSessionId` → `CashSessions` (`Restrict`), `Amount`, `TransactionType` (`MovementType`), `SourceType` + `SourceId` (polymorphic link back to the sale / expense / movement). |

@@ -188,12 +188,15 @@ namespace DzentoPOS2.App.Services.Sales
             if (openSession.OpeningBalance < 0)
                 throw new DzentoPOS2.Core.Exceptions.CashSessionRequiredException();
 
+            var productIds = dto.Items.Select(i => i.ProductId).Distinct().ToList();
+            var products = await _context.Products
+                .AsNoTracking()
+                .Where(p => productIds.Contains(p.Id) && !p.IsDeleted)
+                .ToDictionaryAsync(p => p.Id);
+
             foreach (var item in dto.Items)
             {
-                var product = await _context.Products
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(p => p.Id == item.ProductId && !p.IsDeleted);
-                if (product == null || !product.IsActive)
+                if (!products.TryGetValue(item.ProductId, out var product) || !product.IsActive)
                     throw new InvalidOperationException("Invalid or inactive product");
             }
 
@@ -223,6 +226,11 @@ namespace DzentoPOS2.App.Services.Sales
                     var invoiceNumber =
                         await _documentNumbers.NextInvoiceNumberAsync();
 
+                    var fees = decimal.Round(
+                        dto.Fees < 0 ? 0 : dto.Fees,
+                        digits,
+                        MidpointRounding.AwayFromZero);
+
                     var invoice = SalesInvoice.Create(
                         invoiceNumber,
                         dto.CustomerId,
@@ -231,22 +239,52 @@ namespace DzentoPOS2.App.Services.Sales
                         dto.DiscountMode,
                         dto.DiscountValue,
                         dto.TaxRate,
-                        currency);
+                        currency,
+                        fees);
 
+                    // Distribute the invoice-level discount across lines proportionally
+                    // to each line's gross (Price × Qty), with the rounding remainder
+                    // added to the last line.
+                    var lineGrosses = dto.Items
+                        .Select(i => decimal.Round(i.Quantity * i.Price, digits, MidpointRounding.AwayFromZero))
+                        .ToList();
+                    var grossSum = lineGrosses.Sum();
+                    var shares = new List<decimal>(dto.Items.Count);
+                    var allocated = 0m;
+                    for (int li = 0; li < dto.Items.Count; li++)
+                    {
+                        if (li == dto.Items.Count - 1)
+                        {
+                            shares.Add(totals.DiscountAmount - allocated);
+                        }
+                        else
+                        {
+                            var share = grossSum > 0
+                                ? decimal.Round(totals.DiscountAmount * lineGrosses[li] / grossSum, digits, MidpointRounding.AwayFromZero)
+                                : 0m;
+                            shares.Add(share);
+                            allocated += share;
+                        }
+                    }
+
+                    var itemIndex = 0;
                     foreach (var item in dto.Items)
                     {
+                        var product = products[item.ProductId];
                         var line = new SalesInvoiceItem
                         {
                             ProductId = item.ProductId,
                             Quantity = item.Quantity,
                             Price = item.Price,
-                            Total = decimal.Round(
-                                item.Quantity * item.Price,
-                                digits,
-                                MidpointRounding.AwayFromZero),
+                            Total = lineGrosses[itemIndex],
+                            UnitCost = product.CostPrice?.Amount ?? 0m,
+                            ListPrice = product.SalePrice?.Amount ?? 0m,
+                            DiscountAmount = shares[itemIndex],
+                            IsCostEstimated = false,
                             Description = string.IsNullOrWhiteSpace(item.Description) ? string.Empty : item.Description.Trim()
                         };
                         invoice.Items.Add(line);
+                        itemIndex++;
                     }
 
                     invoice.AssignCashSession(openSession.Id);
@@ -498,6 +536,7 @@ namespace DzentoPOS2.App.Services.Sales
                 TaxRate = invoice.Tax?.Rate ?? 0,
                 TaxAmount = invoice.TaxAmount?.Amount ?? 0,
                 Total = invoice.Total?.Amount ?? 0,
+                FeesAmount = invoice.FeesAmount?.Amount ?? 0,
                 PaidAmount = invoice.PaidAmount?.Amount ?? 0,
                 RemainingAmount = invoice.RemainingAmount?.Amount ?? 0,
                 IsVoided = invoice.IsVoided,
@@ -511,6 +550,10 @@ namespace DzentoPOS2.App.Services.Sales
                     Quantity = i.Quantity,
                     Price = i.Price,
                     Total = i.Total,
+                    UnitCost = i.UnitCost,
+                    ListPrice = i.ListPrice,
+                    DiscountAmount = i.DiscountAmount,
+                    IsCostEstimated = i.IsCostEstimated,
                     Description = i.Description ?? string.Empty
                 }).ToList() ?? new()
             };

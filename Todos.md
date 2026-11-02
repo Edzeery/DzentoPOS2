@@ -159,6 +159,15 @@
 | G4 | العودة إلى استهداف .NET 9 ومحاذاة حزم `Microsoft.*` إلى `9.0.22` | ✅ | إعادة TFM إلى `net9.0` / `net9.0-windows`، وإزالة `global.json`، و`ProductVersion` → `9.0.22`، وإضافة `NuGet.config` لإصلاح استعادة الحزم؛ 0 أخطاء / 21 تحذير `NU1701`، الوحدة 84 والتكامل 41، و`has-pending-model-changes` نظيف، وقاعدة بيانات جديدة تُطبّق 9 ترحيلات (56 جدولًا)؛ `docs/net9-retarget.md` |
 | G5 | تشغيل مسار الإقلاع على نسخ قواعد بيانات حقيقية | ✅ | commit `5c367f9` (على .NET 10)؛ مسار الإقلاع لا يخصّ إصدار الإطار: `docs/net10-smoke-run.md` |
 
+## H — إعادة بناء حساب الأرباح (المراحل 1–4) ✅
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| H.1 | المرحلة 1: بيانات (UnitCost/ListPrice/DiscountAmount/IsCostEstimated على SalesInvoiceItem؛ FeesAmount على SalesInvoice) + ترحيل ProfitRebuild_Phase1 | ✅ | migration `20261102113616_ProfitRebuild_Phase1` (backfill) |
+| H.2 | المرحلة 2: إصلاح SalesInvoice.Create (خصم قبل ضريبة) + DTOs (Fees) | ✅ | `dotnet build` نظيف |
+| H.3 | المرحلة 3: متوسط متحرك في PurchaseService + توحيد العملة | ✅ | `ProfitFlowTests` |
+| H.4 | المرحلة 4: تثبيت التكلفة في البيع + ProfitCalculator + اختبارات | ✅ | Unit 109 + Integration 59 |
+
 ## G1 — استكمال E4–E7 (اكتشاف الكاميرا، نطاق لكل صفحة، الأمان/التدقيق، مسارات البيانات والنسخ الاحتياطي)
 
 | # | المهمة | الحالة | دليل الإنجاز |

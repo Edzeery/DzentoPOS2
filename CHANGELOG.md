@@ -2,6 +2,12 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] — 2026-11-02 (Profit rebuild phases 1-4)
+- Phase 1 (data): `SalesInvoiceItem` gained `UnitCost`, `ListPrice`, `DiscountAmount`, `IsCostEstimated`; `SalesInvoice` gained `FeesAmount`. Migration `ProfitRebuild_Phase1` backfills legacy rows (UnitCost from current Product.CostPrice, ListPrice from line Price, IsCostEstimated=true).
+- Phase 2 (invoice): `SalesInvoice.Create` keeps discount-before-tax; DTOs gained `Fees`. Currency unified via RegionalContext.
+- Phase 3 (stock/cost): `PurchaseService.CreateAsync` applies moving weighted average to `Product.CostPrice` for tracked products; stock already handled by StockService.
+- Phase 4 (frozen cost): `SaleService.CreateAsync` freezes `UnitCost`/`ListPrice`/line discount share and `FeesAmount`; added `ProfitCalculator` (Core) with comprehensive unit tests; added `ProfitFlowTests` integration test.
+
 ## [Unreleased] — 2026-10-29 (G1.3 security, authorization, audit)
 
 ### Added

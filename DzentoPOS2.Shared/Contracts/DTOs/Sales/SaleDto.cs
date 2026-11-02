@@ -23,6 +23,7 @@ namespace DzentoPOS2.Shared.Contracts.DTOs.Sales
         public decimal AfterDiscount { get; set; }
         public decimal TaxRate { get; set; }
         public decimal TaxAmount { get; set; }
+        public decimal FeesAmount { get; set; }
 
         /// <summary>Net amount applied to the invoice (never more than the total).</summary>
         public decimal PaidAmount { get; set; }

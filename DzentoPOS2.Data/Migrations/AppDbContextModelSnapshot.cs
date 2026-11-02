@@ -2099,10 +2099,23 @@ namespace DzentoPOS2.Data.Migrations
                         .HasColumnType("TEXT")
                         .HasDefaultValue("");
 
+                    b.Property<decimal>("DiscountAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsCostEstimated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
+
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
                         .HasDefaultValue(false);
+
+                    b.Property<decimal>("ListPrice")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("TEXT");
 
                     b.Property<decimal>("Price")
                         .HasPrecision(18, 2)
@@ -2119,6 +2132,10 @@ namespace DzentoPOS2.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("UnitCost")
                         .HasPrecision(18, 2)
                         .HasColumnType("TEXT");
 
@@ -3483,6 +3500,30 @@ namespace DzentoPOS2.Data.Migrations
                                 .HasForeignKey("SalesInvoiceId");
                         });
 
+                    b.OwnsOne("DzentoPOS2.Core.ValueObjects.Common.Money", "FeesAmount", b1 =>
+                        {
+                            b1.Property<Guid>("SalesInvoiceId")
+                                .HasColumnType("TEXT");
+
+                            b1.Property<decimal>("Amount")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("TEXT")
+                                .HasColumnName("FeesAmount");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(10)
+                                .HasColumnType("TEXT")
+                                .HasColumnName("FeesCurrency");
+
+                            b1.HasKey("SalesInvoiceId");
+
+                            b1.ToTable("SalesInvoices");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SalesInvoiceId");
+                        });
+
                     b.OwnsOne("DzentoPOS2.Core.ValueObjects.Common.Money", "PaidAmount", b1 =>
                         {
                             b1.Property<Guid>("SalesInvoiceId")
@@ -3665,6 +3706,9 @@ namespace DzentoPOS2.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("DiscountAmount")
+                        .IsRequired();
+
+                    b.Navigation("FeesAmount")
                         .IsRequired();
 
                     b.Navigation("InvoiceNumber")

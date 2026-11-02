@@ -9,7 +9,9 @@ using DzentoPOS2.WinForms.Services.Barcodes;
 using DzentoPOS2.WinForms.Themes;
 using Microsoft.Extensions.DependencyInjection;
 using DzentoPOS2.App.Services.Barcodes;
+using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Systems;
+using DzentoPOS2.Core.Constants;
 
 namespace DzentoPOS2.WinForms.Forms.Settings;
 
@@ -342,6 +344,9 @@ public partial class SettingsForm : LocalizableFormBase
         _btnRestoreBackup = ButtonFactory.Neutral(AppStrings.RestoreBackup, ButtonFactory.ButtonSize.Small);
         _btnRestoreBackup.Click += async (_, _) => await RestoreBackupAsync();
 
+        // Affordance: disable backup/restore when the user lacks permission.
+        _ = ApplyBackupPermissionsAsync();
+
         var backupButtons = new FlowLayoutPanel
         {
             Dock = DockStyle.Fill,
@@ -540,6 +545,28 @@ public partial class SettingsForm : LocalizableFormBase
         _btnBackupNow.Text = AppStrings.BackupNow;
         _btnRestoreBackup.Text = AppStrings.RestoreBackup;
         LayoutCards();
+    }
+
+    private async Task ApplyBackupPermissionsAsync()
+    {
+        try
+        {
+            var guard = _services?.GetService<IAuthorizationGuard>();
+            if (guard is null) return;
+
+            bool canCreate = await guard.IsAllowedAsync(Permissions.BackupCreate);
+            bool canRestore = await guard.IsAllowedAsync(Permissions.BackupRestore);
+
+            if (!IsDisposed)
+            {
+                _btnBackupNow.Enabled = canCreate;
+                _btnRestoreBackup.Enabled = canRestore;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"ApplyBackupPermissions failed: {ex.Message}");
+        }
     }
 
     private async Task BackupNowAsync()

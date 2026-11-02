@@ -730,8 +730,16 @@ namespace DzentoPOS2.Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("RecoveryFailedCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0);
+
                     b.Property<string>("RecoveryKeyHash")
                         .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("RecoveryLockedUntilUtc")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime?>("UpdatedAt")

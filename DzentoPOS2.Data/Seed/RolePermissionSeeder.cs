@@ -62,6 +62,7 @@ namespace DzentoPOS2.Data.Seed
                     Permissions.SalesView,
                     Permissions.SalesCreate,
                     Permissions.SalesReturn,
+                    Permissions.SalesDiscountOverride,
 
                     Permissions.CustomersView,
                     Permissions.CustomersCreate,
@@ -79,9 +80,11 @@ namespace DzentoPOS2.Data.Seed
                     Permissions.CashSessionsView,
                     Permissions.CashSessionsOpen,
                     Permissions.CashSessionsClose,
+                    Permissions.CashSessionsMovements,
 
                     Permissions.ReportsView,
-                    Permissions.SettingsView
+                    Permissions.SettingsView,
+                    Permissions.BackupCreate
                 });
 
             // CASHIER
@@ -101,7 +104,8 @@ namespace DzentoPOS2.Data.Seed
                     Permissions.ProductsView,
                     Permissions.CashSessionsView,
                     Permissions.CashSessionsOpen,
-                    Permissions.CashSessionsClose
+                    Permissions.CashSessionsClose,
+                    Permissions.CashSessionsMovements
                 });
         }
 

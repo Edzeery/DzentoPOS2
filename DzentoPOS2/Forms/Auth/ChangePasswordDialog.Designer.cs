@@ -15,98 +15,131 @@ partial class ChangePasswordDialog
     /// </summary>
     private void InitializeComponent()
     {
-        this._lblHint = new System.Windows.Forms.Label();
-        this._lblCurrent = new System.Windows.Forms.Label();
-        this._txtCurrent = new System.Windows.Forms.TextBox();
-        this._lblNew = new System.Windows.Forms.Label();
-        this._txtNew = new System.Windows.Forms.TextBox();
-        this._lblConfirm = new System.Windows.Forms.Label();
-        this._txtConfirm = new System.Windows.Forms.TextBox();
-        this._btnSave = new System.Windows.Forms.Button();
-        this._btnCancel = new System.Windows.Forms.Button();
-        this.SuspendLayout();
+        _lblHint = new Label();
+        _lblCurrent = new Label();
+        _txtCurrent = new TextBox();
+        _lblNew = new Label();
+        _txtNew = new TextBox();
+        _lblConfirm = new Label();
+        _txtConfirm = new TextBox();
+        _btnSave = new Button();
+        _btnCancel = new Button();
+        SuspendLayout();
         // 
         // _lblHint
         // 
-        this._lblHint.Font = new System.Drawing.Font("Segoe UI", 9.5F);
-        this._lblHint.ForeColor = DzentoPOS2.WinForms.Themes.AppColors.InkMuted;
-        this._lblHint.Location = new System.Drawing.Point(24, 16);
-        this._lblHint.Size = new System.Drawing.Size(496, 40);
+        _lblHint.Font = new Font("Segoe UI", 9.5F);
+        _lblHint.ForeColor = Color.FromArgb(0, 64, 64);
+        _lblHint.Location = new Point(24, 16);
+        _lblHint.Name = "_lblHint";
+        _lblHint.Size = new Size(496, 40);
+        _lblHint.TabIndex = 0;
         // 
         // _lblCurrent
         // 
-        this._lblCurrent.Font = new System.Drawing.Font("Segoe UI", 10F);
-        this._lblCurrent.Location = new System.Drawing.Point(24, 70);
-        this._lblCurrent.Size = new System.Drawing.Size(150, 28);
-        this._lblCurrent.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+        _lblCurrent.BackColor = Color.Transparent;
+        _lblCurrent.Font = new Font("Segoe UI", 10F);
+        _lblCurrent.ForeColor = Color.Teal;
+        _lblCurrent.Location = new Point(24, 70);
+        _lblCurrent.Name = "_lblCurrent";
+        _lblCurrent.Size = new Size(150, 28);
+        _lblCurrent.TabIndex = 1;
+        _lblCurrent.Text = "111";
+        _lblCurrent.TextAlign = ContentAlignment.MiddleLeft;
         // 
         // _txtCurrent
         // 
-        this._txtCurrent.Font = new System.Drawing.Font("Segoe UI", 10F);
-        this._txtCurrent.Location = new System.Drawing.Point(190, 70);
-        this._txtCurrent.Size = new System.Drawing.Size(330, 28);
-        this._txtCurrent.UseSystemPasswordChar = true;
+        _txtCurrent.Font = new Font("Segoe UI", 10F);
+        _txtCurrent.ForeColor = Color.FromArgb(0, 64, 64);
+        _txtCurrent.Location = new Point(190, 70);
+        _txtCurrent.Name = "_txtCurrent";
+        _txtCurrent.Size = new Size(330, 25);
+        _txtCurrent.TabIndex = 2;
+        _txtCurrent.UseSystemPasswordChar = true;
         // 
         // _lblNew
         // 
-        this._lblNew.Font = new System.Drawing.Font("Segoe UI", 10F);
-        this._lblNew.Location = new System.Drawing.Point(24, 114);
-        this._lblNew.Size = new System.Drawing.Size(150, 28);
-        this._lblNew.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+        _lblNew.BackColor = Color.Transparent;
+        _lblNew.Font = new Font("Segoe UI", 10F);
+        _lblNew.ForeColor = Color.Teal;
+        _lblNew.Location = new Point(24, 114);
+        _lblNew.Name = "_lblNew";
+        _lblNew.Size = new Size(150, 28);
+        _lblNew.TabIndex = 3;
+        _lblNew.Text = "111";
+        _lblNew.TextAlign = ContentAlignment.MiddleLeft;
         // 
         // _txtNew
         // 
-        this._txtNew.Font = new System.Drawing.Font("Segoe UI", 10F);
-        this._txtNew.Location = new System.Drawing.Point(190, 114);
-        this._txtNew.Size = new System.Drawing.Size(330, 28);
-        this._txtNew.UseSystemPasswordChar = true;
+        _txtNew.Font = new Font("Segoe UI", 10F);
+        _txtNew.ForeColor = Color.FromArgb(0, 64, 64);
+        _txtNew.Location = new Point(190, 114);
+        _txtNew.Name = "_txtNew";
+        _txtNew.Size = new Size(330, 25);
+        _txtNew.TabIndex = 4;
+        _txtNew.UseSystemPasswordChar = true;
         // 
         // _lblConfirm
         // 
-        this._lblConfirm.Font = new System.Drawing.Font("Segoe UI", 10F);
-        this._lblConfirm.Location = new System.Drawing.Point(24, 158);
-        this._lblConfirm.Size = new System.Drawing.Size(150, 28);
-        this._lblConfirm.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+        _lblConfirm.BackColor = Color.Transparent;
+        _lblConfirm.Font = new Font("Segoe UI", 10F);
+        _lblConfirm.ForeColor = Color.Teal;
+        _lblConfirm.Location = new Point(24, 158);
+        _lblConfirm.Name = "_lblConfirm";
+        _lblConfirm.Size = new Size(150, 28);
+        _lblConfirm.TabIndex = 5;
+        _lblConfirm.Text = "111";
+        _lblConfirm.TextAlign = ContentAlignment.MiddleLeft;
         // 
         // _txtConfirm
         // 
-        this._txtConfirm.Font = new System.Drawing.Font("Segoe UI", 10F);
-        this._txtConfirm.Location = new System.Drawing.Point(190, 158);
-        this._txtConfirm.Size = new System.Drawing.Size(330, 28);
-        this._txtConfirm.UseSystemPasswordChar = true;
+        _txtConfirm.Font = new Font("Segoe UI", 10F);
+        _txtConfirm.ForeColor = Color.FromArgb(0, 64, 64);
+        _txtConfirm.Location = new Point(190, 158);
+        _txtConfirm.Name = "_txtConfirm";
+        _txtConfirm.Size = new Size(330, 25);
+        _txtConfirm.TabIndex = 6;
+        _txtConfirm.UseSystemPasswordChar = true;
         // 
         // _btnSave
         // 
-        this._btnSave.Location = new System.Drawing.Point(190, 214);
-        this._btnSave.Size = new System.Drawing.Size(160, 40);
+        _btnSave.ForeColor = Color.FromArgb(0, 64, 64);
+        _btnSave.Location = new Point(190, 214);
+        _btnSave.Name = "_btnSave";
+        _btnSave.Size = new Size(160, 40);
+        _btnSave.TabIndex = 7;
         // 
         // _btnCancel
         // 
-        this._btnCancel.Location = new System.Drawing.Point(360, 214);
-        this._btnCancel.Size = new System.Drawing.Size(160, 40);
-        this._btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+        _btnCancel.DialogResult = DialogResult.Cancel;
+        _btnCancel.ForeColor = Color.FromArgb(0, 64, 64);
+        _btnCancel.Location = new Point(360, 214);
+        _btnCancel.Name = "_btnCancel";
+        _btnCancel.Size = new Size(160, 40);
+        _btnCancel.TabIndex = 8;
         // 
         // ChangePasswordDialog
         // 
-        this.AcceptButton = this._btnSave;
-        this.CancelButton = this._btnCancel;
-        this.BackColor = DzentoPOS2.WinForms.Themes.AppColors.Surface;
-        this.ClientSize = new System.Drawing.Size(560, 400);
-        this.Controls.Add(this._lblHint);
-        this.Controls.Add(this._lblCurrent);
-        this.Controls.Add(this._txtCurrent);
-        this.Controls.Add(this._lblNew);
-        this.Controls.Add(this._txtNew);
-        this.Controls.Add(this._lblConfirm);
-        this.Controls.Add(this._txtConfirm);
-        this.Controls.Add(this._btnSave);
-        this.Controls.Add(this._btnCancel);
-        this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-        this.MaximizeBox = false;
-        this.MinimizeBox = false;
-        this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-        this.ResumeLayout(false);
-        this.PerformLayout();
+        AcceptButton = _btnSave;
+        BackColor = Color.White;
+        CancelButton = _btnCancel;
+        ClientSize = new Size(560, 400);
+        Controls.Add(_lblHint);
+        Controls.Add(_lblCurrent);
+        Controls.Add(_txtCurrent);
+        Controls.Add(_lblNew);
+        Controls.Add(_txtNew);
+        Controls.Add(_lblConfirm);
+        Controls.Add(_txtConfirm);
+        Controls.Add(_btnSave);
+        Controls.Add(_btnCancel);
+        FormBorderStyle = FormBorderStyle.FixedDialog;
+        MaximizeBox = false;
+        MinimizeBox = false;
+        Name = "ChangePasswordDialog";
+        StartPosition = FormStartPosition.CenterScreen;
+        ResumeLayout(false);
+        PerformLayout();
     }
 
     #endregion

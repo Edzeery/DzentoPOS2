@@ -1,6 +1,8 @@
 using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.App.Services.Partners;
+using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Purchases;
+using DzentoPOS2.Core.Constants;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
@@ -16,6 +18,7 @@ namespace DzentoPOS2.WinForms.Forms.Purchases;
 public partial class PurchasesForm : LocalizableFormBase
 {
     private readonly IPurchaseService _purchaseService;
+    private readonly IAuthorizationGuard _guard;
     private readonly IProductService _productService;
     private readonly ISupplierService _supplierService;
 
@@ -34,12 +37,14 @@ public partial class PurchasesForm : LocalizableFormBase
         IPurchaseService purchaseService,
         IProductService productService,
         ISupplierService supplierService,
-        ILanguageService languageService)
+        ILanguageService languageService,
+        IAuthorizationGuard guard)
         : base(languageService)
     {
         _purchaseService = purchaseService;
         _productService = productService;
         _supplierService = supplierService;
+        _guard = guard;
 
         Size = new Size(1100, 650);
         BackColor = AppColors.Background;
@@ -86,7 +91,28 @@ public partial class PurchasesForm : LocalizableFormBase
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
+
+        _ = ApplyPermissionsAsync();
+
         RunSafe(InitializeAsync);
+    }
+
+    private async Task ApplyPermissionsAsync()
+    {
+        try
+        {
+            bool canCreate = await _guard.IsAllowedAsync(Permissions.PurchasesCreate);
+            bool canDelete = await _guard.IsAllowedAsync(Permissions.PurchasesDelete);
+            if (!IsDisposedOrDisposing)
+            {
+                _btnNewPurchase.Enabled = canCreate;
+                _btnDelete.Enabled = canDelete;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine("PurchasesForm permission check failed: " + ex.Message);
+        }
     }
 
     private async Task InitializeAsync()

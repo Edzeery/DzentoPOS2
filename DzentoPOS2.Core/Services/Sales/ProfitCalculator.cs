@@ -94,6 +94,20 @@ namespace DzentoPOS2.Core.Services.Sales
             return Round(lines.Sum(l => (l.ListPrice - l.UnitCost) * l.Quantity), digits);
         }
 
+        public static decimal CalculateExpectedStockProfit(
+            IEnumerable<(decimal Qty, decimal SalePrice, decimal Cost)> items,
+            int digits = 2)
+        {
+            if (items is null) throw new ArgumentNullException(nameof(items));
+            decimal total = 0m;
+            foreach (var (qty, salePrice, cost) in items)
+            {
+                if (qty <= 0) continue;
+                total += qty * (salePrice - cost);
+            }
+            return Round(total, digits);
+        }
+
         public static decimal CalculateGrossProfit(decimal revenue, decimal cost, decimal returnsNetEffect = 0m) =>
             revenue - cost - returnsNetEffect;
 

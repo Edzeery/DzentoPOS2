@@ -272,6 +272,14 @@ namespace DzentoPOS2.WinForms.Controls
                 _lblEstimated.Text = "⚠";
         }
 
+        public void SetTooltip(string text)
+        {
+            if (IsDisposed) return;
+            _toolTip.SetToolTip(this, text);
+            _toolTip.SetToolTip(_lblTitle, text);
+            _toolTip.SetToolTip(_lblValue, text);
+        }
+
         public void ApplyTheme()
         {
             if (IsDisposed) return;

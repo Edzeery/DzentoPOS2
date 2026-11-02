@@ -245,6 +245,42 @@ public sealed class DashboardProfitTests
     }
 
     [Fact]
+    public async Task ExpectedStockProfit_AfterBuy6Sell1()
+    {
+        await using var scope = _fixture.CreateScope();
+        var ctx = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var sales = scope.ServiceProvider.GetRequiredService<ISaleService>();
+        var dashboard = scope.ServiceProvider.GetRequiredService<IDashboardService>();
+
+        var product = await CreateProductAsync(ctx, 5, 10);
+        ctx.ProductStocks.Add(new ProductStock
+        {
+            ProductId = product.Id,
+            WarehouseId = _fixture.Data.WarehouseId,
+            Quantity = new Quantity(6)
+        });
+        await ctx.SaveChangesAsync();
+
+        var before = await dashboard.GetSummaryAsync();
+
+        await sales.CreateAsync(new CreateSaleDto
+        {
+            CustomerId = Guid.Empty,
+            DiscountMode = DzentoPOS2.Core.Services.Sales.DiscountMode.Percent,
+            DiscountValue = 0,
+            TaxRate = 0,
+            PaidAmount = 10,
+            Items = { new CreateSaleItemDto { ProductId = product.Id, Quantity = 1, Price = 10 } }
+        });
+
+        var after = await dashboard.GetSummaryAsync();
+
+        Assert.Equal(5m, after.ExpectedSoldProfit.Value - before.ExpectedSoldProfit.Value);
+        Assert.Equal(-5m, after.ExpectedStockProfit.Value - before.ExpectedStockProfit.Value);
+        Assert.Equal(0m, after.ExpectedProfit.Value - before.ExpectedProfit.Value);
+    }
+
+    [Fact]
     public async Task AcceptanceExample_ViaDashboard()
     {
         await using var scope = _fixture.CreateScope();

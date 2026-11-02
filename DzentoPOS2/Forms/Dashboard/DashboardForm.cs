@@ -1,6 +1,7 @@
 ﻿using DzentoPOS2.App.Services.Reports.Interfaces;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.WinForms.Helpers;
+using DzentoPOS2.WinForms.Controls;
 using DzentoPOS2.WinForms.Modules.Dashboard;
 using DzentoPOS2.WinForms.Themes;
 
@@ -10,6 +11,7 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
     {
         private readonly IDashboardService _dashboardService;
         private readonly KpiCardsModule _kpiCards;
+        private readonly ProfitSummaryModule _profitSummary;
         private readonly ChartsModule _charts;
         private readonly InsightsModule _insights;
         private readonly RecentTransactionsModule _recentTransactions;
@@ -21,6 +23,7 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
             InitializeComponent();
             _dashboardService = dashboardService;
             _kpiCards = new KpiCardsModule();
+            _profitSummary = new ProfitSummaryModule();
             _recentTransactions = new RecentTransactionsModule();
             _charts = new ChartsModule(_recentTransactions);
             _insights = new InsightsModule();
@@ -33,13 +36,14 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
                 Dock = DockStyle.Top,
                 AutoSize = true,
                 ColumnCount = 1,
-                RowCount = 3,
+                RowCount = 4,
                 Padding = new Padding(20, 16, 20, 20),
                 BackColor = Color.Transparent,
                 Width = ClientSize.Width - 40
             };
 
             _layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            _layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             _layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             _layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             _layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -61,8 +65,9 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
             }
 
             _layout.Controls.Add(_kpiCards.Build(), 0, 0);
-            _layout.Controls.Add(_insights.Build(), 0, 1);
-            _layout.Controls.Add(_charts.Build(), 0, 2);
+            _layout.Controls.Add(_profitSummary.Build(), 0, 1);
+            _layout.Controls.Add(_insights.Build(), 0, 2);
+            _layout.Controls.Add(_charts.Build(), 0, 3);
 
             ResumeLayout();
         }
@@ -77,6 +82,7 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
             if (IsDisposedOrDisposing) return;
 
             _kpiCards.Update(data);
+            _profitSummary.Update(data, KpiCard.CurrencyDigits);
             _insights.Update(data);
             _charts.Update(data);
             _recentTransactions.Update(data);

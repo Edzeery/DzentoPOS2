@@ -65,6 +65,20 @@ public sealed class ProfitCalculatorTests
     }
 
     [Fact]
+    public void ExpectedStockProfit_IgnoresNonPositiveAndKeepsNegativeMargin()
+    {
+        var items = new[]
+        {
+            (Qty: 5m, SalePrice: 10m, Cost: 6m),
+            (Qty: 0m, SalePrice: 10m, Cost: 6m),
+            (Qty: -2m, SalePrice: 10m, Cost: 6m),
+            (Qty: 2m, SalePrice: 5m, Cost: 6m) // negative margin
+        };
+        var r = ProfitCalculator.CalculateExpectedStockProfit(items);
+        Assert.Equal(5m * 4m + 2m * (-1m), r);
+    }
+
+    [Fact]
     public void PartialReturnCostReversal()
     {
         // ReturnLineNet 30, original unit cost 60, qty 0.5 => 30 - 30 = 0 net effect

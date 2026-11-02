@@ -1137,6 +1137,27 @@
   <data name="Fees" xml:space="preserve">
     <value>Fees</value>
   </data>
+  <data name="ProfitSummaryTitle" xml:space="preserve">
+    <value>Profit Summary</value>
+  </data>
+  <data name="NetRevenue" xml:space="preserve">
+    <value>Net Revenue</value>
+  </data>
+  <data name="CostOfGoods" xml:space="preserve">
+    <value>Cost of Goods</value>
+  </data>
+  <data name="Returns" xml:space="preserve">
+    <value>Returns</value>
+  </data>
+  <data name="GrossProfit" xml:space="preserve">
+    <value>Gross Profit</value>
+  </data>
+  <data name="ExpectedSold" xml:space="preserve">
+    <value>Sold</value>
+  </data>
+  <data name="ExpectedStock" xml:space="preserve">
+    <value>Stock</value>
+  </data>
   <data name="NetProfit" xml:space="preserve">
     <value>Net Profit</value>
   </data>

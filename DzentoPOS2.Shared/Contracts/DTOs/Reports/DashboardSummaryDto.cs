@@ -11,10 +11,17 @@ namespace DzentoPOS2.Shared.Contracts.DTOs.Reports
         public DashboardCardData MonthlySales { get; set; } = new();
         public DashboardCardData MonthlyPurchases { get; set; } = new();
         public DashboardCardData ExpectedProfit { get; set; } = new();
+        public DashboardCardData ExpectedSoldProfit { get; set; } = new();
+        public DashboardCardData ExpectedStockProfit { get; set; } = new();
         public DashboardCardData ActualProfit { get; set; } = new();
         public DashboardCardData NetProfit { get; set; } = new();
         public decimal MonthlyDiscountAmount { get; set; }
         public decimal MonthlyFeesAmount { get; set; }
+        public decimal MonthlyRevenue { get; set; }
+        public decimal MonthlyCost { get; set; }
+        public decimal MonthlyReturns { get; set; }
+        public decimal MonthlyGrossProfit { get; set; }
+        public decimal MonthlyExpenses { get; set; }
         public DashboardCardData ActiveProducts { get; set; } = new();
         public DashboardCardData LowStock { get; set; } = new();
         public DashboardCardData ActiveCustomers { get; set; } = new();

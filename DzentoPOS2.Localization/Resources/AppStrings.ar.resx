@@ -1137,6 +1137,27 @@
   <data name="Fees" xml:space="preserve">
     <value>الرسوم</value>
   </data>
+  <data name="ProfitSummaryTitle" xml:space="preserve">
+    <value>ملخص الأرباح</value>
+  </data>
+  <data name="NetRevenue" xml:space="preserve">
+    <value>الإيراد الصافي</value>
+  </data>
+  <data name="CostOfGoods" xml:space="preserve">
+    <value>تكلفة البضاعة</value>
+  </data>
+  <data name="Returns" xml:space="preserve">
+    <value>المرتجعات</value>
+  </data>
+  <data name="GrossProfit" xml:space="preserve">
+    <value>الربح الإجمالي</value>
+  </data>
+  <data name="ExpectedSold" xml:space="preserve">
+    <value>مباع</value>
+  </data>
+  <data name="ExpectedStock" xml:space="preserve">
+    <value>مخزون</value>
+  </data>
   <data name="NetProfit" xml:space="preserve">
     <value>الربح الصافي</value>
   </data>

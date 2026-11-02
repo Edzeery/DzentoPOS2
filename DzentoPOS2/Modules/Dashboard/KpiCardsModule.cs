@@ -82,10 +82,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
 
             var digits = KpiCard.CurrencyDigits;
             var culture = System.Globalization.CultureInfo.CurrentCulture;
-            var detail = string.Join(Environment.NewLine,
-                $"{AppStrings.Discount}: {KpiValueFormatter.Format(_monthlyDiscounts, KpiValueKind.Money, culture, digits)}",
-                $"{AppStrings.Fees}: {KpiValueFormatter.Format(_monthlyFees, KpiValueKind.Money, culture, digits)}",
-                $"{AppStrings.NetProfit}: {KpiValueFormatter.Format(_netProfit, KpiValueKind.Money, culture, digits)}");
+            var expectedFormula = $"{AppStrings.ExpectedProfit} = {AppStrings.ExpectedSold} + {AppStrings.ExpectedStock}";
 
             foreach (var card in _cards)
             {
@@ -95,8 +92,8 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
                     card.SetEstimated(d.HasEstimatedCost);
                 }
 
-                if (card.CardKey == "ActualProfit")
-                    card.SetDetail(detail);
+                if (card.CardKey == "ExpectedProfit")
+                    card.SetTooltip(expectedFormula);
             }
         }
     }

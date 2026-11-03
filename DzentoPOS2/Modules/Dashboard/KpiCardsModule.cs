@@ -55,11 +55,11 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             {
                 var card = new KpiCard(Keys[i], titles[i], Icons[i], Colors[i % Colors.Length]);
                 _cards.Add(card);
-                grid.Controls.Add(card, i % 4, i / 4);
             }
 
-            for (int i = Keys.Length; i < 12; i++)
-                grid.Controls.Add(new Panel(), i % 4, i / 4);
+            Reflow(grid);
+
+            grid.Resize += (_, _) => Reflow(grid);
 
             return grid;
         }
@@ -70,6 +70,24 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             AppStrings.MonthlySales,AppStrings.MonthlyPurchases,AppStrings.ExpectedProfit,AppStrings.ActualProfit,
             AppStrings.ActiveProductsKPI,AppStrings.LowStockKPI,AppStrings.ActiveCustomers,AppStrings.ActiveSuppliers
         ];
+
+        private void Reflow(TableLayoutPanel grid)
+        {
+            if (_cards.Count == 0) return;
+            int cols = grid.Width < 520 ? 1 : grid.Width < 900 ? 2 : 4;
+            if (cols == grid.ColumnCount && grid.Controls.Count == _cards.Count) return;
+
+            grid.SuspendLayout();
+            grid.Controls.Clear();
+            grid.ColumnCount = cols;
+            grid.RowStyles.Clear();
+            int rows = (int)Math.Ceiling(_cards.Count / (double)cols);
+            for (int r = 0; r < rows; r++)
+                grid.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            for (int i = 0; i < _cards.Count; i++)
+                grid.Controls.Add(_cards[i], i % cols, i / cols);
+            grid.ResumeLayout();
+        }
 
         public void Update(DashboardSummaryDto data)
         {

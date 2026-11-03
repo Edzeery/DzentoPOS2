@@ -4,6 +4,6 @@ namespace DzentoPOS2.App.Services.Reports.Interfaces
 {
     public interface IDashboardService
     {
-        Task<DashboardSummaryDto> GetSummaryAsync();
+        Task<DashboardSummaryDto> GetSummaryAsync(DashboardFilterDto? filter = null);
     }
 }

@@ -59,6 +59,25 @@ public sealed partial class BarcodeScannerOverlay : Form
         Text = AppStrings.BarcodeScanning;
         BackColor = AppColors.Background;
 
+        // Root fix: ensure designer-created buttons exist (VS designer may drop
+        // factory-created controls). Create them here if missing.
+        var footer = Controls.Find("footer", true).OfType<FlowLayoutPanel>().FirstOrDefault();
+        if (_btnTestConnection == null)
+        {
+            _btnTestConnection = ButtonFactory.Neutral(AppStrings.TestConnection, ButtonFactory.ButtonSize.Small);
+            footer?.Controls.Add(_btnTestConnection);
+        }
+        if (_btnRefresh == null)
+        {
+            _btnRefresh = ButtonFactory.Neutral(AppStrings.Refresh, ButtonFactory.ButtonSize.Medium);
+            footer?.Controls.Add(_btnRefresh);
+        }
+        if (_btnClose == null)
+        {
+            _btnClose = ButtonFactory.Neutral(AppStrings.Close, ButtonFactory.ButtonSize.Medium);
+            footer?.Controls.Add(_btnClose);
+        }
+
         // Wire events after designer creation.
         _cmbSource.SelectedIndexChanged += (_, _) => UpdateSourceVisibility();
         _cmbDevice.SelectedIndexChanged += (_, _) => SwitchDevice();

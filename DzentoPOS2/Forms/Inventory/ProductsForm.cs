@@ -1,4 +1,5 @@
-using DzentoPOS2.App.Authorization;
+﻿using DzentoPOS2.App.Authorization;
+using DzentoPOS2.WinForms.Services.Barcodes;
 using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.Core.Constants;
 using DzentoPOS2.Localization.Resources;
@@ -19,6 +20,7 @@ public partial class ProductsForm : LocalizableFormBase
     private readonly IProductService _productService;
     private readonly ICurrentSettingsService _currentSettings;
     private readonly IAuthorizationGuard _guard;
+    private readonly IBarcodeScanService _barcodeScan;
 
     // Top bar
     private readonly Panel _topBar;
@@ -65,12 +67,14 @@ public partial class ProductsForm : LocalizableFormBase
         IProductService productService,
         ICurrentSettingsService currentSettings,
         ILanguageService languageService,
-        IAuthorizationGuard guard)
+        IAuthorizationGuard guard,
+        IBarcodeScanService barcodeScan)
         : base(languageService)
     {
         _productService = productService;
         _currentSettings = currentSettings;
         _guard = guard;
+        _barcodeScan = barcodeScan;
         Size = new Size(1400, 800);
         MinimumSize = new Size(1000, 600);
         BackColor = AppColors.Background;
@@ -538,7 +542,7 @@ public partial class ProductsForm : LocalizableFormBase
     {
         if (IsDisposedOrDisposing) return;
 
-        using var dialog = new ProductEditDialog(_productService, _languageService);
+        using var dialog = new ProductEditDialog(_productService, _languageService, null, _barcodeScan);
         if (dialog.ShowDialog() == DialogResult.OK)
         {
             if (IsDisposedOrDisposing) return;
@@ -552,7 +556,7 @@ public partial class ProductsForm : LocalizableFormBase
     {
         if (IsDisposedOrDisposing) return;
         if (_grid.CurrentRow?.DataBoundItem is not ProductDto product) return;
-        using var dialog = new ProductEditDialog(_productService, _languageService, product);
+        using var dialog = new ProductEditDialog(_productService, _languageService, product, _barcodeScan);
         if (dialog.ShowDialog() == DialogResult.OK)
         {
             if (IsDisposedOrDisposing) return;

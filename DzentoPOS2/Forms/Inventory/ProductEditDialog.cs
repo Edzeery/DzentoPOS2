@@ -3,6 +3,8 @@ using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
 using DzentoPOS2.WinForms.Themes;
+using DzentoPOS2.WinForms.Services.Barcodes;
+using DzentoPOS2.WinForms.Controls;
 
 namespace DzentoPOS2.WinForms.Forms.Inventory;
 
@@ -34,11 +36,14 @@ public class ProductEditDialog : Form
     private readonly Button _btnSave;
     private readonly Button _btnCancel;
 
-    public ProductEditDialog(IProductService productService, ILanguageService languageService, ProductDto? existing = null)
+    private readonly IBarcodeScanService? _scanService;
+
+    public ProductEditDialog(IProductService productService, ILanguageService languageService, ProductDto? existing = null, IBarcodeScanService? scanService = null)
     {
         _productService = productService;
         _languageService = languageService;
         _existing = existing;
+        _scanService = scanService;
 
         Size = new Size(520, 580);
         StartPosition = FormStartPosition.CenterParent;
@@ -69,6 +74,7 @@ public class ProductEditDialog : Form
         _txtName = new TextBox { Location = new Point(150, 20), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F) };
         _txtSKU = new TextBox { Location = new Point(150, 58), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F) };
         _txtBarcode = new TextBox { Location = new Point(150, 96), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F) };
+        var _btnScanBarcode = new BarcodeScanButton { Location = new Point(485, 96), Size = new Size(28, 28), TargetTextBox = _txtBarcode, ScanService = _scanService };
 
         _cmbCategory = new ComboBox { Location = new Point(150, 134), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F), DropDownStyle = ComboBoxStyle.DropDownList };
         _cmbUnit = new ComboBox { Location = new Point(150, 172), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F), DropDownStyle = ComboBoxStyle.DropDownList };
@@ -100,7 +106,7 @@ public class ProductEditDialog : Form
         {
             _lblName, _txtName,
             _lblSKU, _txtSKU,
-            _lblBarcode, _txtBarcode,
+            _lblBarcode, _txtBarcode, _btnScanBarcode,
             _lblCategory, _cmbCategory,
             _lblUnit, _cmbUnit,
             _lblCost, _numCost,

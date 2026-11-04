@@ -100,29 +100,23 @@ namespace DzentoPOS2.WinForms.Forms.Sales
             _btnRefresh = ButtonFactory.Neutral(AppStrings.Refresh, ButtonFactory.ButtonSize.Medium);
             _btnClose = ButtonFactory.Neutral(AppStrings.Close, ButtonFactory.ButtonSize.Medium);
 
-            var footer = new TableLayoutPanel
+            var footer = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,
-                ColumnCount = 4,
-                RowCount = 2,
+                FlowDirection = FlowDirection.RightToLeft,
+                WrapContents = true,
+                AutoSize = true,
                 BackColor = Color.Transparent,
-                Margin = Padding.Empty,
-                AutoSize = true
+                Margin = new Padding(0, 8, 0, 0)
             };
-            for (int i = 0; i < 4; i++)
-                footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
-            footer.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            footer.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-
-            footer.Controls.Add(new Label { Text = AppStrings.CameraSource, AutoSize = true, Margin = new Padding(0, 8, 4, 0) }, 0, 0);
-            footer.Controls.Add(_cmbSource, 1, 0);
-            footer.Controls.Add(new Label { Text = AppStrings.CameraDevice, AutoSize = true, Margin = new Padding(0, 8, 4, 0) }, 2, 0);
-            footer.Controls.Add(_cmbDevice, 3, 0);
-
-            footer.Controls.Add(_txtCameraUrl, 0, 1);
-            footer.Controls.Add(_btnTestConnection, 1, 1);
-            footer.Controls.Add(_btnRefresh, 2, 1);
-            footer.Controls.Add(_btnClose, 3, 1);
+            footer.Controls.Add(_btnClose);
+            footer.Controls.Add(_btnRefresh);
+            footer.Controls.Add(_btnTestConnection);
+            footer.Controls.Add(_cmbDevice);
+            footer.Controls.Add(new Label { Text = AppStrings.CameraDevice, AutoSize = true, Margin = new Padding(0, 8, 4, 0) });
+            footer.Controls.Add(_txtCameraUrl);
+            footer.Controls.Add(_cmbSource);
+            footer.Controls.Add(new Label { Text = AppStrings.CameraSource, AutoSize = true, Margin = new Padding(0, 8, 4, 0) });
 
             root.Controls.Add(footer, 0, 2);
 

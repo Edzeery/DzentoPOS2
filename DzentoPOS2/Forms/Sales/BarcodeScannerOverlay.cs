@@ -19,7 +19,7 @@ namespace DzentoPOS2.WinForms.Forms.Sales;
 /// frame into the picture box, so the user interface never freezes.
 /// </para>
 /// </summary>
-public sealed class BarcodeScannerOverlay : Form
+public sealed partial class BarcodeScannerOverlay : Form
 {
     private const int FrameIntervalMs = 33;
 
@@ -27,17 +27,17 @@ public sealed class BarcodeScannerOverlay : Form
     private readonly System.Windows.Forms.Timer _timer = new() { Interval = FrameIntervalMs };
     private readonly List<CameraItem> _devices = new();
 
-    private readonly PictureBox _preview;
-    private readonly Panel _previewHost;
-    private readonly Label _lblStatus;
-    private readonly Label _lblHint;
-    private readonly ThemedComboBox _cmbDevice;
-    private readonly ThemedComboBox _cmbSource;
-    private readonly TextBox _txtCameraUrl;
-    private readonly ThemedButton _btnRefresh;
-    private readonly ThemedButton _btnTestConnection;
-    private readonly ThemedButton _btnClose;
-    private readonly Button _btnCloseOverlay;
+    private PictureBox _preview;
+    private Panel _previewHost;
+    private Label _lblStatus;
+    private Label _lblHint;
+    private ThemedComboBox _cmbDevice;
+    private ThemedComboBox _cmbSource;
+    private TextBox _txtCameraUrl;
+    private ThemedButton _btnRefresh;
+    private ThemedButton _btnTestConnection;
+    private ThemedButton _btnClose;
+    private Button _btnCloseOverlay;
 
     private Bitmap? _frame;
     private int _detected;
@@ -54,154 +54,22 @@ public sealed class BarcodeScannerOverlay : Form
 
     public BarcodeScannerOverlay(string preferredDevice)
     {
+        InitializeComponent();
+
         Text = AppStrings.BarcodeScanning;
         BackColor = AppColors.Background;
-        Size = new Size(760, 620);
-        MinimumSize = new Size(520, 460);
-        StartPosition = FormStartPosition.CenterParent;
-        FormBorderStyle = FormBorderStyle.FixedDialog;
-        MaximizeBox = false;
-        KeyPreview = true;
 
-        var root = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 1,
-            RowCount = 3,
-            BackColor = AppColors.Background,
-            Padding = new Padding(16),
-            Margin = Padding.Empty
-        };
-        root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        // Wire events after designer creation.
+        _cmbSource.SelectedIndexChanged += (_, _) => UpdateSourceVisibility();
+        _cmbDevice.SelectedIndexChanged += (_, _) => SwitchDevice();
+        _txtCameraUrl.TextChanged += (_, _) => ValidateCameraUrl();
+        _btnTestConnection.Click += async (_, _) => await TestCameraConnectionAsync();
+        _btnRefresh.Click += (_, _) => RefreshDevices();
+        _btnClose.Click += (_, _) => { System.Diagnostics.Debug.WriteLine($"[SCAN] t={_sw.ElapsedMilliseconds}ms  Close button clicked thread={Environment.CurrentManagedThreadId}"); Close(); };
 
-        // ── Preview ────────────────────────────────────────────────────────
-        _previewHost = new Panel
-        {
-            Dock = DockStyle.Fill,
-            BackColor = AppColors.SurfaceAlt,
-            Margin = new Padding(0, 0, 0, 12)
-        };
-        _previewHost.SetRoundedRegion(AppStyle.RadiusMedium);
-
-        _preview = new PictureBox
-        {
-            Dock = DockStyle.Fill,
-            SizeMode = PictureBoxSizeMode.Zoom,
-            BackColor = AppColors.SurfaceAlt
-        };
-
-        _previewHost.Controls.Add(_preview);
-        root.Controls.Add(_previewHost, 0, 0);
-
-        // ── Status ─────────────────────────────────────────────────────────
-        _lblStatus = new Label
-        {
-            Text = AppStrings.ScanHint,
-            Font = AppStyle.SubtitleFont,
-            ForeColor = AppColors.Ink,
-            AutoSize = true,
-            Margin = new Padding(0, 0, 0, 4)
-        };
-
-        _lblHint = new Label
-        {
-            Text = AppStrings.ScanHint,
-            Font = AppStyle.BodyFont,
-            ForeColor = AppColors.InkMuted,
-            AutoSize = true,
-            Margin = Padding.Empty
-        };
-
-        var statusPanel = new FlowLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            FlowDirection = FlowDirection.TopDown,
-            WrapContents = false,
-            AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            BackColor = Color.Transparent,
-            Margin = new Padding(0, 0, 0, 12)
-        };
-        statusPanel.Controls.Add(_lblStatus);
-        statusPanel.Controls.Add(_lblHint);
-        root.Controls.Add(statusPanel, 0, 1);
-
-        // ── Footer ─────────────────────────────────────────────────────────
-        _cmbSource = new ThemedComboBox { Width = 200 };
         _cmbSource.ClearItems();
         _cmbSource.Add(AppStrings.CameraSourceLocal, AppStrings.CameraSourceIp);
         _cmbSource.SelectedIndex = 0;
-        _cmbSource.SelectedIndexChanged += (_, _) => UpdateSourceVisibility();
-
-        _cmbDevice = new ThemedComboBox { Width = 260 };
-        _cmbDevice.SelectedIndexChanged += (_, _) => SwitchDevice();
-
-        _txtCameraUrl = new TextBox
-        {
-            Font = AppStyle.BodyFont,
-            Width = 260,
-            Visible = false
-        };
-        _txtCameraUrl.TextChanged += (_, _) => ValidateCameraUrl();
-
-        _btnTestConnection = ButtonFactory.Neutral(AppStrings.TestConnection, ButtonFactory.ButtonSize.Small);
-        _btnTestConnection.Visible = false;
-        _btnTestConnection.Click += async (_, _) => await TestCameraConnectionAsync();
-
-        _btnRefresh = ButtonFactory.Neutral(AppStrings.Refresh, ButtonFactory.ButtonSize.Medium);
-        _btnRefresh.Click += (_, _) => RefreshDevices();
-
-        _btnClose = ButtonFactory.Neutral(AppStrings.Close, ButtonFactory.ButtonSize.Medium);
-        _btnClose.Click += (_, _) => { System.Diagnostics.Debug.WriteLine($"[SCAN] t={_sw.ElapsedMilliseconds}ms  Close button clicked thread={Environment.CurrentManagedThreadId}"); Close(); };
-
-        var footer = new FlowLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            FlowDirection = FlowDirection.RightToLeft,
-            WrapContents = false,
-            AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            BackColor = Color.Transparent,
-            Margin = Padding.Empty
-        };
-        footer.Controls.Add(_btnClose);
-        footer.Controls.Add(_btnTestConnection);
-        footer.Controls.Add(_btnRefresh);
-
-        var sourceLabel = new Label
-        {
-            Text = AppStrings.CameraSource,
-            Font = AppStyle.BodyFont,
-            ForeColor = AppColors.Ink,
-            AutoSize = true,
-            Margin = new Padding(0, 8, 8, 0)
-        };
-        var deviceLabel = new Label
-        {
-            Text = AppStrings.CameraDevice,
-            Font = AppStyle.BodyFont,
-            ForeColor = AppColors.Ink,
-            AutoSize = true,
-            Margin = new Padding(0, 8, 8, 0)
-        };
-        footer.Controls.Add(sourceLabel);
-        footer.Controls.Add(_cmbSource);
-        footer.Controls.Add(_txtCameraUrl);
-        footer.Controls.Add(deviceLabel);
-        footer.Controls.Add(_cmbDevice);
-        root.Controls.Add(footer, 0, 2);
-
-        Controls.Add(root);
-
-        _btnCloseOverlay = new Button
-        {
-            Text = AppStrings.Close,
-            Visible = false,
-            Size = new Size(0, 0)
-        };
-        Controls.Add(_btnCloseOverlay);
 
         _camera.BarcodeDetected += OnBarcodeDetected;
         _camera.Failed += OnCameraFailed;

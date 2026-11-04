@@ -180,12 +180,12 @@ namespace DzentoPOS2.WinForms.Controls
                     ? Rectangle.Empty
                     : new Rectangle(12, 24, trendWidth, 18);
                 int titleX = trendWidth + 24;
-                int titleWidth = Math.Max(20, Width - iconWidth - trendWidth - 24);
+                int titleWidth = Math.Max(20, Width - trendWidth - 98);
                 _titleRect = new Rectangle(titleX, 24, titleWidth, 18);
             }
             else
             {
-                _titleRect = new Rectangle(iconWidth + 12, 24, Math.Max(20, Width - iconWidth - trendWidth - 24), 18);
+                _titleRect = new Rectangle(74, 24, Math.Max(20, Width - trendWidth - 98), 18);
                 _trendRect = string.IsNullOrEmpty(_trendText)
                     ? Rectangle.Empty
                     : new Rectangle(Width - trendWidth - 12, 24, trendWidth, 18);

@@ -1275,7 +1275,24 @@
   <data name="KpiSuffixBillion" xml:space="preserve">
     <value>B</value>
   </data>
-  <data name="RestoreBackup" xml:space="preserve">
+    <data name="Backup" xml:space="preserve">
+    <value>Backup</value>
+  </data>
+  <data name="BackupHint" xml:space="preserve">
+    <value>Create a backup of your data</value>
+  </data>
+  <data name="BackupNow" xml:space="preserve">
+    <value>Backup now</value>
+  </data>
+  <data name="BackupFolder" xml:space="preserve">
+    <value>Backup folder</value>
+  </data>
+  <data name="BackupCreated" xml:space="preserve">
+    <value>Backup created</value>
+  </data>
+  <data name="BackupFileInvalid" xml:space="preserve">
+    <value>Invalid backup file</value>
+  </data><data name="RestoreBackup" xml:space="preserve">
     <value>Restore backup</value>
   </data>
   <data name="RestoreConfirm" xml:space="preserve">

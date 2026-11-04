@@ -1275,11 +1275,28 @@
   <data name="KpiSuffixBillion" xml:space="preserve">
     <value>Md</value>
   </data>
-  <data name="RestoreBackup" xml:space="preserve">
+    <data name="Backup" xml:space="preserve">
+    <value>Sauvegarde</value>
+  </data>
+  <data name="BackupHint" xml:space="preserve">
+    <value>Créer une sauvegarde de vos données</value>
+  </data>
+  <data name="BackupNow" xml:space="preserve">
+    <value>Sauvegarder maintenant</value>
+  </data>
+  <data name="BackupFolder" xml:space="preserve">
+    <value>Dossier de sauvegarde</value>
+  </data>
+  <data name="BackupCreated" xml:space="preserve">
+    <value>Sauvegarde créée</value>
+  </data>
+  <data name="BackupFileInvalid" xml:space="preserve">
+    <value>Fichier de sauvegarde invalide</value>
+  </data><data name="RestoreBackup" xml:space="preserve">
     <value>Restaurer la sauvegarde</value>
   </data>
   <data name="RestoreConfirm" xml:space="preserve">
-    <value>Les donnأ©es actuelles seront remplacأ©es par la sauvegarde sأ©lectionnأ©e et l'application redأ©marrera. Continuer ?</value>
+    <value>Les données actuelles seront remplacées par la sauvegarde sélectionnée et l'application redémarrera. Continuer ?</value>
   </data>
   <data name="InvalidRecoveryKey" xml:space="preserve">
     <value>Clé de récupération invalide ou expirée.</value>

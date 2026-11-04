@@ -133,11 +133,9 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             FormLocalizationHelper.ApplyDirection(this, _languageService);
 
             WireNavButtons();
-            AddExpensesSidebarButton();
-            AddSuppliersSidebarButton();
-            AddCategoriesSidebarButton();
-            AddUnitsSidebarButton();
-            AddCashSessionsSidebarButton();
+            _btnExpenses = AddSidebarButton("btnExpenses", IconChar.MoneyBillWave, AppStrings.ExpensesButton, b => NavigateTo<ExpensesForm>(b), btnInventory);
+            _btnSuppliers = AddSidebarButton("btnSuppliers", IconChar.Truck, AppStrings.Suppliers, b => NavigateTo<SuppliersForm>(b), BtnCustomers);
+            _btnCashSessions = AddSidebarButton("btnCashSessions", IconChar.CashRegister, AppStrings.CashSessions, b => NavigateTo<CashSessionForm>(b), _btnSuppliers);
 
             // Enforce permissions on sidebar buttons
             _ = EnforcePermissionsAsync();
@@ -183,6 +181,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             LoadText();
             _mainHeaderBar.ApplyLocalization();
             RefreshSidebarSelection();
+            ApplySidebarCollapseState();
             ResumeLayout(true);
         }
 
@@ -635,41 +634,12 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             });
         }
 
-        private void AddExpensesSidebarButton()
+        private IconButton AddSidebarButton(string name, IconChar icon, string text, Action<IconButton> onClick, Control? insertAfter = null)
         {
-            var btnExpenses = new IconButton
-            {                IconChar = IconChar.MoneyBillWave,
-                Text = "  " + AppStrings.ExpensesButton,
-                IconColor = Color.White,
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 13F),
-                FlatStyle = FlatStyle.Flat,
-                FlatAppearance = { BorderSize = 0 },
-                Dock = DockStyle.Top,
-                Size = new Size(279, 55),
-                Padding = new Padding(13, 0, 13, 0),
-                TextImageRelation = TextImageRelation.ImageBeforeText,
-                ImageAlign = ContentAlignment.MiddleLeft,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Cursor = Cursors.Hand,
-                BackColor = AppColors.SidebarSurface,
-                IconSize = 35,
-                Name = "btnExpenses"
-            };
-
-            btnExpenses.Click += (_, _) => NavigateTo<ExpensesForm>(btnExpenses);
-
-            SidebarPanelM.Controls.Add(btnExpenses);
-            SidebarPanelM.Controls.SetChildIndex(btnExpenses, SidebarPanelM.Controls.GetChildIndex(btnInventory) + 1);
-            _btnExpenses = btnExpenses;
-        }
-
-        private void AddSuppliersSidebarButton()
-        {
-            _btnSuppliers = new IconButton
+            var btn = new IconButton
             {
-                IconChar = IconChar.Truck,
-                Text = "  " + AppStrings.Suppliers,
+                IconChar = icon,
+                Text = "  " + text,
                 IconColor = Color.White,
                 ForeColor = Color.White,
                 Font = new Font("Segoe UI", 13F),
@@ -684,102 +654,17 @@ namespace DzentoPOS2.WinForms.Forms.Layout
                 Cursor = Cursors.Hand,
                 BackColor = AppColors.SidebarSurface,
                 IconSize = 35,
-                Name = "btnSuppliers"
+                Name = name
             };
 
-            _btnSuppliers.Click += (_, _) => NavigateTo<SuppliersForm>(_btnSuppliers);
+            btn.Click += (_, _) => onClick(btn);
 
-            SidebarPanelM.Controls.Add(_btnSuppliers);
-            SidebarPanelM.Controls.SetChildIndex(_btnSuppliers, SidebarPanelM.Controls.GetChildIndex(BtnCustomers) + 1);
+            SidebarPanelM.Controls.Add(btn);
+            if (insertAfter != null && SidebarPanelM.Controls.Contains(insertAfter))
+                SidebarPanelM.Controls.SetChildIndex(btn, SidebarPanelM.Controls.GetChildIndex(insertAfter) + 1);
+
+            return btn;
         }
-
-        private void AddCategoriesSidebarButton()
-        {
-            _btnCategories = new IconButton
-            {
-                IconChar = IconChar.Tags,
-                Text = "  " + AppStrings.Categories,
-                IconColor = Color.White,
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 13F),
-                FlatStyle = FlatStyle.Flat,
-                FlatAppearance = { BorderSize = 0 },
-                Dock = DockStyle.Top,
-                Size = new Size(279, 55),
-                Padding = new Padding(13, 0, 13, 0),
-                TextImageRelation = TextImageRelation.ImageBeforeText,
-                ImageAlign = ContentAlignment.MiddleLeft,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Cursor = Cursors.Hand,
-                BackColor = AppColors.SidebarSurface,
-                IconSize = 35,
-                Name = "btnCategories"
-            };
-
-            _btnCategories.Click += (_, _) => NavigateTo<ProductCategoriesForm>(_btnCategories);
-
-            SidebarPanelM.Controls.Add(_btnCategories);
-            SidebarPanelM.Controls.SetChildIndex(_btnCategories, SidebarPanelM.Controls.GetChildIndex(_btnSuppliers) + 1);
-        }
-
-        private void AddUnitsSidebarButton()
-        {
-            _btnUnits = new IconButton
-            {
-                IconChar = IconChar.Ruler,
-                Text = "  " + AppStrings.Units,
-                IconColor = Color.White,
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 13F),
-                FlatStyle = FlatStyle.Flat,
-                FlatAppearance = { BorderSize = 0 },
-                Dock = DockStyle.Top,
-                Size = new Size(279, 55),
-                Padding = new Padding(13, 0, 13, 0),
-                TextImageRelation = TextImageRelation.ImageBeforeText,
-                ImageAlign = ContentAlignment.MiddleLeft,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Cursor = Cursors.Hand,
-                BackColor = AppColors.SidebarSurface,
-                IconSize = 35,
-                Name = "btnUnits"
-            };
-
-            _btnUnits.Click += (_, _) => NavigateTo<ProductUnitsForm>(_btnUnits);
-
-            SidebarPanelM.Controls.Add(_btnUnits);
-            SidebarPanelM.Controls.SetChildIndex(_btnUnits, SidebarPanelM.Controls.GetChildIndex(_btnCategories) + 1);
-        }
-
-        private void AddCashSessionsSidebarButton()
-        {
-            _btnCashSessions = new IconButton
-            {
-                IconChar = IconChar.CashRegister,
-                Text = "  " + AppStrings.CashSessions,
-                IconColor = Color.White,
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 13F),
-                FlatStyle = FlatStyle.Flat,
-                FlatAppearance = { BorderSize = 0 },
-                Dock = DockStyle.Top,
-                Size = new Size(279, 55),
-                Padding = new Padding(13, 0, 13, 0),
-                TextImageRelation = TextImageRelation.ImageBeforeText,
-                ImageAlign = ContentAlignment.MiddleLeft,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Cursor = Cursors.Hand,
-                BackColor = AppColors.SidebarSurface,
-                IconSize = 35,
-                Name = "btnCashSessions"
-            };
-
-            _btnCashSessions.Click += (_, _) => NavigateTo<CashSessionForm>(_btnCashSessions);
-
-            SidebarPanelM.Controls.Add(_btnCashSessions);
-            SidebarPanelM.Controls.SetChildIndex(_btnCashSessions, SidebarPanelM.Controls.GetChildIndex(_btnUnits) + 1);
-        }
-
         private void WireNavButtons()
         {
             btnDashboard.Click += (s, e) => NavigateTo<DashboardForm>(btnDashboard);
@@ -1048,8 +933,6 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             BtnSales.Text = AppStrings.Sales; 
             BtnCustomers.Text = AppStrings.Customers; 
             _btnSuppliers.Text = "  " + AppStrings.Suppliers; 
-            _btnCategories.Text = "  " + AppStrings.Categories;
-            _btnUnits.Text = "  " + AppStrings.Units;
             _btnCashSessions.Text = "  " + AppStrings.CashSessions;
             _btnExpenses.Text = "  " + AppStrings.ExpensesButton;
 
@@ -1069,6 +952,8 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             ApplyUserInfoDirection();
 
             UpdateStatusBar();
+
+            ApplySidebarCollapseState();
         }
         private void btnClose_Click(object sender, EventArgs e) => Close();
 
@@ -1136,6 +1021,12 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             _animating = false;
             _collapseStopwatch.Stop();
 
+            ShadowEngine.Resume();
+            ApplySidebarCollapseState();
+        }
+
+        private void ApplySidebarCollapseState()
+        {
             bool expanded = SidebarPanel.Width >= AppStyle.SidebarExpandedWidth - 10;
             ApplyToSidebarButtons(btn =>
             {
@@ -1152,9 +1043,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
                     btn.Padding = new Padding(13, 0, 0, 0);
                 }
             });
-
-            ShadowEngine.Resume();
-            UpdateUserInfoVisibility(SidebarPanel.Width >= AppStyle.SidebarExpandedWidth - 10);
+            UpdateUserInfoVisibility(expanded);
         }
 
         private void UpdateUserInfoVisibility(bool expanded)

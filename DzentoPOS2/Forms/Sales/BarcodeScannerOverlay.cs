@@ -65,6 +65,10 @@ public sealed partial class BarcodeScannerOverlay : Form
         Text = AppStrings.BarcodeScanning;
         BackColor = AppColors.Background;
 
+        // Reduce preview flicker.
+        typeof(Control).GetProperty("DoubleBuffered", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(_preview, true);
+        typeof(Control).GetProperty("DoubleBuffered", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.SetValue(_previewHost, true);
+
         // Aim frame overlay on preview
         _aimFrame = new Panel { Dock = DockStyle.Fill, BackColor = Color.Transparent };
         _aimFrame.Paint += AimFrame_Paint;

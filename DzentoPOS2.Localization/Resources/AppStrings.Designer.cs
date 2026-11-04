@@ -1932,6 +1932,11 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("ManualEntry", resourceCulture);
             }
         }
+        public static string Period {
+            get {
+                return ResourceManager.GetString("Period", resourceCulture);
+            }
+        }
         public static string NoCameraFound {
             get {
                 return ResourceManager.GetString("NoCameraFound", resourceCulture);

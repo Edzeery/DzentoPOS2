@@ -39,6 +39,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             {
                 Dock = DockStyle.Top,
                 AutoSize = true,
+                MaximumSize = new Size(560, 0),
                 ColumnCount = 2,
                 RowCount = 0,
                 Margin = new Padding(0, 8, 0, 0),

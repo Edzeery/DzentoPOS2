@@ -1,4 +1,4 @@
-using FontAwesome.Sharp;
+﻿using FontAwesome.Sharp;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Shared.Contracts.DTOs.Reports;
 using DzentoPOS2.Shared.Helpers;
@@ -117,7 +117,7 @@ namespace DzentoPOS2.WinForms.Controls
             {
                 if (_estimatedRect.Contains(e.Location))
                     _toolTip.Show(AppStrings.EstimatedCostNote, this, e.Location.X + 10, e.Location.Y + 10);
-                else if (_titleRect.Contains(e.Location))
+                else if (_titleRect.Contains(e.Location) && TextRenderer.MeasureText(_title, TitleFont).Width > _titleRect.Width)
                     _toolTip.Show(_title, this, e.Location.X + 10, e.Location.Y + 10);
                 else
                     _toolTip.Hide(this);
@@ -274,7 +274,7 @@ namespace DzentoPOS2.WinForms.Controls
             _trendKind = kind;
             _trendText = kind switch
             {
-                KpiTrendKind.Change => $"{(percent >= 0 ? "▲" : "▼")} {Math.Abs(percent):0.#}%",
+                KpiTrendKind.Change => percent == 0 ? "0%" : $"{(percent >= 0 ? "\u2191" : "\u2193")} {Math.Abs(percent):0.#}%",
                 KpiTrendKind.Margin => $"{AppStrings.Margin} {percent:0.#}%",
                 _ => string.Empty
             };

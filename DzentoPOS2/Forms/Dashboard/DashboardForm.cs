@@ -74,6 +74,7 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
 
         protected override void LoadText()
         {
+            Text = AppStrings.Dashboard;
             if (_cmbDatePreset != null) _selectedPresetIndex = _cmbDatePreset.SelectedIndex;
             if (_cmbCustomer != null && _cmbCustomer.SelectedItem is CustomerOption opt) _selectedCustomerId = opt.Id;
 
@@ -101,7 +102,8 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
 
         private TableLayoutPanel BuildFilterBar()
         {
-            _cmbDatePreset = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 160 };
+            var lblPeriod = new Label { Text = AppStrings.Period, AutoSize = true, ForeColor = AppColors.Ink, Margin = new Padding(0, 8, 8, 0), Height = 36 };
+            _cmbDatePreset = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 160, Height = 36 };
             _cmbDatePreset.Items.AddRange(new object[]
             {
                 AppStrings.DatePresetToday,
@@ -123,12 +125,14 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
             _dtFrom.ValueChanged += (_, _) => { ValidateDateRange(); ScheduleRefresh(); };
             _dtTo.ValueChanged += (_, _) => { ValidateDateRange(); ScheduleRefresh(); };
 
+            var lblCustomer = new Label { Text = AppStrings.Customers, AutoSize = true, ForeColor = AppColors.Ink, Margin = new Padding(0, 8, 8, 0), Height = 36 };
             _cmbCustomer = new ComboBox
             {
                 DropDownStyle = ComboBoxStyle.DropDown,
                 AutoCompleteMode = AutoCompleteMode.SuggestAppend,
                 AutoCompleteSource = AutoCompleteSource.ListItems,
-                Width = 200
+                Width = 200,
+                Height = 36
             };
             _cmbCustomer.SelectedIndexChanged += (_, _) =>
             {
@@ -145,14 +149,16 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
             {
                 Dock = DockStyle.Top,
                 AutoSize = true,
-                ColumnCount = 4,
+                ColumnCount = 6,
                 Margin = new Padding(0, 0, 0, 8)
             };
             filterBar.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            filterBar.Controls.Add(_cmbDatePreset, 0, 0);
-            filterBar.Controls.Add(_dtFrom, 1, 0);
-            filterBar.Controls.Add(_dtTo, 2, 0);
-            filterBar.Controls.Add(_cmbCustomer, 3, 0);
+            filterBar.Controls.Add(lblPeriod, 0, 0);
+            filterBar.Controls.Add(_cmbDatePreset, 1, 0);
+            filterBar.Controls.Add(_dtFrom, 2, 0);
+            filterBar.Controls.Add(_dtTo, 3, 0);
+            filterBar.Controls.Add(lblCustomer, 4, 0);
+            filterBar.Controls.Add(_cmbCustomer, 5, 0);
 
             UpdateFilterVisibility();
             return filterBar;

@@ -905,6 +905,9 @@
   <data name="ManualEntry" xml:space="preserve">
     <value>إدخال يدوي</value>
   </data>
+  <data name="Period" xml:space="preserve">
+    <value>الفترة</value>
+  </data>
 <data name="NoCameraFound" xml:space="preserve">
     <value>لم يتم العثور على كاميرا</value>
   </data>

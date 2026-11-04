@@ -905,6 +905,9 @@
   <data name="ManualEntry" xml:space="preserve">
     <value>Manual entry</value>
   </data>
+  <data name="Period" xml:space="preserve">
+    <value>Period</value>
+  </data>
 <data name="NoCameraFound" xml:space="preserve">
     <value>No camera found</value>
   </data>

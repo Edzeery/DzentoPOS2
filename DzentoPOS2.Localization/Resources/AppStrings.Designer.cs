@@ -1917,6 +1917,11 @@ namespace DzentoPOS2.Localization.Resources {
         /// <summary>
         ///   Looks up a localized string similar to No camera found.
         /// </summary>
+        public static string CameraDriverBitnessHint {
+            get {
+                return ResourceManager.GetString("CameraDriverBitnessHint", resourceCulture);
+            }
+        }
         public static string NoCameraFound {
             get {
                 return ResourceManager.GetString("NoCameraFound", resourceCulture);

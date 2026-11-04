@@ -897,7 +897,9 @@
   <data name="CameraDevice" xml:space="preserve">
     <value>الكاميرا</value>
   </data>
-  <data name="NoCameraFound" xml:space="preserve">
+    <data name="CameraDriverBitnessHint" xml:space="preserve">
+    <value>شغّل DroidCam Client أولاً؛ يجب أن يتطابق التطبيق مع مشغّل 32/64 بت ({0}-bit).</value>
+  </data><data name="NoCameraFound" xml:space="preserve">
     <value>لم يتم العثور على كاميرا</value>
   </data>
   <data name="ScanBarcode" xml:space="preserve">

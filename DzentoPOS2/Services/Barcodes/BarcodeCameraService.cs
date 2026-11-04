@@ -221,6 +221,15 @@ public sealed class BarcodeCameraService : IDisposable
         }
     }
 
+    /// <summary>Size of the newest frame.</summary>
+    public Size GetLatestFrameSize()
+    {
+        lock (_sync)
+        {
+            return _currentFrame?.Size ?? Size.Empty;
+        }
+    }
+
     /// <summary>True when a frame is available.</summary>
     public bool HasFrame
     {
@@ -254,6 +263,8 @@ public sealed class BarcodeCameraService : IDisposable
                 _currentFrame = frame;
                 previous?.Dispose();
             }
+
+            try { _frameAvailable.Set(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex.Message); }
         }
         catch
         {

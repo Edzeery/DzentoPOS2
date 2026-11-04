@@ -7,6 +7,7 @@ using DzentoPOS2.WinForms.Services;
 using DzentoPOS2.WinForms.Services.Barcodes;
 using DzentoPOS2.WinForms.Themes;
 using FontAwesome.Sharp;
+using System.Drawing.Imaging;
 
 namespace DzentoPOS2.WinForms.Forms.Sales;
 
@@ -41,6 +42,9 @@ public sealed class BarcodeScannerOverlay : Form
     private Bitmap? _frame;
     private bool _detected;
     private bool _isIpSource;
+
+    [System.Runtime.InteropServices.DllImport("dwmapi.dll")]
+    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
 
     /// <summary>Raised when a barcode was recognised.</summary>
     public event Action<string>? BarcodeDetected;
@@ -125,6 +129,7 @@ public sealed class BarcodeScannerOverlay : Form
         _cmbSource = new ThemedComboBox { Width = 200 };
         _cmbSource.ClearItems();
         _cmbSource.Add(AppStrings.CameraSourceLocal, AppStrings.CameraSourceIp);
+        _cmbSource.SelectedIndex = 0;
         _cmbSource.SelectedIndexChanged += (_, _) => UpdateSourceVisibility();
 
         _cmbDevice = new ThemedComboBox { Width = 260 };
@@ -204,6 +209,20 @@ public sealed class BarcodeScannerOverlay : Form
         UpdateSourceVisibility();
     }
 
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        try
+        {
+            int dark = 1;
+            DwmSetWindowAttribute(Handle, 20, ref dark, sizeof(int));
+        }
+        catch
+        {
+            // Dark title bar is cosmetic.
+        }
+    }
+
     /// <summary>Opens the camera and starts the preview.</summary>
     protected override void OnLoad(EventArgs e)
     {
@@ -211,11 +230,9 @@ public sealed class BarcodeScannerOverlay : Form
 
         StartSelectedDevice();
 
+        _timer.Start();
         if (_camera.IsRunning)
-        {
-            _timer.Start();
             _lblStatus.Text = AppStrings.BarcodeScanning;
-        }
     }
 
     protected override void OnFormClosed(FormClosedEventArgs e)
@@ -268,7 +285,7 @@ public sealed class BarcodeScannerOverlay : Form
             _cmbDevice.Add(AppStrings.NoCameraFound);
             int bitness = Environment.Is64BitProcess ? 64 : 32;
             _lblStatus.Text = AppStrings.NoCameraFound;
-            _lblHint.Text = $"Start DroidCam Client first; the app must match its 32/64-bit filter ({bitness}-bit)";
+            _lblHint.Text = string.Format(AppStrings.CameraDriverBitnessHint, bitness);
             return;
         }
 
@@ -402,11 +419,21 @@ public sealed class BarcodeScannerOverlay : Form
     {
         if (!_camera.HasFrame) return;
 
-        _frame ??= new Bitmap(1, 1);
+        var size = _camera.GetLatestFrameSize();
+        if (size.IsEmpty) return;
+
+        if (_frame == null || _frame.Size != size)
+        {
+            _frame?.Dispose();
+            _frame = new Bitmap(size.Width, size.Height, PixelFormat.Format24bppRgb);
+        }
+
         _camera.CopyLatestFrame(_frame);
 
-        _preview.Image?.Dispose();
-        _preview.Image = (Bitmap)_frame.Clone();
+        var img = (Bitmap)_frame.Clone();
+        var previous = _preview.Image;
+        _preview.Image = img;
+        previous?.Dispose();
     }
 
     private void OnBarcodeDetected(string barcode)

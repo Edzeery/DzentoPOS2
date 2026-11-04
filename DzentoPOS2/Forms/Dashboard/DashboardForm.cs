@@ -125,7 +125,7 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
 
             _cmbCustomer = new ComboBox
             {
-                DropDownStyle = ComboBoxStyle.DropDownList,
+                DropDownStyle = ComboBoxStyle.DropDown,
                 AutoCompleteMode = AutoCompleteMode.SuggestAppend,
                 AutoCompleteSource = AutoCompleteSource.ListItems,
                 Width = 200

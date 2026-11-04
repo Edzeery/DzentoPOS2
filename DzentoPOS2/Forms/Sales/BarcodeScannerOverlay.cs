@@ -427,7 +427,8 @@ public sealed partial class BarcodeScannerOverlay : Form
 
             _continuousScan = _chkContinuous?.Checked == true;
             _lblStatus.Text = $"{AppStrings.BarcodeDetected}: {barcode}";
-            _timer.Stop();
+            if (!_continuousScan)
+                _timer.Stop();
 
 
             BarcodeDetected?.Invoke(barcode);

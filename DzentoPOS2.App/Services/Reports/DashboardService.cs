@@ -141,6 +141,11 @@ namespace DzentoPOS2.App.Services.Reports
                 .Where(e => e.ExpenseDate >= monthStart && e.ExpenseDate < nextMonthStart)
                 .SumAsync(e => (double?)e.Amount) is double me ? (decimal)me : 0m;
 
+            // Store operating expenses are never attributed to a single customer
+            // when the dashboard is filtered by customer (accrual, period scope).
+            if (customerId.HasValue)
+                monthlyExpenses = 0m;
+
             var monthlyReturnsTotal = await _context.SalesReturns
                 .Where(r => r.CreatedAt >= monthStart && r.CreatedAt < nextMonthStart
                     && (customerId == null || r.CustomerId == customerId.Value))

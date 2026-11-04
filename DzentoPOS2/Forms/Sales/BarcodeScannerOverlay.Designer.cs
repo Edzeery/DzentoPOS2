@@ -13,195 +13,124 @@ namespace DzentoPOS2.WinForms.Forms.Sales
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                if (components != null)
-                    components.Dispose();
-            }
+            if (disposing && components != null)
+                components.Dispose();
             base.Dispose(disposing);
         }
 
         private void InitializeComponent()
         {
-            root = new TableLayoutPanel();
-            _previewHost = new Panel();
-            _preview = new PictureBox();
-            statusPanel = new FlowLayoutPanel();
-            _lblStatus = new Label();
-            _lblHint = new Label();
-            footer = new FlowLayoutPanel();
-            _cmbSource = new ThemedComboBox();
-            _txtCameraUrl = new TextBox();
-            _cmbDevice = new ThemedComboBox();
-            _btnTestConnection = ButtonFactory.Neutral(AppStrings.TestConnection, ButtonFactory.ButtonSize.Small);
-            _btnRefresh = ButtonFactory.Neutral(AppStrings.Refresh, ButtonFactory.ButtonSize.Medium);
-            _btnClose = ButtonFactory.Neutral(AppStrings.Close, ButtonFactory.ButtonSize.Medium);
-            _btnCloseOverlay = new Button();
-            root.SuspendLayout();
-            _previewHost.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)_preview).BeginInit();
-            statusPanel.SuspendLayout();
-            footer.SuspendLayout();
             SuspendLayout();
-            // 
-            // root
-            // 
-            root.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
-            root.Controls.Add(_previewHost, 0, 0);
-            root.Controls.Add(statusPanel, 0, 1);
-            root.Controls.Add(footer, 0, 2);
-            root.Dock = DockStyle.Fill;
-            root.Location = new Point(0, 0);
-            root.Name = "root";
+
+            AutoScaleMode = AutoScaleMode.Dpi;
+            MinimumSize = new Size(560, 480);
+            Size = new Size(720, 560);
+            StartPosition = FormStartPosition.CenterParent;
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            MaximizeBox = false;
+            KeyPreview = true;
+            BackColor = AppColors.Background;
+
+            var root = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 3,
+                BackColor = AppColors.Background,
+                Padding = new Padding(12),
+                Margin = Padding.Empty
+            };
             root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            root.RowStyles.Add(new RowStyle());
-            root.RowStyles.Add(new RowStyle());
-            root.Size = new Size(704, 521);
-            root.TabIndex = 1;
-            // 
-            // _previewHost
-            // 
+            root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+            _previewHost = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = AppColors.SurfaceAlt,
+                Margin = new Padding(0, 0, 0, 8)
+            };
+
+            _preview = new PictureBox
+            {
+                Dock = DockStyle.Fill,
+                SizeMode = PictureBoxSizeMode.Zoom,
+                BackColor = AppColors.SurfaceAlt
+            };
             _previewHost.Controls.Add(_preview);
-            _previewHost.Location = new Point(3, 3);
-            _previewHost.Name = "_previewHost";
-            _previewHost.Size = new Size(194, 1);
-            _previewHost.TabIndex = 0;
-            // 
-            // _preview
-            // 
-            _preview.Location = new Point(0, 0);
-            _preview.Name = "_preview";
-            _preview.Size = new Size(100, 50);
-            _preview.TabIndex = 0;
-            _preview.TabStop = false;
-            // 
-            // statusPanel
-            // 
+            root.Controls.Add(_previewHost, 0, 0);
+
+            _lblStatus = new Label
+            {
+                Text = AppStrings.ScanHint,
+                Font = AppStyle.SubtitleFont,
+                ForeColor = AppColors.Ink,
+                AutoSize = true,
+                Margin = new Padding(0, 0, 0, 2),
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+            _lblHint = new Label
+            {
+                Text = AppStrings.ScanHint,
+                Font = AppStyle.BodyFont,
+                ForeColor = AppColors.InkMuted,
+                AutoSize = true,
+                Margin = Padding.Empty,
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+
+            var statusPanel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false,
+                AutoSize = true,
+                BackColor = Color.Transparent,
+                Margin = new Padding(0, 0, 0, 8)
+            };
             statusPanel.Controls.Add(_lblStatus);
             statusPanel.Controls.Add(_lblHint);
-            statusPanel.Location = new Point(3, 344);
-            statusPanel.Name = "statusPanel";
-            statusPanel.Size = new Size(194, 100);
-            statusPanel.TabIndex = 1;
-            // 
-            // _lblStatus
-            // 
-            _lblStatus.Location = new Point(3, 0);
-            _lblStatus.Name = "_lblStatus";
-            _lblStatus.Size = new Size(100, 23);
-            _lblStatus.TabIndex = 0;
-            // 
-            // _lblHint
-            // 
-            _lblHint.Location = new Point(3, 23);
-            _lblHint.Name = "_lblHint";
-            _lblHint.Size = new Size(100, 23);
-            _lblHint.TabIndex = 1;
-            // 
-            // footer
-            // 
-            footer.Controls.Add(_cmbSource);
-            footer.Controls.Add(_txtCameraUrl);
-            footer.Controls.Add(_cmbDevice);
-            footer.Controls.Add(_btnClose);
-            footer.Controls.Add(_btnRefresh);
-            footer.Controls.Add(_btnTestConnection);
-            footer.Location = new Point(3, 450);
-            footer.Name = "footer";
-            footer.Size = new Size(191, 68);
-            footer.TabIndex = 2;
-            // 
-            // _cmbSource
-            // 
-            _cmbSource.BackColor = Color.White;
-            _cmbSource.BorderColor = Color.FromArgb(224, 228, 234);
-            _cmbSource.BorderFocusColor = Color.FromArgb(0, 122, 116);
-            _cmbSource.DropDownBackColor = Color.White;
-            _cmbSource.DropDownBorderColor = Color.FromArgb(224, 228, 234);
-            _cmbSource.DropDownBorderRadius = 8;
-            _cmbSource.DropDownForeColor = Color.FromArgb(29, 29, 31);
-            _cmbSource.DropDownGap = 4;
-            _cmbSource.DropDownHoverBackColor = Color.FromArgb(229, 246, 245);
-            _cmbSource.DropDownSelectedBackColor = Color.FromArgb(0, 122, 116);
-            _cmbSource.DropDownSelectedForeColor = Color.White;
-            _cmbSource.DropDownStyle = ComboBoxStyle.DropDownList;
-            _cmbSource.Font = new Font("Segoe UI", 10F);
-            _cmbSource.ForeColor = Color.FromArgb(29, 29, 31);
-            _cmbSource.IconColor = Color.FromArgb(110, 110, 115);
-            _cmbSource.ItemHeight = 30;
-            _cmbSource.Location = new Point(3, 3);
-            _cmbSource.MinimumSize = new Size(140, 36);
-            _cmbSource.Name = "_cmbSource";
-            _cmbSource.SelectedIndex = -1;
-            _cmbSource.SelectedItem = null;
-            _cmbSource.SelectedValue = null;
-            _cmbSource.Size = new Size(250, 38);
-            _cmbSource.TabIndex = 4;
-            // 
-            // _txtCameraUrl
-            // 
-            _txtCameraUrl.Location = new Point(3, 47);
-            _txtCameraUrl.Name = "_txtCameraUrl";
-            _txtCameraUrl.Size = new Size(100, 23);
-            _txtCameraUrl.TabIndex = 5;
-            // 
-            // _cmbDevice
-            // 
-            _cmbDevice.BackColor = Color.White;
-            _cmbDevice.BorderColor = Color.FromArgb(224, 228, 234);
-            _cmbDevice.BorderFocusColor = Color.FromArgb(0, 122, 116);
-            _cmbDevice.DropDownBackColor = Color.White;
-            _cmbDevice.DropDownBorderColor = Color.FromArgb(224, 228, 234);
-            _cmbDevice.DropDownBorderRadius = 8;
-            _cmbDevice.DropDownForeColor = Color.FromArgb(29, 29, 31);
-            _cmbDevice.DropDownGap = 4;
-            _cmbDevice.DropDownHoverBackColor = Color.FromArgb(229, 246, 245);
-            _cmbDevice.DropDownSelectedBackColor = Color.FromArgb(0, 122, 116);
-            _cmbDevice.DropDownSelectedForeColor = Color.White;
-            _cmbDevice.DropDownStyle = ComboBoxStyle.DropDownList;
-            _cmbDevice.Font = new Font("Segoe UI", 10F);
-            _cmbDevice.ForeColor = Color.FromArgb(29, 29, 31);
-            _cmbDevice.IconColor = Color.FromArgb(110, 110, 115);
-            _cmbDevice.ItemHeight = 30;
-            _cmbDevice.Location = new Point(3, 76);
-            _cmbDevice.MinimumSize = new Size(140, 36);
-            _cmbDevice.Name = "_cmbDevice";
-            _cmbDevice.SelectedIndex = -1;
-            _cmbDevice.SelectedItem = null;
-            _cmbDevice.SelectedValue = null;
-            _cmbDevice.Size = new Size(250, 38);
-            _cmbDevice.TabIndex = 7;
-            // 
-            // _btnCloseOverlay
-            // 
-            _btnCloseOverlay.Location = new Point(0, 0);
-            _btnCloseOverlay.Name = "_btnCloseOverlay";
-            _btnCloseOverlay.Size = new Size(75, 23);
-            _btnCloseOverlay.TabIndex = 0;
-            // 
-            // BarcodeScannerOverlay
-            // 
-            AutoScaleDimensions = new SizeF(96F, 96F);
-            AutoScaleMode = AutoScaleMode.Dpi;
-            ClientSize = new Size(704, 521);
+            root.Controls.Add(statusPanel, 0, 1);
+
+            _cmbSource = new ThemedComboBox { Width = 160 };
+            _cmbDevice = new ThemedComboBox { Width = 200 };
+            _txtCameraUrl = new TextBox { Font = AppStyle.BodyFont, Width = 200, Visible = false, BackColor = Color.White };
+            _btnTestConnection = ButtonFactory.Neutral(AppStrings.TestConnection, ButtonFactory.ButtonSize.Small);
+            _btnTestConnection.Visible = false;
+            _btnRefresh = ButtonFactory.Neutral(AppStrings.Refresh, ButtonFactory.ButtonSize.Medium);
+            _btnClose = ButtonFactory.Neutral(AppStrings.Close, ButtonFactory.ButtonSize.Medium);
+
+            var footer = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 4,
+                RowCount = 2,
+                BackColor = Color.Transparent,
+                Margin = Padding.Empty,
+                AutoSize = true
+            };
+            for (int i = 0; i < 4; i++)
+                footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            footer.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            footer.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+            footer.Controls.Add(new Label { Text = AppStrings.CameraSource, AutoSize = true, Margin = new Padding(0, 8, 4, 0) }, 0, 0);
+            footer.Controls.Add(_cmbSource, 1, 0);
+            footer.Controls.Add(new Label { Text = AppStrings.CameraDevice, AutoSize = true, Margin = new Padding(0, 8, 4, 0) }, 2, 0);
+            footer.Controls.Add(_cmbDevice, 3, 0);
+
+            footer.Controls.Add(_txtCameraUrl, 0, 1);
+            footer.Controls.Add(_btnTestConnection, 1, 1);
+            footer.Controls.Add(_btnRefresh, 2, 1);
+            footer.Controls.Add(_btnClose, 3, 1);
+
+            root.Controls.Add(footer, 0, 2);
+
+            _btnCloseOverlay = new Button { Visible = false, Size = new Size(0, 0) };
             Controls.Add(_btnCloseOverlay);
             Controls.Add(root);
-            FormBorderStyle = FormBorderStyle.FixedDialog;
-            KeyPreview = true;
-            MaximizeBox = false;
-            MinimumSize = new Size(560, 480);
-            Name = "BarcodeScannerOverlay";
-            StartPosition = FormStartPosition.CenterParent;
-            root.ResumeLayout(false);
-            _previewHost.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)_preview).EndInit();
-            statusPanel.ResumeLayout(false);
-            footer.ResumeLayout(false);
-            footer.PerformLayout();
+
             ResumeLayout(false);
         }
-        private TableLayoutPanel root;
-        private FlowLayoutPanel statusPanel;
-        private FlowLayoutPanel footer;
     }
 }

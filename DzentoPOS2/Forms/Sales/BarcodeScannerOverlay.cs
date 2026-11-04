@@ -101,7 +101,7 @@ public sealed partial class BarcodeScannerOverlay : Form
         var sp = Controls.Find("statusPanel", true).OfType<FlowLayoutPanel>().FirstOrDefault();
         sp?.Controls.Add(manualPanel);
 
-        _animTimer = new System.Windows.Forms.Timer { Interval = 30 };
+        _animTimer = new System.Windows.Forms.Timer { Interval = 60 };
         _animTimer.Tick += (_, _) => { _scanLineY = (_scanLineY + 4) % 200; _aimFrame?.Invalidate(); };
 
         // Root fix: ensure designer-created buttons exist (VS designer may drop

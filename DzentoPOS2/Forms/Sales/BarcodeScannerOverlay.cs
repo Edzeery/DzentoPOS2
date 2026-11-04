@@ -68,7 +68,7 @@ public sealed partial class BarcodeScannerOverlay : Form
         // Aim frame overlay on preview
         _aimFrame = new Panel { Dock = DockStyle.Fill, BackColor = Color.Transparent };
         _aimFrame.Paint += AimFrame_Paint;
-        _previewHost.Controls.Add(_aimFrame);
+        _preview.Controls.Add(_aimFrame);
         _aimFrame.BringToFront();
 
         // Manual input + continuous scan

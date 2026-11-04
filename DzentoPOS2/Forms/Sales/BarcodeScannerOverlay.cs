@@ -41,6 +41,12 @@ public sealed partial class BarcodeScannerOverlay : Form
 
     private Bitmap? _frame;
     private int _detected;
+    private Panel? _aimFrame;
+    private TextBox? _txtManual;
+    private ThemedButton? _btnManualOk;
+    private CheckBox? _chkContinuous;
+    private System.Windows.Forms.Timer? _animTimer;
+    private int _scanLineY;
     private bool _isIpSource;
     private readonly System.Diagnostics.Stopwatch _sw = System.Diagnostics.Stopwatch.StartNew();
     private int _closeRequested;
@@ -58,6 +64,38 @@ public sealed partial class BarcodeScannerOverlay : Form
 
         Text = AppStrings.BarcodeScanning;
         BackColor = AppColors.Background;
+
+        // Aim frame overlay on preview
+        _aimFrame = new Panel { Dock = DockStyle.Fill, BackColor = Color.Transparent };
+        _aimFrame.Paint += AimFrame_Paint;
+        _previewHost.Controls.Add(_aimFrame);
+        _aimFrame.BringToFront();
+
+        // Manual input + continuous scan
+        _txtManual = new TextBox { Width = 200, Font = AppStyle.BodyFont };
+        _btnManualOk = ButtonFactory.Neutral(AppStrings.Ok, ButtonFactory.ButtonSize.Small);
+        _btnManualOk.Click += (_, _) =>
+        {
+            if (!string.IsNullOrWhiteSpace(_txtManual.Text))
+            {
+                OnBarcodeDetected(_txtManual.Text.Trim());
+                _txtManual.Clear();
+            }
+        };
+        _chkContinuous = new CheckBox { Text = AppStrings.ContinuousScan, AutoSize = true, ForeColor = AppColors.Ink };
+
+        // Add to status panel
+        var manualPanel = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoSize = true, BackColor = Color.Transparent };
+        manualPanel.Controls.Add(new Label { Text = AppStrings.ManualEntry, AutoSize = true, ForeColor = AppColors.Ink, Margin = new Padding(0, 6, 6, 0) });
+        manualPanel.Controls.Add(_txtManual);
+        manualPanel.Controls.Add(_btnManualOk);
+        manualPanel.Controls.Add(_chkContinuous);
+        // find statusPanel
+        var sp = Controls.Find("statusPanel", true).OfType<FlowLayoutPanel>().FirstOrDefault();
+        sp?.Controls.Add(manualPanel);
+
+        _animTimer = new System.Windows.Forms.Timer { Interval = 30 };
+        _animTimer.Tick += (_, _) => { _scanLineY = (_scanLineY + 4) % 200; _aimFrame?.Invalidate(); };
 
         // Root fix: ensure designer-created buttons exist (VS designer may drop
         // factory-created controls). Create them here if missing.
@@ -120,6 +158,7 @@ public sealed partial class BarcodeScannerOverlay : Form
         StartSelectedDevice();
 
         _timer.Start();
+        _animTimer?.Start();
         if (_camera.IsRunning)
             _lblStatus.Text = AppStrings.BarcodeScanning;
     }
@@ -132,6 +171,8 @@ public sealed partial class BarcodeScannerOverlay : Form
     protected override void OnFormClosed(FormClosedEventArgs e)
     {
         _timer.Stop();
+        _animTimer?.Stop();
+        _animTimer?.Dispose();
         _camera.BarcodeDetected -= OnBarcodeDetected;
         _camera.Failed -= OnCameraFailed;
         _camera.Dispose();
@@ -309,6 +350,35 @@ public sealed partial class BarcodeScannerOverlay : Form
 
     // ── Rendering ───────────────────────────────────────────────────────────
 
+    private void AimFrame_Paint(object? sender, PaintEventArgs e)
+    {
+        if (_aimFrame == null) return;
+        var g = e.Graphics;
+        g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        int w = _aimFrame.Width;
+        int h = _aimFrame.Height;
+        int rw = (int)(w * 0.7);
+        int rh = (int)(h * 0.5);
+        int x = (w - rw) / 2;
+        int y = (h - rh) / 2;
+        var rect = new Rectangle(x, y, rw, rh);
+        using var pen = new Pen(AppColors.Primary, 3);
+        int corner = 24;
+        // corners
+        g.DrawLine(pen, x, y, x + corner, y);
+        g.DrawLine(pen, x, y, x, y + corner);
+        g.DrawLine(pen, x + rw, y, x + rw - corner, y);
+        g.DrawLine(pen, x + rw, y, x + rw, y + corner);
+        g.DrawLine(pen, x, y + rh, x + corner, y + rh);
+        g.DrawLine(pen, x, y + rh, x, y + rh - corner);
+        g.DrawLine(pen, x + rw, y + rh, x + rw - corner, y + rh);
+        g.DrawLine(pen, x + rw, y + rh, x + rw, y + rh - corner);
+        // scan line
+        int ly = y + (_scanLineY % rh);
+        using var linePen = new Pen(Color.FromArgb(180, AppColors.Primary), 2);
+        g.DrawLine(linePen, x + 4, ly, x + rw - 4, ly);
+    }
+
     private void RenderFrame()
     {
         if (!_camera.HasFrame) return;
@@ -345,6 +415,7 @@ public sealed partial class BarcodeScannerOverlay : Form
             try { System.Media.SystemSounds.Beep.Play(); }
             catch { /* cosmetic */ }
 
+            _continuousScan = _chkContinuous?.Checked == true;
             _lblStatus.Text = $"{AppStrings.BarcodeDetected}: {barcode}";
             _timer.Stop();
 

@@ -1922,6 +1922,16 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("CameraDriverBitnessHint", resourceCulture);
             }
         }
+        public static string ContinuousScan {
+            get {
+                return ResourceManager.GetString("ContinuousScan", resourceCulture);
+            }
+        }
+        public static string ManualEntry {
+            get {
+                return ResourceManager.GetString("ManualEntry", resourceCulture);
+            }
+        }
         public static string NoCameraFound {
             get {
                 return ResourceManager.GetString("NoCameraFound", resourceCulture);

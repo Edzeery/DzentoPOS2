@@ -899,7 +899,13 @@
   </data>
     <data name="CameraDriverBitnessHint" xml:space="preserve">
     <value>Start DroidCam Client first; the app must match its 32/64-bit driver ({0}-bit).</value>
-  </data><data name="NoCameraFound" xml:space="preserve">
+  </data>  <data name="ContinuousScan" xml:space="preserve">
+    <value>Continuous scan</value>
+  </data>
+  <data name="ManualEntry" xml:space="preserve">
+    <value>Manual entry</value>
+  </data>
+<data name="NoCameraFound" xml:space="preserve">
     <value>No camera found</value>
   </data>
   <data name="ScanBarcode" xml:space="preserve">

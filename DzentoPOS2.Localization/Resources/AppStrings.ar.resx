@@ -899,7 +899,13 @@
   </data>
     <data name="CameraDriverBitnessHint" xml:space="preserve">
     <value>شغّل DroidCam Client أولاً؛ يجب أن يتطابق التطبيق مع مشغّل 32/64 بت ({0}-bit).</value>
-  </data><data name="NoCameraFound" xml:space="preserve">
+  </data>  <data name="ContinuousScan" xml:space="preserve">
+    <value>مسح مستمر</value>
+  </data>
+  <data name="ManualEntry" xml:space="preserve">
+    <value>إدخال يدوي</value>
+  </data>
+<data name="NoCameraFound" xml:space="preserve">
     <value>لم يتم العثور على كاميرا</value>
   </data>
   <data name="ScanBarcode" xml:space="preserve">

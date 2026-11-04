@@ -142,7 +142,9 @@ namespace DzentoPOS2.Core.Services.Sales
             {
                 var ln = LineNet(l.Price, l.Quantity, l.DiscountShare, digits);
                 var lc = LineCost(l.UnitCost, l.Quantity, digits);
-                var le = LineExpected(l.ListPrice, l.UnitCost, l.Quantity, digits);
+                // Expected profit = (registered sale price - frozen cost) x qty,
+                // before discounts, returns and fees.
+                var le = Round((l.Price - l.UnitCost) * l.Quantity, digits);
                 lineNets.Add(ln);
                 lineCosts.Add(lc);
                 lineExpecteds.Add(le);

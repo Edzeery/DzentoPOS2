@@ -312,13 +312,11 @@ namespace DzentoPOS2.App.Services.Reports
             var actualProfit = ProfitCalculator.CalculateActualProfit(grossProfit, fees);
             var netProfit = ProfitCalculator.CalculateNetProfit(actualProfit, monthlyExpenses);
 
-            var totalExpected = expected + expectedStock;
-
-            var expectedMargin = ProfitCalculator.CalculateMargin(totalExpected, revenue, 1);
+            var expectedMargin = ProfitCalculator.CalculateMargin(expected, revenue, 1);
             var actualMargin = ProfitCalculator.CalculateMargin(actualProfit, revenue, 1);
             var netMargin = ProfitCalculator.CalculateMargin(netProfit, revenue, 1);
 
-            SetCardData(dto.ExpectedProfit, totalExpected, 0, KpiValueKind.Money);
+            SetCardData(dto.ExpectedProfit, expected, 0, KpiValueKind.Money);
             SetCardData(dto.ExpectedSoldProfit, expected, 0, KpiValueKind.Money);
             SetCardData(dto.ExpectedStockProfit, expectedStock, 0, KpiValueKind.Money);
             SetCardData(dto.ActualProfit, actualProfit, 0, KpiValueKind.Money);

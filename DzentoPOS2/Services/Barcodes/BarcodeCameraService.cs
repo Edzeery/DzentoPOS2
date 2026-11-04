@@ -1,4 +1,4 @@
-using AForge.Video;
+﻿using AForge.Video;
 using AForge.Video.DirectShow;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -33,6 +33,7 @@ public sealed class BarcodeCameraService : IDisposable
     private int _frameCount;
     private int _decodeCount;
     private volatile bool _running;
+    private CancellationTokenSource? _cts;
     private string _lastBarcode = string.Empty;
     private DateTime _lastBarcodeAt = DateTime.MinValue;
     private bool _disposed;
@@ -101,6 +102,7 @@ public sealed class BarcodeCameraService : IDisposable
                 mjpeg.VideoSourceError += OnVideoSourceError;
                 _device = mjpeg;
                 mjpeg.Start();
+                _cts = new CancellationTokenSource();
                 _running = true;
                 _decodeThread = new Thread(DecodeLoop)
                 {
@@ -120,6 +122,7 @@ public sealed class BarcodeCameraService : IDisposable
             _device = device;
             device.Start();
 
+            _cts = new CancellationTokenSource();
             _running = true;
             _decodeThread = new Thread(DecodeLoop)
             {
@@ -141,8 +144,8 @@ public sealed class BarcodeCameraService : IDisposable
     /// <summary>Stops the capture and releases the camera.</summary>
     public void Stop()
     {
-        System.Diagnostics.Debug.WriteLine($"[SCAN] Stop called thread={Environment.CurrentManagedThreadId} running={_running}");
         _running = false;
+        try { _cts?.Cancel(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex.Message); }
 
         var device = _device;
         _device = null;
@@ -270,13 +273,11 @@ public sealed class BarcodeCameraService : IDisposable
             }
 
             if (n % 30 == 0)
-                System.Diagnostics.Debug.WriteLine($"[SCAN] NewFrame #{n} size={frame.Width}x{frame.Height} thread={Environment.CurrentManagedThreadId}");
 
             try { _frameAvailable.Set(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex.Message); }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[SCAN] OnNewFrame error: {ex.Message}");
         }
     }
 
@@ -318,10 +319,8 @@ public sealed class BarcodeCameraService : IDisposable
                 sw.Stop();
                 int n = ++_decodeCount;
                 if (n % 5 == 0 || !string.IsNullOrWhiteSpace(text))
-                    System.Diagnostics.Debug.WriteLine($"[SCAN] Decode #{n} size={snapshot.Width}x{snapshot.Height} took={sw.ElapsedMilliseconds}ms result={(string.IsNullOrWhiteSpace(text) ? "null" : text)} thread={Environment.CurrentManagedThreadId}");
                 if (!string.IsNullOrWhiteSpace(text) && ShouldReport(text))
                 {
-                    System.Diagnostics.Debug.WriteLine($"[SCAN] BarcodeDetected invoked value={text} thread={Environment.CurrentManagedThreadId}");
                     BarcodeDetected?.Invoke(text);
                 }
             }
@@ -334,8 +333,8 @@ public sealed class BarcodeCameraService : IDisposable
                 snapshot.Dispose();
             }
 
-            // Throttle to ~8-12 attempts/second to reduce CPU load.
-            System.Threading.Thread.Sleep(80);
+            // Throttle to ~8-12 attempts/second; WaitOne responds to cancellation immediately.
+            try { _cts?.Token.WaitHandle.WaitOne(80); } catch { System.Threading.Thread.Sleep(80); }
         }
     }
 

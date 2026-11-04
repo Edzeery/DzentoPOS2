@@ -65,7 +65,6 @@ public sealed partial class BarcodeScannerOverlay : Form
         _txtCameraUrl.TextChanged += (_, _) => ValidateCameraUrl();
         _btnTestConnection.Click += async (_, _) => await TestCameraConnectionAsync();
         _btnRefresh.Click += (_, _) => RefreshDevices();
-        _btnClose.Click += (_, _) => { System.Diagnostics.Debug.WriteLine($"[SCAN] t={_sw.ElapsedMilliseconds}ms  Close button clicked thread={Environment.CurrentManagedThreadId}"); Close(); };
 
         _cmbSource.ClearItems();
         _cmbSource.Add(AppStrings.CameraSourceLocal, AppStrings.CameraSourceIp);
@@ -98,7 +97,6 @@ public sealed partial class BarcodeScannerOverlay : Form
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
-        System.Diagnostics.Debug.WriteLine($"[SCAN] t={_sw.ElapsedMilliseconds}ms  OnLoad thread={Environment.CurrentManagedThreadId}");
 
         StartSelectedDevice();
 
@@ -109,13 +107,11 @@ public sealed partial class BarcodeScannerOverlay : Form
 
     protected override void OnFormClosing(FormClosingEventArgs e)
     {
-        System.Diagnostics.Debug.WriteLine($"[SCAN] t={_sw.ElapsedMilliseconds}ms  OnFormClosing reason={e.CloseReason} cancel={e.Cancel} thread={Environment.CurrentManagedThreadId}");
         base.OnFormClosing(e);
     }
 
     protected override void OnFormClosed(FormClosedEventArgs e)
     {
-        System.Diagnostics.Debug.WriteLine($"[SCAN] t={_sw.ElapsedMilliseconds}ms  OnFormClosed thread={Environment.CurrentManagedThreadId}");
         _timer.Stop();
         _camera.BarcodeDetected -= OnBarcodeDetected;
         _camera.Failed -= OnCameraFailed;
@@ -133,7 +129,6 @@ public sealed partial class BarcodeScannerOverlay : Form
     {
         if (keyData == Keys.Escape)
         {
-            System.Diagnostics.Debug.WriteLine($"[SCAN] t={_sw.ElapsedMilliseconds}ms  Esc pressed thread={Environment.CurrentManagedThreadId}");
             Close();
             return true;
         }
@@ -298,7 +293,6 @@ public sealed partial class BarcodeScannerOverlay : Form
     private void RenderFrame()
     {
         if (!_camera.HasFrame) return;
-        System.Diagnostics.Debug.WriteLine($"[SCAN] t={_sw.ElapsedMilliseconds}ms  RenderFrame hasFrame size={_camera.GetLatestFrameSize()} thread={Environment.CurrentManagedThreadId}");
 
         var size = _camera.GetLatestFrameSize();
         if (size.IsEmpty) return;
@@ -321,11 +315,9 @@ public sealed partial class BarcodeScannerOverlay : Form
     {
         if (System.Threading.Interlocked.Exchange(ref _detected, 1) == 1)
         {
-            System.Diagnostics.Debug.WriteLine($"[SCAN] t={_sw.ElapsedMilliseconds}ms  OnBarcodeDetected ignored duplicate value={barcode} thread={Environment.CurrentManagedThreadId}");
             return;
         }
 
-        System.Diagnostics.Debug.WriteLine($"[SCAN] t={_sw.ElapsedMilliseconds}ms  OnBarcodeDetected first value={barcode} thread={Environment.CurrentManagedThreadId}");
 
         BeginInvoke(() =>
         {
@@ -337,7 +329,6 @@ public sealed partial class BarcodeScannerOverlay : Form
             _lblStatus.Text = $"{AppStrings.BarcodeDetected}: {barcode}";
             _timer.Stop();
 
-            System.Diagnostics.Debug.WriteLine($"[SCAN] t={_sw.ElapsedMilliseconds}ms  BarcodeDetected marshaled to UI value={barcode}");
 
             BarcodeDetected?.Invoke(barcode);
 

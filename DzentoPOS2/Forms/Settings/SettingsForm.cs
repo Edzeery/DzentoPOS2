@@ -503,13 +503,12 @@ public partial class SettingsForm : LocalizableFormBase
 
         _cmbCameraSource.ClearItems();
         _cmbCameraSource.Add(AppStrings.CameraSourceLocal, AppStrings.CameraSourceIp);
+        if (_cmbCameraSource.SelectedItem == null)
+            _cmbCameraSource.SelectedIndex = 0;
 
         _backupCard.Title = AppStrings.Backup;
         _backupCard.Hint = AppStrings.BackupHint;
-        _lblBackupHint.Text = AppStrings.BackupHint;
         _lblBackupFolder.Text = AppStrings.BackupFolder + ": " + (_backupService?.BackupDirectory ?? string.Empty);
-        _btnBackupNow.Text = AppStrings.BackupNow;
-        _btnRestoreBackup.Text = AppStrings.RestoreBackup;
         _btnBackupNow.Text = AppStrings.BackupNow;
         _btnRestoreBackup.Text = AppStrings.RestoreBackup;
 
@@ -538,10 +537,7 @@ public partial class SettingsForm : LocalizableFormBase
         SelectValue(_cmbCountry, _countries, c => c.Code, _settings.CountryCode);
         _backupCard.Title = AppStrings.Backup;
         _backupCard.Hint = AppStrings.BackupHint;
-        _lblBackupHint.Text = AppStrings.BackupHint;
         _lblBackupFolder.Text = AppStrings.BackupFolder + ": " + (_backupService?.BackupDirectory ?? string.Empty);
-        _btnBackupNow.Text = AppStrings.BackupNow;
-        _btnRestoreBackup.Text = AppStrings.RestoreBackup;
         _btnBackupNow.Text = AppStrings.BackupNow;
         _btnRestoreBackup.Text = AppStrings.RestoreBackup;
         LayoutCards();
@@ -685,6 +681,8 @@ public partial class SettingsForm : LocalizableFormBase
             .Select(p => new PrinterItem(p, p)));
 
         _cmbPrinter.Bind(_printers, "Display", "Name");
+        if (_cmbPrinter.SelectedItem == null && _printers.Count > 0)
+            _cmbPrinter.SelectedIndex = 0;
     }
 
     private void LoadOrientations()

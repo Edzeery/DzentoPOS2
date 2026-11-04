@@ -151,7 +151,7 @@ public sealed class BarcodeScannerOverlay : Form
         _btnRefresh.Click += (_, _) => RefreshDevices();
 
         _btnClose = ButtonFactory.Neutral(AppStrings.Close, ButtonFactory.ButtonSize.Medium);
-        _btnClose.Click += (_, _) => Close();
+        _btnClose.Click += (_, _) => { System.Diagnostics.Debug.WriteLine($"[SCAN] Close button clicked thread={Environment.CurrentManagedThreadId}"); Close(); };
 
         var footer = new FlowLayoutPanel
         {
@@ -227,6 +227,7 @@ public sealed class BarcodeScannerOverlay : Form
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
+        System.Diagnostics.Debug.WriteLine($"[SCAN] OnLoad thread={Environment.CurrentManagedThreadId}");
 
         StartSelectedDevice();
 
@@ -237,6 +238,7 @@ public sealed class BarcodeScannerOverlay : Form
 
     protected override void OnFormClosed(FormClosedEventArgs e)
     {
+        System.Diagnostics.Debug.WriteLine($"[SCAN] OnFormClosed thread={Environment.CurrentManagedThreadId}");
         _timer.Stop();
         _camera.BarcodeDetected -= OnBarcodeDetected;
         _camera.Failed -= OnCameraFailed;
@@ -254,6 +256,7 @@ public sealed class BarcodeScannerOverlay : Form
     {
         if (keyData == Keys.Escape)
         {
+            System.Diagnostics.Debug.WriteLine($"[SCAN] Esc pressed thread={Environment.CurrentManagedThreadId}");
             Close();
             return true;
         }
@@ -418,6 +421,7 @@ public sealed class BarcodeScannerOverlay : Form
     private void RenderFrame()
     {
         if (!_camera.HasFrame) return;
+        System.Diagnostics.Debug.WriteLine($"[SCAN] RenderFrame hasFrame size={_camera.GetLatestFrameSize()} thread={Environment.CurrentManagedThreadId}");
 
         var size = _camera.GetLatestFrameSize();
         if (size.IsEmpty) return;
@@ -452,6 +456,7 @@ public sealed class BarcodeScannerOverlay : Form
 
         _lblStatus.Text = $"{AppStrings.BarcodeDetected}: {barcode}";
 
+        System.Diagnostics.Debug.WriteLine($"[SCAN] OnBarcodeDetected value={barcode} thread={Environment.CurrentManagedThreadId}");
         BarcodeDetected?.Invoke(barcode);
 
         BeginInvoke(() => Close());

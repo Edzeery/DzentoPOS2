@@ -30,6 +30,8 @@ public sealed class BarcodeCameraService : IDisposable
     private IVideoSource? _device;
     private Thread? _decodeThread;
     private Bitmap? _currentFrame;
+    private int _frameCount;
+    private int _decodeCount;
     private volatile bool _running;
     private string _lastBarcode = string.Empty;
     private DateTime _lastBarcodeAt = DateTime.MinValue;
@@ -139,6 +141,7 @@ public sealed class BarcodeCameraService : IDisposable
     /// <summary>Stops the capture and releases the camera.</summary>
     public void Stop()
     {
+        System.Diagnostics.Debug.WriteLine($"[SCAN] Stop called thread={Environment.CurrentManagedThreadId} running={_running}");
         _running = false;
 
         var device = _device;
@@ -257,18 +260,23 @@ public sealed class BarcodeCameraService : IDisposable
         {
             var frame = Scale(e.Frame);
 
+            int n;
             lock (_sync)
             {
                 var previous = _currentFrame;
                 _currentFrame = frame;
                 previous?.Dispose();
+                n = ++_frameCount;
             }
+
+            if (n % 30 == 0)
+                System.Diagnostics.Debug.WriteLine($"[SCAN] NewFrame #{n} size={frame.Width}x{frame.Height} thread={Environment.CurrentManagedThreadId}");
 
             try { _frameAvailable.Set(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex.Message); }
         }
-        catch
+        catch (Exception ex)
         {
-            // A dropped frame is not a problem.
+            System.Diagnostics.Debug.WriteLine($"[SCAN] OnNewFrame error: {ex.Message}");
         }
     }
 
@@ -305,9 +313,17 @@ public sealed class BarcodeCameraService : IDisposable
 
             try
             {
+                var sw = System.Diagnostics.Stopwatch.StartNew();
                 string? text = Decode(snapshot);
+                sw.Stop();
+                int n = ++_decodeCount;
+                if (n % 5 == 0 || !string.IsNullOrWhiteSpace(text))
+                    System.Diagnostics.Debug.WriteLine($"[SCAN] Decode #{n} size={snapshot.Width}x{snapshot.Height} took={sw.ElapsedMilliseconds}ms result={(string.IsNullOrWhiteSpace(text) ? "null" : text)} thread={Environment.CurrentManagedThreadId}");
                 if (!string.IsNullOrWhiteSpace(text) && ShouldReport(text))
+                {
+                    System.Diagnostics.Debug.WriteLine($"[SCAN] BarcodeDetected invoked value={text} thread={Environment.CurrentManagedThreadId}");
                     BarcodeDetected?.Invoke(text);
+                }
             }
             catch
             {

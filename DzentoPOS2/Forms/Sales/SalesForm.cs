@@ -890,28 +890,28 @@ public partial class SalesForm : LocalizableFormBase
             return;
         }
 
-        string? scanned = null;
-
         using (var overlay = new BarcodeScannerOverlay(settings.BarcodeCameraDevice))
         {
-            overlay.BarcodeDetected += code => scanned = code;
+            overlay.ContinuousMode = true;
+            overlay.BarcodeDetected += code =>
+            {
+                if (string.IsNullOrWhiteSpace(code)) return;
+
+                var product = _products.FirstOrDefault(p =>
+                    string.Equals(p.Barcode, code, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(p.SKU, code, StringComparison.OrdinalIgnoreCase));
+
+                if (product is null)
+                {
+                    AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {code}");
+                    _productSearch.Text = code;
+                    return;
+                }
+
+                AddToCart(product);
+            };
             overlay.ShowDialog(this);
         }
-
-        if (string.IsNullOrWhiteSpace(scanned)) return;
-
-        var product = _products.FirstOrDefault(p =>
-            string.Equals(p.Barcode, scanned, StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(p.SKU, scanned, StringComparison.OrdinalIgnoreCase));
-
-        if (product is null)
-        {
-            AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {scanned}");
-            _productSearch.Text = scanned;
-            return;
-        }
-
-        AddToCart(product);
     }
 
     private void AddFirstProductToCart()

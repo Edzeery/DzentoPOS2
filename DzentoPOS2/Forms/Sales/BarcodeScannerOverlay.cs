@@ -58,6 +58,9 @@ public sealed partial class BarcodeScannerOverlay : Form
     /// <summary>Raised when a barcode was recognised.</summary>
     public event Action<string>? BarcodeDetected;
 
+    /// <summary>When true the overlay stays open and reports every new barcode.</summary>
+    public bool ContinuousMode { get; set; }
+
     public BarcodeScannerOverlay(string preferredDevice)
     {
         InitializeComponent();
@@ -163,6 +166,8 @@ public sealed partial class BarcodeScannerOverlay : Form
 
         _timer.Start();
         _animTimer?.Start();
+        if (_chkContinuous != null) _chkContinuous.Checked = ContinuousMode;
+        if (_chkContinuous != null) _chkContinuous.Visible = !ContinuousMode;
         if (_camera.IsRunning)
             _lblStatus.Text = AppStrings.BarcodeScanning;
     }
@@ -406,7 +411,8 @@ public sealed partial class BarcodeScannerOverlay : Form
 
     private void OnBarcodeDetected(string barcode)
     {
-        if (System.Threading.Interlocked.Exchange(ref _detected, 1) == 1)
+        _continuousScan = _chkContinuous?.Checked == true;
+        if (!_continuousScan && System.Threading.Interlocked.Exchange(ref _detected, 1) == 1)
         {
             return;
         }

@@ -1338,4 +1338,22 @@
   <data name="Copy" xml:space="preserve">
     <value>نسخ</value>
   </data>
+    <data name="DatePresetToday" xml:space="preserve">
+    <value>اليوم</value>
+  </data>
+  <data name="DatePresetYesterday" xml:space="preserve">
+    <value>أمس</value>
+  </data>
+  <data name="DatePresetLast7Days" xml:space="preserve">
+    <value>آخر 7 أيام</value>
+  </data>
+  <data name="DatePresetThisMonth" xml:space="preserve">
+    <value>هذا الشهر</value>
+  </data>
+  <data name="DatePresetCustom" xml:space="preserve">
+    <value>مخصص</value>
+  </data>
+  <data name="AllCustomers" xml:space="preserve">
+    <value>كل العملاء</value>
+  </data>
 </root>

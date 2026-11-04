@@ -1338,4 +1338,22 @@
   <data name="Copy" xml:space="preserve">
     <value>Copier</value>
   </data>
+    <data name="DatePresetToday" xml:space="preserve">
+    <value>Aujourd'hui</value>
+  </data>
+  <data name="DatePresetYesterday" xml:space="preserve">
+    <value>Hier</value>
+  </data>
+  <data name="DatePresetLast7Days" xml:space="preserve">
+    <value>7 derniers jours</value>
+  </data>
+  <data name="DatePresetThisMonth" xml:space="preserve">
+    <value>Ce mois</value>
+  </data>
+  <data name="DatePresetCustom" xml:space="preserve">
+    <value>Personnalisé</value>
+  </data>
+  <data name="AllCustomers" xml:space="preserve">
+    <value>Tous les clients</value>
+  </data>
 </root>

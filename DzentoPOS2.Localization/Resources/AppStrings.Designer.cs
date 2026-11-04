@@ -3675,5 +3675,36 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("FillAllFields", resourceCulture);
             }
         }
+        public static string DatePresetToday {
+            get {
+                return ResourceManager.GetString("DatePresetToday", resourceCulture);
+            }
+        }
+        public static string DatePresetYesterday {
+            get {
+                return ResourceManager.GetString("DatePresetYesterday", resourceCulture);
+            }
+        }
+        public static string DatePresetLast7Days {
+            get {
+                return ResourceManager.GetString("DatePresetLast7Days", resourceCulture);
+            }
+        }
+        public static string DatePresetThisMonth {
+            get {
+                return ResourceManager.GetString("DatePresetThisMonth", resourceCulture);
+            }
+        }
+        public static string DatePresetCustom {
+            get {
+                return ResourceManager.GetString("DatePresetCustom", resourceCulture);
+            }
+        }
+        public static string AllCustomers {
+            get {
+                return ResourceManager.GetString("AllCustomers", resourceCulture);
+            }
+        }
+
     }
 }

@@ -12,6 +12,7 @@
                     components.Dispose();
 
                 _charts?.Dispose();
+                _debounceTimer?.Dispose();
             }
 
             base.Dispose(disposing);

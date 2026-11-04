@@ -333,6 +333,9 @@ public sealed class BarcodeCameraService : IDisposable
             {
                 snapshot.Dispose();
             }
+
+            // Throttle to ~8-12 attempts/second to reduce CPU load.
+            System.Threading.Thread.Sleep(80);
         }
     }
 

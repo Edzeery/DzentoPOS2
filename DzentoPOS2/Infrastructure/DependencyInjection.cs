@@ -57,6 +57,7 @@ public static class DependencyInjection
         services.AddTransient<RolesForm>();
 
         services.AddTransient<ProductsForm>();
+        services.AddTransient<ProductsHubForm>();
         services.AddTransient<PurchasesForm>();
         services.AddTransient<SalesForm>();
         services.AddTransient<CustomersForm>();

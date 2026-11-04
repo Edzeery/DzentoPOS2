@@ -668,7 +668,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
         private void WireNavButtons()
         {
             btnDashboard.Click += (s, e) => NavigateTo<DashboardForm>(btnDashboard);
-            BtnProducts.Click += (s, e) => NavigateTo<ProductsForm>(BtnProducts);
+            BtnProducts.Click += (s, e) => NavigateTo<ProductsHubForm>(BtnProducts);
             BtnPurchases.Click += (s, e) => NavigateTo<PurchasesForm>(BtnPurchases);
             BtnSales.Click += (s, e) => NavigateTo<SalesForm>(BtnSales);
             BtnCustomers.Click += (s, e) => NavigateTo<CustomersForm>(BtnCustomers);

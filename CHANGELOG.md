@@ -1,23 +1,31 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
-## [Unreleased] — 2026-11-02 (Profit rebuild phases 1-4)
+## [Unreleased] - 2026-11-05 (Catalog system Phase 0)
+
+### Added
+- Merged `fix/barcode-scanner` into `feature/dashboard-filters`; base branch now `feature/dashboard-filters`.
+- Documentation: `database-design.md` and `architecture.md` extended with catalog (variants, barcodes, images, activity modules, migration strategy, stock deduction path).
+- `docs/decisions.md` with 10 ADRs for the catalog system.
+- `Todos.md` section K tracking phases K.0â€“K.7.
+
+## [Unreleased] ï؟½?? 2026-11-02 (Profit rebuild phases 1-4)
 - Phase 1 (data): `SalesInvoiceItem` gained `UnitCost`, `ListPrice`, `DiscountAmount`, `IsCostEstimated`; `SalesInvoice` gained `FeesAmount`. Migration `ProfitRebuild_Phase1` backfills legacy rows (UnitCost from current Product.CostPrice, ListPrice from line Price, IsCostEstimated=true).
 - Phase 2 (invoice): `SalesInvoice.Create` keeps discount-before-tax; DTOs gained `Fees`. Currency unified via RegionalContext.
 - Phase 3 (stock/cost): `PurchaseService.CreateAsync` applies moving weighted average to `Product.CostPrice` for tracked products; stock already handled by StockService.
 - Phase 4 (frozen cost): `SaleService.CreateAsync` freezes `UnitCost`/`ListPrice`/line discount share and `FeesAmount`; added `ProfitCalculator` (Core) with comprehensive unit tests; added `ProfitFlowTests` integration test.
 
-## [Unreleased] — 2026-10-29 (G1.3 security, authorization, audit)
+## [Unreleased] â€” 2026-10-29 (G1.3 security, authorization, audit)
 
 ### Added
 
-#### G1.3 — Security hardening (E7)
+#### G1.3 â€” Security hardening (E7)
 
-- **Forced password change** — `User.MustChangePassword` (`DzentoPOS2.Core/Entities/Identity/User.cs:26`, default `false` in `DzentoPOS2.Data/Configurations/Identity/UserConfiguration.cs:30`, migration `20261029145702_G1_3_MustChangePassword`). `AdminSeeder` flags the seeded account and re-flags any admin that still verifies against the well-known default password (`DzentoPOS2.Data/Seed/AdminSeeder.cs:24-47`). `LoginResponseDto`/`UserSession` carry the flag, `LoginForm` opens the new blocking `ChangePasswordDialog` (`DzentoPOS2/Forms/Auth/ChangePasswordDialog.cs:16`) before raising `LoginSuccess`, and cancelling signs the user back out (`DzentoPOS2/Forms/Auth/LoginForm.cs:502-545`). `AuthService.ChangePasswordAsync` clears the flag.
-- **Service-layer authorization** — new `IAuthorizationGuard` (`DzentoPOS2.App/Authorization/AuthorizationGuard.cs:25`). `DemandAsync` throws a coded domain exception (`DomainErrorCodes.PermissionDenied = "auth.permission_denied"`, `DzentoPOS2.Core/Exceptions/CodedDomainException.cs:27`) that `ExceptionFormatter` maps to `AppStrings.AccessDenied` (`DzentoPOS2.App/Diagnostics/ExceptionFormatter.cs:141`), so the UI shows a translated message instead of an English exception. SuperAdmin/`IsAdmin` keep the full-access bypass. Enforced in `UserService` (create/update/delete, L58/118/178), `RoleService` (L54/101/175), `ProductService` (L91/147/180) and `SaleService` (create L142, void L355).
-- **Audit log** — new `IAuditService` (`DzentoPOS2.App/Authorization/AuditService.cs:28`) writes through its own short-lived `AppDbContext` so an audit row never commits the caller's pending work and a failed write only logs a warning. Records `Login`, `Logout`, `ChangePassword`, one `SuperAdminBypass` per privileged sign-in and every `PermissionDenied` (`NewValues` = permission code).
-- **Permission catalog** — added `CashSessionsOpen`, `CashSessionsClose`, `UnitsCreate`, `UnitsEdit`, `UnitsDelete` (`DzentoPOS2.Core/Constants/Permissions.cs`) and granted them in `RolePermissionSeeder`.
+- **Forced password change** â€” `User.MustChangePassword` (`DzentoPOS2.Core/Entities/Identity/User.cs:26`, default `false` in `DzentoPOS2.Data/Configurations/Identity/UserConfiguration.cs:30`, migration `20261029145702_G1_3_MustChangePassword`). `AdminSeeder` flags the seeded account and re-flags any admin that still verifies against the well-known default password (`DzentoPOS2.Data/Seed/AdminSeeder.cs:24-47`). `LoginResponseDto`/`UserSession` carry the flag, `LoginForm` opens the new blocking `ChangePasswordDialog` (`DzentoPOS2/Forms/Auth/ChangePasswordDialog.cs:16`) before raising `LoginSuccess`, and cancelling signs the user back out (`DzentoPOS2/Forms/Auth/LoginForm.cs:502-545`). `AuthService.ChangePasswordAsync` clears the flag.
+- **Service-layer authorization** â€” new `IAuthorizationGuard` (`DzentoPOS2.App/Authorization/AuthorizationGuard.cs:25`). `DemandAsync` throws a coded domain exception (`DomainErrorCodes.PermissionDenied = "auth.permission_denied"`, `DzentoPOS2.Core/Exceptions/CodedDomainException.cs:27`) that `ExceptionFormatter` maps to `AppStrings.AccessDenied` (`DzentoPOS2.App/Diagnostics/ExceptionFormatter.cs:141`), so the UI shows a translated message instead of an English exception. SuperAdmin/`IsAdmin` keep the full-access bypass. Enforced in `UserService` (create/update/delete, L58/118/178), `RoleService` (L54/101/175), `ProductService` (L91/147/180) and `SaleService` (create L142, void L355).
+- **Audit log** â€” new `IAuditService` (`DzentoPOS2.App/Authorization/AuditService.cs:28`) writes through its own short-lived `AppDbContext` so an audit row never commits the caller's pending work and a failed write only logs a warning. Records `Login`, `Logout`, `ChangePassword`, one `SuperAdminBypass` per privileged sign-in and every `PermissionDenied` (`NewValues` = permission code).
+- **Permission catalog** â€” added `CashSessionsOpen`, `CashSessionsClose`, `UnitsCreate`, `UnitsEdit`, `UnitsDelete` (`DzentoPOS2.Core/Constants/Permissions.cs`) and granted them in `RolePermissionSeeder`.
 
 ### Fixed
 
@@ -26,7 +34,7 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 
 ### Verified
 
-- `SecurityG13Tests` (new, `tests/DzentoPOS2.IntegrationTests/SecurityG13Tests.cs`) — 7 integration tests:
+- `SecurityG13Tests` (new, `tests/DzentoPOS2.IntegrationTests/SecurityG13Tests.cs`) â€” 7 integration tests:
   - forced change flagged at login and cleared after the change, including re-login,
   - `Login` and `ChangePassword` rows in `AuditLogs`,
   - guard denies a user without the permission, writes a `PermissionDenied` row, and returns `auth.permission_denied`,
@@ -36,50 +44,50 @@ All notable changes to the DzentoPOS2 project are documented in this file.
   - re-seed does not force a change after the password was replaced.
 - Build **0 errors / 21 warnings** (all `NU1701`), Unit **84/84**, Integration **51/51**, `dotnet ef migrations has-pending-model-changes` clean, application starts with scope validation enabled and no logged exceptions (25 s run).
 
-## [Unreleased] — 2026-10-29 (G1.4 data paths, PRAGMA interceptor, online backup)
+## [Unreleased] â€” 2026-10-29 (G1.4 data paths, PRAGMA interceptor, online backup)
 
 ### Added
 
-#### G1.4 — Data paths, PRAGMA interceptor, online backup (E4/E5)
+#### G1.4 â€” Data paths, PRAGMA interceptor, online backup (E4/E5)
 
-- **Per-user data paths** — new `AppPaths` (`DzentoPOS2.Core/Configuration/AppPaths.cs`) relocates the SQLite DB, `user-settings.json`, theme file, store branding and logs to `%LocalAppData%\DzentoPOS2\`. One-time migration from the legacy BaseDirectory copies + verifies (length + contents) without overwriting or moving the original; the `-wal` sidecar is included. `UserPreferencesService` reads from `AppPaths.UserSettingsPath`, `ThemeManager` stores `theme.json`, `StoreBranding` reads/writes `branding.json`, `ExceptionLogger` writes to `logs\` — all under `%LocalAppData%\DzentoPOS2\`.
-- **PRAGMA interceptor** — new `SqliteConnectionInterceptor` (`DzentoPOS2.Data/Interceptors/SqliteConnectionInterceptor.cs`) sets `foreign_keys=ON`, `busy_timeout=5000`, `synchronous=NORMAL` on `ConnectionOpened`; the `SaveChangesAsync` PRAGMA override was removed from `AppDbContext`. `SqliteStartup` (`DzentoPOS2.Data/SqliteStartup.cs`) sets `journal_mode=WAL` once at startup via `EnsureWalModeAsync` outside transactions, called from `DbInitializer` and `Program`.
-- **Online backup** — new `BackupService` (`DzentoPOS2.App/Services/Systems/BackupService.cs`) uses the SQLite online backup API (`SqliteConnection.BackupDatabase`, not raw file copy) with retention of the last 7 backups, automatic backup on close (max once per day), backup-file validation before restore, and restore with a safety backup + validation + application restart. `SettingsForm` gained a Backup/Restore card (`CreateBackupAsync`, `RestoreAsync`, `ApplyRetention`, `ValidateBackupAsync`).
-- **Localization keys** — added `Backup`, `BackupFolder`, `BackupNow`, `BackupFileInvalid`, `BackupHint`, `BackupCreated`, `RestoreBackup`, `RestoreConfirm` to base/`ar`/`en`/`fr` + `AppStrings.Designer.cs` (parity diff 0).
+- **Per-user data paths** â€” new `AppPaths` (`DzentoPOS2.Core/Configuration/AppPaths.cs`) relocates the SQLite DB, `user-settings.json`, theme file, store branding and logs to `%LocalAppData%\DzentoPOS2\`. One-time migration from the legacy BaseDirectory copies + verifies (length + contents) without overwriting or moving the original; the `-wal` sidecar is included. `UserPreferencesService` reads from `AppPaths.UserSettingsPath`, `ThemeManager` stores `theme.json`, `StoreBranding` reads/writes `branding.json`, `ExceptionLogger` writes to `logs\` â€” all under `%LocalAppData%\DzentoPOS2\`.
+- **PRAGMA interceptor** â€” new `SqliteConnectionInterceptor` (`DzentoPOS2.Data/Interceptors/SqliteConnectionInterceptor.cs`) sets `foreign_keys=ON`, `busy_timeout=5000`, `synchronous=NORMAL` on `ConnectionOpened`; the `SaveChangesAsync` PRAGMA override was removed from `AppDbContext`. `SqliteStartup` (`DzentoPOS2.Data/SqliteStartup.cs`) sets `journal_mode=WAL` once at startup via `EnsureWalModeAsync` outside transactions, called from `DbInitializer` and `Program`.
+- **Online backup** â€” new `BackupService` (`DzentoPOS2.App/Services/Systems/BackupService.cs`) uses the SQLite online backup API (`SqliteConnection.BackupDatabase`, not raw file copy) with retention of the last 7 backups, automatic backup on close (max once per day), backup-file validation before restore, and restore with a safety backup + validation + application restart. `SettingsForm` gained a Backup/Restore card (`CreateBackupAsync`, `RestoreAsync`, `ApplyRetention`, `ValidateBackupAsync`).
+- **Localization keys** â€” added `Backup`, `BackupFolder`, `BackupNow`, `BackupFileInvalid`, `BackupHint`, `BackupCreated`, `RestoreBackup`, `RestoreConfirm` to base/`ar`/`en`/`fr` + `AppStrings.Designer.cs` (parity diff 0).
 
 ### Verified
 
-- `LocalizationParityTests.Every_culture_has_the_same_keys_as_the_base` — base vs ar/en/fr diff = 0.
+- `LocalizationParityTests.Every_culture_has_the_same_keys_as_the_base` â€” base vs ar/en/fr diff = 0.
 - Build **0 errors / 21 warnings** (all `NU1701`), Unit **84/84**, Integration **51/51**, `dotnet ef migrations has-pending-model-changes` clean.
 
-## [Unreleased] — 2026-10-29 (Admin emergency password reset)
+## [Unreleased] â€” 2026-10-29 (Admin emergency password reset)
 
 ### Added
 
 #### Admin emergency password reset
-- **Emergency reset via env var / config** — `AdminSeeder` now supports an opt-in reset triggered by setting `ADMIN_EMERGENCY_RESET=true` (environment variable) or `Admin:EmergencyReset=true` (appsettings.json / command line). When enabled, the built-in admin password is reset to the default (`admin`) and `MustChangePassword` is set, so the next sign-in forces a password change before the shell opens. The reset is logged via `ILogger.LogWarning`. Normal startup (flag absent) never overwrites the password, so the mechanism is safe to leave wired in.
+- **Emergency reset via env var / config** â€” `AdminSeeder` now supports an opt-in reset triggered by setting `ADMIN_EMERGENCY_RESET=true` (environment variable) or `Admin:EmergencyReset=true` (appsettings.json / command line). When enabled, the built-in admin password is reset to the default (`admin`) and `MustChangePassword` is set, so the next sign-in forces a password change before the shell opens. The reset is logged via `ILogger.LogWarning`. Normal startup (flag absent) never overwrites the password, so the mechanism is safe to leave wired in.
 
 ### Usage
 
-**Method A — Environment variable (recommended):**
+**Method A â€” Environment variable (recommended):**
 1. Close the application.
 2. Open Command Prompt and run: `set ADMIN_EMERGENCY_RESET=true`
 3. Start the application from the same Command Prompt window.
-4. Log in with `admin` / `admin` — the forced password-change dialog appears.
+4. Log in with `admin` / `admin` â€” the forced password-change dialog appears.
 5. Set a new password and close the Command Prompt.
 
-**Method B — appsettings.json:**
+**Method B â€” appsettings.json:**
 1. Close the application.
 2. Open `appsettings.json` in the application folder (e.g. `bin\Debug\net9.0-windows\`).
 3. Add `"Admin": { "EmergencyReset": true }` to the JSON.
-4. Start the application → log in with `admin` / `admin` → change password.
+4. Start the application â†’ log in with `admin` / `admin` â†’ change password.
 5. Remove the `"EmergencyReset": true` line from `appsettings.json`.
 
-**Method C — Sentinel file (simplest, no editing):**
+**Method C â€” Sentinel file (simplest, no editing):**
 1. Close the application.
 2. Create an empty text file named `reset-admin-password.txt` in the application folder (next to the `.exe`).
-3. Start the application — the file is consumed automatically and the password is reset.
-4. Log in with `admin` / `admin` → change password.
+3. Start the application â€” the file is consumed automatically and the password is reset.
+4. Log in with `admin` / `admin` â†’ change password.
 
 ### Suggested future recovery methods (not yet implemented)
 - **Email-based password reset**: Send a time-limited token to the registered email, verify it, then allow password change.
@@ -87,11 +95,11 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 - **Recovery code**: A one-time code generated at first setup, stored securely offline.
 - **Super-admin reset**: An already-logged-in super admin can reset another user's password via the Users page (already possible once logged in).
 
-## [Unreleased] — 2026-10-29 (G1.2 scope per page)
+## [Unreleased] â€” 2026-10-29 (G1.2 scope per page)
 
 ### Fixed
 
-#### G1.2 — No single `DbContext` for the whole session (E5)
+#### G1.2 â€” No single `DbContext` for the whole session (E5)
 
 - **DI scope validation** (`DzentoPOS2/Program.cs:34-39`): the DEBUG service provider is built with `ValidateScopes = true` and `ValidateOnBuild = true`, so any singleton capturing a scoped dependency now fails fast at startup instead of silently sharing state.
 - **Data lifetimes** (`DzentoPOS2.Data/DependencyInjection.cs:43-71`): `AddDbContext<AppDbContext>` and `AddDbContextFactory<AppDbContext>` are both registered as `ServiceLifetime.Scoped`. Previously the singleton `IDbContextFactory<AppDbContext>` consumed the scoped `DbContextOptions<AppDbContext>`, which is exactly how one context leaked across the whole session.
@@ -101,25 +109,25 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 
 ### Verified
 
-- `ScopeLifetimeTests` (new, `tests/DzentoPOS2.IntegrationTests/ScopeLifetimeTests.cs`) — 3 integration tests:
-  - `ServiceProvider_BuildsWithScopeValidationEnabled` — validates the whole graph with `ValidateScopes`/`ValidateOnBuild`.
-  - `AppDbContext_IsScoped_NotSharedBetweenScopes` — same instance inside a scope, different instance between scopes.
-  - `ContextFactory_IsScoped_NotSharedBetweenScopes` — factory differs per scope and returns a fresh context every call.
+- `ScopeLifetimeTests` (new, `tests/DzentoPOS2.IntegrationTests/ScopeLifetimeTests.cs`) â€” 3 integration tests:
+  - `ServiceProvider_BuildsWithScopeValidationEnabled` â€” validates the whole graph with `ValidateScopes`/`ValidateOnBuild`.
+  - `AppDbContext_IsScoped_NotSharedBetweenScopes` â€” same instance inside a scope, different instance between scopes.
+  - `ContextFactory_IsScoped_NotSharedBetweenScopes` â€” factory differs per scope and returns a fresh context every call.
 - Build **0 errors / 21 warnings** (all `NU1701`), Unit **84/84**, Integration **44/44**, `dotnet ef migrations has-pending-model-changes` clean.
 - Application starts with scope validation enabled and no exceptions logged (30 s run).
 
-## [Unreleased] — 2026-10-29 (G1.1 camera discovery/fixes)
+## [Unreleased] â€” 2026-10-29 (G1.1 camera discovery/fixes)
 
 ### Fixed
 
-#### G1.1 — Camera discovery (E6)
+#### G1.1 â€” Camera discovery (E6)
 - **CameraDeviceEnumerator** (`DzentoPOS2/Services/Barcodes/CameraDeviceEnumerator.cs`): replaced broken DirectShow GUID/COM enumeration with **AForge `FilterInfoCollection(FilterCategory.VideoInputDevice)`** (commits `5a05f17`, `54794df`). Enumerates on demand; returns empty safely when subsystem missing.
 - **BarcodeScannerOverlay** (`DzentoPOS2/Forms/Sales/BarcodeScannerOverlay.cs`): re-enumerates on open/refresh with **Refresh** button, persists selection by moniker with fallback, shows no-device message with hint `"Start DroidCam Client first; the app must match its 32/64-bit filter"` including process bitness (64/32-bit), improved error reporting.
 - **SettingsForm** (`DzentoPOS2/Forms/Settings/SettingsForm.cs`): Refresh re-enumerates cameras and re-selects by moniker.
 - **BarcodeCameraService** (`DzentoPOS2/Services/Barcodes/BarcodeCameraService.cs`): supports **IP/MJPEG** sources (`http://`/`https://`) via AForge `MJPEGStream` through same pipeline; `IVideoSource` abstraction; robust stop/dispose.
 - **Verification**: build 0 errors / 21 warnings (all NU1701), Unit **84/84**, Integration **41/41**, `dotnet ef migrations has-pending-model-changes` clean.
 
-## [Unreleased] — 2026-10-27 (retarget to .NET 9 for Visual Studio 2022)
+## [Unreleased] â€” 2026-10-27 (retarget to .NET 9 for Visual Studio 2022)
 
 ### Changed
 
@@ -132,7 +140,7 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 
 #### Why not .NET 10
 
-- Visual Studio 2022 (17.14, MSBuild 17.14.10) cannot load the .NET 10 SDK: SDK `10.0.403` declares `minimumMSBuildVersion = 18.0.0` (Visual Studio 2026). MSBuild falls back to the machine-wide .NET 9 SDK, which reports `NETSDK1209`; the "use Visual Studio version 17.16 or higher" text is a stale placeholder. Reproduced outside the IDE — a toolchain constraint, not a repo bug. Details in `docs/net9-retarget.md`.
+- Visual Studio 2022 (17.14, MSBuild 17.14.10) cannot load the .NET 10 SDK: SDK `10.0.403` declares `minimumMSBuildVersion = 18.0.0` (Visual Studio 2026). MSBuild falls back to the machine-wide .NET 9 SDK, which reports `NETSDK1209`; the "use Visual Studio version 17.16 or higher" text is a stale placeholder. Reproduced outside the IDE â€” a toolchain constraint, not a repo bug. Details in `docs/net9-retarget.md`.
 
 #### Carried over from the .NET 10 attempt (still required on .NET 9)
 
@@ -145,7 +153,7 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 - Clean rebuild **0 errors / 21 warnings** (all `NU1701`, baseline unchanged), Unit **84/84**, Integration **41/41**.
 - `has-pending-model-changes` clean; a fresh database applies all 9 migrations (`Done.`, 56 tables).
 
-## [Unreleased] — 2026-10-27 (.NET 10 retarget) — superseded
+## [Unreleased] â€” 2026-10-27 (.NET 10 retarget) â€” superseded
 
 ### Changed
 
@@ -160,11 +168,11 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 - `WFO1000` (WinForms code-serialization analyzer, error by default on net9+) disabled via `.editorconfig` for the two programmatically-consumed control libraries (`EZControls`, `DzentoPOS2.WinForms`).
 - `EZComboBox.SelectedValue` annotated `[DisallowNull]` to match the .NET 10 non-nullable annotation on `ListControl.SelectedValue`.
 - Added the cash-session linking columns (`CashTransactions.CashSessionId`/`SourceId`/`SourceType`, `SalesInvoices.CashSessionId`) to the baseline `InitialCreate` migration: EF Core 10's SQLite `AddForeignKey` table rebuild copies the full column list, so fresh databases failed with `no such column`. Legacy databases are unaffected (`LegacySchemaRepair` remains the idempotent path).
-- Regenerated `AppDbContextModelSnapshot.cs` for EF Core 10 — only the `ProductVersion` annotation changed (`8.0.27` → `10.0.14`); a probe migration proved the generated Up/Down are empty (no schema change) and no existing migration was edited or renamed.
+- Regenerated `AppDbContextModelSnapshot.cs` for EF Core 10 â€” only the `ProductVersion` annotation changed (`8.0.27` â†’ `10.0.14`); a probe migration proved the generated Up/Down are empty (no schema change) and no existing migration was edited or renamed.
 
 #### Package audit
 
-- No vulnerable packages. Only `xunit 2.9.3` is flagged as deprecated (`Legacy` → xunit.v3); the migration to xunit v3 is deferred.
+- No vulnerable packages. Only `xunit 2.9.3` is flagged as deprecated (`Legacy` â†’ xunit.v3); the migration to xunit v3 is deferred.
 - Kept `System.Data.SqlClient`: `System.Windows.Forms.DataVisualization.dll` references it directly while its nuspec declares no dependency, so removing it breaks the Dashboard charts at runtime.
 - Licence findings needing a business decision: **AutoMapper 16** (RPL-1.5 or paid commercial licence), **QuestPDF** (MIT below US $1M revenue, else a paid tier) and **AForge.Video.DirectShow** (LGPL-3.0). Details in `docs/net10-package-audit.md`.
 
@@ -173,17 +181,17 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 - Clean rebuild **0 errors / 21 warnings** (baseline unchanged; all `NU1701`), Unit **84/84**, Integration **41/41**.
 - `has-pending-model-changes` clean; a fresh database and three legacy starting states upgrade without data loss through the real startup path (`docs/net10-verification.md`, `docs/net10-smoke-run.md`).
 
-## [Unreleased] — 2026-10-27 (cash drawer, discount ceiling, localized errors)
+## [Unreleased] â€” 2026-10-27 (cash drawer, discount ceiling, localized errors)
 
 ### Added
 
 #### Cash-drawer dashboard, live totals and enforcement (F3, E3)
 
 - `ISalesEventPublisher` / `SalesEventPublisher` (singleton, in-process): `SaleCompleted`, `SaleVoided` and `CashMovementAdded` are raised **after** the database transaction commits, so any subscriber that reads the database observes the committed rows. Handlers are isolated (one failing subscriber cannot break the sale) and subscribers own their lifetime (unsubscribe on dispose).
-- `CashSessionOpenDialog` (opening policy modal) and a rebuilt `CashSessionForm` KPI dashboard (8 `KpiCard`s, 4→2→1 column reflow, RTL, dark mode, `RegionalContext` formatting). Both are designer-first (layout in `<Form>.Designer.cs`, logic in `<Form>.cs`, runtime `ApplyTheme` / localized text).
+- `CashSessionOpenDialog` (opening policy modal) and a rebuilt `CashSessionForm` KPI dashboard (8 `KpiCard`s, 4â†’2â†’1 column reflow, RTL, dark mode, `RegionalContext` formatting). Both are designer-first (layout in `<Form>.Designer.cs`, logic in `<Form>.cs`, runtime `ApplyTheme` / localized text).
 - The main shell status bar gains a live cash-drawer chip (open/closed + previous-business-day warning); `SalesForm` shows an "open the drawer first" banner and gates the checkout button.
 - `GetSessionSummaryAsync` is the single source of truth for the drawer totals and is reused by `CloseSessionAsync` (idempotent: a second close throws `CodedDomainException(SessionAlreadyClosed)`).
-- Migration `20261027164243_E3_UniqueOpenSessionIndex` adds the filtered unique index `UX_CashSessions_OpenPerCashbox` (`"Status" = 0 AND "IsDeleted" = 0`) — it previously existed only in the model snapshot.
+- Migration `20261027164243_E3_UniqueOpenSessionIndex` adds the filtered unique index `UX_CashSessions_OpenPerCashbox` (`"Status" = 0 AND "IsDeleted" = 0`) â€” it previously existed only in the model snapshot.
 - `CashSessionPolicy.IsFromPreviousBusinessDay` (local business day) with unit coverage.
 
 #### Discount ceiling for both modes + seeded setting (F2b / Part 0)
@@ -204,8 +212,8 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 
 ### Fixed
 
-- Cash sale → exactly one linked `CashTransaction`; a card sale appears only in the non-cash split; a partial payment counts only the cash actually paid; a void nets the drawer back to zero.
-- `CashTransaction` / `SalesInvoice` → `CashSession` foreign keys are `Restrict` (migration `20261023140849_E3_CashSessionLinking`).
+- Cash sale â†’ exactly one linked `CashTransaction`; a card sale appears only in the non-cash split; a partial payment counts only the cash actually paid; a void nets the drawer back to zero.
+- `CashTransaction` / `SalesInvoice` â†’ `CashSession` foreign keys are `Restrict` (migration `20261023140849_E3_CashSessionLinking`).
 - Startup no longer aborts with `SQLite Error 1: 'no such index: IX_CashSessions_CashboxId'`: the E3 unique-index migration now drops the old index with `DROP INDEX IF EXISTS "IX_CashSessions_CashboxId"` (and `Down()` recreates it with `CREATE INDEX IF NOT EXISTS`), so a missing index can never crash the upgrade path again.
 - Startup no longer aborts with `SQLite Error 1: 'index UX_CashSessions_OpenPerCashbox already exists'`: the same migration creates the filtered unique index with `CREATE UNIQUE INDEX IF NOT EXISTS` (and `Down()` drops it with `DROP INDEX IF EXISTS`), so it is a harmless no-op when the index is already present (for example from an earlier incarnation of the migration whose history row is gone).
 - A database that allowed several open sessions per cashbox (pre-`E3_UniqueOpenSessionIndex`) now upgrades without error: the duplicate sessions are auto-closed by the repair step above instead of failing the `CREATE UNIQUE INDEX`.
@@ -217,11 +225,11 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 - 4-resx + `AppStrings.Designer.cs` key parity: **376 keys each, 0 diff**.
 - `dotnet ef migrations has-pending-model-changes`: **No changes** (model snapshot and migration Designer stay consistent).
 
-## [Unreleased] — 2026-10-23 (cash sessions + dashboard performance)
+## [Unreleased] â€” 2026-10-23 (cash sessions + dashboard performance)
 
 ### Added
 
-#### Daily cash sessions (C.1–C.2)
+#### Daily cash sessions (C.1â€“C.2)
 
 - `CashSession` entity + `CashSessionStatus` enum, `CashSessionConfiguration` (decimal(18,2) balances, indexes, restrict FK to `Cashbox`) and migration `20261023082755_AddCashSessions`.
 - `ICashSessionRepository` / `CashSessionRepository` and `ICashSessionService` / `CashSessionService`: one open session per cashbox; closing computes the expected balance from `CashTransaction` rows since `OpenedAtUtc` (signs from `MovementType`), stores `ExpectedBalance` / `Difference`, closes the session and updates `Cashbox.CurrentBalance`.
@@ -234,7 +242,7 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 #### Dashboard summary uses 19 DB commands instead of ~34 (D.1)
 
 - KPI aggregates per table are computed in one grouped query (`GroupBy(_ => 1)` + conditional `Sum`); monthly sales/purchases reuse those grouped reads; the six-month sales read also feeds the 30-day trend; category names are joined into the distribution query.
-- Measured with an EF Core `DbCommandInterceptor` in the harness: **19 commands** for `GetSummaryAsync` (target ≤ 22).
+- Measured with an EF Core `DbCommandInterceptor` in the harness: **19 commands** for `GetSummaryAsync` (target â‰¤ 22).
 
 ### Fixed
 
@@ -244,17 +252,17 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 ### Verification
 
 - `dotnet build DzentoPOS2.sln`: **0 errors** (only pre-existing `NU1701` package notices).
-- Headless UI harness: **91 passed / 0 failed** — previous sections plus `C.1.0–C.1.6`, `C.2.1–C.2.5`, `D.1.1–D.1.2`, `D.2.1` and `D.3.1–D.3.2`.
+- Headless UI harness: **91 passed / 0 failed** â€” previous sections plus `C.1.0â€“C.1.6`, `C.2.1â€“C.2.5`, `D.1.1â€“D.1.2`, `D.2.1` and `D.3.1â€“D.3.2`.
 - DPI review (D.3): `AutoScaleMode=Font`, `DeviceDpi > 0` and `ApplicationHighDpiMode=PerMonitorV2`; no Apple-specific assets exist in this Windows-only solution.
 
-## [Unreleased] — 2026-10-23 (categories & units management)
+## [Unreleased] â€” 2026-10-23 (categories & units management)
 
 ### Added
 
-#### Product categories and units CRUD (B.1–B.4)
+#### Product categories and units CRUD (B.1â€“B.4)
 
 - `IProductCategoryService` / `ProductCategoryService` and `IProductUnitService` / `ProductUnitService` provide `GetAllAsync`, `GetByIdAsync`, `SearchAsync`, uniqueness checks (`ExistsByNameAsync`, plus `ExistsBySymbolAsync` for units), `GetBaseUnitsAsync` (units), `CreateAsync`, `UpdateAsync` and `DeleteAsync`.
-- New `CreateProductCategoryDto`, `UpdateProductCategoryDto`, `CreateProductUnitDto`, `UpdateProductUnitDto` and FluentValidation validators (category name ≤150 / description ≤500, unit name ≤100 / symbol ≤20).
+- New `CreateProductCategoryDto`, `UpdateProductCategoryDto`, `CreateProductUnitDto`, `UpdateProductUnitDto` and FluentValidation validators (category name â‰¤150 / description â‰¤500, unit name â‰¤100 / symbol â‰¤20).
 - New `ProductCategoriesForm` + `ProductCategoryEditDialog` and `ProductUnitsForm` + `ProductUnitEditDialog`, with search, add/edit/delete and an active flag for categories.
 - Two new sidebar entries (`btnCategories`, `btnUnits`) under Suppliers, navigating to the new forms, wired in `MainForm` and registered in `Infrastructure\DependencyInjection.cs`.
 - Localization: `Categories`, `CategoryName`, `Units`, `UnitName`, `Symbol`, `BaseUnit`, `AddCategory`, `EditCategory`, `DeleteCategoryConfirm`, `AddUnit`, `EditUnit`, `DeleteUnitConfirm` in base/`ar`/`en`/`fr`, with matching `AppStrings.Designer.cs` properties.
@@ -269,9 +277,9 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 ### Verification
 
 - `dotnet build DzentoPOS2.sln`: **0 errors** (only pre-existing `NU1701` package notices).
-- Headless UI harness: **74 passed / 0 failed** — P1–P8, DM.1–DM.3, A.1–A.4 and the new B section (`B.1.1–B.1.4`, `B.2.1–B.2.4`, `B.3.1`, `B.4.1–B.4.4`).
+- Headless UI harness: **74 passed / 0 failed** â€” P1â€“P8, DM.1â€“DM.3, A.1â€“A.4 and the new B section (`B.1.1â€“B.1.4`, `B.2.1â€“B.2.4`, `B.3.1`, `B.4.1â€“B.4.4`).
 
-## [Unreleased] — 2026-10-22 (hotfixes: product tracking, settings layout, sidebar, product names)
+## [Unreleased] â€” 2026-10-22 (hotfixes: product tracking, settings layout, sidebar, product names)
 
 ### Fixed
 
@@ -279,7 +287,7 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 
 - Root cause: `ProductService.UpdateAsync` / `DeleteAsync` and `ExpenseService.UpdateAsync` / `DeleteAsync` read the entity with `GetByIdAsync` (which uses `AsNoTracking` on the shared `DbContext`) and then called `Update`/`Remove` on a detached copy while the context could still track another instance with the same key.
 - Fix: the services now read the entity **tracked** from `_context` (`FirstOrDefaultAsync` with `Include(Category, Unit)` for updates, plain tracked read for deletes) and operate on it directly.
-- Measured by headless harness `A1.1`: create a product then update it twice on the same service instance ⇒ final name `uihost-product-2`; before the fix this threw.
+- Measured by headless harness `A1.1`: create a product then update it twice on the same service instance â‡’ final name `uihost-product-2`; before the fix this threw.
 
 #### Settings cards clipped fields at narrow widths and on language change (A.2)
 
@@ -302,9 +310,9 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 ### Verification
 
 - `dotnet build DzentoPOS2.sln -t:Rebuild -v:m -nologo`: **0 errors** (only pre-existing `NU1701` package notices).
-- Headless UI harness: **61 passed / 0 failed** — P1–P8, DM.1–DM.3 and A.1–A.4.
+- Headless UI harness: **61 passed / 0 failed** â€” P1â€“P8, DM.1â€“DM.3 and A.1â€“A.4.
 
-## [Unreleased] — 2026-10-22 (dark mode: tab strips + KPI badges)
+## [Unreleased] â€” 2026-10-22 (dark mode: tab strips + KPI badges)
 
 ### Fixed
 
@@ -320,12 +328,12 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 
 ### Verification
 - `dotnet build` of the UI harness against the solution: **0 errors** (only the pre-existing `NU1701` package notices).
-- Headless harness: **57 passed / 0 failed** — includes `DM.1` (no light surface on all 12 pages), `DM.2` (no dark-on-dark captions) and `DM.3` (rendered tab strips dark on Sales / Products / Reports).
+- Headless harness: **57 passed / 0 failed** â€” includes `DM.1` (no light surface on all 12 pages), `DM.2` (no dark-on-dark captions) and `DM.3` (rendered tab strips dark on Sales / Products / Reports).
 - Temporary screenshot/debug code (`PrintWindow`, `CaptureTabStrip`) was removed from the harness after the fix; the pixel checks are self-contained.
 
 ---
 
-## [Unreleased] — 2026-10-22 (settings layout + point of sale fixes)
+## [Unreleased] â€” 2026-10-22 (settings layout + point of sale fixes)
 
 ### Fixed
 
@@ -354,10 +362,10 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 #### Product search hidden under the basket in the point of sale (P3.5 / P3.6 / P3.7)
 - Root cause: in `SalesForm` the product panel was added to the sale tab **after** the basket panel, and WinForms docks the **last added** control first. The product panel (`Dock = Fill`) therefore took the whole tab width while the basket (`Dock = Right`, 420px) was painted on top of it, covering the right part of the product search field and the whole barcode button.
 - The sale tab is now a `TableLayoutPanel` (`_saleLayout`) that owns both sides: the product panel and the basket are two real columns, so they can no longer overlap. The basket is a `TableLayoutPanel` (`_cartLayout`) as well: customer row (34px), the cart grid (grows), the totals block and the action buttons.
-- The layout adapts to the available width: side by side (basket column `clamp(38%, 300, 420)`) when the page is at least 780px wide, stacked (basket below the product list) below that. The recomputation is deferred by one message-loop pass (`OnSaleTabResized` → `BeginInvoke`) because `Resize` fires before the new size is applied.
+- The layout adapts to the available width: side by side (basket column `clamp(38%, 300, 420)`) when the page is at least 780px wide, stacked (basket below the product list) below that. The recomputation is deferred by one message-loop pass (`OnSaleTabResized` â†’ `BeginInvoke`) because `Resize` fires before the new size is applied.
 - The totals block is measured against the padding of its table (`TotalsPadding = 6`), so the last total row no longer overflows its cell (measured before the fix: label `bottom = 156` inside a `150` high table).
 - The cart grid columns and the product grid columns now stretch (`AutoSizeMode = Fill`) instead of keeping fixed widths, so the grids fit the new panel widths.
-- The basket title is a real resource (`AppStrings.Cart`: `Shopping cart` / `سلة المشتريات` / `Panier d'achat`) and is refreshed in `LoadText()` when the language changes.
+- The basket title is a real resource (`AppStrings.Cart`: `Shopping cart` / `ط³ظ„ط© ط§ظ„ظ…ط´طھط±ظٹط§طھ` / `Panier d'achat`) and is refreshed in `LoadText()` when the language changes.
 
 ### Changed
 
@@ -366,16 +374,16 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 
 ### Decision
 
-- The built-in administrator password stays **forced on every startup**: `AdminSeeder` rewrites the stored hash to the built-in default whenever it no longer verifies against it. Changing the administrator password from the **Users** page therefore has no lasting effect — confirmed as the intended behaviour (the account remains the documented `admin` / `admin` recovery entry).
+- The built-in administrator password stays **forced on every startup**: `AdminSeeder` rewrites the stored hash to the built-in default whenever it no longer verifies against it. Changing the administrator password from the **Users** page therefore has no lasting effect â€” confirmed as the intended behaviour (the account remains the documented `admin` / `admin` recovery entry).
 
 ### Verification
 - `dotnet build DzentoPOS2.sln -t:Rebuild -v:m -nologo`: **0 errors** (21 warnings, all pre-existing `NU1701` package-compatibility notices; the last `CS1998` in `SalesForm` was removed as well).
-- Headless UI harness: **41 passed / 0 failed** — P1 (version, currency, language round-trip, credentials, retired default password absent from the sources, copyright strip at form level), P2 (sidebar scroll, user block at 220px/100px, RTL, avatar), P3 (POS opens by default, add-customer button, customer id, calculator, **product search and barcode button visible above the basket, no overlap between the two sides, stacked basket on a 420px page**), P5 (card heights, uniform card width and no overflow at 375 / 768 / 1440), P6 (rounded region guard of the scanner preview) and P8 (settings page, shell and settings hosted in the shell, all at 375 / 768 / 1440).
+- Headless UI harness: **41 passed / 0 failed** â€” P1 (version, currency, language round-trip, credentials, retired default password absent from the sources, copyright strip at form level), P2 (sidebar scroll, user block at 220px/100px, RTL, avatar), P3 (POS opens by default, add-customer button, customer id, calculator, **product search and barcode button visible above the basket, no overlap between the two sides, stacked basket on a 420px page**), P5 (card heights, uniform card width and no overflow at 375 / 768 / 1440), P6 (rounded region guard of the scanner preview) and P8 (settings page, shell and settings hosted in the shell, all at 375 / 768 / 1440).
 - Auth harness (real DI + SQLite): `admin` / `admin` succeeds, the retired default no longer does, a legacy clear-text password is accepted once and upgraded to a `$2a$11$` hash.
 
 ---
 
-## [Unreleased] — 2026-10-21 (login fixes)
+## [Unreleased] â€” 2026-10-21 (login fixes)
 
 ### Fixed
 
@@ -408,7 +416,7 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 
 ---
 
-## [Unreleased] — 2026-10-21 (suppliers page)
+## [Unreleased] â€” 2026-10-21 (suppliers page)
 
 ### Added
 
@@ -444,7 +452,7 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 
 ---
 
-## [Unreleased] — 2026-10-21 (settings, branding, regional, barcode)
+## [Unreleased] â€” 2026-10-21 (settings, branding, regional, barcode)
 
 ### Added
 
@@ -470,7 +478,7 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 - Custom receipt sizes are supported through a `PaperSize` built from millimetres, and landscape output swaps the paper width/height before printing.
 
 ### Fixed
-- Mojibake (U+FFFD) in `LoginForm.Designer.cs` (copyright line, "العربية"/"Français" labels) restored from the `HEAD` blob, and the broken dash in `ProductsForm` replaced with U+2014. The `AppStrings*.resx` resources were verified to be free of replacement characters.
+- Mojibake (U+FFFD) in `LoginForm.Designer.cs` (copyright line, "ط§ظ„ط¹ط±ط¨ظٹط©"/"Franأ§ais" labels) restored from the `HEAD` blob, and the broken dash in `ProductsForm` replaced with U+2014. The `AppStrings*.resx` resources were verified to be free of replacement characters.
 - Long option lists are reachable again: the custom combo box renders **every** entry inside a scrollable list (`ToolStripControlHost` + auto-scrolling panel) instead of cutting the overflow away. Verified for 42 countries, 43 time zones and 37 currencies: 6 visible rows plus a working scrollbar.
 - The combo-box dropdown is direction aware: marker, check mark and text alignment follow the layout direction (RTL).
 - `System.Drawing.Printing` usage adapted to the reduced .NET 8 API surface (`PaperSize.PaperName`, read-only `PaperKind`, no `PrinterSettings.Orientation`, no `LandScapeAngle`).
@@ -481,7 +489,7 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 
 ---
 
-## [Unreleased] — 2026-10-21
+## [Unreleased] â€” 2026-10-21
 
 ### Added
 
@@ -512,26 +520,26 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 - `SettingsForm` now initializes the dark-mode checkbox from `ThemeManager.Mode` and applies `ThemeManager.SetMode(...)` on save.
 
 #### Live theme switching
-- Switching the theme while the shell is open now re-themes the whole application immediately: `MainForm.ApplyShellTheme()` repaints sidebar, top bar, status bar, sidebar buttons, and the header bar, and `NavigationService` re-applies `AppColors` to the hosted page. Verified live in both directions (dark → light and light → dark) by pixel sampling.
+- Switching the theme while the shell is open now re-themes the whole application immediately: `MainForm.ApplyShellTheme()` repaints sidebar, top bar, status bar, sidebar buttons, and the header bar, and `NavigationService` re-applies `AppColors` to the hosted page. Verified live in both directions (dark â†’ light and light â†’ dark) by pixel sampling.
 
 #### Code quality
 - `NavigationService` no longer produces a nullable warning: the resolved form is explicitly checked and the title update is guarded against disposed forms.
 
 ### Verification
 - `dotnet build DzentoPOS2.sln -t:Rebuild -v:m -nologo`: **0 errors**; only the 15 pre-existing `NU1701` package-compatibility warnings (OpenTK / SkiaSharp).
-- Runtime smoke test: `SplashForm` → `Login` → `MainForm` with no crash; theme restored from `theme.config`; live toggle verified by `PrintWindow` pixel sampling (dark: sidebar `#090E16`, content `#111827`; light: sidebar `#002731`, content `#F5F7FA`).
+- Runtime smoke test: `SplashForm` â†’ `Login` â†’ `MainForm` with no crash; theme restored from `theme.config`; live toggle verified by `PrintWindow` pixel sampling (dark: sidebar `#090E16`, content `#111827`; light: sidebar `#002731`, content `#F5F7FA`).
 - RTL verified at runtime: switching the UI to Arabic mirrors the layout (sidebar moves to the right edge) and the shell re-creates accordingly.
 
 ---
 
-## [Unreleased] — 2026-10-20
+## [Unreleased] â€” 2026-10-20
 
 ### Added
 
 #### Services & Data Access (App layer)
-- `ISaleService` / `SaleService` — sales invoice creation, listing, deletion (`DzentoPOS2.App/Services/Sales`).
-- `ICustomerService` / `CustomerService` and `ISupplierService` / `SupplierService` — partner management (`DzentoPOS2.App/Services/Partners`).
-- `IPurchaseService` / `PurchaseService` — purchase invoice handling (`DzentoPOS2.App/Services/Purchases`).
+- `ISaleService` / `SaleService` â€” sales invoice creation, listing, deletion (`DzentoPOS2.App/Services/Sales`).
+- `ICustomerService` / `CustomerService` and `ISupplierService` / `SupplierService` â€” partner management (`DzentoPOS2.App/Services/Partners`).
+- `IPurchaseService` / `PurchaseService` â€” purchase invoice handling (`DzentoPOS2.App/Services/Purchases`).
 - All new services registered in `DzentoPOS2.App/DependencyInjection.cs`.
 
 #### DTOs (Shared layer)
@@ -543,16 +551,16 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 - `SalesInvoice.Create(...)` static factory added to `DzentoPOS2.Core/Entities/Sales/SalesInvoice.cs` to support value-object construction (private-setters on `InvoiceNumber`, `Money`, `Percentage`, `Tax`, `PaidAmount`, `RemainingAmount`).
 
 #### Forms
-- `CustomersForm` + `CustomerEditDialog` — full CRUD for customers (`Forms/Customers`).
-- `SalesForm` — POS-style cart with product grid, quantity, discount, tax, paid amount, complete-sale action, and an invoices tab (`Forms/Sales`).
-- `PurchasesForm` + `PurchaseEditDialog` — purchase CRUD (`Forms/Purchases`).
-- `UsersForm` + `UserEditDialog` — full user CRUD (create/edit) with role assignment (`Forms/Identity`).
-- `RolesForm` + `RoleEditDialog` — role CRUD with permission checklist (`Forms/Identity`).
-- `InventoryForm` — stock overview: 4 KPI cards, search + category/status filters, product grid, and per-warehouse stock detail (`Forms/Inventory`).
-- `ReportsForm` — 8 KPI cards plus tabbed insight grids (top selling, best customers, active suppliers, stock alerts) driven by `IDashboardService` (`Forms/Reports`).
-- `SettingsForm` — language selector, dark-mode toggle (wired to `ThemeManager`), remember-me, and version/about card, persisted via `IUserPreferencesService` (`Forms/Settings`).
+- `CustomersForm` + `CustomerEditDialog` â€” full CRUD for customers (`Forms/Customers`).
+- `SalesForm` â€” POS-style cart with product grid, quantity, discount, tax, paid amount, complete-sale action, and an invoices tab (`Forms/Sales`).
+- `PurchasesForm` + `PurchaseEditDialog` â€” purchase CRUD (`Forms/Purchases`).
+- `UsersForm` + `UserEditDialog` â€” full user CRUD (create/edit) with role assignment (`Forms/Identity`).
+- `RolesForm` + `RoleEditDialog` â€” role CRUD with permission checklist (`Forms/Identity`).
+- `InventoryForm` â€” stock overview: 4 KPI cards, search + category/status filters, product grid, and per-warehouse stock detail (`Forms/Inventory`).
+- `ReportsForm` â€” 8 KPI cards plus tabbed insight grids (top selling, best customers, active suppliers, stock alerts) driven by `IDashboardService` (`Forms/Reports`).
+- `SettingsForm` â€” language selector, dark-mode toggle (wired to `ThemeManager`), remember-me, and version/about card, persisted via `IUserPreferencesService` (`Forms/Settings`).
 
-#### Localization keys (×4 languages: base/ar/en/fr)
+#### Localization keys (أ—4 languages: base/ar/en/fr)
 - Added `Warehouse`, `Appearance`, `About`.
 - Total localization keys: **241** per language.
 
@@ -582,32 +590,32 @@ All notable changes to the DzentoPOS2 project are documented in this file.
 - `CustomersForm.Designer.cs` rewritten with correct namespace and simplified `InitializeComponent`.
 - `UsersForm.Designer.cs`, `RolesForm.Designer.cs`, `InventoryForm.Designer.cs`, `ReportsForm.Designer.cs`, `SettingsForm.Designer.cs` simplified (placeholder labels removed; UI built in code-behind).
 - Added missing `using DzentoPOS2.WinForms.Helpers;` in `PurchaseEditDialog.cs`.
-- Corrected `AppStrings.Status` → `AppStrings.StatusFilter`, and nonexistent `SelectSupplierMsg` → `AppStrings.SelectSupplier`.
+- Corrected `AppStrings.Status` â†’ `AppStrings.StatusFilter`, and nonexistent `SelectSupplierMsg` â†’ `AppStrings.SelectSupplier`.
 
 #### GDI / rendering
 - `UIHelper.SetRoundedRegion` GDI handle fixes.
 - `ShadowEngine` GDI fixes plus nullability hardening.
 
 ### Removed
-- `AddUserForm` (`.cs`, `.Designer.cs`, `.resx`) — superseded by the new `UsersForm` + `UserEditDialog`. DI registration removed.
+- `AddUserForm` (`.cs`, `.Designer.cs`, `.resx`) â€” superseded by the new `UsersForm` + `UserEditDialog`. DI registration removed.
 - Unused `MainForm.loadingOverlay` field.
 - Unused `LocalizableFormBase._isFirstLoad` field.
 - Unused `SettingsForm._loading` field.
 
 ### Code quality (nullability & analyzer warnings)
 Resolved all C# compiler warnings to achieve a warning-free build across the solution:
-- `LocalizableFormBase` — removed unused field.
-- `LoadingOverlay` — non-nullable field initialization and nullable event-handler signature.
-- `RecentTransactionsModule` — null-guarded grid column and cell-style access.
-- `SalesForm` — converted non-awaiting async methods to synchronous; null-safe `SKU` filtering.
-- `LoginForm` — nullable `IUserPreferencesService`, null-safe text reads and assignments.
-- `ExpenseEditDialog` — null-safe reflection on combo items.
-- `ProductService` — removed async from non-awaiting mapper.
-- `ShadowEngine` — nullable cache bitmap and nullable event-handler signatures.
-- `ThemeManager` — nullable `ThemeChanged` event and `ControlAdded` guard.
-- `MainHeaderBar` — null-safe `SearchText`.
-- `ProductsForm` — null-safe search term.
-- `EZControls`: `EZComboBox`/`EZInputBase` `Text` override nullability via `[AllowNull]`; `EZToggleButton` inner-gap constant renamed (`Padding` → `InnerGap`) to stop hiding `Control.Padding`; `EZUserMenu` unused public events annotated with `#pragma warning disable CS0067`.
+- `LocalizableFormBase` â€” removed unused field.
+- `LoadingOverlay` â€” non-nullable field initialization and nullable event-handler signature.
+- `RecentTransactionsModule` â€” null-guarded grid column and cell-style access.
+- `SalesForm` â€” converted non-awaiting async methods to synchronous; null-safe `SKU` filtering.
+- `LoginForm` â€” nullable `IUserPreferencesService`, null-safe text reads and assignments.
+- `ExpenseEditDialog` â€” null-safe reflection on combo items.
+- `ProductService` â€” removed async from non-awaiting mapper.
+- `ShadowEngine` â€” nullable cache bitmap and nullable event-handler signatures.
+- `ThemeManager` â€” nullable `ThemeChanged` event and `ControlAdded` guard.
+- `MainHeaderBar` â€” null-safe `SearchText`.
+- `ProductsForm` â€” null-safe search term.
+- `EZControls`: `EZComboBox`/`EZInputBase` `Text` override nullability via `[AllowNull]`; `EZToggleButton` inner-gap constant renamed (`Padding` â†’ `InnerGap`) to stop hiding `Control.Padding`; `EZUserMenu` unused public events annotated with `#pragma warning disable CS0067`.
 
 ### Fixed
 
@@ -615,7 +623,7 @@ Resolved all C# compiler warnings to achieve a warning-free build across the sol
 - `DashboardService` rewritten so all figures are computed correctly against `UtcNow`:
   - **Sales & purchases** now use invoice **`Total`** (value) instead of `PaidAmount`; period comparisons for the matching prior period.
   - **Low-stock card was hard-coded to `0`**; now counts active, stock-tracked products whose summed `ProductStock.Quantity` is at or below `MinimumStock`.
-  - **Profit math corrected** — `ActualProfit` no longer double-counts purchases. It is now `grossProfit − operating expenses`, where `grossProfit = netRevenue (sales − returns) − COGS`.
+  - **Profit math corrected** â€” `ActualProfit` no longer double-counts purchases. It is now `grossProfit âˆ’ operating expenses`, where `grossProfit = netRevenue (sales âˆ’ returns) âˆ’ COGS`.
   - **Date ranges** converted to half-open intervals `[start, next)` (day/month), eliminating the previous `<= now` truncation of late-day invoices.
   - **Stock alerts** now show real current stock vs. reorder level instead of presenting `MinimumStock` as the stock value.
   - Removed redundant explicit `!IsDeleted` predicates (a global soft-delete query filter already applies to all `BaseEntity` types).
@@ -634,11 +642,11 @@ Resolved all C# compiler warnings to achieve a warning-free build across the sol
 ### Changed
 
 #### Unified design system (one source of truth)
-- Added `Themes/AppColors.cs` — semantic palette (brand, status, neutrals, surfaces, shell tokens, disabled states, tint/hover helpers), aligned with an Apple-inspired visual identity.
+- Added `Themes/AppColors.cs` â€” semantic palette (brand, status, neutrals, surfaces, shell tokens, disabled states, tint/hover helpers), aligned with an Apple-inspired visual identity.
 - Added a curated `AppColors.KpiPalette` and refactored KPI cards so the **Dashboard** and **Reports** pages share one identical card design and color system (previously the Dashboard used an arbitrary generated rainbow palette and Reports used a separate, plain inline card).
 - Reports KPIs now use the shared `KpiCard` control (icon badge, accent bar, trend indicator, value animation, hover elevation) laid out in a `TableLayoutPanel`, matching the Dashboard exactly.
-- `KpiCard` is now size-responsive (anchored/docked instead of fixed absolute positions) so it renders correctly in both the 4×3 dashboard grid and the tighter 4×2 reports grid.
-- Added `Themes/ButtonFactory.cs` — centralized button creation (`Primary`/`Success`/`Danger`/`Neutral` solids + outlined `Tool*` icon buttons) with consistent sizes, radius, typography, and hover/pressed behavior.
+- `KpiCard` is now size-responsive (anchored/docked instead of fixed absolute positions) so it renders correctly in both the 4أ—3 dashboard grid and the tighter 4أ—2 reports grid.
+- Added `Themes/ButtonFactory.cs` â€” centralized button creation (`Primary`/`Success`/`Danger`/`Neutral` solids + outlined `Tool*` icon buttons) with consistent sizes, radius, typography, and hover/pressed behavior.
 - Removed four duplicated `CreateToolButton` implementations (`CustomersForm`, `UsersForm`, `RolesForm`, `ExpensesForm`) in favour of `ButtonFactory`.
 - Converted hardcoded save/cancel/tool buttons to the factory across dialogs and forms (`CustomerEditDialog`, `UserEditDialog`, `RoleEditDialog`, `ExpenseEditDialog`, `ProductEditDialog`, `PurchaseEditDialog`, `SettingsForm`, `SalesForm`, `PurchasesForm`).
 - Tokenized previously hardcoded colors across the shell and forms (`MainForm`, `MainForm.Designer`, `NavigationService`, `HeaderColors`, `LoginForm.Designer`, `DashboardForm`, `InventoryForm`, `ProductsForm`, `ReportsForm`, `SalesForm`, `PurchasesForm`, `ExpensesForm`, `SettingsForm`) to consume `AppColors`, eliminating three conflicting primary teals.

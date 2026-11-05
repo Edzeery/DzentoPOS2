@@ -107,3 +107,35 @@ isolated so it cannot break the sale.
   `RegionalContext`; the drawer policy is defined on the local day.
 - **Errors.** `ExceptionFormatter` renders user-facing text (localized) and
   `ExceptionLogger` writes the full detail to a log file.
+
+## Catalog subsystem (planned — Phases 1–7)
+
+### New/expanded services
+
+- `IProductVariantService` / `ProductVariantService` — CRUD variants, generate
+  combinations from attribute definitions, manage default variant.
+- `IBarcodeService` / `BarcodeService` — uniqueness checks, internal barcode
+  generation, shared-barcode resolution (picker).
+- `IImageService` / `ImageService` — save/resize (1024px + 256px JPEG) to app data,
+  relative paths, lazy load + LRU cache + strict Dispose. System.Drawing only.
+- `IModuleService` / `ModuleService` — read/write activity module flags in AppSettings
+  (group `Modules`), first-run wizard support.
+- `IActivityModule` (per module: Grocery, Phones, Digital, GeneralRetail) — optional
+  extensions registered by flag. Each module is a phase with independent approval.
+
+### Data flow (target)
+
+- Product (parent) → Variant → (Attribute values, Barcodes, Stock, Images).
+- Simple product ⇒ hidden default variant; all sale/stock/profit on VariantId.
+- POS projects a lightweight `PosProductItem` (VariantId, ProductId, Name, SKU,
+  Barcode, SalePrice, ImagePath, CategoryId) with a cached, invalidated-on-change store.
+
+### Performance notes (must be respected)
+
+- Replace `GetAllAsync` full loads in POS with a projection + cache invalidated on
+  product/variant change (risk: thousands of variants).
+- Images: LRU cache, lazy load, strict Dispose to avoid GDI leaks.
+- SQLite: non-destructive migrations, table rebuild where needed, backup first.
+- InventoryProfitCalculator moves to VariantId aggregation; simple-product profits
+  must match pre-change values (verified by tests).
+

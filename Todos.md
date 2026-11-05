@@ -192,5 +192,18 @@
 | G1.5 | ط¥ط¹ط§ط¯ط© طھط¹ظٹظٹظ† ظƒظ„ظ…ط© ظ…ط±ظˆط± SuperAdmin (ط·ظˆط§ط±ط¦) | âœ… | AdminSeeder ظٹط¯ط¹ظ… ط¥ط¹ط§ط¯ط© ط§ظ„طھط¹ظٹظٹظ† ر‡ذµر€ذµذ· ADMIN_EMERGENCY_RESET=true (ظ…طھط؛ظٹط± ط¨ظٹط¦ط©) ط£ظˆ Admin:EmergencyReset=true (appsettings.json). ذ؟ر€ذ¸ ط§ظ„طھظپط¹ظٹظ„: ط¥ط¹ط§ط¯ط© طھط¹ظٹظٹظ† ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط± ط¥ظ„ظ‰ admin ظˆطھط¹ظٹظٹظ† MustChangePassword=trueطŒ ظˆط¥ط¬ط¨ط§ط± طھط؛ظٹظٹط± ظƒظ„ظ…ط© ط§ظ„ظ…ط±ظˆط± ذ؟ر€ذ¸ رپذ»ذµذ´رƒرژر‰ذµذ¼ ذ²ر…ذ¾ذ´ذµ. documented suggested future methods: email-based resetطŒ security questionsطŒ recovery codeطŒ super-admin reset. ط¯ظ„ظٹظ„: ط¨ظ†ط§ط، 0 ط£ط®ط·ط§ط، / 21 طھط­ط°ظٹط± NU1701طŒ ط§ظ„ظˆط­ط¯ط© 84/84طŒ ط§ظ„طھظƒط§ظ…ظ„ 51/51.
 
 
+## K — نظام الكتالوج المتعدد الأنشطة (متغيرات + أنشطة + صور + POS)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| K.0 | Phase 0: دمج fix/barcode-scanner + توثيق (database-design.md, architecture.md, docs/decisions.md) + فحص مسار خصم المخزون | ✅ | merge commit d3f38ff؛ build 0 errors/43 warnings؛ database-design.md + architecture.md محدّثان؛ docs/decisions.md (10 ADR) |
+| K.1 | Phase 1: نموذج البيانات + الهجرة + دمج الباركودات + قواعد التفرد | ⬜ | pending |
+| K.2 | Phase 2: ملف النشاط والوحدات (feature flags) + معالج الإعداد الأول + الإعدادات | ⬜ | pending |
+| K.3 | Phase 3: صفحة المنتجات (محرر المتغيرات، مولّد التوليفات، باركودات، Brand، صور) | ⬜ | pending |
+| K.4 | Phase 4: المخزون والشراء والبيع على VariantId + إعادة ربط InventoryProfitCalculator | ⬜ | pending |
+| K.5 | Phase 5: واجهة POS الجديدة + منتقي متغيرات + اختيار باركود مشترك | ⬜ | pending |
+| K.6 | Phase 6: وحدات النشاط (بقالة، هواتف، رقمي) | ⬜ | pending |
+| K.7 | Phase 7: أداء + اختبارات + مراجعة وثائق + CHANGELOG | ⬜ | pending |
+
 ## H5 - Deferred Designer migration
 | H.5 | Move Fees/Discount inputs to SalesForm.Designer.cs within general designer migration task | ⬜ | Documented only |

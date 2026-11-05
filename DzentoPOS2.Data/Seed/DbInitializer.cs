@@ -72,6 +72,9 @@ namespace DzentoPOS2.Data.Seed
                 System.Diagnostics.Debug.WriteLine(
                     $"[StoreBootstrapper] {bootstrap}");
             }
+
+            await CashierSeeder.SeedAsync(context);
+            await CustomerAccountSeeder.SeedAsync(context);
         }
     }
 }

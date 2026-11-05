@@ -68,7 +68,7 @@ public static class KpiValueFormatter
         return text;
     }
 
-    private static CultureInfo NormalizeCulture(CultureInfo culture)
+    public static CultureInfo NormalizeCulture(CultureInfo culture)
     {
         if (culture == null)
             culture = CultureInfo.CurrentCulture;
@@ -76,10 +76,22 @@ public static class KpiValueFormatter
         var name = string.IsNullOrWhiteSpace(culture.Name) ? "en-US" : culture.Name;
         var ci = new CultureInfo(name, false);
         var nf = (NumberFormatInfo)ci.NumberFormat.Clone();
-        if (string.Equals(nf.NumberDecimalSeparator, nf.NumberGroupSeparator, StringComparison.Ordinal))
-        {
-            nf.NumberGroupSeparator = nf.NumberDecimalSeparator == "," ? "." : ",";
-        }
+
+        // Rule 3: Latin digits (0-9) even for Arabic cultures.
+        nf.NativeDigits = new[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+        nf.DigitSubstitution = DigitShapes.None;
+
+        // Unambiguous ASCII separators: map Arabic-Indic separators to their
+        // ASCII equivalents so "13,500.00" renders identically everywhere.
+        var dec = nf.NumberDecimalSeparator;
+        var grp = nf.NumberGroupSeparator;
+        if (dec == "\u066B") dec = ".";
+        if (grp == "\u066C") grp = ",";
+        if (string.Equals(dec, grp, StringComparison.Ordinal))
+            grp = dec == "," ? "." : ",";
+        nf.NumberDecimalSeparator = dec;
+        nf.NumberGroupSeparator = grp;
+
         nf.CurrencyDecimalSeparator = nf.NumberDecimalSeparator;
         nf.CurrencyGroupSeparator = nf.NumberGroupSeparator;
         ci.NumberFormat = nf;

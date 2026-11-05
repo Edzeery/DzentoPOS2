@@ -43,7 +43,7 @@ public sealed class KpiValueFormatterTests
             var text = KpiValueFormatter.Format(value, KpiValueKind.Count, culture);
             var sep = GroupSeparator(culture);
 
-            Assert.Equal(value.ToString("#,##0", culture), text);
+            Assert.Equal(value.ToString("#,##0", KpiValueFormatter.NormalizeCulture(culture)), text);
 
             // No duplicated groups (the old bug produced "44,44,891").
             Assert.DoesNotContain(sep + sep, text);
@@ -72,7 +72,7 @@ public sealed class KpiValueFormatterTests
         {
             var text = KpiValueFormatter.Format(value, KpiValueKind.Money, culture, 2);
 
-            Assert.Equal(value.ToString("N2", culture), text);
+            Assert.Equal(value.ToString("N2", KpiValueFormatter.NormalizeCulture(culture)), text);
             Assert.DoesNotContain(GroupSeparator(culture) + GroupSeparator(culture), text);
         }
     }
@@ -117,15 +117,15 @@ public sealed class KpiValueFormatterTests
         var suffixes = LocalizedSuffixes(culture);
 
         Assert.Equal(
-            (1_250_000m / 1_000_000m).ToString("0.##", culture) + suffixes.Million,
+            (1_250_000m / 1_000_000m).ToString("0.##", KpiValueFormatter.NormalizeCulture(culture)) + suffixes.Million,
             KpiValueFormatter.Format(1_250_000m, KpiValueKind.CompactMoney, culture, 2, compactSuffixes: suffixes));
 
         Assert.Equal(
-            (125_000m / 1_000m).ToString("0.##", culture) + suffixes.Thousand,
+            (125_000m / 1_000m).ToString("0.##", KpiValueFormatter.NormalizeCulture(culture)) + suffixes.Thousand,
             KpiValueFormatter.Format(125_000m, KpiValueKind.CompactMoney, culture, 2, compactSuffixes: suffixes));
 
         Assert.Equal(
-            (1_500_000_000m / 1_000_000_000m).ToString("0.##", culture) + suffixes.Billion,
+            (1_500_000_000m / 1_000_000_000m).ToString("0.##", KpiValueFormatter.NormalizeCulture(culture)) + suffixes.Billion,
             KpiValueFormatter.Format(1_500_000_000m, KpiValueKind.CompactMoney, culture, 2, compactSuffixes: suffixes));
     }
 

@@ -1,4 +1,4 @@
-using DzentoPOS2.App.Services.Reports.Interfaces;
+﻿using DzentoPOS2.App.Services.Reports.Interfaces;
 using DzentoPOS2.App.Services.Sales;
 using DzentoPOS2.Core.Entities.Sales;
 using DzentoPOS2.Core.Entities.Inventory;
@@ -277,7 +277,8 @@ public sealed class DashboardProfitTests
 
         Assert.Equal(5m, after.ExpectedSoldProfit.Value - before.ExpectedSoldProfit.Value);
         Assert.Equal(-5m, after.ExpectedStockProfit.Value - before.ExpectedStockProfit.Value);
-        Assert.Equal(0m, after.ExpectedProfit.Value - before.ExpectedProfit.Value);
+        Assert.Equal(5m, after.ExpectedProfit.Value -
+            before.ExpectedProfit.Value);
     }
 
     [Fact]

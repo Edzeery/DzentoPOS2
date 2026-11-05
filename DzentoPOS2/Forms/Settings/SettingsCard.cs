@@ -185,7 +185,7 @@ internal sealed class SettingsCard : Panel
         if (widthChanged)
         {
             _innerWidth = innerWidth;
-            _stacked = innerWidth < 560;
+            _stacked = innerWidth < 812;
 
             // The title and the hint wrap inside the available width.
             _titleLabel.MaximumSize = new Size(innerWidth, 0);

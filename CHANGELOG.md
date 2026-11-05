@@ -657,3 +657,13 @@ Resolved all C# compiler warnings to achieve a warning-free build across the sol
 ## Notes
 - The SQLite connection string is relative (`Data Source=Database/DzentoPOS.db`). Always launch the executable with its own output folder as the working directory; launching from another directory causes `SQLite Error 14: unable to open database file` (environmental, not a code defect).
 - `DzentoPOS2.UnitTests` and `DzentoPOS2.IntegrationTests` are currently empty placeholder files (no test projects to run).
+
+## [Unreleased] - 2026-11-04 (fix/ui-kpi-sidebar-filters Phase 1)
+- Phase 1: KpiCard RTL rebuild, cached fonts, responsive grid; KpiValueFormatter Latin digits; tests ar/ar-DZ/ar-SA.
+
+## [Unreleased] - 2026-11-04 (Phases 3-7 partial)
+- Phase 3: sidebar single button factory, remove categories/units, centralized collapse state.
+- Phase 4: ProductsHubForm tabs.
+- Phase 5: settings translations + 812px stacked.
+- Phase 6: barcode scanner preview fix + translated hint.
+- Phase 7: store expenses not attributed to customer.

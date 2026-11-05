@@ -1,4 +1,4 @@
-using FontAwesome.Sharp;
+﻿using FontAwesome.Sharp;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Shared.Contracts.DTOs.Reports;
 using DzentoPOS2.Shared.Helpers;
@@ -12,6 +12,11 @@ namespace DzentoPOS2.WinForms.Controls
 {
     public class KpiCard : Panel, IThemeAware
     {
+        private static readonly Font TitleFont = new("Segoe UI", 9.5F);
+        private static readonly Font TrendFont = new("Segoe UI Semibold", 9.5F);
+        private static readonly Font ValueFont = new("Segoe UI", 24F, FontStyle.Bold);
+        private static readonly Font EstimatedFont = new("Segoe UI", 9F);
+
         private readonly IconPictureBox _iconBox;
         private readonly Panel _iconBadge;
         private readonly Panel _accentLeft;
@@ -60,7 +65,13 @@ namespace DzentoPOS2.WinForms.Controls
             _baseElevation = baseElevation;
             _currentElevation = baseElevation;
             _title = title ?? string.Empty;
-            _toolTip = new ToolTip();
+            _toolTip = new ToolTip
+            {
+                InitialDelay = 200,
+                AutoPopDelay = 8000,
+                ReshowDelay = 100,
+                ShowAlways = false
+            };
 
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.ResizeRedraw, true);
             DoubleBuffered = true;
@@ -106,7 +117,7 @@ namespace DzentoPOS2.WinForms.Controls
             {
                 if (_estimatedRect.Contains(e.Location))
                     _toolTip.Show(AppStrings.EstimatedCostNote, this, e.Location.X + 10, e.Location.Y + 10);
-                else if (_titleRect.Contains(e.Location))
+                else if (_titleRect.Contains(e.Location) && TextRenderer.MeasureText(_title, TitleFont).Width > _titleRect.Width)
                     _toolTip.Show(_title, this, e.Location.X + 10, e.Location.Y + 10);
                 else
                     _toolTip.Hide(this);
@@ -145,39 +156,58 @@ namespace DzentoPOS2.WinForms.Controls
 
             // icon badge already child
 
+            // accent strip side follows reading direction
+            _accentLeft.Dock = rtl ? DockStyle.Right : DockStyle.Left;
+
+            // icon badge position follows reading direction
+            _iconBadge.Location = rtl
+                ? new Point(Width - _iconBadge.Width - 22, 20)
+                : new Point(22, 20);
+
             // trend measure
-            var trendSize = TextRenderer.MeasureText(g, _trendText, new Font("Segoe UI Semibold", 9.5F), Size, TextFormatFlags.NoPadding);
-            int trendWidth = string.IsNullOrEmpty(_trendText) ? 0 : trendSize.Width + 8;
-            int iconWidth = _iconBadge.Width + 12;
-            int availableTitle = Math.Max(20, Width - iconWidth - trendWidth - 24);
-
-            // title
-            var titleFont = new Font("Segoe UI", 9.5F);
-            var titleRect = new Rectangle(rtl ? trendWidth + 12 : iconWidth + 12, 24, availableTitle, 18);
-            _titleRect = titleRect;
-            TextRenderer.DrawText(g, _title, titleFont, titleRect, AppColors.InkMuted, flags);
-
-            // trend
+            int trendWidth = 0;
             if (!string.IsNullOrEmpty(_trendText))
             {
-                var trendRect = new Rectangle(rtl ? 12 : Width - trendWidth - 12, 24, trendWidth, 18);
-                _trendRect = trendRect;
-                TextRenderer.DrawText(g, _trendText, new Font("Segoe UI Semibold", 9.5F), trendRect, AppColors.InkMuted, flags);
+                var trendSize = TextRenderer.MeasureText(g, _trendText, TrendFont, Size, TextFormatFlags.NoPadding);
+                trendWidth = trendSize.Width + 8;
             }
+            int iconWidth = _iconBadge.Width + 12;
+
+            // title + trend rects (mirrored for RTL, no overlap with icon)
+            if (rtl)
+            {
+                _trendRect = string.IsNullOrEmpty(_trendText)
+                    ? Rectangle.Empty
+                    : new Rectangle(12, 24, trendWidth, 18);
+                int titleX = trendWidth + 24;
+                int titleWidth = Math.Max(20, Width - trendWidth - 98);
+                _titleRect = new Rectangle(titleX, 24, titleWidth, 18);
+            }
+            else
+            {
+                _titleRect = new Rectangle(74, 24, Math.Max(20, Width - trendWidth - 98), 18);
+                _trendRect = string.IsNullOrEmpty(_trendText)
+                    ? Rectangle.Empty
+                    : new Rectangle(Width - trendWidth - 12, 24, trendWidth, 18);
+            }
+
+            TextRenderer.DrawText(g, _title, TitleFont, _titleRect, AppColors.InkMuted, flags);
+
+            if (!string.IsNullOrEmpty(_trendText))
+                TextRenderer.DrawText(g, _trendText, TrendFont, _trendRect, AppColors.InkMuted, flags);
 
             // estimated
             if (_estimated)
             {
                 _estimatedRect = new Rectangle(rtl ? 12 : Width - 24, 4, 20, 16);
-                TextRenderer.DrawText(g, "⚠", new Font("Segoe UI", 9F), _estimatedRect, AppColors.Warning, TextFormatFlags.NoPadding);
+                TextRenderer.DrawText(g, "⚠", EstimatedFont, _estimatedRect, AppColors.Warning, TextFormatFlags.NoPadding);
             }
             else _estimatedRect = Rectangle.Empty;
 
             // value
-            var valueFont = new Font("Segoe UI", 24F, FontStyle.Bold);
             _valueRect = new Rectangle(22, Math.Max(60, Height - 40 - 28), Width - 44, 40);
             var valueText = FormatValue(_currentNum);
-            TextRenderer.DrawText(g, valueText, valueFont, _valueRect, _appliedAccent, TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | (rtl ? TextFormatFlags.RightToLeft : 0));
+            TextRenderer.DrawText(g, valueText, ValueFont, _valueRect, _appliedAccent, TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | (rtl ? TextFormatFlags.RightToLeft : 0));
 
             // hover effect already background
         }
@@ -244,7 +274,7 @@ namespace DzentoPOS2.WinForms.Controls
             _trendKind = kind;
             _trendText = kind switch
             {
-                KpiTrendKind.Change => $"{(percent >= 0 ? "▲" : "▼")} {Math.Abs(percent):0.#}%",
+                KpiTrendKind.Change => percent == 0 ? "0%" : $"{(percent >= 0 ? "\u2191" : "\u2193")} {Math.Abs(percent):0.#}%",
                 KpiTrendKind.Margin => $"{AppStrings.Margin} {percent:0.#}%",
                 _ => string.Empty
             };

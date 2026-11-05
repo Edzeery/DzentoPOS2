@@ -15,6 +15,7 @@ using DzentoPOS2.WinForms.Forms.Sales;
 using DzentoPOS2.WinForms.Forms.Settings;
 using DzentoPOS2.WinForms.Forms.Suppliers;
 using DzentoPOS2.WinForms.Navigation;
+using DzentoPOS2.WinForms.Services.Barcodes;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -47,6 +48,7 @@ public static class DependencyInjection
         services.AddSingleton<AppApplicationContext>();
         services.AddSingleton<IUserPreferencesService, UserPreferencesService>();
         services.AddSingleton<ICurrentSettingsService, CurrentSettingsService>();
+        services.AddSingleton<IBarcodeScanService, BarcodeScanService>();
         services.AddSingleton<INavigationService, NavigationService>();
        
         // Forms
@@ -57,6 +59,7 @@ public static class DependencyInjection
         services.AddTransient<RolesForm>();
 
         services.AddTransient<ProductsForm>();
+        services.AddTransient<ProductsHubForm>();
         services.AddTransient<PurchasesForm>();
         services.AddTransient<SalesForm>();
         services.AddTransient<CustomersForm>();

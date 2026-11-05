@@ -25,6 +25,7 @@ public partial class ProductsForm : LocalizableFormBase
     // Top bar
     private readonly Panel _topBar;
     private readonly EZTextBox _searchBox;
+    private readonly BarcodeScanButton _btnScan;
     private readonly ComboBox _cmbWarehouse;
     private readonly ComboBox _cmbCategoryFilter;
     private readonly ComboBox _cmbStatusFilter;
@@ -100,6 +101,15 @@ public partial class ProductsForm : LocalizableFormBase
             PlaceholderColor = Color.FromArgb(150, 160, 166),
             Font = new Font("Segoe UI", 10F)
         };
+        _btnScan = new BarcodeScanButton
+        {
+            Location = new Point(305, 10),
+            Size = new Size(32, 30),
+            TargetTextBox = _searchBox,
+            ScanService = _barcodeScan
+        };
+        _btnScan.BarcodeScanned += (_, _) => RunSafe(LoadGridAsync);
+
         _searchDebounce = new System.Windows.Forms.Timer { Interval = SearchDebounceMs };
         _searchDebounce.Tick += async (_, _) =>
         {
@@ -148,6 +158,7 @@ public partial class ProductsForm : LocalizableFormBase
         {
             new Label { Text = "??", Location = new Point(2, 18), Size = new Size(20, 20), Font = new Font("Segoe UI", 12F) },
             _searchBox,
+            _btnScan,
             _lblWarehouseFilter,
             _cmbWarehouse,
             _lblCategoryFilter,

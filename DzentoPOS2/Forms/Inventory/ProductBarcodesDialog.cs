@@ -1,10 +1,10 @@
 using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.Localization.Resources;
-using DzentoPOS2.WinForms.Themes;
+using DzentoPOS2.WinForms.Helpers;
 
 namespace DzentoPOS2.WinForms.Forms.Inventory;
 
-public class ProductBarcodesDialog : Form
+public class ProductBarcodesDialog : ThemedDialog
 {
     private readonly IBarcodeService _barcodeService;
     private readonly Guid _variantId;
@@ -22,8 +22,6 @@ public class ProductBarcodesDialog : Form
         Text = "إدارة الباركودات";
         Size = new Size(420, 320);
         StartPosition = FormStartPosition.CenterParent;
-        BackColor = AppColors.Surface;
-        ForeColor = AppColors.Ink;
         var panel = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, Padding = new Padding(12) };
         var row = new FlowLayoutPanel { FlowDirection = FlowDirection.LeftToRight, AutoSize = true };
         row.Controls.Add(_txt);
@@ -37,7 +35,7 @@ public class ProductBarcodesDialog : Form
         panel.Controls.Add(row2);
         Controls.Add(panel);
         _btnAdd.Click += async (_, _) => await AddAsync();
-        _btnGen.Click += async (_, _) => { _txt.Text = _barcodeService.GenerateInternal(); };
+        _btnGen.Click += (_, _) => { _txt.Text = _barcodeService.GenerateInternal(); };
         _btnRemove.Click += async (_, _) => await RemoveAsync();
         _btnClose.Click += (_, _) => Close();
         _ = LoadAsync();

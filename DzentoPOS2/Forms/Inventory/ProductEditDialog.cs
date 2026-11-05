@@ -5,10 +5,11 @@ using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
 using DzentoPOS2.WinForms.Themes;
 using DzentoPOS2.WinForms.Services.Barcodes;
 using DzentoPOS2.WinForms.Controls;
+using DzentoPOS2.WinForms.Helpers;
 
 namespace DzentoPOS2.WinForms.Forms.Inventory;
 
-public class ProductEditDialog : Form
+public class ProductEditDialog : ThemedDialog
 {
     private readonly IProductService _productService;
     private readonly ILanguageService _languageService;

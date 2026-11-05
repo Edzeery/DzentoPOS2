@@ -1,9 +1,10 @@
 using DzentoPOS2.Localization.Resources;
+using DzentoPOS2.WinForms.Helpers;
 using DzentoPOS2.WinForms.Themes;
 
 namespace DzentoPOS2.WinForms.Forms.Auth;
 
-public sealed partial class RecoveryKeyDisplayDialog : Form
+public sealed partial class RecoveryKeyDisplayDialog : ThemedDialog
 {
     private readonly string _key;
 

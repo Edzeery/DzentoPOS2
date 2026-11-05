@@ -1,4 +1,5 @@
 using DzentoPOS2.App.Services.Accounting;
+using DzentoPOS2.WinForms.Helpers;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Accounting;
@@ -6,7 +7,7 @@ using DzentoPOS2.WinForms.Themes;
 
 namespace DzentoPOS2.WinForms.Forms.Accounting;
 
-public class ExpenseEditDialog : Form
+public class ExpenseEditDialog : ThemedDialog
 {
     private readonly IExpenseService _expenseService;
     private readonly ILanguageService _languageService;

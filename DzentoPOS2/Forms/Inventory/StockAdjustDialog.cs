@@ -1,10 +1,11 @@
 ﻿using DzentoPOS2.App.Services.Inventory;
+using DzentoPOS2.WinForms.Helpers;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.WinForms.Themes;
 
 namespace DzentoPOS2.WinForms.Forms.Inventory;
 
-public class StockAdjustDialog : Form
+public class StockAdjustDialog : ThemedDialog
 {
     private readonly IProductService _productService;
     private readonly Guid _productId;

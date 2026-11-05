@@ -2,6 +2,18 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] - 2026-11-05 (Catalog system Phase 3 complete + dark mode)
+
+### Added
+- **Automatic variant combination generator.** New `ProductVariantsDialog` (tabbed: variants + attributes) lets a product define attributes and comma-separated values, then generates every value combination into a variant (name, prices seeded from the product) and links `VariantAttribute` rows. Generation is idempotent: existing combinations are detected by their value-id signature and skipped. New `VariantCombinationGenerator` (`DzentoPOS2.Core/Services/Inventory`) computes the cartesian product with no UI dependency and is covered by 5 unit tests.
+
+### Changed
+- **Consistent dark mode across dialogs.** New `ThemedDialog` base (`DzentoPOS2/Helpers/ThemedDialog.cs`) applies the central design tokens on load and repaints on `ThemeManager.ThemeChanged`. Adopted by the catalog dialogs (`ProductEditDialog`, `ProductVariantsDialog`, `ProductBarcodesDialog`), the first-run module wizard (`FirstRunModulesDialog`) and the data-entry dialogs (`SupplierEditDialog`, `CustomerEditDialog`, `ExpenseEditDialog`, `RoleEditDialog`, `UserEditDialog`, `PurchaseEditDialog`, `ProductCategoryEditDialog`, `ProductUnitEditDialog`, `StockAdjustDialog`, `SalesCalculatorDialog`, `ChangePasswordDialog`, `ForgotPasswordDialog`, `RecoveryKeyDisplayDialog`). The first-run wizard's confirm button now uses `AppColors.OnDark` so its label stays legible in both modes.
+- `ProductVariantsDialog` guards variant deletion when a variant still holds non-zero stock.
+
+### Verified
+- Build **0 errors / 46 warnings** (`NU1701`), Unit **129/129**, Integration **70/70**.
+
 ## [Unreleased] - 2026-11-05 (Catalog system Phase 4)
 
 ### Changed

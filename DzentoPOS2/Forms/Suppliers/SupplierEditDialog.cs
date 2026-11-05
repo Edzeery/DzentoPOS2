@@ -1,4 +1,5 @@
 using DzentoPOS2.App.Services.Partners;
+using DzentoPOS2.WinForms.Helpers;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Partners;
@@ -6,7 +7,7 @@ using DzentoPOS2.WinForms.Themes;
 
 namespace DzentoPOS2.WinForms.Forms.Suppliers;
 
-public class SupplierEditDialog : Form
+public class SupplierEditDialog : ThemedDialog
 {
     private readonly ISupplierService _supplierService;
     private readonly ILanguageService _languageService;

@@ -13,7 +13,7 @@ namespace DzentoPOS2.WinForms.Forms.Auth;
 /// seeded/assigned password (<see cref="App.Session.UserSession.MustChangePassword"/>).
 /// The shell is not opened until the password has been changed.
 /// </summary>
-public sealed partial class ChangePasswordDialog : Form
+public sealed partial class ChangePasswordDialog : ThemedDialog
 {
     private readonly IAuthService _authService;
     private readonly IValidator<ChangePasswordDto> _validator;

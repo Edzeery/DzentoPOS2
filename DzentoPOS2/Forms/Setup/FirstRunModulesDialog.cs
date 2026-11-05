@@ -1,11 +1,12 @@
 using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.Core.Enums;
+using DzentoPOS2.WinForms.Helpers;
 using DzentoPOS2.WinForms.Themes;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DzentoPOS2.WinForms.Forms.Setup;
 
-public class FirstRunModulesDialog : Form
+public class FirstRunModulesDialog : ThemedDialog
 {
     private readonly IModuleService _moduleService;
     private readonly CheckBox _chkGrocery = new() { Text = "بقالة (وزن/دفعات/صلاحية)", AutoSize = true };
@@ -31,7 +32,7 @@ public class FirstRunModulesDialog : Form
         _chkDigital.ForeColor = AppColors.Ink;
         _chkGeneral.ForeColor = AppColors.Ink;
         _btnOk.BackColor = AppColors.Primary;
-        _btnOk.ForeColor = AppColors.Surface;
+        _btnOk.ForeColor = AppColors.OnDark;
         _btnOk.FlatStyle = FlatStyle.Flat;
         panel.Controls.Add(lbl);
         panel.Controls.Add(_chkGrocery);

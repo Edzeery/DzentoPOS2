@@ -7,7 +7,7 @@ using DzentoPOS2.WinForms.Themes;
 
 namespace DzentoPOS2.WinForms.Forms.Auth;
 
-public sealed partial class ForgotPasswordDialog : Form
+public sealed partial class ForgotPasswordDialog : ThemedDialog
 {
     private readonly IAuthService _authService;
     private readonly ILanguageService _languageService;

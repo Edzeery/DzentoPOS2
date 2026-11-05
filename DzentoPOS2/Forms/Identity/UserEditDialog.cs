@@ -9,7 +9,7 @@ using DzentoPOS2.WinForms.Themes;
 
 namespace DzentoPOS2.WinForms.Forms.Identity;
 
-public class UserEditDialog : Form
+public class UserEditDialog : ThemedDialog
 {
     private readonly IUserService _userService;
     private readonly IRoleService _roleService;

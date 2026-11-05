@@ -109,7 +109,9 @@ public class ProductService : IProductService
             SalePrice = new Money(dto.SalePrice, _regional.CurrencyCode),
             MinimumStock = new Quantity(dto.MinimumStock),
             TrackStock = dto.TrackStock,
-            IsActive = dto.IsActive
+            IsActive = dto.IsActive,
+            ImagePath = string.IsNullOrWhiteSpace(dto.ImagePath) ? null : dto.ImagePath,
+            ThumbnailPath = string.IsNullOrWhiteSpace(dto.ThumbnailPath) ? null : dto.ThumbnailPath
         };
 
         await _unitOfWork.BeginTransactionAsync();
@@ -191,6 +193,10 @@ public class ProductService : IProductService
         product.MinimumStock = new Quantity(dto.MinimumStock);
         product.TrackStock = dto.TrackStock;
         product.IsActive = dto.IsActive;
+        if (!string.IsNullOrWhiteSpace(dto.ImagePath))
+            product.ImagePath = dto.ImagePath;
+        if (!string.IsNullOrWhiteSpace(dto.ThumbnailPath))
+            product.ThumbnailPath = dto.ThumbnailPath;
 
         _productRepo.Update(product);
         await _unitOfWork.SaveChangesAsync();

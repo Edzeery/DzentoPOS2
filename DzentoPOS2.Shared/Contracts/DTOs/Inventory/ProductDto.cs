@@ -39,6 +39,8 @@ public class CreateProductDto
     public decimal OpeningStock { get; set; }
     public bool TrackStock { get; set; } = true;
     public bool IsActive { get; set; } = true;
+    public string? ImagePath { get; set; }
+    public string? ThumbnailPath { get; set; }
 }
 
 public class UpdateProductDto
@@ -57,4 +59,6 @@ public class UpdateProductDto
     public decimal MinimumStock { get; set; }
     public bool TrackStock { get; set; } = true;
     public bool IsActive { get; set; } = true;
+    public string? ImagePath { get; set; }
+    public string? ThumbnailPath { get; set; }
 }

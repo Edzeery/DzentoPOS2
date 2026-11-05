@@ -39,17 +39,25 @@ public class ProductEditDialog : Form
     private readonly CheckBox _chkActive;
     private readonly Button _btnSave;
     private readonly Button _btnCancel;
+    private readonly Button _btnImage = new() { Text = "اختر صورة", Size = new Size(120, 32) };
 
     private readonly IBarcodeScanService? _scanService;
+    private readonly DzentoPOS2.WinForms.Services.Images.IImageService? _imageService;
+    private string? _imagePath;
+    private string? _thumbnailPath;
+    private readonly PictureBox _picImage = new() { Size = new Size(96, 96), SizeMode = PictureBoxSizeMode.Zoom, BorderStyle = BorderStyle.FixedSingle };
 
-    public ProductEditDialog(IProductService productService, ILanguageService languageService, ProductDto? existing = null, IBarcodeScanService? scanService = null)
+    public ProductEditDialog(IProductService productService, ILanguageService languageService, ProductDto? existing = null, IBarcodeScanService? scanService = null, DzentoPOS2.WinForms.Services.Images.IImageService? imageService = null)
     {
         _productService = productService;
         _languageService = languageService;
         _existing = existing;
         _scanService = scanService;
+        _imageService = imageService;
+        _imagePath = existing?.ImagePath;
+        _thumbnailPath = existing?.ThumbnailPath;
 
-        Size = new Size(520, 620);
+        Size = new Size(520, 700);
         StartPosition = FormStartPosition.CenterParent;
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false;
@@ -92,15 +100,19 @@ public class ProductEditDialog : Form
         _txtBrand = new TextBox { Location = new Point(150, 362), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F) };
         _cmbProductKind = new ComboBox { Location = new Point(150, 400), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F), DropDownStyle = ComboBoxStyle.DropDownList };
 
-        _chkActive = new CheckBox { Text = AppStrings.ProductActive, Location = new Point(150, 362), Size = new Size(200, 28), Font = new Font("Segoe UI", 10F), Checked = true };
+        _chkActive = new CheckBox { Text = AppStrings.ProductActive, Location = new Point(150, 440), Size = new Size(200, 28), Font = new Font("Segoe UI", 10F), Checked = true };
+
+        _picImage.Location = new Point(20, 480);
+        _btnImage.Location = new Point(130, 510);
+        _btnImage.Click += async (_, _) => await PickImageAsync();
 
         _btnSave = ButtonFactory.Primary(AppStrings.Save);
-        _btnSave.Location = new Point(150, 460);
+        _btnSave.Location = new Point(150, 560);
         _btnSave.Size = new Size(120, 40);
         _btnSave.Click += async (_, _) => await SaveAsync();
 
         _btnCancel = ButtonFactory.Neutral(AppStrings.Cancel);
-        _btnCancel.Location = new Point(290, 460);
+        _btnCancel.Location = new Point(290, 560);
         _btnCancel.Size = new Size(120, 40);
         _btnCancel.DialogResult = DialogResult.Cancel;
 
@@ -124,6 +136,7 @@ public class ProductEditDialog : Form
             _lblBrand, _txtBrand,
             _lblProductKind, _cmbProductKind,
             _chkActive,
+            _picImage, _btnImage,
             _btnSave, _btnCancel
         });
 
@@ -185,6 +198,11 @@ public class ProductEditDialog : Form
             _txtBrand.Text = _existing.Brand ?? "";
             _cmbProductKind.SelectedItem = _existing.ProductKind;
             _numCost.Value = _existing.CostPrice;
+            if (!string.IsNullOrWhiteSpace(_existing.ThumbnailPath) && _imageService != null)
+            {
+                var img = await _imageService.LoadAsync(_existing.ImagePath, true);
+                if (img != null) _picImage.Image = img;
+            }
             _numSale.Value = _existing.SalePrice;
             _numMinStock.Value = _existing.MinimumStock;
             _chkActive.Checked = _existing.IsActive;
@@ -235,6 +253,25 @@ public class ProductEditDialog : Form
         }
     }
 
+    private async Task PickImageAsync()
+    {
+        if (_imageService == null) return;
+        using var ofd = new OpenFileDialog { Filter = "Images|*.jpg;*.jpeg;*.png;*.bmp" };
+        if (ofd.ShowDialog() != DialogResult.OK) return;
+        try
+        {
+            var (img, thumb) = await _imageService.SaveAsync(ofd.FileName, "products");
+            _imagePath = img;
+            _thumbnailPath = thumb;
+            var preview = await _imageService.LoadAsync(img, true);
+            if (preview != null) _picImage.Image = preview;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, AppStrings.ErrorMsg, MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+
     private async Task SaveAsync()
     {
         if (string.IsNullOrWhiteSpace(_txtName.Text))
@@ -266,6 +303,8 @@ public class ProductEditDialog : Form
                 Barcode = _txtBarcode.Text.Trim(),
                 Brand = _txtBrand.Text.Trim(),
                 ProductKind = (DzentoPOS2.Core.Enums.ProductKind)(_cmbProductKind.SelectedItem ?? DzentoPOS2.Core.Enums.ProductKind.Standard),
+                ImagePath = _imagePath,
+                ThumbnailPath = _thumbnailPath,
                 CategoryId = categoryId,
                 UnitId = unitId,
                 CostPrice = _numCost.Value,
@@ -285,6 +324,8 @@ public class ProductEditDialog : Form
                 Barcode = _txtBarcode.Text.Trim(),
                 Brand = _txtBrand.Text.Trim(),
                 ProductKind = (DzentoPOS2.Core.Enums.ProductKind)(_cmbProductKind.SelectedItem ?? DzentoPOS2.Core.Enums.ProductKind.Standard),
+                ImagePath = _imagePath,
+                ThumbnailPath = _thumbnailPath,
                 CategoryId = categoryId,
                 UnitId = unitId,
                 CostPrice = _numCost.Value,

@@ -21,6 +21,7 @@ public partial class ProductsForm : LocalizableFormBase
     private readonly ICurrentSettingsService _currentSettings;
     private readonly IAuthorizationGuard _guard;
     private readonly IBarcodeScanService _barcodeScan;
+    private readonly DzentoPOS2.WinForms.Services.Images.IImageService _imageService;
 
     // Top bar
     private readonly Panel _topBar;
@@ -69,13 +70,15 @@ public partial class ProductsForm : LocalizableFormBase
         ICurrentSettingsService currentSettings,
         ILanguageService languageService,
         IAuthorizationGuard guard,
-        IBarcodeScanService barcodeScan)
+        IBarcodeScanService barcodeScan,
+        DzentoPOS2.WinForms.Services.Images.IImageService imageService)
         : base(languageService)
     {
         _productService = productService;
         _currentSettings = currentSettings;
         _guard = guard;
         _barcodeScan = barcodeScan;
+        _imageService = imageService;
         Size = new Size(1400, 800);
         MinimumSize = new Size(1000, 600);
         BackColor = AppColors.Background;
@@ -553,7 +556,7 @@ public partial class ProductsForm : LocalizableFormBase
     {
         if (IsDisposedOrDisposing) return;
 
-        using var dialog = new ProductEditDialog(_productService, _languageService, null, _barcodeScan);
+        using var dialog = new ProductEditDialog(_productService, _languageService, null, _barcodeScan, _imageService);
         if (dialog.ShowDialog() == DialogResult.OK)
         {
             if (IsDisposedOrDisposing) return;
@@ -567,7 +570,7 @@ public partial class ProductsForm : LocalizableFormBase
     {
         if (IsDisposedOrDisposing) return;
         if (_grid.CurrentRow?.DataBoundItem is not ProductDto product) return;
-        using var dialog = new ProductEditDialog(_productService, _languageService, product, _barcodeScan);
+        using var dialog = new ProductEditDialog(_productService, _languageService, product, _barcodeScan, _imageService);
         if (dialog.ShowDialog() == DialogResult.OK)
         {
             if (IsDisposedOrDisposing) return;

@@ -40,20 +40,26 @@ public class ProductEditDialog : Form
     private readonly Button _btnSave;
     private readonly Button _btnCancel;
     private readonly Button _btnImage = new() { Text = "اختر صورة", Size = new Size(120, 32) };
+    private readonly Button _btnBarcodes = new() { Text = "باركودات", Size = new Size(120, 32) };
+    private readonly Button _btnVariants = new() { Text = "متغيرات", Size = new Size(120, 32) };
 
     private readonly IBarcodeScanService? _scanService;
     private readonly DzentoPOS2.WinForms.Services.Images.IImageService? _imageService;
+    private readonly IBarcodeService? _barcodeService;
+    private readonly Microsoft.EntityFrameworkCore.IDbContextFactory<DzentoPOS2.Data.Context.AppDbContext>? _contextFactory;
     private string? _imagePath;
     private string? _thumbnailPath;
     private readonly PictureBox _picImage = new() { Size = new Size(96, 96), SizeMode = PictureBoxSizeMode.Zoom, BorderStyle = BorderStyle.FixedSingle };
 
-    public ProductEditDialog(IProductService productService, ILanguageService languageService, ProductDto? existing = null, IBarcodeScanService? scanService = null, DzentoPOS2.WinForms.Services.Images.IImageService? imageService = null)
+    public ProductEditDialog(IProductService productService, ILanguageService languageService, ProductDto? existing = null, IBarcodeScanService? scanService = null, DzentoPOS2.WinForms.Services.Images.IImageService? imageService = null, IBarcodeService? barcodeService = null, Microsoft.EntityFrameworkCore.IDbContextFactory<DzentoPOS2.Data.Context.AppDbContext>? contextFactory = null)
     {
         _productService = productService;
         _languageService = languageService;
         _existing = existing;
         _scanService = scanService;
         _imageService = imageService;
+        _barcodeService = barcodeService;
+        _contextFactory = contextFactory;
         _imagePath = existing?.ImagePath;
         _thumbnailPath = existing?.ThumbnailPath;
 
@@ -105,6 +111,10 @@ public class ProductEditDialog : Form
         _picImage.Location = new Point(20, 480);
         _btnImage.Location = new Point(130, 510);
         _btnImage.Click += async (_, _) => await PickImageAsync();
+        _btnBarcodes.Location = new Point(260, 510);
+        _btnBarcodes.Click += async (_, _) => await ManageBarcodesAsync();
+        _btnVariants.Location = new Point(390, 510);
+        _btnVariants.Click += async (_, _) => await ManageVariantsAsync();
 
         _btnSave = ButtonFactory.Primary(AppStrings.Save);
         _btnSave.Location = new Point(150, 560);
@@ -120,6 +130,8 @@ public class ProductEditDialog : Form
         {
             _lblOpeningStock.Visible = false;
             _numOpeningStock.Visible = false;
+            _btnBarcodes.Visible = false;
+            _btnVariants.Visible = false;
         }
 
         Controls.AddRange(new Control[]
@@ -136,7 +148,7 @@ public class ProductEditDialog : Form
             _lblBrand, _txtBrand,
             _lblProductKind, _cmbProductKind,
             _chkActive,
-            _picImage, _btnImage,
+            _picImage, _btnImage, _btnBarcodes, _btnVariants,
             _btnSave, _btnCancel
         });
 
@@ -251,6 +263,23 @@ public class ProductEditDialog : Form
                 return;
             }
         }
+    }
+
+    private async Task ManageVariantsAsync()
+    {
+        if (_existing == null || _contextFactory == null) return;
+        using var ctx = _contextFactory.CreateDbContext();
+        using var dlg = new ProductVariantsDialog(ctx, _existing.Id);
+        dlg.ShowDialog(this);
+    }
+
+    private async Task ManageBarcodesAsync()
+    {
+        if (_existing == null || _barcodeService == null) return;
+        var variantId = await _barcodeService.GetDefaultVariantIdAsync(_existing.Id);
+        if (variantId == Guid.Empty) return;
+        using var dlg = new ProductBarcodesDialog(_barcodeService, variantId);
+        dlg.ShowDialog(this);
     }
 
     private async Task PickImageAsync()

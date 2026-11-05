@@ -75,6 +75,7 @@ namespace DzentoPOS2.App
                 DashboardService>();
 
             services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IBarcodeService, BarcodeService>();
             services.AddScoped<IStockService, StockService>();
             services.AddScoped<IExpenseService, ExpenseService>();
 

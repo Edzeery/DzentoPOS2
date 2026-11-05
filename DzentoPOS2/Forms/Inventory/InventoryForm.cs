@@ -4,6 +4,7 @@ using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
 using DzentoPOS2.Shared.Helpers;
 using DzentoPOS2.WinForms.Controls;
+using DzentoPOS2.WinForms.Services.Barcodes;
 using DzentoPOS2.WinForms.Helpers;
 using DzentoPOS2.WinForms.Modules.Dashboard;
 using DzentoPOS2.WinForms.Themes;
@@ -15,11 +16,13 @@ namespace DzentoPOS2.WinForms.Forms.Inventory;
 public partial class InventoryForm : LocalizableFormBase
 {
     private readonly IProductService _productService;
+    private readonly IBarcodeScanService _barcodeScan;
 
     private readonly TableLayoutPanel _kpiPanel;
     private readonly Panel _filterPanel;
     private readonly KpiCard[] _kpiCards = new KpiCard[4];
     private readonly EZTextBox _searchBox;
+    private readonly BarcodeScanButton _btnScan;
     private readonly ComboBox _cmbCategoryFilter;
     private readonly ComboBox _cmbStockFilter;
     private readonly Label _lblCategoryFilter;
@@ -40,10 +43,11 @@ public partial class InventoryForm : LocalizableFormBase
     private List<ProductDto> _products = new();
     private List<ProductCategoryDto> _categories = new();
 
-    public InventoryForm(IProductService productService, ILanguageService languageService)
+    public InventoryForm(IProductService productService, ILanguageService languageService, IBarcodeScanService barcodeScan)
         : base(languageService)
     {
         _productService = productService;
+        _barcodeScan = barcodeScan;
         Size = new Size(1200, 700);
         MinimumSize = new Size(1000, 620);
         BackColor = AppColors.Background;
@@ -88,6 +92,15 @@ public partial class InventoryForm : LocalizableFormBase
         };
         _searchBox.TextChanged += (_, _) => RunSafe(LoadDataAsync);
 
+        _btnScan = new BarcodeScanButton
+        {
+            Location = new Point(240, 12),
+            Size = new Size(32, 30),
+            TargetTextBox = _searchBox,
+            ScanService = _barcodeScan
+        };
+        _btnScan.BarcodeScanned += (_, _) => RunSafe(LoadDataAsync);
+
         _lblCategoryFilter = new Label
         {
             Location = new Point(260, 18),
@@ -124,7 +137,7 @@ public partial class InventoryForm : LocalizableFormBase
 
         _filterPanel.Controls.AddRange(new Control[]
         {
-            _searchBox, _lblCategoryFilter, _cmbCategoryFilter, _lblStockFilter, _cmbStockFilter
+            _searchBox, _btnScan, _lblCategoryFilter, _cmbCategoryFilter, _lblStockFilter, _cmbStockFilter
         });
 
         var split = new SplitContainer

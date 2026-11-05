@@ -10,7 +10,7 @@ namespace DzentoPOS2.WinForms.Controls
     [ToolboxItem(true)]
     public class BarcodeScanButton : ThemedButton
     {
-        private TextBox? _target;
+        private Control? _target;
         private IBarcodeScanService? _scanService;
 
         public BarcodeScanButton()
@@ -22,7 +22,7 @@ namespace DzentoPOS2.WinForms.Controls
 
         [Category("Behavior")]
         [Description("The text box filled with the scanned barcode.")]
-        public TextBox? TargetTextBox
+        public Control? TargetTextBox
         {
             get => _target;
             set => _target = value;

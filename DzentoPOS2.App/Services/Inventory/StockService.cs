@@ -127,8 +127,11 @@ public sealed class StockService : IStockService
         if (!product.TrackStock)
             return;
 
+        var variantId = await GetOrCreateDefaultVariantIdAsync(productId, cancellationToken);
+
         var stock = await GetTrackedStockAsync(
             productId,
+            variantId,
             warehouseId,
             cancellationToken);
 
@@ -139,7 +142,7 @@ public sealed class StockService : IStockService
             stock = new ProductStock
             {
                 ProductId = productId,
-                VariantId = await GetOrCreateDefaultVariantIdAsync(productId, cancellationToken),
+                VariantId = variantId,
                 WarehouseId = warehouseId,
                 Quantity = new Quantity(targetQuantity),
                 Version = 0
@@ -164,6 +167,7 @@ public sealed class StockService : IStockService
 
         await AddMovementAsync(
             productId,
+            variantId,
             warehouseId,
             Math.Abs(targetQuantity - before),
             before,
@@ -200,13 +204,13 @@ public sealed class StockService : IStockService
         CancellationToken cancellationToken)
     {
         var aggregated = lines
-            .GroupBy(x => x.ProductId)
+            .GroupBy(x => (x.ProductId, x.VariantId))
             .ToDictionary(g => g.Key, g => g.Sum(x => x.Quantity));
 
         if (aggregated.Count == 0)
             return;
 
-        var productIds = aggregated.Keys.ToList();
+        var productIds = aggregated.Keys.Select(k => k.ProductId).Distinct().ToList();
 
         var products = await _context.Products
             .AsNoTracking()
@@ -214,8 +218,13 @@ public sealed class StockService : IStockService
             .Select(x => new { x.Id, x.Name, x.TrackStock })
             .ToDictionaryAsync(x => x.Id, cancellationToken);
 
-        foreach (var (productId, quantity) in aggregated)
+        foreach (var (key, quantity) in aggregated)
         {
+            var productId = key.ProductId;
+            var variantId = key.VariantId == Guid.Empty
+                ? await GetOrCreateDefaultVariantIdAsync(productId, cancellationToken)
+                : key.VariantId;
+
             if (quantity <= 0)
                 throw new DomainException("Stock movement quantity must be greater than zero");
 
@@ -227,6 +236,7 @@ public sealed class StockService : IStockService
 
             var stock = await GetTrackedStockAsync(
                 productId,
+                variantId,
                 warehouseId,
                 cancellationToken);
 
@@ -246,8 +256,8 @@ public sealed class StockService : IStockService
                 stock = new ProductStock
                 {
                     ProductId = productId,
+                    VariantId = variantId,
                     WarehouseId = warehouseId,
-                    VariantId = await GetOrCreateDefaultVariantIdAsync(productId, cancellationToken),
                     Quantity = after < 0
                         ? Quantity.FromSigned(after)
                         : new Quantity(after),
@@ -266,6 +276,7 @@ public sealed class StockService : IStockService
 
             await AddMovementAsync(
                 productId,
+                variantId,
                 warehouseId,
                 quantity,
                 before,
@@ -281,17 +292,19 @@ public sealed class StockService : IStockService
 
     private async Task<ProductStock?> GetTrackedStockAsync(
         Guid productId,
+        Guid variantId,
         Guid warehouseId,
         CancellationToken cancellationToken)
     {
         return await _context.ProductStocks
             .FirstOrDefaultAsync(
-                x => x.ProductId == productId && x.WarehouseId == warehouseId,
+                x => x.ProductId == productId && x.VariantId == variantId && x.WarehouseId == warehouseId,
                 cancellationToken);
     }
 
     private async Task AddMovementAsync(
         Guid productId,
+        Guid variantId,
         Guid warehouseId,
         decimal quantity,
         decimal before,
@@ -306,7 +319,7 @@ public sealed class StockService : IStockService
         await _context.InventoryTransactions.AddAsync(new InventoryTransaction
         {
             ProductId = productId,
-            VariantId = await GetOrCreateDefaultVariantIdAsync(productId, cancellationToken),
+            VariantId = variantId,
             WarehouseId = warehouseId,
             Quantity = new Quantity(quantity),
             TransactionType = movementType,

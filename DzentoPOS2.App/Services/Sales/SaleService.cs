@@ -331,7 +331,7 @@ namespace DzentoPOS2.App.Services.Sales
                         invoice.InvoiceNumber.Value,
                         warehouseId,
                         dto.Items
-                            .Select(i => new StockChange(i.ProductId, i.Quantity))
+                            .Select(i => new StockChange(i.ProductId, defaultVariants[i.ProductId], i.Quantity))
                             .ToList(),
                         _currentUser.UserId);
 
@@ -437,7 +437,7 @@ namespace DzentoPOS2.App.Services.Sales
                     $"VOID-{invoice.InvoiceNumber.Value}",
                     warehouseId,
                     invoice.Items
-                        .Select(i => new StockChange(i.ProductId, i.Quantity))
+                        .Select(i => new StockChange(i.ProductId, i.VariantId, i.Quantity))
                         .ToList(),
                     MovementType.SaleVoidIn,
                     _currentUser.UserId);

@@ -2,6 +2,19 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] - 2026-11-05 (Catalog system Phase 4)
+
+### Changed
+- **Stock, sales and purchases now operate on `VariantId`.** `StockChange` gained a `VariantId` (`DzentoPOS2.App/Services/Inventory/IStockService.cs`); `StockService` aggregates lines by `(ProductId, VariantId)`, tracks stock per `(ProductId, VariantId, WarehouseId)` and writes `VariantId` on every `InventoryTransaction`. Missing/default variants are resolved (and created) on the fly, so legacy callers that only know a `ProductId` keep working.
+- `SaleService` writes `VariantId` on `SalesInvoiceItem` and passes the resolved variant to `ApplySaleAsync`; void reverses by the stored line `VariantId`.
+- `PurchaseService` passes the resolved default variant to `ApplyPurchaseAsync` and reverses by the stored line `VariantId`.
+- **Moving weighted average is now per variant.** The purchase cost update resolves the default variant, averages against that variant's on-hand quantity and updates its `CostPrice`; the legacy `Product.CostPrice` is kept in sync when the variant is the default, so simple-product costs and reports are unchanged.
+- `InventoryProfitCalculator` aggregates stock by variant (`InventoryProductInput.VariantId`, `InventoryStockInput.VariantId`); simple-product results are identical (unit tests unchanged in expectation).
+- `ProductService.GetProductStocksAsync` aggregates stock per warehouse so multi-variant products still show one row per warehouse.
+
+### Verified
+- Build **0 errors / 47 warnings** (pre-existing `NU1701`), Unit **124/124**, Integration **70/70**.
+
 ## [Unreleased] - 2026-11-05 (Catalog system Phase 0)
 
 ### Added

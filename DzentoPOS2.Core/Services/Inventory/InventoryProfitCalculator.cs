@@ -5,14 +5,14 @@ using System.Linq;
 namespace DzentoPOS2.Core.Services.Inventory
 {
     public sealed record InventoryProductInput(
-        Guid Id,
+        Guid VariantId,
         decimal SalePrice,
         decimal CostPrice,
         bool IsActive,
         bool TrackStock,
         Guid CategoryId);
 
-    public sealed record InventoryStockInput(Guid ProductId, decimal Quantity);
+    public sealed record InventoryStockInput(Guid VariantId, decimal Quantity);
 
     public sealed record InventoryProfitResult(
         decimal PotentialProfit,
@@ -33,8 +33,8 @@ namespace DzentoPOS2.Core.Services.Inventory
             if (stocks is null) throw new ArgumentNullException(nameof(stocks));
             if (discountFactor is null) throw new ArgumentNullException(nameof(discountFactor));
 
-            var stockByProduct = stocks
-                .GroupBy(s => s.ProductId)
+            var stockByVariant = stocks
+                .GroupBy(s => s.VariantId)
                 .ToDictionary(g => g.Key, g => g.Sum(x => x.Quantity));
 
             decimal potential = 0m, realistic = 0m;
@@ -43,7 +43,7 @@ namespace DzentoPOS2.Core.Services.Inventory
             foreach (var p in products)
             {
                 if (!p.IsActive || !p.TrackStock) continue;
-                if (!stockByProduct.TryGetValue(p.Id, out var qty)) continue;
+                if (!stockByVariant.TryGetValue(p.VariantId, out var qty)) continue;
                 if (qty <= 0) continue;
 
                 if (p.SalePrice <= 0) { noSale++; }
@@ -53,7 +53,7 @@ namespace DzentoPOS2.Core.Services.Inventory
 
                 potential += qty * margin;
 
-                var d = discountFactor(p.Id);
+                var d = discountFactor(p.VariantId);
                 d = Math.Clamp(d, 0m, 0.5m);
                 var f = Math.Clamp(feeFactor, 0m, 0.25m);
                 var pNet = p.SalePrice * (1 - d);

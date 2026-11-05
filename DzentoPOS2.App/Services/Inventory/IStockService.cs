@@ -2,7 +2,7 @@ using DzentoPOS2.Core.Enums;
 
 namespace DzentoPOS2.App.Services.Inventory;
 
-public readonly record struct StockChange(Guid ProductId, decimal Quantity);
+public readonly record struct StockChange(Guid ProductId, Guid VariantId, decimal Quantity);
 
 public interface IStockService
 {

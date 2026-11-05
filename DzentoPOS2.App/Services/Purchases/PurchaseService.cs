@@ -161,23 +161,37 @@ namespace DzentoPOS2.App.Services.Purchases
                 }
 
                 // Moving weighted average cost update (tracked products only).
+                // Cost is tracked per variant now; the default variant stays in
+                // sync with the legacy Product.CostPrice used by reports.
                 var productIds = dto.Items.Select(i => i.ProductId).Distinct().ToList();
                 var products = await _context.Products
                     .Where(p => productIds.Contains(p.Id) && !p.IsDeleted)
                     .ToDictionaryAsync(p => p.Id);
+
+                var variantIds = purchaseDefaultVariants.Values.Distinct().ToList();
                 var stockTotals = (await _context.ProductStocks
-                    .Where(s => productIds.Contains(s.ProductId))
-                    .GroupBy(s => s.ProductId)
-                    .Select(g => new { ProductId = g.Key, Qty = g.Sum(x => x.Quantity.Value) })
+                    .Where(s => variantIds.Contains(s.VariantId))
+                    .GroupBy(s => s.VariantId)
+                    .Select(g => new { VariantId = g.Key, Qty = g.Sum(x => x.Quantity.Value) })
                     .ToListAsync())
-                    .ToDictionary(x => x.ProductId, x => x.Qty);
+                    .ToDictionary(x => x.VariantId, x => x.Qty);
+
+                var variants = await _context.ProductVariants
+                    .Where(v => variantIds.Contains(v.Id))
+                    .ToDictionaryAsync(v => v.Id);
 
                 foreach (var group in dto.Items.GroupBy(i => i.ProductId))
                 {
                     if (!products.TryGetValue(group.Key, out var product) || !product.TrackStock)
                         continue;
 
-                    var oldQty = stockTotals.TryGetValue(group.Key, out var q) ? q : 0m;
+                    if (!purchaseDefaultVariants.TryGetValue(group.Key, out var variantId))
+                        continue;
+
+                    if (!variants.TryGetValue(variantId, out var variant))
+                        continue;
+
+                    var oldQty = stockTotals.TryGetValue(variantId, out var q) ? q : 0m;
                     var inQty = group.Sum(i => i.Quantity);
                     if (inQty <= 0) continue;
                     var inCostTotal = group.Sum(i => i.Quantity * i.CostPrice);
@@ -190,13 +204,19 @@ namespace DzentoPOS2.App.Services.Purchases
                     }
                     else
                     {
-                        var oldCost = product.CostPrice?.Amount ?? 0m;
+                        var oldCost = variant.CostPrice?.Amount ?? 0m;
                         newAvg = (oldQty * oldCost + inQty * inCostAvg) / (oldQty + inQty);
                     }
 
-                    product.CostPrice = new Money(
-                        decimal.Round(newAvg, _regional.CurrencyDecimalDigits, MidpointRounding.AwayFromZero),
-                        _regional.CurrencyCode);
+                    var rounded = decimal.Round(
+                        newAvg,
+                        _regional.CurrencyDecimalDigits,
+                        MidpointRounding.AwayFromZero);
+
+                    variant.CostPrice = new Money(rounded, _regional.CurrencyCode);
+
+                    if (variant.IsDefault)
+                        product.CostPrice = new Money(rounded, _regional.CurrencyCode);
                 }
 
                 await _context.PurchaseInvoices.AddAsync(invoice);
@@ -217,7 +237,7 @@ namespace DzentoPOS2.App.Services.Purchases
                     invoice.InvoiceNumber,
                     warehouseId,
                     dto.Items
-                        .Select(i => new StockChange(i.ProductId, i.Quantity))
+                        .Select(i => new StockChange(i.ProductId, purchaseDefaultVariants[i.ProductId], i.Quantity))
                         .ToList(),
                     _currentUser.UserId);
 
@@ -254,7 +274,7 @@ namespace DzentoPOS2.App.Services.Purchases
                     $"VOID-{invoice.InvoiceNumber}",
                     warehouseId,
                     invoice.Items
-                        .Select(i => new StockChange(i.ProductId, i.Quantity))
+                        .Select(i => new StockChange(i.ProductId, i.VariantId, i.Quantity))
                         .ToList(),
                     MovementType.PurchaseReturn,
                     _currentUser.UserId);

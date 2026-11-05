@@ -313,12 +313,15 @@ public class ProductService : IProductService
             .Include(s => s.Warehouse)
             .ToListAsync();
 
-        return stocks.Select(s => new ProductStockDto
-        {
-            WarehouseId = s.WarehouseId,
-            WarehouseName = s.Warehouse?.Name ?? "",
-            Quantity = s.Quantity?.Value ?? 0
-        }).ToList();
+        return stocks
+            .GroupBy(s => new { s.WarehouseId, WarehouseName = s.Warehouse?.Name ?? "" })
+            .Select(g => new ProductStockDto
+            {
+                WarehouseId = g.Key.WarehouseId,
+                WarehouseName = g.Key.WarehouseName,
+                Quantity = g.Sum(x => x.Quantity?.Value ?? 0)
+            })
+            .ToList();
     }
 
     private Task<List<ProductDto>> MapWithCategoryAndUnit(IEnumerable<Product> products)

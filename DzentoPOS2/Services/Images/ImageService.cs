@@ -48,12 +48,14 @@ public class ImageService : IImageService
         {
             if (string.IsNullOrWhiteSpace(relativePath)) return;
             var full = Path.Combine(ImagesRoot, relativePath.Replace('/', '\\'));
-            try { if (File.Exists(full)) File.Delete(full); } catch { }
+            try { if (File.Exists(full)) File.Delete(full); }
+            catch { /* best-effort cleanup; a locked file is not fatal */ }
             // thumbnail
             var dir = Path.GetDirectoryName(full)!;
             var name = Path.GetFileNameWithoutExtension(full);
             var thumb = Path.Combine(dir, name + "_t.jpg");
-            try { if (File.Exists(thumb)) File.Delete(thumb); } catch { }
+            try { if (File.Exists(thumb)) File.Delete(thumb); }
+            catch { /* best-effort cleanup; a locked file is not fatal */ }
         });
     }
 

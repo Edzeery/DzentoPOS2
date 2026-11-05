@@ -159,6 +159,19 @@
 | G4 | العودة إلى استهداف .NET 9 ومحاذاة حزم `Microsoft.*` إلى `9.0.22` | ✅ | إعادة TFM إلى `net9.0` / `net9.0-windows`، وإزالة `global.json`، و`ProductVersion` → `9.0.22`، وإضافة `NuGet.config` لإصلاح استعادة الحزم؛ 0 أخطاء / 21 تحذير `NU1701`، الوحدة 84 والتكامل 41، و`has-pending-model-changes` نظيف، وقاعدة بيانات جديدة تُطبّق 9 ترحيلات (56 جدولًا)؛ `docs/net9-retarget.md` |
 | G5 | تشغيل مسار الإقلاع على نسخ قواعد بيانات حقيقية | ✅ | commit `5c367f9` (على .NET 10)؛ مسار الإقلاع لا يخصّ إصدار الإطار: `docs/net10-smoke-run.md` |
 
+## I — لوحة التحكم: البطاقات + الفلترة + ربح المخزون
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| I.1 | KpiCard owner-draw (الPhase A) | ✅ | Controls/KpiCard.cs (commit 51a6f4b) |
+| I.2 | ShadowEngine Suspend/Resume | ✅ | ServicesUI/ShadowEngine.cs (commit 2744199) |
+| I.3 | MainForm timed collapse | ✅ | Forms/Layout/MainForm.cs (commit 2744199) |
+| I.4 | KpiValueFormatter culture | ✅ | Shared/Helpers/KpiValueFormatter.cs + tests |
+| I.5 | ProfitSummaryModule | ✅ | Modules/Dashboard/ProfitSummaryModule.cs |
+| I.6 | Dashboard filters by member/date | 🟨 | Forms/Dashboard/DashboardForm.cs + DashboardService |
+| I.7 | Expected stock profit | ✅ | DashboardService + ProfitCalculator |
+| I.8 | Docs sync | ⬜ | pending |
+
 ## H — إعادة بناء حساب الأرباح (المراحل 1–4) ✅
 
 | # | المهمة | الحالة | دليل الإنجاز |

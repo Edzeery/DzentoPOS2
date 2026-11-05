@@ -194,6 +194,11 @@ namespace DzentoPOS2.App.Services.Sales
                 .Where(p => productIds.Contains(p.Id) && !p.IsDeleted)
                 .ToDictionaryAsync(p => p.Id);
 
+            var defaultVariants = await _context.ProductVariants
+                .AsNoTracking()
+                .Where(v => productIds.Contains(v.ProductId) && v.IsDefault)
+                .ToDictionaryAsync(v => v.ProductId, v => v.Id);
+
             foreach (var item in dto.Items)
             {
                 if (!products.TryGetValue(item.ProductId, out var product) || !product.IsActive)
@@ -252,9 +257,28 @@ namespace DzentoPOS2.App.Services.Sales
                     foreach (var item in dto.Items)
                     {
                         var product = products[item.ProductId];
+                        if (!defaultVariants.TryGetValue(item.ProductId, out var variantId))
+                        {
+                            var v = new Core.Entities.Inventory.ProductVariant
+                            {
+                                ProductId = item.ProductId,
+                                Name = product.Name,
+                                CostPrice = product.CostPrice,
+                                SalePrice = product.SalePrice,
+                                MinimumStock = product.MinimumStock,
+                                TrackStock = product.TrackStock,
+                                IsActive = product.IsActive,
+                                IsDefault = true
+                            };
+                            await _context.ProductVariants.AddAsync(v);
+                            await _context.SaveChangesAsync();
+                            variantId = v.Id;
+                            defaultVariants[item.ProductId] = variantId;
+                        }
                         var line = new SalesInvoiceItem
                         {
                             ProductId = item.ProductId,
+                            VariantId = variantId,
                             Quantity = item.Quantity,
                             Price = item.Price,
                             Total = lineGrosses[itemIndex],

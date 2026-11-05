@@ -11,6 +11,8 @@ namespace DzentoPOS2.Core.Entities.Inventory
     {
         public Guid ProductId { get; set; }
 
+        public Guid VariantId { get; set; }
+
         public Guid WarehouseId { get; set; }
 
         // 🔥 Value Object
@@ -33,6 +35,7 @@ namespace DzentoPOS2.Core.Entities.Inventory
         public string? Notes { get; set; }
 
         public virtual Product Product { get; set; } = null!;
+        public virtual ProductVariant Variant { get; set; } = null!;
         public virtual Warehouse Warehouse { get; set; } = null!;
     }
 }

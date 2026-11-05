@@ -13,6 +13,8 @@ namespace DzentoPOS2.Core.Entities.Sales
 
         public Guid ProductId { get; set; }
 
+        public Guid VariantId { get; set; }
+
         public decimal Quantity { get; set; }
 
         public decimal Price { get; set; }

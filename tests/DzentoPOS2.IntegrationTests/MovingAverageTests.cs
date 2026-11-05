@@ -37,11 +37,24 @@ public sealed class MovingAverageTests
             IsActive = true
         };
         context.Products.Add(product);
+        var variant = new DzentoPOS2.Core.Entities.Inventory.ProductVariant
+        {
+            ProductId = product.Id,
+            Name = product.Name,
+            CostPrice = product.CostPrice,
+            SalePrice = product.SalePrice,
+            MinimumStock = product.MinimumStock,
+            TrackStock = product.TrackStock,
+            IsActive = product.IsActive,
+            IsDefault = true
+        };
+        context.ProductVariants.Add(variant);
         if (initialStock != 0)
         {
             context.ProductStocks.Add(new ProductStock
             {
                 ProductId = product.Id,
+                VariantId = variant.Id,
                 WarehouseId = _fixture.Data.WarehouseId,
                 Quantity = initialStock >= 0 ? new Quantity(initialStock) : Quantity.FromSigned(initialStock)
             });
@@ -104,9 +117,11 @@ public sealed class MovingAverageTests
         var wh2 = new Warehouse { Name = "WH2", BranchId = _fixture.Data.BranchId, IsActive = true };
         context.Warehouses.Add(wh2);
         var product = await CreateTrackedProductAsync(context, 100, 5);
+        var v2 = await context.ProductVariants.FirstAsync(x => x.ProductId == product.Id && x.IsDefault);
         context.ProductStocks.Add(new ProductStock
         {
             ProductId = product.Id,
+            VariantId = v2.Id,
             WarehouseId = wh2.Id,
             Quantity = new Quantity(50)
         });

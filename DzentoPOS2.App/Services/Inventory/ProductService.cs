@@ -117,6 +117,21 @@ public class ProductService : IProductService
             await _productRepo.AddAsync(product);
             await _unitOfWork.SaveChangesAsync();
 
+            // Phase 1: every product gets a hidden default variant.
+            var defaultVariant = new ProductVariant
+            {
+                ProductId = product.Id,
+                Name = product.Name,
+                CostPrice = new Money(dto.CostPrice, _regional.CurrencyCode),
+                SalePrice = new Money(dto.SalePrice, _regional.CurrencyCode),
+                MinimumStock = new Quantity(dto.MinimumStock),
+                TrackStock = dto.TrackStock,
+                IsActive = dto.IsActive,
+                IsDefault = true
+            };
+            _context.ProductVariants.Add(defaultVariant);
+            await _unitOfWork.SaveChangesAsync();
+
             if (product.TrackStock && dto.OpeningStock > 0)
             {
                 var branchId = await _storeContext.GetDefaultBranchIdAsync();

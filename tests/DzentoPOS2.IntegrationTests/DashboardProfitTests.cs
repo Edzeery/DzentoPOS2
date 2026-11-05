@@ -37,6 +37,18 @@ public sealed class DashboardProfitTests
         };
         ctx.Products.Add(p);
         await ctx.SaveChangesAsync();
+        ctx.ProductVariants.Add(new DzentoPOS2.Core.Entities.Inventory.ProductVariant
+        {
+            ProductId = p.Id,
+            Name = p.Name,
+            CostPrice = p.CostPrice,
+            SalePrice = p.SalePrice,
+            MinimumStock = p.MinimumStock,
+            TrackStock = p.TrackStock,
+            IsActive = p.IsActive,
+            IsDefault = true
+        });
+        await ctx.SaveChangesAsync();
         return p;
     }
 
@@ -47,10 +59,15 @@ public sealed class DashboardProfitTests
         var tax = 0m;
         var totals = new DzentoPOS2.Core.Services.Sales.InvoiceTotals(totalsSubtotal, discountAmount, after, tax, after, 0, 0, after, 0);
         var inv = SalesInvoice.Create("MAN-" + Guid.NewGuid().ToString("N").Substring(0, 6), Guid.Empty, _fixture.Data.BranchId, totals, DzentoPOS2.Core.Services.Sales.DiscountMode.FixedAmount, discountAmount, 0, "DZD", fees);
+        var variantId = await ctx.ProductVariants
+            .Where(v => v.ProductId == productId && v.IsDefault)
+            .Select(v => v.Id)
+            .FirstOrDefaultAsync();
         var item = new SalesInvoiceItem
         {
             SalesInvoiceId = inv.Id,
             ProductId = productId,
+            VariantId = variantId,
             Quantity = qty,
             Price = price,
             Total = qty * price,
@@ -253,9 +270,11 @@ public sealed class DashboardProfitTests
         var dashboard = scope.ServiceProvider.GetRequiredService<IDashboardService>();
 
         var product = await CreateProductAsync(ctx, 5, 10);
+        var v = await ctx.ProductVariants.FirstAsync(x => x.ProductId == product.Id && x.IsDefault);
         ctx.ProductStocks.Add(new ProductStock
         {
             ProductId = product.Id,
+            VariantId = v.Id,
             WarehouseId = _fixture.Data.WarehouseId,
             Quantity = new Quantity(6)
         });

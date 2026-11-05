@@ -60,6 +60,12 @@ namespace DzentoPOS2.Data.Context
 
         public DbSet<ProductVariant> ProductVariants => Set<ProductVariant>();
 
+        public DbSet<AttributeDefinition> AttributeDefinitions => Set<AttributeDefinition>();
+
+        public DbSet<AttributeValue> AttributeValues => Set<AttributeValue>();
+
+        public DbSet<VariantAttribute> VariantAttributes => Set<VariantAttribute>();
+
         public DbSet<ProductStock> ProductStocks => Set<ProductStock>();
 
         public DbSet<InventoryTransaction> InventoryTransactions => Set<InventoryTransaction>();

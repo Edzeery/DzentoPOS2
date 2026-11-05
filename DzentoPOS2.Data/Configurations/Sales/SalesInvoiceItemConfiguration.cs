@@ -44,6 +44,8 @@ namespace DzentoPOS2.Data.Configurations.Sales
 
             builder.Property(x => x.IsDeleted)
                 .HasDefaultValue(false);
+
+            builder.HasIndex(x => x.VariantId);
         }
     }
 }

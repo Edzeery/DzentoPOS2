@@ -123,11 +123,37 @@ namespace DzentoPOS2.App.Services.Purchases
                     RemainingAmount = remaining
                 };
 
+                var purchaseProductIds = dto.Items.Select(i => i.ProductId).Distinct().ToList();
+                var purchaseDefaultVariants = await _context.ProductVariants
+                    .AsNoTracking()
+                    .Where(v => purchaseProductIds.Contains(v.ProductId) && v.IsDefault)
+                    .ToDictionaryAsync(v => v.ProductId, v => v.Id);
+
                 foreach (var item in dto.Items)
                 {
+                    if (!purchaseDefaultVariants.TryGetValue(item.ProductId, out var pVariantId))
+                    {
+                        var prod = await _context.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == item.ProductId);
+                        var v = new Core.Entities.Inventory.ProductVariant
+                        {
+                            ProductId = item.ProductId,
+                            Name = prod?.Name ?? string.Empty,
+                            CostPrice = prod?.CostPrice ?? new Core.ValueObjects.Common.Money(item.CostPrice, _regional.CurrencyCode),
+                            SalePrice = prod?.SalePrice ?? new Core.ValueObjects.Common.Money(item.CostPrice, _regional.CurrencyCode),
+                            MinimumStock = prod?.MinimumStock ?? new Core.ValueObjects.Inventory.Quantity(0),
+                            TrackStock = prod?.TrackStock ?? true,
+                            IsActive = prod?.IsActive ?? true,
+                            IsDefault = true
+                        };
+                        await _context.ProductVariants.AddAsync(v);
+                        await _context.SaveChangesAsync();
+                        pVariantId = v.Id;
+                        purchaseDefaultVariants[item.ProductId] = pVariantId;
+                    }
                     invoice.Items.Add(new PurchaseInvoiceItem
                     {
                         ProductId = item.ProductId,
+                        VariantId = pVariantId,
                         Quantity = item.Quantity,
                         CostPrice = item.CostPrice,
                         Total = item.Quantity * item.CostPrice

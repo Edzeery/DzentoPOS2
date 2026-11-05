@@ -55,6 +55,11 @@ namespace DzentoPOS2.Data.Configurations.Inventory
                 .HasForeignKey(x => x.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasOne(x => x.Variant)
+                .WithMany()
+                .HasForeignKey(x => x.VariantId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             builder.HasOne(x => x.Warehouse)
                 .WithMany()
                 .HasForeignKey(x => x.WarehouseId)

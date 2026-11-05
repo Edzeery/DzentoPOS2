@@ -93,9 +93,23 @@ public sealed class TestData
             IsActive = true
         };
 
+        var variant = new DzentoPOS2.Core.Entities.Inventory.ProductVariant
+        {
+            ProductId = trackedProduct.Id,
+            Name = trackedProduct.Name,
+            CostPrice = trackedProduct.CostPrice,
+            SalePrice = trackedProduct.SalePrice,
+            MinimumStock = trackedProduct.MinimumStock,
+            TrackStock = trackedProduct.TrackStock,
+            IsActive = trackedProduct.IsActive,
+            IsDefault = true
+        };
+        context.ProductVariants.Add(variant);
+
         var stock = new ProductStock
         {
             ProductId = trackedProduct.Id,
+            VariantId = variant.Id,
             WarehouseId = warehouse.Id,
             Quantity = new Quantity(100)
         };

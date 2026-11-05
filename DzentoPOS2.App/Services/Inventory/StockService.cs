@@ -139,6 +139,7 @@ public sealed class StockService : IStockService
             stock = new ProductStock
             {
                 ProductId = productId,
+                VariantId = await GetOrCreateDefaultVariantIdAsync(productId, cancellationToken),
                 WarehouseId = warehouseId,
                 Quantity = new Quantity(targetQuantity),
                 Version = 0
@@ -246,6 +247,7 @@ public sealed class StockService : IStockService
                 {
                     ProductId = productId,
                     WarehouseId = warehouseId,
+                    VariantId = await GetOrCreateDefaultVariantIdAsync(productId, cancellationToken),
                     Quantity = after < 0
                         ? Quantity.FromSigned(after)
                         : new Quantity(after),
@@ -304,6 +306,7 @@ public sealed class StockService : IStockService
         await _context.InventoryTransactions.AddAsync(new InventoryTransaction
         {
             ProductId = productId,
+            VariantId = await GetOrCreateDefaultVariantIdAsync(productId, cancellationToken),
             WarehouseId = warehouseId,
             Quantity = new Quantity(quantity),
             TransactionType = movementType,
@@ -327,6 +330,38 @@ public sealed class StockService : IStockService
             .FirstOrDefaultAsync(cancellationToken);
 
         return bool.TryParse(value, out var allowed) && allowed;
+    }
+
+    private async Task<Guid> GetOrCreateDefaultVariantIdAsync(Guid productId, CancellationToken cancellationToken)
+    {
+        var existing = await _context.ProductVariants
+            .AsNoTracking()
+            .Where(v => v.ProductId == productId && v.IsDefault)
+            .Select(v => v.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+        if (existing != Guid.Empty)
+            return existing;
+
+        var product = await _context.Products
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == productId, cancellationToken);
+        if (product is null)
+            throw new DomainException("Product not found");
+
+        var variant = new ProductVariant
+        {
+            ProductId = productId,
+            Name = product.Name,
+            CostPrice = product.CostPrice,
+            SalePrice = product.SalePrice,
+            MinimumStock = product.MinimumStock,
+            TrackStock = product.TrackStock,
+            IsActive = product.IsActive,
+            IsDefault = true
+        };
+        await _context.ProductVariants.AddAsync(variant, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+        return variant.Id;
     }
 
     private static bool IsIncoming(MovementType movementType)

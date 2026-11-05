@@ -72,6 +72,7 @@ public static class DependencyInjection
             services.AddTransient<ProductUnitsForm>();
             services.AddTransient<CashSessionForm>();
         services.AddTransient<CashSessionOpenDialog>();
+        services.AddTransient<Forms.Setup.FirstRunModulesDialog>();
 
         return services;
     }

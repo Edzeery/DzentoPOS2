@@ -20,6 +20,7 @@ using DzentoPOS2.WinForms.Forms.Purchases;
 using DzentoPOS2.WinForms.Forms.Reports;
 using DzentoPOS2.WinForms.Forms.Sales;
 using DzentoPOS2.WinForms.Forms.Settings;
+using DzentoPOS2.WinForms.Forms.Setup;
 using DzentoPOS2.WinForms.Forms.Suppliers;
 using DzentoPOS2.WinForms.Helpers;
 using DzentoPOS2.WinForms.Models;
@@ -1071,6 +1072,14 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             labelVersion.Text = AppStrings.Version + " " + Application.ProductVersion;
 
             _statusTimer.Start();
+
+            // First-run module selection wizard.
+            var moduleService = _services.GetService<DzentoPOS2.App.Services.Systems.IModuleService>();
+            if (moduleService != null && !(await moduleService.IsConfiguredAsync()))
+            {
+                using var dlg = _services.GetRequiredService<FirstRunModulesDialog>();
+                dlg.ShowDialog(this);
+            }
 
             // The sales screen (point of sale) is the working screen of the
             // application: it is the page the user lands on after signing in.

@@ -89,6 +89,8 @@ namespace DzentoPOS2.App
 
             services.AddScoped<ICashSessionService, CashSessionService>();
 
+            services.AddScoped<IModuleService, ModuleService>();
+
             return services;
         }
     }

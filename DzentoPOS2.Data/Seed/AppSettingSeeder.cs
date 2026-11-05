@@ -11,6 +11,12 @@ namespace DzentoPOS2.Data.Seed
         {
             var settings = new List<AppSetting>
             {
+                new() { Key = AppSettingKeys.ModuleGrocery, Value = "false", Group = "Modules" },
+                new() { Key = AppSettingKeys.ModulePhones, Value = "false", Group = "Modules" },
+                new() { Key = AppSettingKeys.ModuleDigital, Value = "false", Group = "Modules" },
+                new() { Key = AppSettingKeys.ModuleGeneral, Value = "true", Group = "Modules" },
+                new() { Key = AppSettingKeys.ModulesConfigured, Value = "false", Group = "Modules" },
+                new() { Key = AppSettingKeys.AllowDuplicateBarcodes, Value = "false", Group = "Catalog" },
                 new() { Key = "app.name", Value = "DzentoPOS2", Group = "General" },
                 new() { Key = "app.version", Value = "1.0.0", Group = "General" },
                 new() { Key = "company.name", Value = "", Group = "Company" },

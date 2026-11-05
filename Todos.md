@@ -199,7 +199,7 @@
 | K.0 | Phase 0: دمج fix/barcode-scanner + توثيق (database-design.md, architecture.md, docs/decisions.md) + فحص مسار خصم المخزون | ✅ | merge commit d3f38ff؛ build 0 errors/43 warnings؛ database-design.md + architecture.md محدّثان؛ docs/decisions.md (10 ADR) |
 | K.1 | Phase 1: نموذج البيانات + الهجرة + دمج الباركودات + قواعد التفرد | ✅ | migration CatalogPhase1_DataModel؛ backfill verified on real DB (2 products→2 default variants, 0 orphans/empty)؛ unit 124 + integration 70 pass؛ build 0 errors |
 | K.2 | Phase 2: ملف النشاط والوحدات (feature flags) + معالج الإعداد الأول + الإعدادات | ✅ | AppSettingKeys (4 modules + configured + allow_duplicate_barcodes)؛ AppSettingSeeder؛ IModuleService/ModuleService؛ FirstRunModulesDialog؛ MainForm.Load triggers wizard؛ build 0 errors |
-| K.3 | Phase 3: صفحة المنتجات (محرر المتغيرات، مولّد التوليفات، باركودات، Brand، صور) | ⬜ | pending |
+| K.3 | Phase 3: صفحة المنتجات (محرر المتغيرات، مولّد التوليفات، باركودات، Brand، صور) | 🟨 | جزئي: Brand + ProductKind في ProductEditDialog؛ IImageService/ImageService (1024/256 JPEG, LRU)؛ DTOs + service mapping. متبقي: محرر متغيرات + مولّد توليفات + إدارة باركودات + رفع صور في UI |
 | K.4 | Phase 4: المخزون والشراء والبيع على VariantId + إعادة ربط InventoryProfitCalculator | ⬜ | pending |
 | K.5 | Phase 5: واجهة POS الجديدة + منتقي متغيرات + اختيار باركود مشترك | ⬜ | pending |
 | K.6 | Phase 6: وحدات النشاط (بقالة، هواتف، رقمي) | ⬜ | pending |

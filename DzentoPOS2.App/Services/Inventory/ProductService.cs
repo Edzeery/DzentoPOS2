@@ -100,6 +100,8 @@ public class ProductService : IProductService
             Name = dto.Name,
             SKU = dto.SKU,
             Barcode = string.IsNullOrWhiteSpace(dto.Barcode) ? null : dto.Barcode.Trim(),
+            Brand = string.IsNullOrWhiteSpace(dto.Brand) ? null : dto.Brand.Trim(),
+            ProductKind = dto.ProductKind,
             Description = dto.Description,
             CategoryId = dto.CategoryId,
             UnitId = dto.UnitId,
@@ -179,6 +181,8 @@ public class ProductService : IProductService
         product.Name = dto.Name;
         product.SKU = dto.SKU;
         product.Barcode = string.IsNullOrWhiteSpace(dto.Barcode) ? null : dto.Barcode.Trim();
+        product.Brand = string.IsNullOrWhiteSpace(dto.Brand) ? null : dto.Brand.Trim();
+        product.ProductKind = dto.ProductKind;
         product.Description = dto.Description;
         product.CategoryId = dto.CategoryId;
         product.UnitId = dto.UnitId;
@@ -325,6 +329,10 @@ public class ProductService : IProductService
         Name = product.Name,
         SKU = product.SKU,
         Barcode = product.Barcode,
+        Brand = product.Brand,
+        ProductKind = product.ProductKind,
+        ImagePath = product.ImagePath,
+        ThumbnailPath = product.ThumbnailPath,
         Description = product.Description,
         CategoryId = product.CategoryId,
         CategoryName = product.Category?.Name ?? "",

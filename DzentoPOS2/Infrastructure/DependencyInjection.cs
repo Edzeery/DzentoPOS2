@@ -16,6 +16,7 @@ using DzentoPOS2.WinForms.Forms.Settings;
 using DzentoPOS2.WinForms.Forms.Suppliers;
 using DzentoPOS2.WinForms.Navigation;
 using DzentoPOS2.WinForms.Services.Barcodes;
+using DzentoPOS2.WinForms.Services.Images;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -49,6 +50,7 @@ public static class DependencyInjection
         services.AddSingleton<IUserPreferencesService, UserPreferencesService>();
         services.AddSingleton<ICurrentSettingsService, CurrentSettingsService>();
         services.AddSingleton<IBarcodeScanService, BarcodeScanService>();
+        services.AddSingleton<IImageService, ImageService>();
         services.AddSingleton<INavigationService, NavigationService>();
        
         // Forms

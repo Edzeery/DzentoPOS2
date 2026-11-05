@@ -17,6 +17,8 @@ public class ProductEditDialog : Form
     private readonly Label _lblName;
     private readonly Label _lblSKU;
     private readonly Label _lblBarcode;
+    private readonly Label _lblBrand;
+    private readonly Label _lblProductKind;
     private readonly Label _lblCategory;
     private readonly Label _lblUnit;
     private readonly Label _lblCost;
@@ -26,6 +28,8 @@ public class ProductEditDialog : Form
     private readonly TextBox _txtName;
     private readonly TextBox _txtSKU;
     private readonly TextBox _txtBarcode;
+    private readonly TextBox _txtBrand;
+    private readonly ComboBox _cmbProductKind;
     private readonly ComboBox _cmbCategory;
     private readonly ComboBox _cmbUnit;
     private readonly NumericUpDown _numCost;
@@ -45,7 +49,7 @@ public class ProductEditDialog : Form
         _existing = existing;
         _scanService = scanService;
 
-        Size = new Size(520, 580);
+        Size = new Size(520, 620);
         StartPosition = FormStartPosition.CenterParent;
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false;
@@ -70,6 +74,8 @@ public class ProductEditDialog : Form
         _lblSale = lbl(AppStrings.SalePrice + ":", 248);
         _lblMinStock = lbl(AppStrings.MinimumStock + ":", 286);
         _lblOpeningStock = lbl(AppStrings.OpeningStock + ":", 324);
+        _lblBrand = lbl("Brand:", 362);
+        _lblProductKind = lbl("Kind:", 400);
 
         _txtName = new TextBox { Location = new Point(150, 20), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F) };
         _txtSKU = new TextBox { Location = new Point(150, 58), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F) };
@@ -83,16 +89,18 @@ public class ProductEditDialog : Form
         _numSale = new NumericUpDown { Location = new Point(150, 248), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F), DecimalPlaces = 2, Maximum = 999999 };
         _numMinStock = new NumericUpDown { Location = new Point(150, 286), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F), DecimalPlaces = 0, Maximum = 999999 };
         _numOpeningStock = new NumericUpDown { Location = new Point(150, 324), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F), DecimalPlaces = 0, Maximum = 999999 };
+        _txtBrand = new TextBox { Location = new Point(150, 362), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F) };
+        _cmbProductKind = new ComboBox { Location = new Point(150, 400), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F), DropDownStyle = ComboBoxStyle.DropDownList };
 
         _chkActive = new CheckBox { Text = AppStrings.ProductActive, Location = new Point(150, 362), Size = new Size(200, 28), Font = new Font("Segoe UI", 10F), Checked = true };
 
         _btnSave = ButtonFactory.Primary(AppStrings.Save);
-        _btnSave.Location = new Point(150, 420);
+        _btnSave.Location = new Point(150, 460);
         _btnSave.Size = new Size(120, 40);
         _btnSave.Click += async (_, _) => await SaveAsync();
 
         _btnCancel = ButtonFactory.Neutral(AppStrings.Cancel);
-        _btnCancel.Location = new Point(290, 420);
+        _btnCancel.Location = new Point(290, 460);
         _btnCancel.Size = new Size(120, 40);
         _btnCancel.DialogResult = DialogResult.Cancel;
 
@@ -113,6 +121,8 @@ public class ProductEditDialog : Form
             _lblSale, _numSale,
             _lblMinStock, _numMinStock,
             _lblOpeningStock, _numOpeningStock,
+            _lblBrand, _txtBrand,
+            _lblProductKind, _cmbProductKind,
             _chkActive,
             _btnSave, _btnCancel
         });
@@ -172,6 +182,8 @@ public class ProductEditDialog : Form
             _txtName.Text = _existing.Name;
             _txtSKU.Text = _existing.SKU;
             _txtBarcode.Text = _existing.Barcode;
+            _txtBrand.Text = _existing.Brand ?? "";
+            _cmbProductKind.SelectedItem = _existing.ProductKind;
             _numCost.Value = _existing.CostPrice;
             _numSale.Value = _existing.SalePrice;
             _numMinStock.Value = _existing.MinimumStock;
@@ -198,6 +210,11 @@ public class ProductEditDialog : Form
         _cmbUnit.DisplayMember = "Name";
         _cmbUnit.ValueMember = "Id";
         _cmbUnit.SelectedIndex = 0;
+
+        _cmbProductKind.Items.Clear();
+        foreach (DzentoPOS2.Core.Enums.ProductKind k in Enum.GetValues(typeof(DzentoPOS2.Core.Enums.ProductKind)))
+            _cmbProductKind.Items.Add(k);
+        _cmbProductKind.SelectedIndex = 0;
     }
 
     private static void SelectCombo(ComboBox cmb, Guid id)
@@ -247,6 +264,8 @@ public class ProductEditDialog : Form
                 Name = _txtName.Text.Trim(),
                 SKU = _txtSKU.Text.Trim(),
                 Barcode = _txtBarcode.Text.Trim(),
+                Brand = _txtBrand.Text.Trim(),
+                ProductKind = (DzentoPOS2.Core.Enums.ProductKind)(_cmbProductKind.SelectedItem ?? DzentoPOS2.Core.Enums.ProductKind.Standard),
                 CategoryId = categoryId,
                 UnitId = unitId,
                 CostPrice = _numCost.Value,
@@ -264,6 +283,8 @@ public class ProductEditDialog : Form
                 Name = _txtName.Text.Trim(),
                 SKU = _txtSKU.Text.Trim(),
                 Barcode = _txtBarcode.Text.Trim(),
+                Brand = _txtBrand.Text.Trim(),
+                ProductKind = (DzentoPOS2.Core.Enums.ProductKind)(_cmbProductKind.SelectedItem ?? DzentoPOS2.Core.Enums.ProductKind.Standard),
                 CategoryId = categoryId,
                 UnitId = unitId,
                 CostPrice = _numCost.Value,

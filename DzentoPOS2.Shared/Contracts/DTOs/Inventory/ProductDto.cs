@@ -6,6 +6,10 @@ public class ProductDto
     public string Name { get; set; } = string.Empty;
     public string? SKU { get; set; }
     public string? Barcode { get; set; }
+    public string? Brand { get; set; }
+    public DzentoPOS2.Core.Enums.ProductKind ProductKind { get; set; } = DzentoPOS2.Core.Enums.ProductKind.Standard;
+    public string? ImagePath { get; set; }
+    public string? ThumbnailPath { get; set; }
     public string? Description { get; set; }
     public Guid CategoryId { get; set; }
     public string CategoryName { get; set; } = string.Empty;
@@ -24,6 +28,8 @@ public class CreateProductDto
     public string Name { get; set; } = string.Empty;
     public string? SKU { get; set; }
     public string? Barcode { get; set; }
+    public string? Brand { get; set; }
+    public DzentoPOS2.Core.Enums.ProductKind ProductKind { get; set; } = DzentoPOS2.Core.Enums.ProductKind.Standard;
     public string? Description { get; set; }
     public Guid CategoryId { get; set; }
     public Guid UnitId { get; set; }
@@ -41,6 +47,8 @@ public class UpdateProductDto
     public string Name { get; set; } = string.Empty;
     public string? SKU { get; set; }
     public string? Barcode { get; set; }
+    public string? Brand { get; set; }
+    public DzentoPOS2.Core.Enums.ProductKind ProductKind { get; set; } = DzentoPOS2.Core.Enums.ProductKind.Standard;
     public string? Description { get; set; }
     public Guid CategoryId { get; set; }
     public Guid UnitId { get; set; }

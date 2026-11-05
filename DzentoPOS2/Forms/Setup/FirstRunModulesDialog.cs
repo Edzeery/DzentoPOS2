@@ -1,5 +1,6 @@
 using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.Core.Enums;
+using DzentoPOS2.WinForms.Themes;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DzentoPOS2.WinForms.Forms.Setup;
@@ -19,10 +20,20 @@ public class FirstRunModulesDialog : Form
         Text = "اختيار وحدات النشاط";
         FormBorderStyle = FormBorderStyle.FixedDialog;
         StartPosition = FormStartPosition.CenterParent;
-        Width = 420;
-        Height = 260;
-        var panel = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, Padding = new Padding(20) };
-        panel.Controls.Add(new Label { Text = "اختر الوحدات المفعّلة (يمكن تعديلها لاحقًا في الإعدادات):", AutoSize = true });
+        Width = 460;
+        Height = 300;
+        BackColor = AppColors.Surface;
+        ForeColor = AppColors.Ink;
+        var panel = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, Padding = new Padding(20), BackColor = AppColors.Surface };
+        var lbl = new Label { Text = "اختر الوحدات المفعّلة (يمكن تعديلها لاحقًا في الإعدادات):", AutoSize = true, ForeColor = AppColors.Ink, Font = AppStyle.BodyFont };
+        _chkGrocery.ForeColor = AppColors.Ink;
+        _chkPhones.ForeColor = AppColors.Ink;
+        _chkDigital.ForeColor = AppColors.Ink;
+        _chkGeneral.ForeColor = AppColors.Ink;
+        _btnOk.BackColor = AppColors.Primary;
+        _btnOk.ForeColor = AppColors.Surface;
+        _btnOk.FlatStyle = FlatStyle.Flat;
+        panel.Controls.Add(lbl);
         panel.Controls.Add(_chkGrocery);
         panel.Controls.Add(_chkPhones);
         panel.Controls.Add(_chkDigital);

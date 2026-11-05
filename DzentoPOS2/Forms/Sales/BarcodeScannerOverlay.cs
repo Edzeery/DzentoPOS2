@@ -35,8 +35,7 @@ public sealed class BarcodeScannerOverlay : Form
     private readonly TextBox _txtCameraUrl;
     private readonly ThemedButton _btnRefresh;
     private readonly ThemedButton _btnTestConnection;
-    private readonly ThemedButton _btnClose;
-    private readonly Button _btnCloseOverlay;
+
 
     private Bitmap? _frame;
     private bool _detected;
@@ -145,9 +144,6 @@ public sealed class BarcodeScannerOverlay : Form
         _btnRefresh = ButtonFactory.Neutral(AppStrings.Refresh, ButtonFactory.ButtonSize.Medium);
         _btnRefresh.Click += (_, _) => RefreshDevices();
 
-        _btnClose = ButtonFactory.Neutral(AppStrings.Close, ButtonFactory.ButtonSize.Medium);
-        _btnClose.Click += (_, _) => Close();
-
         var footer = new FlowLayoutPanel
         {
             Dock = DockStyle.Fill,
@@ -158,7 +154,6 @@ public sealed class BarcodeScannerOverlay : Form
             BackColor = Color.Transparent,
             Margin = Padding.Empty
         };
-        footer.Controls.Add(_btnClose);
         footer.Controls.Add(_btnTestConnection);
         footer.Controls.Add(_btnRefresh);
 
@@ -186,14 +181,6 @@ public sealed class BarcodeScannerOverlay : Form
         root.Controls.Add(footer, 0, 2);
 
         Controls.Add(root);
-
-        _btnCloseOverlay = new Button
-        {
-            Text = AppStrings.Close,
-            Visible = false,
-            Size = new Size(0, 0)
-        };
-        Controls.Add(_btnCloseOverlay);
 
         _camera.BarcodeDetected += OnBarcodeDetected;
         _camera.Failed += OnCameraFailed;

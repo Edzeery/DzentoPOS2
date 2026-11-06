@@ -22,6 +22,17 @@ namespace DzentoPOS2.WinForms.Themes
             if (tab.DrawMode != TabDrawMode.OwnerDrawFixed)
                 tab.DrawMode = TabDrawMode.OwnerDrawFixed;
 
+            // Larger, readable tabs that show the full (localized) title.
+            var font = new Font("Segoe UI", 10.5F, FontStyle.Regular);
+            tab.Font = font;
+            int maxWidth = 96;
+            foreach (TabPage page in tab.TabPages)
+            {
+                var size = TextRenderer.MeasureText(page.Text ?? string.Empty, font);
+                maxWidth = Math.Max(maxWidth, size.Width + 32);
+            }
+            tab.ItemSize = new Size(maxWidth, 40);
+
             if (Styled.TryGetValue(tab, out _))
             {
                 tab.Invalidate();

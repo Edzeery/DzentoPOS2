@@ -1384,4 +1384,319 @@
   <data name="AllCustomers" xml:space="preserve">
     <value>Tous les clients</value>
   </data>
+  <data name="RoleNotFound" xml:space="preserve">
+    <value>Rôle introuvable</value>
+  </data>
+  <data name="CurrencySymbolEgp" xml:space="preserve">
+    <value>ج.م</value>
+  </data>
+  <data name="DebitAccountCustomer" xml:space="preserve">
+    <value>Compte débiteur</value>
+  </data>
+  <data name="CurrencySymbolKwd" xml:space="preserve">
+    <value>د.ك</value>
+  </data>
+  <data name="UnitPiece" xml:space="preserve">
+    <value>Pièce</value>
+  </data>
+  <data name="CurrencySymbolAed" xml:space="preserve">
+    <value>د.إ</value>
+  </data>
+  <data name="UnitLiter" xml:space="preserve">
+    <value>Litre</value>
+  </data>
+  <data name="UnitItem" xml:space="preserve">
+    <value>Article</value>
+  </data>
+  <data name="UnitBox" xml:space="preserve">
+    <value>Boîte</value>
+  </data>
+  <data name="CreditAccountCustomer" xml:space="preserve">
+    <value>Compte créditeur</value>
+  </data>
+  <data name="CurrencyMismatch" xml:space="preserve">
+    <value>Incohérence de devise</value>
+  </data>
+  <data name="UnitCarton" xml:space="preserve">
+    <value>Carton</value>
+  </data>
+  <data name="GenerateCombinations" xml:space="preserve">
+    <value>Générer les combinaisons</value>
+  </data>
+  <data name="VariantsTab" xml:space="preserve">
+    <value>Variantes</value>
+  </data>
+  <data name="BarcodeAlreadyUsed" xml:space="preserve">
+    <value>Code-barres déjà utilisé</value>
+  </data>
+  <data name="ExpenseTransportDescription" xml:space="preserve">
+    <value>Frais de transport et d'expédition</value>
+  </data>
+  <data name="CategoryConstructionDescription" xml:space="preserve">
+    <value>Matériaux de construction</value>
+  </data>
+  <data name="CategoryOfficeDescription" xml:space="preserve">
+    <value>Fournitures de bureau et papeterie</value>
+  </data>
+  <data name="CategoryConstruction" xml:space="preserve">
+    <value>Matériaux de construction</value>
+  </data>
+  <data name="ExpenseTransport" xml:space="preserve">
+    <value>Transport</value>
+  </data>
+  <data name="ExpenseMaintenanceDescription" xml:space="preserve">
+    <value>Entretien et réparation des équipements</value>
+  </data>
+  <data name="UnitKilogramSymbol" xml:space="preserve">
+    <value>kg</value>
+  </data>
+  <data name="ManageBarcodes" xml:space="preserve">
+    <value>Gérer les codes-barres</value>
+  </data>
+  <data name="UnitKilogram" xml:space="preserve">
+    <value>Kilogramme</value>
+  </data>
+  <data name="CategoryFood" xml:space="preserve">
+    <value>Alimentation</value>
+  </data>
+  <data name="CategoryFoodDescription" xml:space="preserve">
+    <value>Aliments et boissons</value>
+  </data>
+  <data name="ExpenseMiscDescription" xml:space="preserve">
+    <value>Autres dépenses diverses</value>
+  </data>
+  <data name="ExpenseMarketingDescription" xml:space="preserve">
+    <value>Frais de publicité et de marketing</value>
+  </data>
+  <data name="ExpenseMisc" xml:space="preserve">
+    <value>Divers</value>
+  </data>
+  <data name="CategoryBeverages" xml:space="preserve">
+    <value>Boissons</value>
+  </data>
+  <data name="CategoryCleaningDescription" xml:space="preserve">
+    <value>Produits de nettoyage et de désinfection</value>
+  </data>
+  <data name="CategoryOffice" xml:space="preserve">
+    <value>Fournitures de bureau</value>
+  </data>
+  <data name="ExpenseMarketing" xml:space="preserve">
+    <value>Marketing</value>
+  </data>
+  <data name="CategoryBeveragesDescription" xml:space="preserve">
+    <value>Boissons chaudes et froides</value>
+  </data>
+  <data name="CategoryCleaning" xml:space="preserve">
+    <value>Nettoyage</value>
+  </data>
+  <data name="CurrencySymbolJod" xml:space="preserve">
+    <value>د.أ</value>
+  </data>
+  <data name="CurrencySymbolLbp" xml:space="preserve">
+    <value>ل.ل</value>
+  </data>
+  <data name="CurrencySymbolIqd" xml:space="preserve">
+    <value>د.ع</value>
+  </data>
+  <data name="CurrencySymbolBhd" xml:space="preserve">
+    <value>د.ب</value>
+  </data>
+  <data name="CurrencySymbolQar" xml:space="preserve">
+    <value>ر.ق</value>
+  </data>
+  <data name="CurrencySymbolOmr" xml:space="preserve">
+    <value>ر.ع</value>
+  </data>
+  <data name="CurrencySymbolTnd" xml:space="preserve">
+    <value>د.ت</value>
+  </data>
+  <data name="CurrencySymbolLyd" xml:space="preserve">
+    <value>د.ل</value>
+  </data>
+  <data name="CurrencySymbolSdg" xml:space="preserve">
+    <value>ج.س</value>
+  </data>
+  <data name="CurrencySymbolSyp" xml:space="preserve">
+    <value>ل.س</value>
+  </data>
+  <data name="CurrencySymbolMad" xml:space="preserve">
+    <value>د.م.</value>
+  </data>
+  <data name="CurrencySymbolDzd" xml:space="preserve">
+    <value>دج</value>
+  </data>
+  <data name="MainCashbox" xml:space="preserve">
+    <value>Caisse principale</value>
+  </data>
+  <data name="AmountCannotBeNegative" xml:space="preserve">
+    <value>Le montant ne peut pas être négatif</value>
+  </data>
+  <data name="CurrencyRequired" xml:space="preserve">
+    <value>La devise est requise</value>
+  </data>
+  <data name="Generate" xml:space="preserve">
+    <value>Générer</value>
+  </data>
+  <data name="MainBranch" xml:space="preserve">
+    <value>Succursale principale</value>
+  </data>
+  <data name="MainWarehouse" xml:space="preserve">
+    <value>Entrepôt principal</value>
+  </data>
+  <data name="InvoiceNumberRequired" xml:space="preserve">
+    <value>Le numéro de facture est requis</value>
+  </data>
+  <data name="InvoiceNumberTooShort" xml:space="preserve">
+    <value>Le numéro de facture est trop court</value>
+  </data>
+  <data name="CurrencySymbolSar" xml:space="preserve">
+    <value>ر.س</value>
+  </data>
+  <data name="CurrencySymbolRialSign" xml:space="preserve">
+    <value>﷼</value>
+  </data>
+  <data name="EmailRequired" xml:space="preserve">
+    <value>L'adresse e-mail est requise</value>
+  </data>
+  <data name="InvalidEmailFormat" xml:space="preserve">
+    <value>Format d'adresse e-mail invalide</value>
+  </data>
+  <data name="PhoneRequired" xml:space="preserve">
+    <value>Le numéro de téléphone est requis</value>
+  </data>
+  <data name="ExpenseMaintenance" xml:space="preserve">
+    <value>Maintenance</value>
+  </data>
+  <data name="VariantCreatedFormat" xml:space="preserve">
+    <value>{0} variante(s) créée(s).</value>
+  </data>
+  <data name="ModuleGrocery" xml:space="preserve">
+    <value>Épicerie (poids/lots/péremption)</value>
+  </data>
+  <data name="ModulePhones" xml:space="preserve">
+    <value>Téléphones / électronique (IMEI/garantie)</value>
+  </data>
+  <data name="AddAttributeBeforeGenerate" xml:space="preserve">
+    <value>Ajoutez au moins un attribut avant de générer.</value>
+  </data>
+  <data name="AttributeNeedsAtLeastOneValue" xml:space="preserve">
+    <value>Chaque attribut doit avoir au moins une valeur.</value>
+  </data>
+  <data name="NoNewCombinations" xml:space="preserve">
+    <value>Aucune nouvelle combinaison (toutes existent déjà).</value>
+  </data>
+  <data name="ChooseActivityModules" xml:space="preserve">
+    <value>Choisir les modules d'activité</value>
+  </data>
+  <data name="SelectEnabledModules" xml:space="preserve">
+    <value>Sélectionnez les modules activés (modifiable ultérieurement dans les paramètres) :</value>
+  </data>
+  <data name="RoleAlreadyExists" xml:space="preserve">
+    <value>Le rôle existe déjà</value>
+  </data>
+  <data name="ModuleDigital" xml:space="preserve">
+    <value>Produits numériques (codes/recharge)</value>
+  </data>
+  <data name="ModuleGeneralRetail" xml:space="preserve">
+    <value>Commerce de détail général</value>
+  </data>
+  <data name="SaveAndContinue" xml:space="preserve">
+    <value>Enregistrer et continuer</value>
+  </data>
+  <data name="Attributes" xml:space="preserve">
+    <value>Attributs</value>
+  </data>
+  <data name="Attribute" xml:space="preserve">
+    <value>Attribut</value>
+  </data>
+  <data name="Values" xml:space="preserve">
+    <value>Valeurs</value>
+  </data>
+  <data name="Cost" xml:space="preserve">
+    <value>Coût</value>
+  </data>
+  <data name="AttributeLabel" xml:space="preserve">
+    <value>Attribut :</value>
+  </data>
+  <data name="ValuesCommaSeparatedLabel" xml:space="preserve">
+    <value>Valeurs (séparées par des virgules) :</value>
+  </data>
+  <data name="VariantHasStockCannotDelete" xml:space="preserve">
+    <value>Impossible de supprimer une variante qui a du stock.</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Nom :</value>
+  </data>
+  <data name="PriceLabel" xml:space="preserve">
+    <value>Prix :</value>
+  </data>
+  <data name="CostLabel" xml:space="preserve">
+    <value>Coût :</value>
+  </data>
+  <data name="Variants" xml:space="preserve">
+    <value>Variantes</value>
+  </data>
+  <data name="Barcodes" xml:space="preserve">
+    <value>Codes-barres</value>
+  </data>
+  <data name="CurrencyUsDollar" xml:space="preserve">
+    <value>Dollar américain</value>
+  </data>
+  <data name="CurrencyEuro" xml:space="preserve">
+    <value>Euro</value>
+  </data>
+  <data name="CurrencyEgyptianPound" xml:space="preserve">
+    <value>Livre égyptienne</value>
+  </data>
+  <data name="ExpenseSalariesDescription" xml:space="preserve">
+    <value>Salaires et rémunérations des employés</value>
+  </data>
+  <data name="ExpenseBills" xml:space="preserve">
+    <value>Factures</value>
+  </data>
+  <data name="ExpenseBillsDescription" xml:space="preserve">
+    <value>Factures d'électricité, d'eau et de télécommunications</value>
+  </data>
+  <data name="ExpenseRent" xml:space="preserve">
+    <value>Loyer</value>
+  </data>
+  <data name="ExpenseRentDescription" xml:space="preserve">
+    <value>Loyer du magasin ou de l'entrepôt</value>
+  </data>
+  <data name="ExpenseSalaries" xml:space="preserve">
+    <value>Salaires</value>
+  </data>
+  <data name="RoleCannotBeDeleted" xml:space="preserve">
+    <value>Ce rôle ne peut pas être supprimé</value>
+  </data>
+  <data name="RoleDeleted" xml:space="preserve">
+    <value>Rôle supprimé avec succès</value>
+  </data>
+  <data name="RoleCreated" xml:space="preserve">
+    <value>Rôle créé avec succès</value>
+  </data>
+  <data name="RoleNameInUse" xml:space="preserve">
+    <value>Le nom du rôle est déjà utilisé</value>
+  </data>
+  <data name="RoleUpdated" xml:space="preserve">
+    <value>Rôle mis à jour avec succès</value>
+  </data>
+  <data name="DeleteAttribute" xml:space="preserve">
+    <value>Supprimer l'attribut</value>
+  </data>
+  <data name="CurrencyKuwaitiDinar" xml:space="preserve">
+    <value>Dinar koweïtien</value>
+  </data>
+  <data name="AddAttribute" xml:space="preserve">
+    <value>Ajouter un attribut</value>
+  </data>
+  <data name="ReceiptFooterThankYou" xml:space="preserve">
+    <value>Merci de votre visite</value>
+  </data>
+  <data name="CurrencySaudiRiyal" xml:space="preserve">
+    <value>Riyal saoudien</value>
+  </data>
+  <data name="CurrencyUaeDirham" xml:space="preserve">
+    <value>Dirham des Émirats</value>
+  </data>
 </root>

@@ -1,3 +1,4 @@
+using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Core.Entities.Inventory;
 using DzentoPOS2.Data.Context;
 using Microsoft.EntityFrameworkCore;
@@ -13,12 +14,12 @@ namespace DzentoPOS2.Data.Seed
 
             var units = new List<ProductUnit>
             {
-                new() { Name = "قطعة", Symbol = "قطعة", IsBaseUnit = true },
-                new() { Name = "كرتونة", Symbol = "كرتونة", IsBaseUnit = false },
-                new() { Name = "كيلو جرام", Symbol = "كجم", IsBaseUnit = true },
-                new() { Name = "لتر", Symbol = "لتر", IsBaseUnit = true },
-                new() { Name = "حبة", Symbol = "حبة", IsBaseUnit = true },
-                new() { Name = "صندوق", Symbol = "صندوق", IsBaseUnit = false },
+                new() { Name = AppStrings.UnitPiece, Symbol = AppStrings.UnitPiece, IsBaseUnit = true },
+                new() { Name = AppStrings.UnitCarton, Symbol = AppStrings.UnitCarton, IsBaseUnit = false },
+                new() { Name = AppStrings.UnitKilogram, Symbol = AppStrings.UnitKilogramSymbol, IsBaseUnit = true },
+                new() { Name = AppStrings.UnitLiter, Symbol = AppStrings.UnitLiter, IsBaseUnit = true },
+                new() { Name = AppStrings.UnitItem, Symbol = AppStrings.UnitItem, IsBaseUnit = true },
+                new() { Name = AppStrings.UnitBox, Symbol = AppStrings.UnitBox, IsBaseUnit = false },
             };
 
             await context.ProductUnits.AddRangeAsync(units);

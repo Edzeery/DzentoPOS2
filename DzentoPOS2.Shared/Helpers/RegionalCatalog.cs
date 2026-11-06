@@ -1,3 +1,4 @@
+using DzentoPOS2.Localization.Resources;
 using System.Globalization;
 
 namespace DzentoPOS2.Shared.Helpers;
@@ -24,23 +25,23 @@ public static class RegionalCatalog
 {
     public static readonly IReadOnlyList<CurrencyOption> Currencies = new List<CurrencyOption>
     {
-        new("SAR", "ر.س", "Saudi Riyal"),
-        new("AED", "د.إ", "UAE Dirham"),
-        new("KWD", "د.ك", "Kuwaiti Dinar"),
-        new("BHD", "د.ب", "Bahraini Dinar"),
-        new("QAR", "ر.ق", "Qatari Riyal"),
-        new("OMR", "ر.ع", "Omani Rial"),
-        new("JOD", "د.أ", "Jordanian Dinar"),
-        new("EGP", "ج.م", "Egyptian Pound"),
-        new("LBP", "ل.ل", "Lebanese Pound"),
-        new("IQD", "د.ع", "Iraqi Dinar"),
-        new("SYP", "ل.س", "Syrian Pound"),
-        new("YER", "﷼", "Yemeni Rial"),
-        new("MAD", "د.م.", "Moroccan Dirham"),
-        new("DZD", "دج", "Algerian Dinar"),
-        new("TND", "د.ت", "Tunisian Dinar"),
-        new("LYD", "د.ل", "Libyan Dinar"),
-        new("SDG", "ج.س", "Sudanese Pound"),
+        new("SAR", AppStrings.CurrencySymbolSar, "Saudi Riyal"),
+        new("AED", AppStrings.CurrencySymbolAed, "UAE Dirham"),
+        new("KWD", AppStrings.CurrencySymbolKwd, "Kuwaiti Dinar"),
+        new("BHD", AppStrings.CurrencySymbolBhd, "Bahraini Dinar"),
+        new("QAR", AppStrings.CurrencySymbolQar, "Qatari Riyal"),
+        new("OMR", AppStrings.CurrencySymbolOmr, "Omani Rial"),
+        new("JOD", AppStrings.CurrencySymbolJod, "Jordanian Dinar"),
+        new("EGP", AppStrings.CurrencySymbolEgp, "Egyptian Pound"),
+        new("LBP", AppStrings.CurrencySymbolLbp, "Lebanese Pound"),
+        new("IQD", AppStrings.CurrencySymbolIqd, "Iraqi Dinar"),
+        new("SYP", AppStrings.CurrencySymbolSyp, "Syrian Pound"),
+        new("YER", AppStrings.CurrencySymbolRialSign, "Yemeni Rial"),
+        new("MAD", AppStrings.CurrencySymbolMad, "Moroccan Dirham"),
+        new("DZD", AppStrings.CurrencySymbolDzd, "Algerian Dinar"),
+        new("TND", AppStrings.CurrencySymbolTnd, "Tunisian Dinar"),
+        new("LYD", AppStrings.CurrencySymbolLyd, "Libyan Dinar"),
+        new("SDG", AppStrings.CurrencySymbolSdg, "Sudanese Pound"),
         new("TRY", "₺", "Turkish Lira"),
         new("ILS", "₪", "Israeli Shekel"),
         new("USD", "$", "US Dollar"),

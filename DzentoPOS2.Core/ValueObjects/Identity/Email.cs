@@ -1,4 +1,5 @@
-﻿using DzentoPOS2.Core.ValueObjects.Common;
+﻿using DzentoPOS2.Localization.Resources;
+using DzentoPOS2.Core.ValueObjects.Common;
 
 namespace DzentoPOS2.Core.ValueObjects.Identity
 {
@@ -13,10 +14,10 @@ namespace DzentoPOS2.Core.ValueObjects.Identity
         public Email(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentException("البريد الإلكتروني مطلوب");
+                throw new ArgumentException(AppStrings.EmailRequired);
 
             if (!value.Contains('@'))
-                throw new ArgumentException("تنسيق بريد إلكتروني غير صالح");
+                throw new ArgumentException(AppStrings.InvalidEmailFormat);
 
             Value = value.ToLower();
         }

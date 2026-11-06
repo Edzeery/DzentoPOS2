@@ -1,4 +1,5 @@
-﻿namespace DzentoPOS2.Core.ValueObjects.Common
+﻿using DzentoPOS2.Localization.Resources;
+namespace DzentoPOS2.Core.ValueObjects.Common
 {
     public class Money : ValueObject
     {
@@ -10,10 +11,10 @@
         public Money(decimal amount, string currency)
         {
             if (amount < 0)
-                throw new ArgumentException("لا يمكن أن يكون المبلغ سالباً");
+                throw new ArgumentException(AppStrings.AmountCannotBeNegative);
 
             if (string.IsNullOrWhiteSpace(currency))
-                throw new ArgumentException("العملة مطلوبة");
+                throw new ArgumentException(AppStrings.CurrencyRequired);
 
             Amount = amount;
             Currency = currency;
@@ -22,7 +23,7 @@
         public Money Add(Money other)
         {
             if (Currency != other.Currency)
-                throw new InvalidOperationException("عدم تطابق العملة");
+                throw new InvalidOperationException(AppStrings.CurrencyMismatch);
 
             return new Money(Amount + other.Amount, Currency);
         }
@@ -30,7 +31,7 @@
         public Money Subtract(Money other)
         {
             if (Currency != other.Currency)
-                throw new InvalidOperationException("عدم تطابق العملة");
+                throw new InvalidOperationException(AppStrings.CurrencyMismatch);
 
             return new Money(Amount - other.Amount, Currency);
         }

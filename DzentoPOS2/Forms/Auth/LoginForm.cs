@@ -400,7 +400,7 @@ namespace DzentoPOS2.WinForms.Forms.Auth
         private void ConfigureLanguageComboBox()
         {
             HeaderComboBoxStyle.Apply(comboBoxLang);
-            comboBoxLang.Items = new[] { "العربية", "English", "Français" };
+            comboBoxLang.Items = new[] { AppStrings.LanguageArabic, "English", "Français" };
 
             iconPictureBoxlanguage.BackColor = Color.Transparent;
             iconPictureBoxlanguage.IconColor = HeaderColors.Accent;

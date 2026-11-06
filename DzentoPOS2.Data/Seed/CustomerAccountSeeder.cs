@@ -1,3 +1,4 @@
+using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Core.Entities.Partners;
 using DzentoPOS2.Data.Context;
 
@@ -9,21 +10,21 @@ namespace DzentoPOS2.Data.Seed
     {
         public static async Task SeedAsync(AppDbContext context)
         {
-            if (!await context.Customers.AnyAsync(x => x.FullName == "حساب مدين"))
+            if (!await context.Customers.AnyAsync(x => x.FullName == AppStrings.DebitAccountCustomer))
             {
                 await context.Customers.AddAsync(new Customer
                 {
-                    FullName = "حساب مدين",
+                    FullName = AppStrings.DebitAccountCustomer,
                     Balance = 1000m,
                     IsActive = true
                 });
             }
 
-            if (!await context.Customers.AnyAsync(x => x.FullName == "حساب دائن"))
+            if (!await context.Customers.AnyAsync(x => x.FullName == AppStrings.CreditAccountCustomer))
             {
                 await context.Customers.AddAsync(new Customer
                 {
-                    FullName = "حساب دائن",
+                    FullName = AppStrings.CreditAccountCustomer,
                     Balance = -500m,
                     IsActive = true
                 });

@@ -242,7 +242,7 @@ public sealed class MainHeaderBar : UserControl, IThemeAware
     {
         HeaderComboBoxStyle.Apply(_languageBox);
         _languageBox.Anchor = AnchorStyles.Left | AnchorStyles.Right;
-        _languageBox.Items = new[] { "العربية", "English", "Français" };
+        _languageBox.Items = new[] { AppStrings.LanguageArabic, "English", "Français" };
         _languageBox.Margin = new Padding(0, 5, 10, 5);
     }
 

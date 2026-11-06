@@ -40,9 +40,9 @@ public class ProductEditDialog : ThemedDialog
     private readonly CheckBox _chkActive;
     private readonly Button _btnSave;
     private readonly Button _btnCancel;
-    private readonly Button _btnImage = new() { Text = "اختر صورة", Size = new Size(120, 32) };
-    private readonly Button _btnBarcodes = new() { Text = "باركودات", Size = new Size(120, 32) };
-    private readonly Button _btnVariants = new() { Text = "متغيرات", Size = new Size(120, 32) };
+    private readonly Button _btnImage = new() { Text = AppStrings.ChooseImage, Size = new Size(120, 32) };
+    private readonly Button _btnBarcodes = new() { Text = AppStrings.Barcodes, Size = new Size(120, 32) };
+    private readonly Button _btnVariants = new() { Text = AppStrings.Variants, Size = new Size(120, 32) };
 
     private readonly IBarcodeScanService? _scanService;
     private readonly DzentoPOS2.WinForms.Services.Images.IImageService? _imageService;

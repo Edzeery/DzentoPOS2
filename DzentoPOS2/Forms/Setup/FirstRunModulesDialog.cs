@@ -1,3 +1,4 @@
+using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.Core.Enums;
 using DzentoPOS2.WinForms.Helpers;
@@ -9,16 +10,16 @@ namespace DzentoPOS2.WinForms.Forms.Setup;
 public class FirstRunModulesDialog : ThemedDialog
 {
     private readonly IModuleService _moduleService;
-    private readonly CheckBox _chkGrocery = new() { Text = "بقالة (وزن/دفعات/صلاحية)", AutoSize = true };
-    private readonly CheckBox _chkPhones = new() { Text = "هواتف / إلكترونيات (IMEI/ضمان)", AutoSize = true };
-    private readonly CheckBox _chkDigital = new() { Text = "منتجات رقمية (أكواد/شحن)", AutoSize = true };
-    private readonly CheckBox _chkGeneral = new() { Text = "تجزئة عامة", AutoSize = true, Checked = true };
-    private readonly Button _btnOk = new() { Text = "حفظ ومتابعة", AutoSize = true };
+    private readonly CheckBox _chkGrocery = new() { Text = AppStrings.ModuleGrocery, AutoSize = true };
+    private readonly CheckBox _chkPhones = new() { Text = AppStrings.ModulePhones, AutoSize = true };
+    private readonly CheckBox _chkDigital = new() { Text = AppStrings.ModuleDigital, AutoSize = true };
+    private readonly CheckBox _chkGeneral = new() { Text = AppStrings.ModuleGeneralRetail, AutoSize = true, Checked = true };
+    private readonly Button _btnOk = new() { Text = AppStrings.SaveAndContinue, AutoSize = true };
 
     public FirstRunModulesDialog(IModuleService moduleService)
     {
         _moduleService = moduleService;
-        Text = "اختيار وحدات النشاط";
+        Text = AppStrings.ChooseActivityModules;
         FormBorderStyle = FormBorderStyle.FixedDialog;
         StartPosition = FormStartPosition.CenterParent;
         Width = 460;
@@ -26,7 +27,7 @@ public class FirstRunModulesDialog : ThemedDialog
         BackColor = AppColors.Surface;
         ForeColor = AppColors.Ink;
         var panel = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, Padding = new Padding(20), BackColor = AppColors.Surface };
-        var lbl = new Label { Text = "اختر الوحدات المفعّلة (يمكن تعديلها لاحقًا في الإعدادات):", AutoSize = true, ForeColor = AppColors.Ink, Font = AppStyle.BodyFont };
+        var lbl = new Label { Text = AppStrings.SelectEnabledModules, AutoSize = true, ForeColor = AppColors.Ink, Font = AppStyle.BodyFont };
         _chkGrocery.ForeColor = AppColors.Ink;
         _chkPhones.ForeColor = AppColors.Ink;
         _chkDigital.ForeColor = AppColors.Ink;

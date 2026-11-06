@@ -3726,5 +3726,531 @@ namespace DzentoPOS2.Localization.Resources {
             }
         }
 
+        public static string RoleNotFound {
+            get {
+                return ResourceManager.GetString("RoleNotFound", resourceCulture);
+            }
+        }
+        public static string CurrencySymbolEgp {
+            get {
+                return ResourceManager.GetString("CurrencySymbolEgp", resourceCulture);
+            }
+        }
+        public static string DebitAccountCustomer {
+            get {
+                return ResourceManager.GetString("DebitAccountCustomer", resourceCulture);
+            }
+        }
+        public static string CurrencySymbolKwd {
+            get {
+                return ResourceManager.GetString("CurrencySymbolKwd", resourceCulture);
+            }
+        }
+        public static string UnitPiece {
+            get {
+                return ResourceManager.GetString("UnitPiece", resourceCulture);
+            }
+        }
+        public static string CurrencySymbolAed {
+            get {
+                return ResourceManager.GetString("CurrencySymbolAed", resourceCulture);
+            }
+        }
+        public static string UnitLiter {
+            get {
+                return ResourceManager.GetString("UnitLiter", resourceCulture);
+            }
+        }
+        public static string UnitItem {
+            get {
+                return ResourceManager.GetString("UnitItem", resourceCulture);
+            }
+        }
+        public static string UnitBox {
+            get {
+                return ResourceManager.GetString("UnitBox", resourceCulture);
+            }
+        }
+        public static string CreditAccountCustomer {
+            get {
+                return ResourceManager.GetString("CreditAccountCustomer", resourceCulture);
+            }
+        }
+        public static string CurrencyMismatch {
+            get {
+                return ResourceManager.GetString("CurrencyMismatch", resourceCulture);
+            }
+        }
+        public static string UnitCarton {
+            get {
+                return ResourceManager.GetString("UnitCarton", resourceCulture);
+            }
+        }
+        public static string GenerateCombinations {
+            get {
+                return ResourceManager.GetString("GenerateCombinations", resourceCulture);
+            }
+        }
+        public static string VariantsTab {
+            get {
+                return ResourceManager.GetString("VariantsTab", resourceCulture);
+            }
+        }
+        public static string BarcodeAlreadyUsed {
+            get {
+                return ResourceManager.GetString("BarcodeAlreadyUsed", resourceCulture);
+            }
+        }
+        public static string ExpenseTransportDescription {
+            get {
+                return ResourceManager.GetString("ExpenseTransportDescription", resourceCulture);
+            }
+        }
+        public static string CategoryConstructionDescription {
+            get {
+                return ResourceManager.GetString("CategoryConstructionDescription", resourceCulture);
+            }
+        }
+        public static string CategoryOfficeDescription {
+            get {
+                return ResourceManager.GetString("CategoryOfficeDescription", resourceCulture);
+            }
+        }
+        public static string CategoryConstruction {
+            get {
+                return ResourceManager.GetString("CategoryConstruction", resourceCulture);
+            }
+        }
+        public static string ExpenseTransport {
+            get {
+                return ResourceManager.GetString("ExpenseTransport", resourceCulture);
+            }
+        }
+        public static string ExpenseMaintenanceDescription {
+            get {
+                return ResourceManager.GetString("ExpenseMaintenanceDescription", resourceCulture);
+            }
+        }
+        public static string UnitKilogramSymbol {
+            get {
+                return ResourceManager.GetString("UnitKilogramSymbol", resourceCulture);
+            }
+        }
+        public static string ManageBarcodes {
+            get {
+                return ResourceManager.GetString("ManageBarcodes", resourceCulture);
+            }
+        }
+        public static string UnitKilogram {
+            get {
+                return ResourceManager.GetString("UnitKilogram", resourceCulture);
+            }
+        }
+        public static string CategoryFood {
+            get {
+                return ResourceManager.GetString("CategoryFood", resourceCulture);
+            }
+        }
+        public static string CategoryFoodDescription {
+            get {
+                return ResourceManager.GetString("CategoryFoodDescription", resourceCulture);
+            }
+        }
+        public static string ExpenseMiscDescription {
+            get {
+                return ResourceManager.GetString("ExpenseMiscDescription", resourceCulture);
+            }
+        }
+        public static string ExpenseMarketingDescription {
+            get {
+                return ResourceManager.GetString("ExpenseMarketingDescription", resourceCulture);
+            }
+        }
+        public static string ExpenseMisc {
+            get {
+                return ResourceManager.GetString("ExpenseMisc", resourceCulture);
+            }
+        }
+        public static string CategoryBeverages {
+            get {
+                return ResourceManager.GetString("CategoryBeverages", resourceCulture);
+            }
+        }
+        public static string CategoryCleaningDescription {
+            get {
+                return ResourceManager.GetString("CategoryCleaningDescription", resourceCulture);
+            }
+        }
+        public static string CategoryOffice {
+            get {
+                return ResourceManager.GetString("CategoryOffice", resourceCulture);
+            }
+        }
+        public static string ExpenseMarketing {
+            get {
+                return ResourceManager.GetString("ExpenseMarketing", resourceCulture);
+            }
+        }
+        public static string CategoryBeveragesDescription {
+            get {
+                return ResourceManager.GetString("CategoryBeveragesDescription", resourceCulture);
+            }
+        }
+        public static string CategoryCleaning {
+            get {
+                return ResourceManager.GetString("CategoryCleaning", resourceCulture);
+            }
+        }
+        public static string CurrencySymbolJod {
+            get {
+                return ResourceManager.GetString("CurrencySymbolJod", resourceCulture);
+            }
+        }
+        public static string CurrencySymbolLbp {
+            get {
+                return ResourceManager.GetString("CurrencySymbolLbp", resourceCulture);
+            }
+        }
+        public static string CurrencySymbolIqd {
+            get {
+                return ResourceManager.GetString("CurrencySymbolIqd", resourceCulture);
+            }
+        }
+        public static string CurrencySymbolBhd {
+            get {
+                return ResourceManager.GetString("CurrencySymbolBhd", resourceCulture);
+            }
+        }
+        public static string CurrencySymbolQar {
+            get {
+                return ResourceManager.GetString("CurrencySymbolQar", resourceCulture);
+            }
+        }
+        public static string CurrencySymbolOmr {
+            get {
+                return ResourceManager.GetString("CurrencySymbolOmr", resourceCulture);
+            }
+        }
+        public static string CurrencySymbolTnd {
+            get {
+                return ResourceManager.GetString("CurrencySymbolTnd", resourceCulture);
+            }
+        }
+        public static string CurrencySymbolLyd {
+            get {
+                return ResourceManager.GetString("CurrencySymbolLyd", resourceCulture);
+            }
+        }
+        public static string CurrencySymbolSdg {
+            get {
+                return ResourceManager.GetString("CurrencySymbolSdg", resourceCulture);
+            }
+        }
+        public static string CurrencySymbolSyp {
+            get {
+                return ResourceManager.GetString("CurrencySymbolSyp", resourceCulture);
+            }
+        }
+        public static string CurrencySymbolMad {
+            get {
+                return ResourceManager.GetString("CurrencySymbolMad", resourceCulture);
+            }
+        }
+        public static string CurrencySymbolDzd {
+            get {
+                return ResourceManager.GetString("CurrencySymbolDzd", resourceCulture);
+            }
+        }
+        public static string MainCashbox {
+            get {
+                return ResourceManager.GetString("MainCashbox", resourceCulture);
+            }
+        }
+        public static string AmountCannotBeNegative {
+            get {
+                return ResourceManager.GetString("AmountCannotBeNegative", resourceCulture);
+            }
+        }
+        public static string CurrencyRequired {
+            get {
+                return ResourceManager.GetString("CurrencyRequired", resourceCulture);
+            }
+        }
+        public static string Generate {
+            get {
+                return ResourceManager.GetString("Generate", resourceCulture);
+            }
+        }
+        public static string MainBranch {
+            get {
+                return ResourceManager.GetString("MainBranch", resourceCulture);
+            }
+        }
+        public static string MainWarehouse {
+            get {
+                return ResourceManager.GetString("MainWarehouse", resourceCulture);
+            }
+        }
+        public static string InvoiceNumberRequired {
+            get {
+                return ResourceManager.GetString("InvoiceNumberRequired", resourceCulture);
+            }
+        }
+        public static string InvoiceNumberTooShort {
+            get {
+                return ResourceManager.GetString("InvoiceNumberTooShort", resourceCulture);
+            }
+        }
+        public static string CurrencySymbolSar {
+            get {
+                return ResourceManager.GetString("CurrencySymbolSar", resourceCulture);
+            }
+        }
+        public static string CurrencySymbolRialSign {
+            get {
+                return ResourceManager.GetString("CurrencySymbolRialSign", resourceCulture);
+            }
+        }
+        public static string EmailRequired {
+            get {
+                return ResourceManager.GetString("EmailRequired", resourceCulture);
+            }
+        }
+        public static string InvalidEmailFormat {
+            get {
+                return ResourceManager.GetString("InvalidEmailFormat", resourceCulture);
+            }
+        }
+        public static string PhoneRequired {
+            get {
+                return ResourceManager.GetString("PhoneRequired", resourceCulture);
+            }
+        }
+        public static string ExpenseMaintenance {
+            get {
+                return ResourceManager.GetString("ExpenseMaintenance", resourceCulture);
+            }
+        }
+        public static string VariantCreatedFormat {
+            get {
+                return ResourceManager.GetString("VariantCreatedFormat", resourceCulture);
+            }
+        }
+        public static string ModuleGrocery {
+            get {
+                return ResourceManager.GetString("ModuleGrocery", resourceCulture);
+            }
+        }
+        public static string ModulePhones {
+            get {
+                return ResourceManager.GetString("ModulePhones", resourceCulture);
+            }
+        }
+        public static string AddAttributeBeforeGenerate {
+            get {
+                return ResourceManager.GetString("AddAttributeBeforeGenerate", resourceCulture);
+            }
+        }
+        public static string AttributeNeedsAtLeastOneValue {
+            get {
+                return ResourceManager.GetString("AttributeNeedsAtLeastOneValue", resourceCulture);
+            }
+        }
+        public static string NoNewCombinations {
+            get {
+                return ResourceManager.GetString("NoNewCombinations", resourceCulture);
+            }
+        }
+        public static string ChooseActivityModules {
+            get {
+                return ResourceManager.GetString("ChooseActivityModules", resourceCulture);
+            }
+        }
+        public static string SelectEnabledModules {
+            get {
+                return ResourceManager.GetString("SelectEnabledModules", resourceCulture);
+            }
+        }
+        public static string RoleAlreadyExists {
+            get {
+                return ResourceManager.GetString("RoleAlreadyExists", resourceCulture);
+            }
+        }
+        public static string ModuleDigital {
+            get {
+                return ResourceManager.GetString("ModuleDigital", resourceCulture);
+            }
+        }
+        public static string ModuleGeneralRetail {
+            get {
+                return ResourceManager.GetString("ModuleGeneralRetail", resourceCulture);
+            }
+        }
+        public static string SaveAndContinue {
+            get {
+                return ResourceManager.GetString("SaveAndContinue", resourceCulture);
+            }
+        }
+        public static string Attributes {
+            get {
+                return ResourceManager.GetString("Attributes", resourceCulture);
+            }
+        }
+        public static string Attribute {
+            get {
+                return ResourceManager.GetString("Attribute", resourceCulture);
+            }
+        }
+        public static string Values {
+            get {
+                return ResourceManager.GetString("Values", resourceCulture);
+            }
+        }
+        public static string Cost {
+            get {
+                return ResourceManager.GetString("Cost", resourceCulture);
+            }
+        }
+        public static string AttributeLabel {
+            get {
+                return ResourceManager.GetString("AttributeLabel", resourceCulture);
+            }
+        }
+        public static string ValuesCommaSeparatedLabel {
+            get {
+                return ResourceManager.GetString("ValuesCommaSeparatedLabel", resourceCulture);
+            }
+        }
+        public static string VariantHasStockCannotDelete {
+            get {
+                return ResourceManager.GetString("VariantHasStockCannotDelete", resourceCulture);
+            }
+        }
+        public static string NameLabel {
+            get {
+                return ResourceManager.GetString("NameLabel", resourceCulture);
+            }
+        }
+        public static string PriceLabel {
+            get {
+                return ResourceManager.GetString("PriceLabel", resourceCulture);
+            }
+        }
+        public static string CostLabel {
+            get {
+                return ResourceManager.GetString("CostLabel", resourceCulture);
+            }
+        }
+        public static string Variants {
+            get {
+                return ResourceManager.GetString("Variants", resourceCulture);
+            }
+        }
+        public static string Barcodes {
+            get {
+                return ResourceManager.GetString("Barcodes", resourceCulture);
+            }
+        }
+        public static string CurrencyUsDollar {
+            get {
+                return ResourceManager.GetString("CurrencyUsDollar", resourceCulture);
+            }
+        }
+        public static string CurrencyEuro {
+            get {
+                return ResourceManager.GetString("CurrencyEuro", resourceCulture);
+            }
+        }
+        public static string CurrencyEgyptianPound {
+            get {
+                return ResourceManager.GetString("CurrencyEgyptianPound", resourceCulture);
+            }
+        }
+        public static string ExpenseSalariesDescription {
+            get {
+                return ResourceManager.GetString("ExpenseSalariesDescription", resourceCulture);
+            }
+        }
+        public static string ExpenseBills {
+            get {
+                return ResourceManager.GetString("ExpenseBills", resourceCulture);
+            }
+        }
+        public static string ExpenseBillsDescription {
+            get {
+                return ResourceManager.GetString("ExpenseBillsDescription", resourceCulture);
+            }
+        }
+        public static string ExpenseRent {
+            get {
+                return ResourceManager.GetString("ExpenseRent", resourceCulture);
+            }
+        }
+        public static string ExpenseRentDescription {
+            get {
+                return ResourceManager.GetString("ExpenseRentDescription", resourceCulture);
+            }
+        }
+        public static string ExpenseSalaries {
+            get {
+                return ResourceManager.GetString("ExpenseSalaries", resourceCulture);
+            }
+        }
+        public static string RoleCannotBeDeleted {
+            get {
+                return ResourceManager.GetString("RoleCannotBeDeleted", resourceCulture);
+            }
+        }
+        public static string RoleDeleted {
+            get {
+                return ResourceManager.GetString("RoleDeleted", resourceCulture);
+            }
+        }
+        public static string RoleCreated {
+            get {
+                return ResourceManager.GetString("RoleCreated", resourceCulture);
+            }
+        }
+        public static string RoleNameInUse {
+            get {
+                return ResourceManager.GetString("RoleNameInUse", resourceCulture);
+            }
+        }
+        public static string RoleUpdated {
+            get {
+                return ResourceManager.GetString("RoleUpdated", resourceCulture);
+            }
+        }
+        public static string DeleteAttribute {
+            get {
+                return ResourceManager.GetString("DeleteAttribute", resourceCulture);
+            }
+        }
+        public static string CurrencyKuwaitiDinar {
+            get {
+                return ResourceManager.GetString("CurrencyKuwaitiDinar", resourceCulture);
+            }
+        }
+        public static string AddAttribute {
+            get {
+                return ResourceManager.GetString("AddAttribute", resourceCulture);
+            }
+        }
+        public static string ReceiptFooterThankYou {
+            get {
+                return ResourceManager.GetString("ReceiptFooterThankYou", resourceCulture);
+            }
+        }
+        public static string CurrencySaudiRiyal {
+            get {
+                return ResourceManager.GetString("CurrencySaudiRiyal", resourceCulture);
+            }
+        }
+        public static string CurrencyUaeDirham {
+            get {
+                return ResourceManager.GetString("CurrencyUaeDirham", resourceCulture);
+            }
+        }
+
     }
 }

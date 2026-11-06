@@ -1256,7 +1256,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             {
                 SupportedLanguages.English => "English",
                 SupportedLanguages.French => "Français",
-                _ => "العربية"
+                _ => AppStrings.LanguageArabic
             };
     }
 }

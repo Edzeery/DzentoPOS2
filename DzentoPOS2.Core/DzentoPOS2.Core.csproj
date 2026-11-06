@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DzentoPOS2.Localization\DzentoPOS2.Localization.csproj" />
+  </ItemGroup>
+
 </Project>

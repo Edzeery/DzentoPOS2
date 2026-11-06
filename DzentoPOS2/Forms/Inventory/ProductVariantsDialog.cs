@@ -1,4 +1,5 @@
-﻿using DzentoPOS2.App.Services.Inventory;
+﻿using DzentoPOS2.Localization.Resources;
+using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.Core.Entities.Inventory;
 using DzentoPOS2.Core.Services.Inventory;
 using DzentoPOS2.Core.ValueObjects.Common;
@@ -26,24 +27,24 @@ public class ProductVariantsDialog : ThemedDialog
     private readonly TextBox _txtSku = new() { Dock = DockStyle.Fill, MinimumSize = new Size(0, 28) };
     private readonly NumericUpDown _numPrice = new() { Dock = DockStyle.Fill, DecimalPlaces = 2, Maximum = 999999, MinimumSize = new Size(0, 28) };
     private readonly NumericUpDown _numCost = new() { Dock = DockStyle.Fill, DecimalPlaces = 2, Maximum = 999999, MinimumSize = new Size(0, 28) };
-    private readonly Button _btnAdd = new() { Text = "ط¥ط¶ط§ظپط©", AutoSize = true, MinimumSize = new Size(80, 32) };
-    private readonly Button _btnDelete = new() { Text = "ط­ط°ظپ", AutoSize = true, MinimumSize = new Size(70, 32) };
+    private readonly Button _btnAdd = new() { Text = AppStrings.Add, AutoSize = true, MinimumSize = new Size(80, 32) };
+    private readonly Button _btnDelete = new() { Text = AppStrings.Delete, AutoSize = true, MinimumSize = new Size(70, 32) };
 
     // Attributes tab
     private readonly DataGridView _gridAttrs = new() { Dock = DockStyle.Fill, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill };
     private readonly TextBox _txtAttrName = new() { Dock = DockStyle.Fill, MinimumSize = new Size(0, 28) };
     private readonly TextBox _txtAttrValues = new() { Dock = DockStyle.Fill, MinimumSize = new Size(0, 28) };
-    private readonly Button _btnAddAttr = new() { Text = "ط¥ط¶ط§ظپط© ط®ط§طµظٹط©", AutoSize = true, MinimumSize = new Size(100, 32) };
-    private readonly Button _btnDeleteAttr = new() { Text = "ط­ط°ظپ ط®ط§طµظٹط©", AutoSize = true, MinimumSize = new Size(90, 32) };
-    private readonly Button _btnGenerate = new() { Text = "طھظˆظ„ظٹط¯ ط§ظ„طھظˆظ„ظٹظپط§طھ", AutoSize = true, MinimumSize = new Size(120, 32) };
+    private readonly Button _btnAddAttr = new() { Text = AppStrings.AddAttribute, AutoSize = true, MinimumSize = new Size(100, 32) };
+    private readonly Button _btnDeleteAttr = new() { Text = AppStrings.DeleteAttribute, AutoSize = true, MinimumSize = new Size(90, 32) };
+    private readonly Button _btnGenerate = new() { Text = AppStrings.GenerateCombinations, AutoSize = true, MinimumSize = new Size(120, 32) };
 
-    private readonly Button _btnClose = new() { Text = "ط¥ط؛ظ„ط§ظ‚", AutoSize = true, MinimumSize = new Size(70, 32), DialogResult = DialogResult.OK };
+    private readonly Button _btnClose = new() { Text = AppStrings.Close, AutoSize = true, MinimumSize = new Size(70, 32), DialogResult = DialogResult.OK };
 
     public ProductVariantsDialog(AppDbContext context, Guid productId)
     {
         _context = context;
         _productId = productId;
-        Text = "ط§ظ„ظ…طھط؛ظٹط±ط§طھ";
+        Text = AppStrings.VariantsTab;
         Size = new Size(680, 460);
         MinimumSize = new Size(320, 320);
         StartPosition = FormStartPosition.CenterParent;
@@ -52,12 +53,12 @@ public class ProductVariantsDialog : ThemedDialog
         var tabs = new TabControl { Dock = DockStyle.Fill };
 
         // ---- Variants tab ----
-        var tabVariants = new TabPage("ط§ظ„ظ…طھط؛ظٹط±ط§طھ");
+        var tabVariants = new TabPage(AppStrings.VariantsTab);
         _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", Visible = false });
-        _grid.Columns.Add("Name", "ط§ظ„ط§ط³ظ…");
+        _grid.Columns.Add("Name", AppStrings.Name);
         _grid.Columns.Add("SKU", "SKU");
-        _grid.Columns.Add("Price", "ط§ظ„ط³ط¹ط±");
-        _grid.Columns.Add("Cost", "ط§ظ„طھظƒظ„ظپط©");
+        _grid.Columns.Add("Price", AppStrings.Price);
+        _grid.Columns.Add("Cost", AppStrings.Cost);
 
         var variantsLayout = new TableLayoutPanel
         {
@@ -74,10 +75,10 @@ public class ProductVariantsDialog : ThemedDialog
         tabVariants.Controls.Add(variantsLayout);
 
         // ---- Attributes tab ----
-        var tabAttrs = new TabPage("ط§ظ„ط®طµط§ط¦طµ");
+        var tabAttrs = new TabPage(AppStrings.Attributes);
         _gridAttrs.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", Visible = false });
-        _gridAttrs.Columns.Add("Name", "ط§ظ„ط®ط§طµظٹط©");
-        _gridAttrs.Columns.Add("Values", "ط§ظ„ظ‚ظٹظ…");
+        _gridAttrs.Columns.Add("Name", AppStrings.Attribute);
+        _gridAttrs.Columns.Add("Values", AppStrings.Values);
 
         var attrsLayout = new TableLayoutPanel
         {
@@ -153,10 +154,10 @@ public class ProductVariantsDialog : ThemedDialog
         fields.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
         fields.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         fields.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        fields.Controls.Add(BuildField("ط§ظ„ط§ط³ظ…:", _txtName), 0, 0);
+        fields.Controls.Add(BuildField(AppStrings.NameLabel, _txtName), 0, 0);
         fields.Controls.Add(BuildField("SKU:", _txtSku), 1, 0);
-        fields.Controls.Add(BuildField("ط³ط¹ط±:", _numPrice), 0, 1);
-        fields.Controls.Add(BuildField("طھظƒظ„ظپط©:", _numCost), 1, 1);
+        fields.Controls.Add(BuildField(AppStrings.PriceLabel, _numPrice), 0, 1);
+        fields.Controls.Add(BuildField(AppStrings.CostLabel, _numCost), 1, 1);
 
         var actions = new FlowLayoutPanel
         {
@@ -198,8 +199,8 @@ public class ProductVariantsDialog : ThemedDialog
         };
         fields.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         fields.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        fields.Controls.Add(BuildField("ط§ظ„ط®ط§طµظٹط©:", _txtAttrName), 0, 0);
-        fields.Controls.Add(BuildField("ط§ظ„ظ‚ظٹظ… (ط¨ظپط§طµظ„ط©):", _txtAttrValues), 0, 1);
+        fields.Controls.Add(BuildField(AppStrings.AttributeLabel, _txtAttrName), 0, 0);
+        fields.Controls.Add(BuildField(AppStrings.ValuesCommaSeparatedLabel, _txtAttrValues), 0, 1);
 
         var addRow = new FlowLayoutPanel
         {
@@ -332,7 +333,7 @@ public class ProductVariantsDialog : ThemedDialog
         var hasStock = await _context.ProductStocks.AnyAsync(s => s.VariantId == id && s.Quantity.Value != 0);
         if (hasStock)
         {
-            MessageBox.Show("ظ„ط§ ظٹظ…ظƒظ† ط­ط°ظپ ظ…طھط؛ظٹظ‘ط± ط¹ظ„ظٹظ‡ ظ…ط®ط²ظˆظ†.", "طھظ†ط¨ظٹظ‡", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(AppStrings.VariantHasStockCannotDelete, AppStrings.Warning, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
@@ -401,13 +402,13 @@ public class ProductVariantsDialog : ThemedDialog
 
         if (defs.Count == 0)
         {
-            MessageBox.Show("ط£ط¶ظپ ط®ط§طµظٹط© ظˆط§ط­ط¯ط© ط¹ظ„ظ‰ ط§ظ„ط£ظ‚ظ„ ظ‚ط¨ظ„ ط§ظ„طھظˆظ„ظٹط¯.", "طھظ†ط¨ظٹظ‡", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(AppStrings.AddAttributeBeforeGenerate, AppStrings.Warning, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
         if (defs.Any(d => d.Values.Count == 0))
         {
-            MessageBox.Show("ظƒظ„ ط®ط§طµظٹط© ظٹط¬ط¨ ط£ظ† طھط­طھظˆظٹ ط¹ظ„ظ‰ ظ‚ظٹظ…ط© ظˆط§ط­ط¯ط© ط¹ظ„ظ‰ ط§ظ„ط£ظ‚ظ„.", "طھظ†ط¨ظٹظ‡", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(AppStrings.AttributeNeedsAtLeastOneValue, AppStrings.Warning, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
@@ -469,8 +470,8 @@ public class ProductVariantsDialog : ThemedDialog
 
         await LoadAsync();
         MessageBox.Show(
-            created == 0 ? "ظ„ط§ طھظˆط¬ط¯ طھظˆظ„ظٹظپط§طھ ط¬ط¯ظٹط¯ط© (ظƒظ„ظ‡ط§ ظ…ظˆط¬ظˆط¯ط©)." : $"طھظ… ط¥ظ†ط´ط§ط، {created} ظ…طھط؛ظٹظ‘ط±.",
-            "طھظˆظ„ظٹط¯ ط§ظ„طھظˆظ„ظٹظپط§طھ",
+            created == 0 ? AppStrings.NoNewCombinations : string.Format(AppStrings.VariantCreatedFormat, created),
+            AppStrings.GenerateCombinations,
             MessageBoxButtons.OK,
             MessageBoxIcon.Information);
     }

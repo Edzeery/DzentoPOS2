@@ -1,3 +1,4 @@
+using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.WinForms.Controls;
 using DzentoPOS2.WinForms.Themes;
 using System.Windows.Media.Media3D;
@@ -227,7 +228,7 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             comboBoxLang.ItemHeight = 28;
             comboBoxLang.Items = new string[]
     {
-    "العربية",
+    AppStrings.LanguageArabic,
     "English",
     "Français"
     };

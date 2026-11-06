@@ -1,3 +1,4 @@
+using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Core.Entities.Accounting;
 using DzentoPOS2.Core.Entities.Businesses;
 using DzentoPOS2.Data.Context;
@@ -64,11 +65,11 @@ public sealed class StoreBootstrapResult
 /// </summary>
 public static class StoreBootstrapper
 {
-    public const string DefaultBranchName = "الفرع الرئيسي";
+    public static string DefaultBranchName => AppStrings.MainBranch;
 
-    public const string DefaultWarehouseName = "المخزن الرئيسي";
+    public static string DefaultWarehouseName => AppStrings.MainWarehouse;
 
-    public const string DefaultCashboxName = "الصندوق الرئيسي";
+    public static string DefaultCashboxName => AppStrings.MainCashbox;
 
     public static async Task<StoreBootstrapResult> EnsureInitializedAsync(
         AppDbContext context,

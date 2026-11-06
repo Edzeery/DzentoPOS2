@@ -10,16 +10,16 @@ public class ProductBarcodesDialog : ThemedDialog
     private readonly Guid _variantId;
     private readonly ListBox _lst = new() { Dock = DockStyle.Fill, IntegralHeight = false };
     private readonly TextBox _txt = new() { Dock = DockStyle.Fill, MinimumSize = new Size(0, 28) };
-    private readonly Button _btnAdd = new() { Text = "ط¥ط¶ط§ظپط©", AutoSize = true, MinimumSize = new Size(80, 32) };
-    private readonly Button _btnGen = new() { Text = "طھظˆظ„ظٹط¯", AutoSize = true, MinimumSize = new Size(80, 32) };
-    private readonly Button _btnRemove = new() { Text = "ط­ط°ظپ", AutoSize = true, MinimumSize = new Size(80, 32) };
-    private readonly Button _btnClose = new() { Text = "ط¥ط؛ظ„ط§ظ‚", AutoSize = true, MinimumSize = new Size(80, 32), DialogResult = DialogResult.OK };
+    private readonly Button _btnAdd = new() { Text = AppStrings.Add, AutoSize = true, MinimumSize = new Size(80, 32) };
+    private readonly Button _btnGen = new() { Text = AppStrings.Generate, AutoSize = true, MinimumSize = new Size(80, 32) };
+    private readonly Button _btnRemove = new() { Text = AppStrings.Delete, AutoSize = true, MinimumSize = new Size(80, 32) };
+    private readonly Button _btnClose = new() { Text = AppStrings.Close, AutoSize = true, MinimumSize = new Size(80, 32), DialogResult = DialogResult.OK };
 
     public ProductBarcodesDialog(IBarcodeService barcodeService, Guid variantId)
     {
         _barcodeService = barcodeService;
         _variantId = variantId;
-        Text = "ط¥ط¯ط§ط±ط© ط§ظ„ط¨ط§ط±ظƒظˆط¯ط§طھ";
+        Text = AppStrings.ManageBarcodes;
         Size = new Size(420, 320);
         MinimumSize = new Size(320, 260);
         StartPosition = FormStartPosition.CenterParent;
@@ -88,7 +88,7 @@ public class ProductBarcodesDialog : ThemedDialog
         if (string.IsNullOrWhiteSpace(code)) return;
         if (!await _barcodeService.IsUniqueAsync(code))
         {
-            MessageBox.Show("ط§ظ„ط¨ط§ط±ظƒظˆط¯ ظ…ط³طھط®ط¯ظ… ظ…ط³ط¨ظ‚ظ‹ط§", AppStrings.Warning, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(AppStrings.BarcodeAlreadyUsed, AppStrings.Warning, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
         await _barcodeService.AddAsync(_variantId, code, _lst.Items.Count == 0);

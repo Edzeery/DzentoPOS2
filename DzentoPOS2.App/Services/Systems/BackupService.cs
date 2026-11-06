@@ -16,6 +16,12 @@ public interface IBackupService
     /// <summary>Folder the automatic and manual backups are written to.</summary>
     string BackupDirectory { get; }
 
+    /// <summary>
+    /// Validates, creates and persists a new backup folder. The folder is
+    /// stored outside the database and read again on every access.
+    /// </summary>
+    void SetBackupDirectory(string directory);
+
     /// <summary>Creates a consistent snapshot with the SQLite online-backup API.</summary>
     Task<BackupFile> CreateBackupAsync(CancellationToken cancellationToken = default);
 
@@ -68,6 +74,7 @@ public sealed class BackupService : IBackupService
 
     private readonly IDbContextFactory<AppDbContext> _contextFactory;
     private readonly IAuthorizationGuard? _guard;
+    private string? _backupDirectoryOverride;
 
     /// <param name="contextFactory">Factory used to reach the live database.</param>
     public BackupService(IDbContextFactory<AppDbContext> contextFactory)
@@ -98,13 +105,26 @@ public sealed class BackupService : IBackupService
     {
         _contextFactory = contextFactory;
         _guard = guard;
-
-        BackupDirectory = string.IsNullOrWhiteSpace(backupDirectory)
-            ? AppPaths.BackupsFolder
-            : backupDirectory;
+        _backupDirectoryOverride = string.IsNullOrWhiteSpace(backupDirectory)
+            ? null
+            : Path.GetFullPath(backupDirectory);
     }
 
-    public string BackupDirectory { get; }
+    public string BackupDirectory =>
+        _backupDirectoryOverride ?? BackupLocation.GetDirectory();
+
+    public void SetBackupDirectory(string directory)
+    {
+        if (_backupDirectoryOverride is not null)
+        {
+            string full = Path.GetFullPath(directory);
+            Directory.CreateDirectory(full);
+            _backupDirectoryOverride = full;
+            return;
+        }
+
+        BackupLocation.SetDirectory(directory);
+    }
 
     public async Task<BackupFile> CreateBackupAsync(
         CancellationToken cancellationToken = default)

@@ -1,6 +1,6 @@
 {
-  "GeneratedAt": "2026-11-06T11:31:46.9356049+01:00",
-  "ScenarioCount": 48,
+  "GeneratedAt": "2026-11-06T11:49:46.3002826+01:00",
+  "ScenarioCount": 72,
   "ViolationCount": 0,
   "Scenarios": [
     {
@@ -40,6 +40,24 @@
       "Violations": []
     },
     {
+      "Form": "FirstRunModulesDialog",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 12,
+      "Violations": []
+    },
+    {
+      "Form": "SettingsForm",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 86,
+      "Violations": []
+    },
+    {
       "Form": "ProductVariantsDialog",
       "Theme": "Light",
       "Direction": "RTL",
@@ -76,6 +94,24 @@
       "Violations": []
     },
     {
+      "Form": "FirstRunModulesDialog",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 12,
+      "Violations": []
+    },
+    {
+      "Form": "SettingsForm",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 86,
+      "Violations": []
+    },
+    {
       "Form": "ProductVariantsDialog",
       "Theme": "Light",
       "Direction": "RTL",
@@ -112,6 +148,24 @@
       "Violations": []
     },
     {
+      "Form": "FirstRunModulesDialog",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 12,
+      "Violations": []
+    },
+    {
+      "Form": "SettingsForm",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 86,
+      "Violations": []
+    },
+    {
       "Form": "ProductVariantsDialog",
       "Theme": "Light",
       "Direction": "LTR",
@@ -148,6 +202,24 @@
       "Violations": []
     },
     {
+      "Form": "FirstRunModulesDialog",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 12,
+      "Violations": []
+    },
+    {
+      "Form": "SettingsForm",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 86,
+      "Violations": []
+    },
+    {
       "Form": "ProductVariantsDialog",
       "Theme": "Light",
       "Direction": "LTR",
@@ -184,6 +256,24 @@
       "Violations": []
     },
     {
+      "Form": "FirstRunModulesDialog",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 12,
+      "Violations": []
+    },
+    {
+      "Form": "SettingsForm",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 86,
+      "Violations": []
+    },
+    {
       "Form": "ProductVariantsDialog",
       "Theme": "Light",
       "Direction": "LTR",
@@ -217,6 +307,24 @@
       "Width": 1440,
       "Height": 800,
       "ControlsMeasured": 10,
+      "Violations": []
+    },
+    {
+      "Form": "FirstRunModulesDialog",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 12,
+      "Violations": []
+    },
+    {
+      "Form": "SettingsForm",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 86,
       "Violations": []
     },
     {
@@ -256,6 +364,24 @@
       "Violations": []
     },
     {
+      "Form": "FirstRunModulesDialog",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 12,
+      "Violations": []
+    },
+    {
+      "Form": "SettingsForm",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 86,
+      "Violations": []
+    },
+    {
       "Form": "ProductVariantsDialog",
       "Theme": "Dark",
       "Direction": "RTL",
@@ -292,6 +418,24 @@
       "Violations": []
     },
     {
+      "Form": "FirstRunModulesDialog",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 12,
+      "Violations": []
+    },
+    {
+      "Form": "SettingsForm",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 86,
+      "Violations": []
+    },
+    {
       "Form": "ProductVariantsDialog",
       "Theme": "Dark",
       "Direction": "RTL",
@@ -325,6 +469,24 @@
       "Width": 1440,
       "Height": 800,
       "ControlsMeasured": 10,
+      "Violations": []
+    },
+    {
+      "Form": "FirstRunModulesDialog",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 12,
+      "Violations": []
+    },
+    {
+      "Form": "SettingsForm",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 86,
       "Violations": []
     },
     {
@@ -364,6 +526,24 @@
       "Violations": []
     },
     {
+      "Form": "FirstRunModulesDialog",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 12,
+      "Violations": []
+    },
+    {
+      "Form": "SettingsForm",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 86,
+      "Violations": []
+    },
+    {
       "Form": "ProductVariantsDialog",
       "Theme": "Dark",
       "Direction": "LTR",
@@ -400,6 +580,24 @@
       "Violations": []
     },
     {
+      "Form": "FirstRunModulesDialog",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 12,
+      "Violations": []
+    },
+    {
+      "Form": "SettingsForm",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 86,
+      "Violations": []
+    },
+    {
       "Form": "ProductVariantsDialog",
       "Theme": "Dark",
       "Direction": "LTR",
@@ -433,6 +631,24 @@
       "Width": 1440,
       "Height": 800,
       "ControlsMeasured": 10,
+      "Violations": []
+    },
+    {
+      "Form": "FirstRunModulesDialog",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 12,
+      "Violations": []
+    },
+    {
+      "Form": "SettingsForm",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 86,
       "Violations": []
     }
   ]

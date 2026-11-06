@@ -1699,4 +1699,19 @@
   <data name="CurrencyUaeDirham" xml:space="preserve">
     <value>درهم إماراتي</value>
   </data>
+  <data name="BackupLocation" xml:space="preserve">
+    <value>موقع النسخ الاحتياطي</value>
+  </data>
+  <data name="ChooseBackupFolder" xml:space="preserve">
+    <value>اختيار مجلد...</value>
+  </data>
+  <data name="BackupLocationHint" xml:space="preserve">
+    <value>تُحفظ النسخ الاحتياطية خارج قاعدة البيانات، ويمكنك اختيار مجلد آخر.</value>
+  </data>
+  <data name="BackupLocationChanged" xml:space="preserve">
+    <value>تم تحديث مجلد النسخ الاحتياطي.</value>
+  </data>
+  <data name="BackupLocationInvalid" xml:space="preserve">
+    <value>المجلد المحدد غير صالح أو غير قابل للكتابة.</value>
+  </data>
 </root>

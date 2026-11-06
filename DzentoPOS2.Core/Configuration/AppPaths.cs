@@ -36,6 +36,13 @@ public static class AppPaths
     public static string ThemeFile =>
         Path.Combine(Root, "theme.config");
 
+    /// <summary>
+    /// Preference file that stores the user-selected backup folder. It lives
+    /// outside the database so changing it never rewrites application data.
+    /// </summary>
+    public static string BackupLocationFile =>
+        Path.Combine(Root, "backup-location.json");
+
     public static string DefaultDatabasePath =>
         Path.Combine(DatabaseFolder, DefaultDatabaseFileName);
 

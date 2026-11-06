@@ -1700,4 +1700,19 @@
   <data name="CurrencyUaeDirham" xml:space="preserve">
     <value>UAE Dirham</value>
   </data>
+  <data name="BackupLocation" xml:space="preserve">
+    <value>Backup location</value>
+  </data>
+  <data name="ChooseBackupFolder" xml:space="preserve">
+    <value>Choose folder...</value>
+  </data>
+  <data name="BackupLocationHint" xml:space="preserve">
+    <value>Backups are stored outside the database. You can choose a different folder.</value>
+  </data>
+  <data name="BackupLocationChanged" xml:space="preserve">
+    <value>Backup folder updated.</value>
+  </data>
+  <data name="BackupLocationInvalid" xml:space="preserve">
+    <value>The selected folder is invalid or not writable.</value>
+  </data>
 </root>

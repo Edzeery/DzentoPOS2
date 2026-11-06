@@ -25,7 +25,7 @@ internal sealed class SettingsCard : Panel
     private const int StackedInputHeight = 36;
     private const int RowGap = 8;
     private const int LabelWidth = 190;
-    private const int StackedLabelWidth = 140;
+    private const int StackedLabelWidth = 180;
 
     private readonly TableLayoutPanel _stack;
     private readonly Label _titleLabel;

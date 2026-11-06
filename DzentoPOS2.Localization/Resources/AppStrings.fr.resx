@@ -1699,4 +1699,19 @@
   <data name="CurrencyUaeDirham" xml:space="preserve">
     <value>Dirham des Émirats</value>
   </data>
+  <data name="BackupLocation" xml:space="preserve">
+    <value>Emplacement des sauvegardes</value>
+  </data>
+  <data name="ChooseBackupFolder" xml:space="preserve">
+    <value>Choisir un dossier...</value>
+  </data>
+  <data name="BackupLocationHint" xml:space="preserve">
+    <value>Les sauvegardes sont stockées en dehors de la base de données. Vous pouvez choisir un autre dossier.</value>
+  </data>
+  <data name="BackupLocationChanged" xml:space="preserve">
+    <value>Dossier de sauvegarde mis à jour.</value>
+  </data>
+  <data name="BackupLocationInvalid" xml:space="preserve">
+    <value>Le dossier sélectionné est invalide ou non accessible en écriture.</value>
+  </data>
 </root>

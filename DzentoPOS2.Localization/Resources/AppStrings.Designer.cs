@@ -4011,6 +4011,31 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("CurrencySymbolRialSign", resourceCulture);
             }
         }
+        public static string BackupLocation {
+            get {
+                return ResourceManager.GetString("BackupLocation", resourceCulture);
+            }
+        }
+        public static string ChooseBackupFolder {
+            get {
+                return ResourceManager.GetString("ChooseBackupFolder", resourceCulture);
+            }
+        }
+        public static string BackupLocationHint {
+            get {
+                return ResourceManager.GetString("BackupLocationHint", resourceCulture);
+            }
+        }
+        public static string BackupLocationChanged {
+            get {
+                return ResourceManager.GetString("BackupLocationChanged", resourceCulture);
+            }
+        }
+        public static string BackupLocationInvalid {
+            get {
+                return ResourceManager.GetString("BackupLocationInvalid", resourceCulture);
+            }
+        }
         public static string EmailRequired {
             get {
                 return ResourceManager.GetString("EmailRequired", resourceCulture);

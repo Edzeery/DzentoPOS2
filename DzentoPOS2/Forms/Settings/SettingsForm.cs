@@ -64,6 +64,7 @@ public partial class SettingsForm : LocalizableFormBase
 
     private readonly Label _lblBackupHint;
     private readonly Label _lblBackupFolder;
+    private readonly ThemedButton _btnChooseBackupFolder;
     private readonly ThemedButton _btnBackupNow;
     private readonly ThemedButton _btnRestoreBackup;
 
@@ -213,6 +214,7 @@ public partial class SettingsForm : LocalizableFormBase
 
         _txtStoreName = new TextBox
         {
+            AutoSize = false,
             Font = AppStyle.BodyFont,
             BorderStyle = BorderStyle.FixedSingle,
             MaxLength = 120
@@ -303,6 +305,7 @@ public partial class SettingsForm : LocalizableFormBase
 
         _txtCameraUrl = new TextBox
         {
+            AutoSize = false,
             Font = AppStyle.BodyFont,
             Width = 300
         };
@@ -312,7 +315,7 @@ public partial class SettingsForm : LocalizableFormBase
         _btnTestCamera.Click += async (_, _) => await TestCameraConnectionAsync();
 
         _barcodeCard.AddFields(new SettingsField("cameraSource", AppStrings.CameraSource, _cmbCameraSource));
-        _barcodeCard.AddControl(_txtCameraUrl);
+        _barcodeCard.AddControl(_txtCameraUrl, 28);
         _barcodeCard.AddControl(_btnTestCamera);
         _barcodeCard.AddControl(_btnRefreshCameras);
 
@@ -344,6 +347,10 @@ public partial class SettingsForm : LocalizableFormBase
         _btnRestoreBackup = ButtonFactory.Neutral(AppStrings.RestoreBackup, ButtonFactory.ButtonSize.Small);
         _btnRestoreBackup.Click += async (_, _) => await RestoreBackupAsync();
 
+        _btnChooseBackupFolder = ButtonFactory.Neutral(AppStrings.ChooseBackupFolder, ButtonFactory.ButtonSize.Small);
+        _btnChooseBackupFolder.Click += (_, _) => ChooseBackupFolder();
+        _btnChooseBackupFolder.Margin = new Padding(0, 0, 8, 0);
+
         // Affordance: disable backup/restore when the user lacks permission.
         _ = ApplyBackupPermissionsAsync();
 
@@ -356,9 +363,11 @@ public partial class SettingsForm : LocalizableFormBase
             BackColor = Color.Transparent,
             Margin = Padding.Empty
         };
+        backupButtons.Controls.Add(_btnChooseBackupFolder);
         backupButtons.Controls.Add(_btnBackupNow);
         backupButtons.Controls.Add(_btnRestoreBackup);
 
+        _lblBackupHint.Text = AppStrings.BackupLocationHint;
         _backupCard.AddControl(_lblBackupHint);
         _backupCard.AddControl(_lblBackupFolder);
         _backupCard.AddControl(backupButtons);
@@ -508,7 +517,9 @@ public partial class SettingsForm : LocalizableFormBase
 
         _backupCard.Title = AppStrings.Backup;
         _backupCard.Hint = AppStrings.BackupHint;
+        _lblBackupHint.Text = AppStrings.BackupLocationHint;
         _lblBackupFolder.Text = AppStrings.BackupFolder + ": " + (_backupService?.BackupDirectory ?? string.Empty);
+        _btnChooseBackupFolder.Text = AppStrings.ChooseBackupFolder;
         _btnBackupNow.Text = AppStrings.BackupNow;
         _btnRestoreBackup.Text = AppStrings.RestoreBackup;
 
@@ -537,7 +548,9 @@ public partial class SettingsForm : LocalizableFormBase
         SelectValue(_cmbCountry, _countries, c => c.Code, _settings.CountryCode);
         _backupCard.Title = AppStrings.Backup;
         _backupCard.Hint = AppStrings.BackupHint;
+        _lblBackupHint.Text = AppStrings.BackupLocationHint;
         _lblBackupFolder.Text = AppStrings.BackupFolder + ": " + (_backupService?.BackupDirectory ?? string.Empty);
+        _btnChooseBackupFolder.Text = AppStrings.ChooseBackupFolder;
         _btnBackupNow.Text = AppStrings.BackupNow;
         _btnRestoreBackup.Text = AppStrings.RestoreBackup;
         LayoutCards();
@@ -619,6 +632,35 @@ public partial class SettingsForm : LocalizableFormBase
             // services/cache cannot be trusted anymore, restart cleanly.
             Application.Restart();
             Environment.Exit(0);
+        }
+        catch (Exception ex)
+        {
+            AppMessageBox.Error(ex.Message);
+        }
+    }
+
+    private void ChooseBackupFolder()
+    {
+        if (_backupService is null) return;
+
+        using var dialog = new FolderBrowserDialog
+        {
+            Description = AppStrings.BackupLocation,
+            UseDescriptionForTitle = true,
+            ShowNewFolderButton = true,
+            SelectedPath = Directory.Exists(_backupService.BackupDirectory)
+                ? _backupService.BackupDirectory
+                : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+        };
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+            return;
+
+        try
+        {
+            _backupService.SetBackupDirectory(dialog.SelectedPath);
+            _lblBackupFolder.Text = AppStrings.BackupFolder + ": " + _backupService.BackupDirectory;
+            AppMessageBox.Success(AppStrings.BackupLocationChanged);
         }
         catch (Exception ex)
         {

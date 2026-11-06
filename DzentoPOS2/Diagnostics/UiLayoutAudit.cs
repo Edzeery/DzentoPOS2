@@ -1,11 +1,15 @@
 using System.Text.Json;
 using DzentoPOS2.App.Services.Inventory;
+using DzentoPOS2.App.Services.Systems;
 using EZControls.Core.Base;
 using DzentoPOS2.Core.Configuration;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
+using DzentoPOS2.Shared.Helpers;
+using DzentoPOS2.WinForms.Configurations;
 using DzentoPOS2.WinForms.Forms.Inventory;
+using DzentoPOS2.WinForms.Forms.Settings;
 using DzentoPOS2.WinForms.Forms.Setup;
 using DzentoPOS2.WinForms.Themes;
 using Microsoft.EntityFrameworkCore;
@@ -90,7 +94,7 @@ public static class UiLayoutAudit
 
         Console.WriteLine($"UI layout audit: {scenarios.Count} scenarios, {violations} violations");
         Console.WriteLine($"Controls measured: {scenarios.Sum(s => s.ControlsMeasured)}");
-        Console.WriteLine($"Forms: variants, barcodes, unit edit, unit list");
+        Console.WriteLine($"Forms: variants, barcodes, unit edit, unit list, first-run wizard, settings");
         Console.WriteLine($"Widths: {string.Join(", ", Widths)} | heights: {AuditHeight} | themes: Light, Dark | direction: RTL, LTR");
         Console.WriteLine($"Report: {reportPath}");
 
@@ -109,7 +113,13 @@ public static class UiLayoutAudit
         new ProductVariantsDialog(context, Guid.NewGuid()),
         new ProductBarcodesDialog(new StubBarcodeService(), Guid.NewGuid()),
         new ProductUnitEditDialog(new StubUnitService(), new StubLanguageService()),
-        new ProductUnitsForm(new StubUnitService(), new StubLanguageService())
+        new ProductUnitsForm(new StubUnitService(), new StubLanguageService()),
+        new FirstRunModulesDialog(new StubModuleService(), new StubBackupService()),
+        new SettingsForm(
+            new StubCurrentSettingsService(),
+            new StubLanguageService(),
+            new StubBackupService(),
+            new EmptyServiceProvider())
     ];
 
     private static ScenarioResult Audit(Form form, ThemeMode theme, bool rtl, int width)
@@ -239,7 +249,7 @@ public static class UiLayoutAudit
                     violations.Add(new Violation(
                         Describe(child),
                         "tap-target",
-                        $"height {child.Height}px < {minHeight}px"));
+                        $"height {child.Height}px < {minHeight}px in {child.Parent?.GetType().Name}"));
                 }
 
                 if (child.Width < 40 && child is not CheckBox)
@@ -477,5 +487,74 @@ private static int CountControls(Control parent)
         public void SetLanguage(string culture) => LanguageChanged?.Invoke(this, culture);
 
         public bool IsRightToLeft() => true;
+    }
+
+    private sealed class EmptyServiceProvider : IServiceProvider
+    {
+        public object? GetService(Type serviceType) => null;
+    }
+
+    private sealed class StubModuleService : IModuleService
+    {
+        public Task<bool> IsEnabledAsync(ActivityModule module) => Task.FromResult(false);
+
+        public Task SetEnabledAsync(ActivityModule module, bool enabled) => Task.CompletedTask;
+
+        public Task<bool> IsConfiguredAsync() => Task.FromResult(false);
+
+        public Task SetConfiguredAsync(bool configured) => Task.CompletedTask;
+
+        public Task<Dictionary<ActivityModule, bool>> GetAllAsync() =>
+            Task.FromResult(new Dictionary<ActivityModule, bool>());
+    }
+
+    private sealed class StubCurrentSettingsService : ICurrentSettingsService
+    {
+        public AppSettings Current { get; } = new();
+
+        public RegionalContext Regional { get; } = new();
+
+        public event EventHandler? Changed;
+
+        public void Save(AppSettings settings)
+        {
+            Current.Language = settings.Language;
+            Changed?.Invoke(this, EventArgs.Empty);
+        }
+
+        public void Update(Action<AppSettings> mutate) => mutate(Current);
+    }
+
+    private sealed class StubBackupService : IBackupService
+    {
+        private readonly string _directory =
+            Path.Combine(Path.GetTempPath(), "DzentoPOS2.LayoutAudit.Backups");
+
+        public string BackupDirectory => _directory;
+
+        public void SetBackupDirectory(string directory)
+        {
+        }
+
+        public Task<BackupFile> CreateBackupAsync(CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task<BackupFile?> CreateAutomaticBackupIfDueAsync(
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public IReadOnlyList<BackupFile> ListBackups() => Array.Empty<BackupFile>();
+
+        public int ApplyRetention(int keep = 7) => 0;
+
+        public Task ValidateBackupAsync(
+            string backupPath,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task<string> RestoreAsync(
+            string backupPath,
+            CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
     }
 }

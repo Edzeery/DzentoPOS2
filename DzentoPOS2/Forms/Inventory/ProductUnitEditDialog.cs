@@ -1,4 +1,4 @@
-using DzentoPOS2.App.Services.Inventory;
+﻿using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.WinForms.Helpers;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
@@ -13,13 +13,13 @@ public class ProductUnitEditDialog : ThemedDialog
     private readonly ILanguageService _languageService;
     private bool _languageSubscribed;
     private readonly ProductUnitDto? _existing;
-        private readonly Label _lblName;
-        private readonly Label _lblSymbol;
-        private readonly TextBox _txtName;
-        private readonly TextBox _txtSymbol;
-        private readonly CheckBox _chkBaseUnit;
-        private readonly Button _btnSave;
-        private readonly Button _btnCancel;
+    private readonly Label _lblName;
+    private readonly Label _lblSymbol;
+    private readonly TextBox _txtName;
+    private readonly TextBox _txtSymbol;
+    private readonly CheckBox _chkBaseUnit;
+    private readonly Button _btnSave;
+    private readonly Button _btnCancel;
 
     public ProductUnitEditDialog(
         IProductUnitService unitService,
@@ -31,46 +31,79 @@ public class ProductUnitEditDialog : ThemedDialog
         _existing = existing;
 
         Size = new Size(520, 380);
+        MinimumSize = new Size(320, 280);
         StartPosition = FormStartPosition.CenterParent;
-        FormBorderStyle = FormBorderStyle.FixedDialog;
+        FormBorderStyle = FormBorderStyle.Sizable;
         MaximizeBox = false;
         MinimizeBox = false;
         BackColor = AppColors.Surface;
+        AutoScaleMode = AutoScaleMode.Font;
 
-        var lbl = (string text, int y) => new Label
+        _lblName = FieldLabel(AppStrings.UnitName);
+        _lblSymbol = FieldLabel(AppStrings.Symbol);
+
+        _txtName = new TextBox { Dock = DockStyle.Fill, MinimumSize = new Size(0, 28), Margin = new Padding(0, 6, 0, 6) };
+        _txtSymbol = new TextBox { Dock = DockStyle.Fill, MinimumSize = new Size(0, 28), Margin = new Padding(0, 6, 0, 6) };
+
+        _chkBaseUnit = new CheckBox
         {
-            Text = text,
-            Location = new Point(20, y),
-            Size = new Size(110, 28),
-            Font = new Font("Segoe UI", 10F),
-            TextAlign = ContentAlignment.MiddleLeft
+            Text = AppStrings.BaseUnit,
+            Dock = DockStyle.Fill,
+            AutoSize = false,
+            Height = 32,
+            TextAlign = ContentAlignment.MiddleLeft,
+            Margin = new Padding(0, 8, 0, 8)
         };
 
-        _lblName = lbl(AppStrings.UnitName, 20);
-        _lblSymbol = lbl(AppStrings.Symbol, 58);
-
-        _txtName = new TextBox { Location = new Point(140, 20), Size = new Size(340, 28), Font = new Font("Segoe UI", 10F) };
-        _txtSymbol = new TextBox { Location = new Point(140, 58), Size = new Size(340, 28), Font = new Font("Segoe UI", 10F) };
-
-        _chkBaseUnit = new CheckBox { Text = AppStrings.BaseUnit, Location = new Point(140, 96), Size = new Size(200, 28), Font = new Font("Segoe UI", 10F), Checked = true };
-
         _btnSave = ButtonFactory.Primary(AppStrings.Save);
-        _btnSave.Location = new Point(140, 136);
-        _btnSave.Size = new Size(120, 40);
+        _btnSave.AutoSize = true;
+        _btnSave.MinimumSize = new Size(120, 40);
+        _btnSave.Margin = new Padding(0, 0, 8, 0);
         _btnSave.Click += async (_, _) => await SaveAsync();
 
         _btnCancel = ButtonFactory.Neutral(AppStrings.Cancel);
-        _btnCancel.Location = new Point(280, 136);
-        _btnCancel.Size = new Size(120, 40);
+        _btnCancel.AutoSize = true;
+        _btnCancel.MinimumSize = new Size(120, 40);
         _btnCancel.DialogResult = DialogResult.Cancel;
 
-        Controls.AddRange(new Control[]
+        var root = new TableLayoutPanel
         {
-            _lblName, _txtName,
-            _lblSymbol, _txtSymbol,
-            _chkBaseUnit,
-            _btnSave, _btnCancel
-        });
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 5,
+            Padding = new Padding(20, 16, 20, 16),
+            Margin = Padding.Empty
+        };
+        root.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+        root.Controls.Add(_lblName, 0, 0);
+        root.Controls.Add(_txtName, 1, 0);
+        root.Controls.Add(_lblSymbol, 0, 1);
+        root.Controls.Add(_txtSymbol, 1, 1);
+        root.Controls.Add(_chkBaseUnit, 0, 2);
+        root.SetColumnSpan(_chkBaseUnit, 2);
+
+        var buttons = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.RightToLeft,
+            WrapContents = true,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            Margin = new Padding(0, 8, 0, 0)
+        };
+        buttons.Controls.Add(_btnCancel);
+        buttons.Controls.Add(_btnSave);
+        root.Controls.Add(buttons, 0, 4);
+        root.SetColumnSpan(buttons, 2);
+
+        Controls.Add(root);
 
         if (existing != null)
         {
@@ -83,6 +116,14 @@ public class ProductUnitEditDialog : ThemedDialog
         _languageService.LanguageChanged += OnLanguageChanged;
         _languageSubscribed = true;
     }
+
+    private static Label FieldLabel(string text) => new()
+    {
+        Text = text,
+        AutoSize = true,
+        Anchor = AnchorStyles.Left,
+        Margin = new Padding(0, 6, 12, 0)
+    };
 
     private void OnLanguageChanged(object? sender, string culture)
     {
@@ -132,13 +173,13 @@ public class ProductUnitEditDialog : ThemedDialog
             }
             else
             {
-            await _unitService.UpdateAsync(new UpdateProductUnitDto
-            {
-                Id = _existing.Id,
-                Name = _txtName.Text.Trim(),
-                Symbol = _txtSymbol.Text.Trim(),
-                IsBaseUnit = _chkBaseUnit.Checked
-            });
+                await _unitService.UpdateAsync(new UpdateProductUnitDto
+                {
+                    Id = _existing.Id,
+                    Name = _txtName.Text.Trim(),
+                    Symbol = _txtSymbol.Text.Trim(),
+                    IsBaseUnit = _chkBaseUnit.Checked
+                });
             }
 
             DialogResult = DialogResult.OK;

@@ -1,4 +1,4 @@
-using DzentoPOS2.App.Services.Inventory;
+﻿using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.Core.Entities.Inventory;
 using DzentoPOS2.Core.Services.Inventory;
 using DzentoPOS2.Core.ValueObjects.Common;
@@ -22,85 +22,107 @@ public class ProductVariantsDialog : ThemedDialog
 
     // Variants tab
     private readonly DataGridView _grid = new() { Dock = DockStyle.Fill, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill };
-    private readonly TextBox _txtName = new() { Width = 110 };
-    private readonly TextBox _txtSku = new() { Width = 90 };
-    private readonly NumericUpDown _numPrice = new() { Width = 90, DecimalPlaces = 2, Maximum = 999999 };
-    private readonly NumericUpDown _numCost = new() { Width = 90, DecimalPlaces = 2, Maximum = 999999 };
-    private readonly Button _btnAdd = new() { Text = "إضافة", Width = 70 };
-    private readonly Button _btnDelete = new() { Text = "حذف", Width = 70 };
+    private readonly TextBox _txtName = new() { Dock = DockStyle.Fill, MinimumSize = new Size(0, 28) };
+    private readonly TextBox _txtSku = new() { Dock = DockStyle.Fill, MinimumSize = new Size(0, 28) };
+    private readonly NumericUpDown _numPrice = new() { Dock = DockStyle.Fill, DecimalPlaces = 2, Maximum = 999999, MinimumSize = new Size(0, 28) };
+    private readonly NumericUpDown _numCost = new() { Dock = DockStyle.Fill, DecimalPlaces = 2, Maximum = 999999, MinimumSize = new Size(0, 28) };
+    private readonly Button _btnAdd = new() { Text = "ط¥ط¶ط§ظپط©", AutoSize = true, MinimumSize = new Size(80, 32) };
+    private readonly Button _btnDelete = new() { Text = "ط­ط°ظپ", AutoSize = true, MinimumSize = new Size(70, 32) };
 
     // Attributes tab
     private readonly DataGridView _gridAttrs = new() { Dock = DockStyle.Fill, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill };
-    private readonly TextBox _txtAttrName = new() { Width = 110 };
-    private readonly TextBox _txtAttrValues = new() { Width = 200 };
-    private readonly Button _btnAddAttr = new() { Text = "إضافة خاصية", Width = 100 };
-    private readonly Button _btnDeleteAttr = new() { Text = "حذف خاصية", Width = 90 };
-    private readonly Button _btnGenerate = new() { Text = "توليد التوليفات", Width = 120 };
+    private readonly TextBox _txtAttrName = new() { Dock = DockStyle.Fill, MinimumSize = new Size(0, 28) };
+    private readonly TextBox _txtAttrValues = new() { Dock = DockStyle.Fill, MinimumSize = new Size(0, 28) };
+    private readonly Button _btnAddAttr = new() { Text = "ط¥ط¶ط§ظپط© ط®ط§طµظٹط©", AutoSize = true, MinimumSize = new Size(100, 32) };
+    private readonly Button _btnDeleteAttr = new() { Text = "ط­ط°ظپ ط®ط§طµظٹط©", AutoSize = true, MinimumSize = new Size(90, 32) };
+    private readonly Button _btnGenerate = new() { Text = "طھظˆظ„ظٹط¯ ط§ظ„طھظˆظ„ظٹظپط§طھ", AutoSize = true, MinimumSize = new Size(120, 32) };
 
-    private readonly Button _btnClose = new() { Text = "إغلاق", Width = 70, DialogResult = DialogResult.OK };
+    private readonly Button _btnClose = new() { Text = "ط¥ط؛ظ„ط§ظ‚", AutoSize = true, MinimumSize = new Size(70, 32), DialogResult = DialogResult.OK };
 
     public ProductVariantsDialog(AppDbContext context, Guid productId)
     {
         _context = context;
         _productId = productId;
-        Text = "المتغيرات";
+        Text = "ط§ظ„ظ…طھط؛ظٹط±ط§طھ";
         Size = new Size(680, 460);
+        MinimumSize = new Size(320, 320);
         StartPosition = FormStartPosition.CenterParent;
-        MinimumSize = new Size(560, 380);
+        AutoScaleMode = AutoScaleMode.Font;
 
         var tabs = new TabControl { Dock = DockStyle.Fill };
 
         // ---- Variants tab ----
-        var tabVariants = new TabPage("المتغيرات");
+        var tabVariants = new TabPage("ط§ظ„ظ…طھط؛ظٹط±ط§طھ");
         _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", Visible = false });
-        _grid.Columns.Add("Name", "الاسم");
+        _grid.Columns.Add("Name", "ط§ظ„ط§ط³ظ…");
         _grid.Columns.Add("SKU", "SKU");
-        _grid.Columns.Add("Price", "السعر");
-        _grid.Columns.Add("Cost", "التكلفة");
+        _grid.Columns.Add("Price", "ط§ظ„ط³ط¹ط±");
+        _grid.Columns.Add("Cost", "ط§ظ„طھظƒظ„ظپط©");
 
-        var addRow = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 42, FlowDirection = FlowDirection.LeftToRight, Padding = new Padding(6), WrapContents = false };
-        addRow.Controls.Add(new Label { Text = "الاسم:", AutoSize = true, Margin = new Padding(3, 8, 3, 3) });
-        addRow.Controls.Add(_txtName);
-        addRow.Controls.Add(new Label { Text = "SKU:", AutoSize = true, Margin = new Padding(3, 8, 3, 3) });
-        addRow.Controls.Add(_txtSku);
-        addRow.Controls.Add(new Label { Text = "سعر:", AutoSize = true, Margin = new Padding(3, 8, 3, 3) });
-        addRow.Controls.Add(_numPrice);
-        addRow.Controls.Add(new Label { Text = "تكلفة:", AutoSize = true, Margin = new Padding(3, 8, 3, 3) });
-        addRow.Controls.Add(_numCost);
-        addRow.Controls.Add(_btnAdd);
-
-        tabVariants.Controls.Add(_grid);
-        tabVariants.Controls.Add(addRow);
+        var variantsLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2,
+            Padding = new Padding(8),
+            Margin = Padding.Empty
+        };
+        variantsLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        variantsLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        variantsLayout.Controls.Add(_grid, 0, 0);
+        variantsLayout.Controls.Add(BuildVariantEditor(), 0, 1);
+        tabVariants.Controls.Add(variantsLayout);
 
         // ---- Attributes tab ----
-        var tabAttrs = new TabPage("الخصائص");
+        var tabAttrs = new TabPage("ط§ظ„ط®طµط§ط¦طµ");
         _gridAttrs.Columns.Add(new DataGridViewTextBoxColumn { Name = "Id", Visible = false });
-        _gridAttrs.Columns.Add("Name", "الخاصية");
-        _gridAttrs.Columns.Add("Values", "القيم");
+        _gridAttrs.Columns.Add("Name", "ط§ظ„ط®ط§طµظٹط©");
+        _gridAttrs.Columns.Add("Values", "ط§ظ„ظ‚ظٹظ…");
 
-        var attrRow = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 42, FlowDirection = FlowDirection.LeftToRight, Padding = new Padding(6), WrapContents = false };
-        attrRow.Controls.Add(new Label { Text = "الخاصية:", AutoSize = true, Margin = new Padding(3, 8, 3, 3) });
-        attrRow.Controls.Add(_txtAttrName);
-        attrRow.Controls.Add(new Label { Text = "القيم (بفاصلة):", AutoSize = true, Margin = new Padding(3, 8, 3, 3) });
-        attrRow.Controls.Add(_txtAttrValues);
-        attrRow.Controls.Add(_btnAddAttr);
-
-        var attrRow2 = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 42, FlowDirection = FlowDirection.LeftToRight, Padding = new Padding(6), WrapContents = false };
-        attrRow2.Controls.Add(_btnDeleteAttr);
-        attrRow2.Controls.Add(_btnGenerate);
-
-        tabAttrs.Controls.Add(_gridAttrs);
-        tabAttrs.Controls.Add(attrRow);
-        tabAttrs.Controls.Add(attrRow2);
+        var attrsLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 3,
+            Padding = new Padding(8),
+            Margin = Padding.Empty
+        };
+        attrsLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        attrsLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        attrsLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        attrsLayout.Controls.Add(_gridAttrs, 0, 0);
+        attrsLayout.Controls.Add(BuildAttributeEditor(), 0, 1);
+        attrsLayout.Controls.Add(BuildAttributeActions(), 0, 2);
+        tabAttrs.Controls.Add(attrsLayout);
 
         tabs.TabPages.Add(tabVariants);
         tabs.TabPages.Add(tabAttrs);
 
-        var footer = new FlowLayoutPanel { Dock = DockStyle.Bottom, Height = 46, FlowDirection = FlowDirection.RightToLeft, Padding = new Padding(6) };
+        var footer = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.RightToLeft,
+            WrapContents = true,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            Padding = new Padding(8, 4, 8, 8),
+            Margin = Padding.Empty
+        };
         footer.Controls.Add(_btnClose);
 
-        Controls.Add(tabs);
-        Controls.Add(footer);
+        var root = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2,
+            Padding = new Padding(8),
+            Margin = Padding.Empty
+        };
+        root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        root.Controls.Add(tabs, 0, 0);
+        root.Controls.Add(footer, 0, 1);
+        Controls.Add(root);
 
         _btnAdd.Click += async (_, _) => await AddVariantAsync();
         _btnDelete.Click += async (_, _) => await DeleteVariantAsync();
@@ -110,6 +132,141 @@ public class ProductVariantsDialog : ThemedDialog
         _btnClose.Click += (_, _) => Close();
 
         _ = LoadAsync();
+    }
+
+    /// <summary>
+    /// Two columns of label + field, so the editor reflows on a narrow window
+    /// instead of overflowing like the old fixed-width flow row.
+    /// </summary>
+    private Control BuildVariantEditor()
+    {
+        var fields = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            ColumnCount = 2,
+            RowCount = 2,
+            Margin = Padding.Empty
+        };
+        fields.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+        fields.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+        fields.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        fields.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        fields.Controls.Add(BuildField("ط§ظ„ط§ط³ظ…:", _txtName), 0, 0);
+        fields.Controls.Add(BuildField("SKU:", _txtSku), 1, 0);
+        fields.Controls.Add(BuildField("ط³ط¹ط±:", _numPrice), 0, 1);
+        fields.Controls.Add(BuildField("طھظƒظ„ظپط©:", _numCost), 1, 1);
+
+        var actions = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.RightToLeft,
+            WrapContents = true,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            Margin = new Padding(0, 6, 0, 0)
+        };
+        actions.Controls.Add(_btnAdd);
+
+        var root = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            ColumnCount = 1,
+            RowCount = 2,
+            Margin = Padding.Empty
+        };
+        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        root.Controls.Add(fields, 0, 0);
+        root.Controls.Add(actions, 0, 1);
+        return root;
+    }
+
+    private Control BuildAttributeEditor()
+    {
+        var fields = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            ColumnCount = 1,
+            RowCount = 2,
+            Margin = Padding.Empty
+        };
+        fields.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        fields.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        fields.Controls.Add(BuildField("ط§ظ„ط®ط§طµظٹط©:", _txtAttrName), 0, 0);
+        fields.Controls.Add(BuildField("ط§ظ„ظ‚ظٹظ… (ط¨ظپط§طµظ„ط©):", _txtAttrValues), 0, 1);
+
+        var addRow = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.RightToLeft,
+            WrapContents = true,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            Margin = new Padding(0, 6, 0, 0)
+        };
+        addRow.Controls.Add(_btnAddAttr);
+
+        var root = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            ColumnCount = 1,
+            RowCount = 2,
+            Margin = Padding.Empty
+        };
+        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        root.Controls.Add(fields, 0, 0);
+        root.Controls.Add(addRow, 0, 1);
+        return root;
+    }
+
+    private Control BuildAttributeActions()
+    {
+        var actions = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.RightToLeft,
+            WrapContents = true,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            Margin = new Padding(0, 6, 0, 0)
+        };
+        actions.Controls.Add(_btnDeleteAttr);
+        actions.Controls.Add(_btnGenerate);
+        return actions;
+    }
+
+    private static Control BuildField(string labelText, Control input)
+    {
+        var panel = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            ColumnCount = 2,
+            RowCount = 1,
+            Margin = new Padding(0, 0, 6, 6)
+        };
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        panel.Controls.Add(new Label
+        {
+            Text = labelText,
+            AutoSize = true,
+            Anchor = AnchorStyles.Left,
+            Margin = new Padding(0, 6, 6, 0)
+        }, 0, 0);
+        input.Margin = new Padding(0, 6, 0, 6);
+        panel.Controls.Add(input, 1, 0);
+        return panel;
     }
 
     private async Task LoadAsync()
@@ -175,7 +332,7 @@ public class ProductVariantsDialog : ThemedDialog
         var hasStock = await _context.ProductStocks.AnyAsync(s => s.VariantId == id && s.Quantity.Value != 0);
         if (hasStock)
         {
-            MessageBox.Show("لا يمكن حذف متغيّر عليه مخزون.", "تنبيه", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show("ظ„ط§ ظٹظ…ظƒظ† ط­ط°ظپ ظ…طھط؛ظٹظ‘ط± ط¹ظ„ظٹظ‡ ظ…ط®ط²ظˆظ†.", "طھظ†ط¨ظٹظ‡", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
@@ -244,13 +401,13 @@ public class ProductVariantsDialog : ThemedDialog
 
         if (defs.Count == 0)
         {
-            MessageBox.Show("أضف خاصية واحدة على الأقل قبل التوليد.", "تنبيه", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show("ط£ط¶ظپ ط®ط§طµظٹط© ظˆط§ط­ط¯ط© ط¹ظ„ظ‰ ط§ظ„ط£ظ‚ظ„ ظ‚ط¨ظ„ ط§ظ„طھظˆظ„ظٹط¯.", "طھظ†ط¨ظٹظ‡", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
         if (defs.Any(d => d.Values.Count == 0))
         {
-            MessageBox.Show("كل خاصية يجب أن تحتوي على قيمة واحدة على الأقل.", "تنبيه", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show("ظƒظ„ ط®ط§طµظٹط© ظٹط¬ط¨ ط£ظ† طھط­طھظˆظٹ ط¹ظ„ظ‰ ظ‚ظٹظ…ط© ظˆط§ط­ط¯ط© ط¹ظ„ظ‰ ط§ظ„ط£ظ‚ظ„.", "طھظ†ط¨ظٹظ‡", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
@@ -312,8 +469,8 @@ public class ProductVariantsDialog : ThemedDialog
 
         await LoadAsync();
         MessageBox.Show(
-            created == 0 ? "لا توجد توليفات جديدة (كلها موجودة)." : $"تم إنشاء {created} متغيّر.",
-            "توليد التوليفات",
+            created == 0 ? "ظ„ط§ طھظˆط¬ط¯ طھظˆظ„ظٹظپط§طھ ط¬ط¯ظٹط¯ط© (ظƒظ„ظ‡ط§ ظ…ظˆط¬ظˆط¯ط©)." : $"طھظ… ط¥ظ†ط´ط§ط، {created} ظ…طھط؛ظٹظ‘ط±.",
+            "طھظˆظ„ظٹط¯ ط§ظ„طھظˆظ„ظٹظپط§طھ",
             MessageBoxButtons.OK,
             MessageBoxIcon.Information);
     }

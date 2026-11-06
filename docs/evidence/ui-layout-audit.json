@@ -1,0 +1,439 @@
+{
+  "GeneratedAt": "2026-11-06T11:00:56.3735616+01:00",
+  "ScenarioCount": 48,
+  "ViolationCount": 0,
+  "Scenarios": [
+    {
+      "Form": "ProductVariantsDialog",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 42,
+      "Violations": []
+    },
+    {
+      "Form": "ProductBarcodesDialog",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitEditDialog",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitsForm",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 10,
+      "Violations": []
+    },
+    {
+      "Form": "ProductVariantsDialog",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 42,
+      "Violations": []
+    },
+    {
+      "Form": "ProductBarcodesDialog",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitEditDialog",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitsForm",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 10,
+      "Violations": []
+    },
+    {
+      "Form": "ProductVariantsDialog",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 42,
+      "Violations": []
+    },
+    {
+      "Form": "ProductBarcodesDialog",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitEditDialog",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitsForm",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 10,
+      "Violations": []
+    },
+    {
+      "Form": "ProductVariantsDialog",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 42,
+      "Violations": []
+    },
+    {
+      "Form": "ProductBarcodesDialog",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitEditDialog",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitsForm",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 10,
+      "Violations": []
+    },
+    {
+      "Form": "ProductVariantsDialog",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 42,
+      "Violations": []
+    },
+    {
+      "Form": "ProductBarcodesDialog",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitEditDialog",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitsForm",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 10,
+      "Violations": []
+    },
+    {
+      "Form": "ProductVariantsDialog",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 42,
+      "Violations": []
+    },
+    {
+      "Form": "ProductBarcodesDialog",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitEditDialog",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitsForm",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 10,
+      "Violations": []
+    },
+    {
+      "Form": "ProductVariantsDialog",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 42,
+      "Violations": []
+    },
+    {
+      "Form": "ProductBarcodesDialog",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitEditDialog",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitsForm",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 10,
+      "Violations": []
+    },
+    {
+      "Form": "ProductVariantsDialog",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 42,
+      "Violations": []
+    },
+    {
+      "Form": "ProductBarcodesDialog",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitEditDialog",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitsForm",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 10,
+      "Violations": []
+    },
+    {
+      "Form": "ProductVariantsDialog",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 42,
+      "Violations": []
+    },
+    {
+      "Form": "ProductBarcodesDialog",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitEditDialog",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitsForm",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 10,
+      "Violations": []
+    },
+    {
+      "Form": "ProductVariantsDialog",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 42,
+      "Violations": []
+    },
+    {
+      "Form": "ProductBarcodesDialog",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitEditDialog",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitsForm",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 10,
+      "Violations": []
+    },
+    {
+      "Form": "ProductVariantsDialog",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 42,
+      "Violations": []
+    },
+    {
+      "Form": "ProductBarcodesDialog",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitEditDialog",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitsForm",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 10,
+      "Violations": []
+    },
+    {
+      "Form": "ProductVariantsDialog",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 42,
+      "Violations": []
+    },
+    {
+      "Form": "ProductBarcodesDialog",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitEditDialog",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 9,
+      "Violations": []
+    },
+    {
+      "Form": "ProductUnitsForm",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 10,
+      "Violations": []
+    }
+  ]
+}

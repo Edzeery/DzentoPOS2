@@ -1,4 +1,4 @@
-using DzentoPOS2.App.Services.Inventory;
+﻿using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.WinForms.Helpers;
 
@@ -8,32 +8,66 @@ public class ProductBarcodesDialog : ThemedDialog
 {
     private readonly IBarcodeService _barcodeService;
     private readonly Guid _variantId;
-    private readonly ListBox _lst = new() { Dock = DockStyle.Top, Height = 180 };
-    private readonly TextBox _txt = new() { Width = 260 };
-    private readonly Button _btnAdd = new() { Text = "إضافة", Width = 80 };
-    private readonly Button _btnGen = new() { Text = "توليد", Width = 80 };
-    private readonly Button _btnRemove = new() { Text = "حذف", Width = 80 };
-    private readonly Button _btnClose = new() { Text = "إغلاق", Width = 80, DialogResult = DialogResult.OK };
+    private readonly ListBox _lst = new() { Dock = DockStyle.Fill, IntegralHeight = false };
+    private readonly TextBox _txt = new() { Dock = DockStyle.Fill, MinimumSize = new Size(0, 28) };
+    private readonly Button _btnAdd = new() { Text = "ط¥ط¶ط§ظپط©", AutoSize = true, MinimumSize = new Size(80, 32) };
+    private readonly Button _btnGen = new() { Text = "طھظˆظ„ظٹط¯", AutoSize = true, MinimumSize = new Size(80, 32) };
+    private readonly Button _btnRemove = new() { Text = "ط­ط°ظپ", AutoSize = true, MinimumSize = new Size(80, 32) };
+    private readonly Button _btnClose = new() { Text = "ط¥ط؛ظ„ط§ظ‚", AutoSize = true, MinimumSize = new Size(80, 32), DialogResult = DialogResult.OK };
 
     public ProductBarcodesDialog(IBarcodeService barcodeService, Guid variantId)
     {
         _barcodeService = barcodeService;
         _variantId = variantId;
-        Text = "إدارة الباركودات";
+        Text = "ط¥ط¯ط§ط±ط© ط§ظ„ط¨ط§ط±ظƒظˆط¯ط§طھ";
         Size = new Size(420, 320);
+        MinimumSize = new Size(320, 260);
         StartPosition = FormStartPosition.CenterParent;
-        var panel = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, Padding = new Padding(12) };
-        var row = new FlowLayoutPanel { FlowDirection = FlowDirection.LeftToRight, AutoSize = true };
-        row.Controls.Add(_txt);
-        row.Controls.Add(_btnAdd);
-        row.Controls.Add(_btnGen);
-        var row2 = new FlowLayoutPanel { FlowDirection = FlowDirection.LeftToRight, AutoSize = true };
-        row2.Controls.Add(_btnRemove);
-        row2.Controls.Add(_btnClose);
-        panel.Controls.Add(_lst);
-        panel.Controls.Add(row);
-        panel.Controls.Add(row2);
-        Controls.Add(panel);
+        AutoScaleMode = AutoScaleMode.Font;
+
+        var inputRow = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            ColumnCount = 2,
+            RowCount = 1,
+            Margin = new Padding(0, 8, 0, 0)
+        };
+        inputRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        inputRow.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        inputRow.Controls.Add(_txt, 0, 0);
+        inputRow.Controls.Add(_btnAdd, 1, 0);
+
+        var actions = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.RightToLeft,
+            WrapContents = true,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            Margin = new Padding(0, 8, 0, 0)
+        };
+        actions.Controls.Add(_btnRemove);
+        actions.Controls.Add(_btnGen);
+        actions.Controls.Add(_btnClose);
+
+        var root = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 3,
+            Padding = new Padding(12),
+            Margin = Padding.Empty
+        };
+        root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        root.Controls.Add(_lst, 0, 0);
+        root.Controls.Add(inputRow, 0, 1);
+        root.Controls.Add(actions, 0, 2);
+        Controls.Add(root);
+
         _btnAdd.Click += async (_, _) => await AddAsync();
         _btnGen.Click += (_, _) => { _txt.Text = _barcodeService.GenerateInternal(); };
         _btnRemove.Click += async (_, _) => await RemoveAsync();
@@ -54,7 +88,7 @@ public class ProductBarcodesDialog : ThemedDialog
         if (string.IsNullOrWhiteSpace(code)) return;
         if (!await _barcodeService.IsUniqueAsync(code))
         {
-            MessageBox.Show("الباركود مستخدم مسبقًا", AppStrings.Warning, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show("ط§ظ„ط¨ط§ط±ظƒظˆط¯ ظ…ط³طھط®ط¯ظ… ظ…ط³ط¨ظ‚ظ‹ط§", AppStrings.Warning, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
         await _barcodeService.AddAsync(_variantId, code, _lst.Items.Count == 0);

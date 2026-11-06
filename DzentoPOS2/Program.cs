@@ -3,6 +3,7 @@ using DzentoPOS2.Data.Seed;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.WinForms.Configurations;
+using DzentoPOS2.WinForms.Diagnostics;
 using DzentoPOS2.WinForms.Infrastructure;
 using DzentoPOS2.WinForms.Themes;
 using Microsoft.Extensions.Configuration;
@@ -15,7 +16,7 @@ internal static class Program
     public static IServiceProvider? ServiceProvider { get; private set; }
 
     [STAThread]
-    static void Main()
+    static void Main(string[] args)
     {
         ApplicationConfiguration.Initialize();
 
@@ -24,6 +25,14 @@ internal static class Program
         // Every writable location (database, preferences, theme, logs,
         // backups) lives under %LocalAppData%\DzentoPOS2.
         DzentoPOS2.Core.Configuration.AppPaths.EnsureCreated();
+
+        // Automated layout audit, run by the real executable:
+        //   DzentoPOS2.WinForms.exe --layout-audit
+        if (args.Any(a => string.Equals(a, "--layout-audit", StringComparison.OrdinalIgnoreCase)))
+        {
+            Environment.ExitCode = UiLayoutAudit.Run();
+            return;
+        }
 
         var services = new ServiceCollection();
 

@@ -1,4 +1,4 @@
-using DzentoPOS2.App.Services.Inventory;
+﻿using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
@@ -12,7 +12,7 @@ namespace DzentoPOS2.WinForms.Forms.Inventory;
 public partial class ProductUnitsForm : LocalizableFormBase
 {
     private readonly IProductUnitService _unitService;
-    private readonly Panel _topPanel;
+    private readonly TableLayoutPanel _topPanel;
     private readonly IconButton _btnAdd;
     private readonly IconButton _btnEdit;
     private readonly IconButton _btnDelete;
@@ -28,53 +28,96 @@ public partial class ProductUnitsForm : LocalizableFormBase
     {
         _unitService = unitService;
         Size = new Size(1100, 650);
+        MinimumSize = new Size(320, 300);
         BackColor = AppColors.Background;
         StartPosition = FormStartPosition.CenterParent;
-
-        _topPanel = new Panel
-        {
-            Dock = DockStyle.Top,
-            Height = 60,
-            BackColor = AppColors.Surface,
-            Padding = new Padding(16, 10, 16, 10)
-        };
+        AutoScaleMode = AutoScaleMode.Font;
 
         _btnAdd = ButtonFactory.ToolAdd("Add");
-        _btnAdd.Location = new Point(16, 12);
         _btnAdd.Click += (_, _) => RunSafe(AddUnit);
 
         _btnEdit = ButtonFactory.ToolEdit("Edit");
-        _btnEdit.Location = new Point(124, 12);
         _btnEdit.Click += (_, _) => RunSafe(EditUnit);
 
         _btnDelete = ButtonFactory.ToolDelete("Delete");
-        _btnDelete.Location = new Point(232, 12);
         _btnDelete.Click += (_, _) => RunSafe(DeleteUnit);
 
         _lblSearch = new Label
         {
-            Location = new Point(350, 18),
-            Size = new Size(50, 20),
-            Font = new Font("Segoe UI", 9F)
+            AutoSize = true,
+            Anchor = AnchorStyles.Left,
+            Font = new Font("Segoe UI", 9F),
+            Margin = new Padding(0, 6, 6, 0)
         };
 
         _searchBox = new EZTextBox
         {
-            Location = new Point(400, 14),
-            Size = new Size(250, 30),
+            Dock = DockStyle.Fill,
             Font = new Font("Segoe UI", 10F),
-            PlaceholderText = AppStrings.Search
+            PlaceholderText = AppStrings.Search,
+            MinimumSize = new Size(0, 28),
+            Margin = new Padding(0, 2, 0, 2)
         };
         _searchBox.TextChanged += (_, _) => RunSafe(LoadDataAsync);
 
-        _topPanel.Controls.AddRange(new Control[] { _btnDelete, _btnEdit, _btnAdd, _lblSearch, _searchBox });
+        var buttons = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = true,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            Margin = Padding.Empty
+        };
+        buttons.Controls.AddRange(new Control[] { _btnAdd, _btnEdit, _btnDelete });
+
+        var search = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            RowCount = 1,
+            AutoSize = false,
+            Height = 36,
+            Margin = new Padding(0, 6, 0, 0)
+        };
+        search.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        search.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        search.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        search.Controls.Add(_lblSearch, 0, 0);
+        search.Controls.Add(_searchBox, 1, 0);
+
+        _topPanel = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            BackColor = AppColors.Surface,
+            Padding = new Padding(16, 10, 16, 10),
+            Margin = Padding.Empty
+        };
+        _topPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        _topPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        _topPanel.Controls.Add(buttons, 0, 0);
+        _topPanel.Controls.Add(search, 0, 1);
 
         _grid = new DataGridView { Dock = DockStyle.Fill };
         DataGridViewStyleHelper.ApplyModernStyle(_grid);
         _grid.CellDoubleClick += (_, _) => RunSafe(EditUnit);
 
-        Controls.Add(_grid);
-        Controls.Add(_topPanel);
+        var root = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2,
+            Margin = Padding.Empty
+        };
+        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        root.Controls.Add(_topPanel, 0, 0);
+        root.Controls.Add(_grid, 0, 1);
+        Controls.Add(root);
     }
 
     protected override void OnLoad(EventArgs e)
@@ -143,3 +186,4 @@ public partial class ProductUnitsForm : LocalizableFormBase
         }
     }
 }
+

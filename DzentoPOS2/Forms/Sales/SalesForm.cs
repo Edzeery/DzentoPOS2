@@ -24,6 +24,7 @@ using DzentoPOS2.WinForms.Forms.Accounting;
 using DzentoPOS2.WinForms.Forms.Customers;
 using EZControls.Controls.Inputs;
 using FontAwesome.Sharp;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DzentoPOS2.WinForms.Forms.Sales;
@@ -38,6 +39,7 @@ public partial class SalesForm : LocalizableFormBase
     private readonly ICustomerService _customerService;
     private readonly ICurrentSettingsService _currentSettings;
     private readonly ICashSessionService _cashSessionService;
+    private readonly IBarcodeService _barcodeService;
     private readonly IServiceProvider _services;
 
     private readonly Panel _leftPanel;
@@ -106,6 +108,7 @@ public partial class SalesForm : LocalizableFormBase
         ICustomerService customerService,
         ICurrentSettingsService currentSettings,
         ICashSessionService cashSessionService,
+        IBarcodeService barcodeService,
         IServiceProvider services,
         ILanguageService languageService)
         : base(languageService)
@@ -115,6 +118,7 @@ public partial class SalesForm : LocalizableFormBase
         _customerService = customerService;
         _currentSettings = currentSettings;
         _cashSessionService = cashSessionService;
+        _barcodeService = barcodeService;
         _services = services;
 
         Size = new Size(1200, 700);
@@ -172,7 +176,7 @@ public partial class SalesForm : LocalizableFormBase
         _productGrid.CellDoubleClick += (_, e) =>
         {
             if (e.RowIndex >= 0 && _productGrid.Rows[e.RowIndex].DataBoundItem is ProductDto p)
-                AddToCart(p);
+                AddToCart(p, Guid.Empty, string.Empty, p.SalePrice);
         };
 
         _leftPanel.Controls.Add(_productGrid);
@@ -893,22 +897,40 @@ public partial class SalesForm : LocalizableFormBase
         using (var overlay = new BarcodeScannerOverlay(settings.BarcodeCameraDevice))
         {
             overlay.ContinuousMode = true;
-            overlay.BarcodeDetected += code =>
+            overlay.BarcodeDetected += async code =>
             {
                 if (string.IsNullOrWhiteSpace(code)) return;
 
-                var product = _products.FirstOrDefault(p =>
-                    string.Equals(p.Barcode, code, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(p.SKU, code, StringComparison.OrdinalIgnoreCase));
+                var variantId = await _barcodeService.FindVariantIdByBarcodeAsync(code);
 
-                if (product is null)
+                if (variantId is null)
                 {
                     AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {code}");
                     _productSearch.Text = code;
                     return;
                 }
 
-                AddToCart(product);
+                // Load variant details to get product, name and price.
+                using var context = _services.GetRequiredService<DzentoPOS2.Data.Context.AppDbContext>();
+                var variant = await context.ProductVariants
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(v => v.Id == variantId.Value && v.IsActive);
+                if (variant is null)
+                {
+                    AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {code}");
+                    _productSearch.Text = code;
+                    return;
+                }
+
+                var prod = _products.FirstOrDefault(p => p.Id == variant.ProductId);
+                if (prod is null)
+                {
+                    AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {code}");
+                    _productSearch.Text = code;
+                    return;
+                }
+
+                AddToCart(prod, variant.Id, variant.Name, variant.SalePrice.Amount);
             };
             overlay.ShowDialog(this);
         }
@@ -917,12 +939,12 @@ public partial class SalesForm : LocalizableFormBase
     private void AddFirstProductToCart()
     {
         if (_productGrid.CurrentRow?.DataBoundItem is ProductDto p)
-            AddToCart(p);
+            AddToCart(p, Guid.Empty, string.Empty, p.SalePrice);
         else if (_products.Count > 0)
-            AddToCart(_products[0]);
+            AddToCart(_products[0], Guid.Empty, string.Empty, _products[0].SalePrice);
     }
 
-    private void AddToCart(ProductDto product)
+    private void AddToCart(ProductDto product, Guid variantId, string variantName, decimal price)
     {
         if (!product.IsActive)
         {
@@ -930,11 +952,18 @@ public partial class SalesForm : LocalizableFormBase
             return;
         }
 
-        var existing = _cart.FirstOrDefault(i => i.ProductId == product.Id);
+        var existing = _cart.FirstOrDefault(i => i.ProductId == product.Id && i.VariantId == variantId);
         if (existing != null)
             existing.Quantity += 1;
         else
-            _cart.Add(new CreateSaleItemDto { ProductId = product.Id, Quantity = 1, Price = product.SalePrice });
+            _cart.Add(new CreateSaleItemDto
+            {
+                ProductId = product.Id,
+                VariantId = variantId,
+                VariantName = variantName,
+                Quantity = 1,
+                Price = price
+            });
 
         RefreshCart();
     }
@@ -964,9 +993,12 @@ public partial class SalesForm : LocalizableFormBase
         var display = _cart.Select(i =>
         {
             var product = _products.FirstOrDefault(p => p.Id == i.ProductId);
+            var displayName = !string.IsNullOrWhiteSpace(i.VariantName)
+                ? i.VariantName
+                : (product?.Name ?? (string.IsNullOrWhiteSpace(i.Description) ? "-" : i.Description));
             return new
             {
-                ProductName = product?.Name ?? (string.IsNullOrWhiteSpace(i.Description) ? "-" : i.Description),
+                ProductName = displayName,
                 i.Quantity,
                 i.Price,
                 Total = i.Quantity * i.Price

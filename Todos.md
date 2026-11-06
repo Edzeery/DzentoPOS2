@@ -218,3 +218,13 @@
 | L.4 | نقل كل النصوص العربية المكتوبة في الكود إلى `AppStrings` (ar/en/fr) | ✅ | commit `c318639`؛ 0 نص عربي في 618 ملف إنتاج عند الالتزام (619 بعد إضافة أداة تدقيق الترحيل) بما فيها `U+FDFC`؛ 533 مفتاحًا في كل ملف بلا فرق و0 قيمة فارغة؛ `docs/evidence/localization-audit.json` |
 | L.5 | اختيار مجلد النسخ الاحتياطي في معالج الإعداد الأول والإعدادات | ✅ | commit `7244954`؛ `%LocalAppData%\DzentoPOS2\backup-location.json`؛ الوحدة 146/146 + التكامل 70/70 |
 | L.6 | إثبات الترحيل على نسخة من قاعدة البيانات الحقيقية + خطة إزالة الأعمدة القديمة | ✅ | `--migration-audit`: 0 صف محذوف أو مغيّر، 0 جدول/عمود مفقود، 15 ترحيلًا قبل/بعد؛ `docs/migration-evidence-2026-11-06.md` + ADR-11 |
+
+## M — المرحلة 5: واجهة POS الجديدة (دفعات)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| M.5.0 | بيع المتغيّر + هجرة + اختبارات | ✅ | `CreateSaleItemDto.VariantId` + `VariantName`؛ `SaleService` يأخذ السعر والتكلفة من المتغيّر؛ `SalesInvoiceItem.VariantName` (هجرة `20261106174513` nullable)؛ `IBarcodeService.FindVariantIdByBarcodeAsync`؛ مسح الباركود يستخدم `ProductBarcodes`؛ integration 70/70 + unit 146/146؛ migration audit PASSED على قاعدة حقيقية (0 rows removed) وقاعدة اصطناعية (5000 متغير، 0 rows removed)؛ ADR-12 |
+| M.5.1 | الكاش والفهرس والإشعار | ⬜ | pending |
+| M.5.2 | العنصر المرسوم والتخطيط والصور | ⬜ | pending |
+| M.5.3 | المنتقي واختيار الباركود المشترك | ⬜ | pending |
+| M.5.4 | القياس والترجمة والتوثيق | ⬜ | pending |

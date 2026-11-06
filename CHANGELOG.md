@@ -2,6 +2,33 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] - 2026-11-06 (Phase 5 batch 5.0: variant-based selling)
+
+### Added
+- **Variant-based selling in POS.** `CreateSaleItemDto` now carries `VariantId` and `VariantName`.
+  `SaleService.CreateAsync` resolves each line's variant (explicit or default, created on the
+  fly for products without one), takes `SalePrice` and `UnitCost` from the variant, and stores
+  `VariantName` on `SalesInvoiceItem`. Cart is keyed by `VariantId`.
+- **New migration** `20261106174513_VariantNameOnSalesInvoiceItem`: adds nullable `VariantName`
+  column to `SalesInvoiceItems` (safe: old invoices display the product name).
+- **`IBarcodeService.FindVariantIdByBarcodeAsync`**: looks up a variant by barcode via
+  `ProductBarcodes` (not the legacy `Product.Barcode`). `SalesForm.ScanBarcode` uses it.
+- **ADR-12**: rule for variant without price/cost (inherit sale price from product; zero cost
+  marks `IsCostEstimated = true`).
+
+### Changed
+- `SaleItemDto` now includes `VariantId` and `VariantName`.
+- `SalesInvoiceItem` entity gains `VariantName` property.
+
+### Verified
+- Build 0 errors; Unit **146/146**; Integration **70/70**.
+- Migration audit on real DB copy: PASSED — integrity `ok → ok`, FK 0→0, **0 rows removed,
+  0 rows changed**, 3 seeded customers added, 15→16 migrations, 0 tables/columns lost.
+- Migration audit on synthetic DB (5,000 variants): PASSED — **0 rows removed, 0 rows
+  changed**, 60 tables both, 16 migrations both.
+- `IBarcodeService` gained `FindVariantIdByBarcodeAsync`; `UiLayoutAudit.StubBarcodeService`
+  updated.
+
 ## [Unreleased] - 2026-11-06 (six cleanup items before Phase 5)
 
 ### Added

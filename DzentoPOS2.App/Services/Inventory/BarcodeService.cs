@@ -99,4 +99,16 @@ public class BarcodeService : IBarcodeService
     {
         return "INT-" + Interlocked.Increment(ref _counter).ToString("D6");
     }
+
+    public async Task<Guid?> FindVariantIdByBarcodeAsync(string barcode)
+    {
+        if (string.IsNullOrWhiteSpace(barcode)) return null;
+        var b = await _context.ProductBarcodes
+            .AsNoTracking()
+            .Where(x => x.Barcode == barcode.Trim())
+            .OrderByDescending(x => x.IsPrimary)
+            .Select(x => x.VariantId)
+            .FirstOrDefaultAsync();
+        return b == Guid.Empty ? null : b;
+    }
 }

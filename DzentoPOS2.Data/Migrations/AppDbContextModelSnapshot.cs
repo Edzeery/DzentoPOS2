@@ -2325,6 +2325,10 @@ namespace DzentoPOS2.Data.Migrations
                     b.Property<Guid>("VariantId")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("VariantName")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.HasIndex("SalesInvoiceId");

@@ -194,8 +194,11 @@ namespace DzentoPOS2.App.Services.Sales
                 .Where(p => productIds.Contains(p.Id) && !p.IsDeleted)
                 .ToDictionaryAsync(p => p.Id);
 
-            var defaultVariants = await _context.ProductVariants
-                .AsNoTracking()
+            // Resolve every requested variant (explicit VariantId, or the product's
+            // default variant when VariantId is empty). Default variants are created
+            // on the fly for products that do not yet have one (backward compat with
+            // products created before Phase 1 and with legacy test data).
+            var defaultVariantIds = await _context.ProductVariants
                 .Where(v => productIds.Contains(v.ProductId) && v.IsDefault)
                 .ToDictionaryAsync(v => v.ProductId, v => v.Id);
 
@@ -203,6 +206,43 @@ namespace DzentoPOS2.App.Services.Sales
             {
                 if (!products.TryGetValue(item.ProductId, out var product) || !product.IsActive)
                     throw new InvalidOperationException("Invalid or inactive product");
+
+                if (item.VariantId == Guid.Empty && !defaultVariantIds.TryGetValue(item.ProductId, out _))
+                {
+                    // Create a default variant on the fly (mirrors pre-Phase-5
+                    // behaviour for products without one).
+                    var v = new Core.Entities.Inventory.ProductVariant
+                    {
+                        ProductId = item.ProductId,
+                        Name = product.Name,
+                        CostPrice = product.CostPrice,
+                        SalePrice = product.SalePrice,
+                        MinimumStock = product.MinimumStock,
+                        TrackStock = product.TrackStock,
+                        IsActive = product.IsActive,
+                        IsDefault = true
+                    };
+                    await _context.ProductVariants.AddAsync(v);
+                    await _unitOfWork.SaveChangesAsync();
+                    defaultVariantIds[item.ProductId] = v.Id;
+                }
+            }
+
+            var allVariantIds = dto.Items
+                .Select(i => i.VariantId != Guid.Empty ? i.VariantId : defaultVariantIds[i.ProductId])
+                .Distinct()
+                .ToList();
+
+            var variants = await _context.ProductVariants
+                .AsNoTracking()
+                .Where(v => allVariantIds.Contains(v.Id) && v.IsActive)
+                .ToDictionaryAsync(v => v.Id);
+
+            foreach (var item in dto.Items)
+            {
+                var variantId = item.VariantId != Guid.Empty ? item.VariantId : defaultVariantIds[item.ProductId];
+                if (!variants.TryGetValue(variantId, out var variant))
+                    throw new InvalidOperationException("Invalid or inactive variant");
             }
 
             // Single source of truth: every stored/recorded amount comes from
@@ -257,35 +297,31 @@ namespace DzentoPOS2.App.Services.Sales
                     foreach (var item in dto.Items)
                     {
                         var product = products[item.ProductId];
-                        if (!defaultVariants.TryGetValue(item.ProductId, out var variantId))
-                        {
-                            var v = new Core.Entities.Inventory.ProductVariant
-                            {
-                                ProductId = item.ProductId,
-                                Name = product.Name,
-                                CostPrice = product.CostPrice,
-                                SalePrice = product.SalePrice,
-                                MinimumStock = product.MinimumStock,
-                                TrackStock = product.TrackStock,
-                                IsActive = product.IsActive,
-                                IsDefault = true
-                            };
-                            await _context.ProductVariants.AddAsync(v);
-                            await _context.SaveChangesAsync();
-                            variantId = v.Id;
-                            defaultVariants[item.ProductId] = variantId;
-                        }
+                        var variantId = item.VariantId != Guid.Empty ? item.VariantId : defaultVariantIds[item.ProductId];
+                        var variant = variants[variantId];
+
+                        // Price and cost come from the variant. A variant without an
+                        // explicit sale price inherits the product price; a variant
+                        // without an explicit cost is marked estimated and may be
+                        // blocked from sale by policy.
+                        var salePrice = variant.SalePrice.Amount > 0
+                            ? variant.SalePrice.Amount
+                            : product.SalePrice?.Amount ?? 0m;
+                        var costAmount = variant.CostPrice.Amount;
+                        var isCostEstimated = costAmount == 0;
+
                         var line = new SalesInvoiceItem
                         {
                             ProductId = item.ProductId,
                             VariantId = variantId,
+                            VariantName = variant.Name,
                             Quantity = item.Quantity,
-                            Price = item.Price,
+                            Price = salePrice,
                             Total = lineGrosses[itemIndex],
-                            UnitCost = product.CostPrice?.Amount ?? 0m,
+                            UnitCost = costAmount,
                             ListPrice = product.SalePrice?.Amount ?? 0m,
                             DiscountAmount = shares[itemIndex],
-                            IsCostEstimated = false,
+                            IsCostEstimated = isCostEstimated,
                             Description = string.IsNullOrWhiteSpace(item.Description) ? string.Empty : item.Description.Trim()
                         };
                         invoice.Items.Add(line);
@@ -331,7 +367,10 @@ namespace DzentoPOS2.App.Services.Sales
                         invoice.InvoiceNumber.Value,
                         warehouseId,
                         dto.Items
-                            .Select(i => new StockChange(i.ProductId, defaultVariants[i.ProductId], i.Quantity))
+                            .Select(i => new StockChange(
+                                i.ProductId,
+                                i.VariantId != Guid.Empty ? i.VariantId : defaultVariantIds[i.ProductId],
+                                i.Quantity))
                             .ToList(),
                         _currentUser.UserId);
 
@@ -552,6 +591,8 @@ namespace DzentoPOS2.App.Services.Sales
                 {
                     Id = i.Id,
                     ProductId = i.ProductId,
+                    VariantId = i.VariantId,
+                    VariantName = i.VariantName ?? string.Empty,
                     Quantity = i.Quantity,
                     Price = i.Price,
                     Total = i.Total,

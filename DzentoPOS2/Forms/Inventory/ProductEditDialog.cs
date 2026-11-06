@@ -127,12 +127,16 @@ public class ProductEditDialog : ThemedDialog
         _btnCancel.Size = new Size(120, 40);
         _btnCancel.DialogResult = DialogResult.Cancel;
 
-        if (_existing != null)
+        if (_existing == null)
+        {
+            // New product: cannot manage variants/barcodes until it is saved.
+            _btnBarcodes.Visible = false;
+            _btnVariants.Visible = false;
+        }
+        else
         {
             _lblOpeningStock.Visible = false;
             _numOpeningStock.Visible = false;
-            _btnBarcodes.Visible = false;
-            _btnVariants.Visible = false;
         }
 
         Controls.AddRange(new Control[]

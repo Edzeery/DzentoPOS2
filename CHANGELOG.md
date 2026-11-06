@@ -2,6 +2,52 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] - 2026-11-06 (six cleanup items before Phase 5)
+
+### Added
+- **In-app migration audit** - `DzentoPOS2/Diagnostics/MigrationAudit.cs`, run as
+  `DzentoPOS2.WinForms.exe --migration-audit [--source <db>] [--work <dir>] [--keep]`.
+  It copies the live SQLite database (plus any `-wal`/`-shm`), checkpoints the WAL on
+  the copy, snapshots integrity/foreign keys/schema/per-row hashes/migration history,
+  runs the real `DbInitializer.InitializeAsync` against the copy only, and proves no
+  table, column or row was lost. Evidence: `docs/evidence/migration-audit.json`,
+  `docs/migration-evidence-2026-11-06.md`.
+- **Configurable backup location** - new `BackupLocationStore` / `BackupLocation` and
+  `IBackupService.SetBackupDirectory`, persisted outside the database at
+  `%LocalAppData%\DzentoPOS2\backup-location.json`. A "Choose folder" action was added
+  to Settings and to the first-run wizard; corrupt, missing or relative preferences
+  fall back to the default backup folder.
+- Five resource keys (`BackupLocation`, `ChooseBackupFolder`, `BackupLocationHint`,
+  `BackupLocationChanged`, `BackupLocationInvalid`) in base/ar/en/fr plus
+  `AppStrings.Designer.cs`.
+
+### Changed
+- **All hardcoded Arabic literals moved into `AppStrings`** (item 4): 619 production
+  files scanned across every Arabic Unicode block (including the `U+FDFC` Rial sign),
+  0 literals left; 533 keys in each of the four resource files with exact parity, no
+  empty values and no `U+FFFD`.
+- `HardcodedArabicLiteralTests` guard extended to all Arabic blocks.
+- Layout fixes surfaced by the extended audit: `SettingsCard` stacked-label width and
+  explicit heights for the camera-URL / backup-folder text boxes.
+
+### Docs
+- ADR-11 in `docs/decisions.md`: phased retirement of `Product.Barcode`,
+  `Product.CostPrice` columns, `ProductVariant.Name` and `ProductVariant.AdditionalPrice`
+  (no column is dropped yet).
+
+### Verified
+- Build 0 errors; Unit **146/146**, Integration **70/70**.
+- In-app layout audit: **72 scenarios, 0 violations, 2016 controls**
+  (375/768/1440, Light/Dark, RTL/LTR) - `docs/evidence/ui-layout-audit.json`.
+- Localization audit: **0** hardcoded Arabic literals in 619 files; 4-resx parity
+  **533/533**, 0 empty - `docs/evidence/localization-audit.json`.
+- Migration audit on a copy of the real database: `integrity_check ok -> ok`,
+  FK violations 0 -> 0, **0 rows removed, 0 rows changed**, 2 seeded customers added,
+  **0 tables/columns lost**, 15 migrations preserved - `docs/evidence/migration-audit.json`.
+- Local cleanup timeline: `04ad4d8` (encoding), branch split (local only),
+  `c6d2d6e` (layout), `c318639` (localization), `7244954` (backup location);
+  local `feature/dashboard-filters` reset to `1426964`, `origin` untouched at `6dbf285`.
+
 ## [Unreleased] - 2026-11-05 (Catalog system Phase 3 complete + dark mode)
 
 ### Added

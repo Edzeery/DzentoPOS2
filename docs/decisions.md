@@ -68,3 +68,31 @@ Recorded in Phase 0. Each decision is a small ADR: context, decision, consequenc
 
 - **Decision:** Merge `fix/barcode-scanner` into `feature/dashboard-filters` before
   starting catalog work (done in Phase 0). Base branch: `feature/dashboard-filters`.
+
+## ADR-11 — Phased retirement of legacy inventory columns
+
+- **Context:** Phase 1 moved barcodes, cost, price and stock to the variant
+  (`ProductVariant` + `ProductBarcode` + `ProductStock`), but four legacy members
+  survive on the product layer: `Product.Barcode`, the owned `Product.CostPrice`
+  columns (`CostPriceAmount`/`CostPriceCurrency`), `ProductVariant.Name` and
+  `ProductVariant.AdditionalPrice`. They cannot be dropped while anything still
+  reads or writes them, because `ProductId` compatibility and the existing reports
+  depend on them.
+- **Decision:** Retire them in three phases, each gated by an in-app audit; never
+  delete rows and never drop a column in the same release that stops writing it.
+  - **Phase A — stop writing:** barcodes are written only to `ProductBarcode`;
+    cost is written only to `ProductVariant.CostPrice` (the default variant);
+    `Name` is derived from attribute values; `AdditionalPrice` is left untouched.
+    The legacy columns stay populated for one release so a rollback is lossless.
+  - **Phase B — stop reading:** barcode lookup and POS scanning read
+    `ProductBarcodes`; cost/profit reads resolve through the default variant; the
+    variants grid shows attributes with `Product.Name` as fallback. A guard test
+    fails if production code references one of the four members again.
+  - **Phase C — drop:** one migration drops the four columns after
+    `--migration-audit` reports 0 non-empty `Product.Barcode`, 0 readers and a
+    clean migration run; every `ProductVariants` row and `ProductId` is preserved.
+    `Down()` re-adds the columns as NULL.
+- **Consequences:** Reporting keeps working throughout because Phase B provides a
+  variant-backed cost source before the column disappears; the duplication is
+  bounded to one release per phase; `--migration-audit`
+  (`docs/migration-evidence-2026-11-06.md`) is the objective gate for each phase.

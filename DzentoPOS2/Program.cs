@@ -34,6 +34,15 @@ internal static class Program
             return;
         }
 
+        // Migration audit, run by the real executable against a copy of the
+        // live database (the original is never opened for writing):
+        //   DzentoPOS2.WinForms.exe --migration-audit [--source <db>] [--work <dir>] [--keep]
+        if (args.Any(a => string.Equals(a, "--migration-audit", StringComparison.OrdinalIgnoreCase)))
+        {
+            Environment.ExitCode = MigrationAudit.Run(args);
+            return;
+        }
+
         var services = new ServiceCollection();
 
         IConfiguration configuration =

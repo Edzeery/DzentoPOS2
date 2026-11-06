@@ -1,5 +1,5 @@
 {
-    "GeneratedAt":  "2026-11-06T11:51:11.7636546+01:00",
+    "GeneratedAt":  "2026-11-06T12:04:57.9174135+01:00",
     "Scope":  [
                   "DzentoPOS2",
                   "DzentoPOS2.App",
@@ -16,7 +16,7 @@
                          "\\uFB50-\\uFDFF",
                          "\\uFE70-\\uFEFF"
                      ],
-    "FilesScanned":  618,
+    "FilesScanned":  619,
     "HardcodedArabicLiteralCount":  0,
     "Offenders":  [
 

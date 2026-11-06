@@ -64,6 +64,12 @@ public class PosProductList : Control
         set { _mode = value; UpdateScrollBar(); Invalidate(); }
     }
 
+    public int ScrollOffset
+    {
+        get => _scrollOffset;
+        set { _scrollOffset = Math.Max(0, value); _vScroll.Value = Math.Min(_vScroll.Maximum, _scrollOffset); Invalidate(); }
+    }
+
     public bool IsRightToLeftMode => RightToLeft == RightToLeft.Yes;
 
     private void OnThemeChanged(object? sender, EventArgs e) => Invalidate();
@@ -296,7 +302,7 @@ public class PosProductList : Control
                 Invalidate();
             });
         }
-        catch { /* best effort */ }
+        catch (Exception) { /* best effort image load */ }
     }
 
     private void OnMouseMove(object? sender, MouseEventArgs e)

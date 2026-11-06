@@ -124,7 +124,7 @@ public class SharedBarcodePickerDialog : ThemedDialog
                     pic.Image = new Bitmap(img);
                 }
             }
-            catch { /* best effort */ }
+            catch (Exception) { /* best effort image load */ }
         }
         card.Controls.Add(pic, 0, 0);
 

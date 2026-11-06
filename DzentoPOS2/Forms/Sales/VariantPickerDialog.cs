@@ -282,7 +282,7 @@ public class VariantPickerDialog : ThemedDialog
                     _picPreview.Image = new Bitmap(img);
                 }
             }
-            catch { /* best effort */ }
+            catch (Exception) { /* best effort image load */ }
         }
     }
 

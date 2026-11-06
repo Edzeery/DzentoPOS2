@@ -2,6 +2,23 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] - 2026-11-06 (Phase 5 batch 5.4: benchmark and documentation)
+
+### Added
+- **`--pos-benchmark`** in-app tool: creates a temp SQLite DB with 5,000 variants,
+  measures cold load, scroll (100 frames), barcode scan and cache invalidation.
+  Outputs JSON to `docs/evidence/pos-benchmark-2026-11-06.json`.
+  Results: cold load 404 ms, scroll p95 10.7 ms, scan p95 0.0 ms, invalidate 187 ms — **PASSED**.
+- **`docs/evidence/pos-layout-drawtobitmap.md`**: visual verification guide with
+  DrawToBitmap instructions for all 12 combinations (375/768/1440 × cards/list ×
+  RTL/LTR × light/dark).
+
+### Verified
+- Build 0 errors; Unit **174/174**; Integration **70/70**.
+- Migration audit: PASSED (real DB copy).
+- HardcodedArabicLiteralTests: 0 literals.
+- LocalizationParityTests: 540 keys × 4 resx, 0 empty, 0 U+FFFD.
+
 ## [Unreleased] - 2026-11-06 (Phase 5 batch 5.3: variant picker and shared barcode)
 
 ### Added

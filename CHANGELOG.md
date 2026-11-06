@@ -2,6 +2,27 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] - 2026-11-06 (Phase 5 batch 5.3: variant picker and shared barcode)
+
+### Added
+- **`VariantPickerDialog`**: ThemedDialog showing attribute groups as selectable chips,
+  image preview, price, barcode. Returns selected variant info.
+- **`SharedBarcodePickerDialog`**: ThemedDialog listing all variants sharing a barcode
+  with image, name, price, stock. User selects one.
+- **`IBarcodeService.FindVariantIdsByBarcodeAsync`**: returns all variant IDs for a barcode.
+- **7 new AppStrings keys**: AddToCart, SelectVariant, PleaseSelectVariant, SelectSharedBarcode,
+  SharedBarcodeHint, StockLabel, Select (added to all 4 resx + Designer.cs).
+
+### Changed
+- `SalesForm.ScanBarcode`: uses `FindVariantIdsByBarcodeAsync` + `SharedBarcodePickerDialog`
+  when multiple variants share a barcode. Never reads legacy `Product.Barcode`.
+- `SalesForm` product grid double-click: opens `VariantPickerDialog` for multi-variant
+  products, adds directly for single-variant products.
+
+### Verified
+- Build 0 errors; Unit **174/174**; Integration **70/70**.
+- HardcodedArabicLiteralTests: 0 literals.
+
 ## [Unreleased] - 2026-11-06 (Phase 5 batch 5.2: virtualized POS list and layout)
 
 ### Added

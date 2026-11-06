@@ -176,10 +176,35 @@ public partial class SalesForm : LocalizableFormBase
         DataGridViewStyleHelper.ApplyModernStyle(_productGrid);
         _productGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
         _productGrid.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
-        _productGrid.CellDoubleClick += (_, e) =>
+        _productGrid.CellDoubleClick += async (_, e) =>
         {
-            if (e.RowIndex >= 0 && _productGrid.Rows[e.RowIndex].DataBoundItem is ProductDto p)
-                AddToCart(p, Guid.Empty, string.Empty, p.SalePrice);
+            if (e.RowIndex < 0 || _productGrid.Rows[e.RowIndex].DataBoundItem is not ProductDto p)
+                return;
+
+            // Check if product has multiple variants via the POS store.
+            var items = await _posProductStore.GetAllAsync();
+            var productItems = items.Where(x => x.ProductId == p.Id).ToList();
+
+            if (productItems.Count > 1)
+            {
+                // Open variant picker.
+                using var picker = new VariantPickerDialog(
+                    _services.GetRequiredService<DzentoPOS2.Data.Context.AppDbContext>(),
+                    p.Id,
+                    _barcodeService);
+                if (picker.ShowDialog(this) == DialogResult.OK && picker.SelectedVariantId != Guid.Empty)
+                {
+                    AddToCart(p, picker.SelectedVariantId, picker.SelectedVariantName, picker.SelectedPrice);
+                }
+            }
+            else
+            {
+                // Single variant: add directly.
+                var variantId = productItems.Count == 1 ? productItems[0].VariantId : Guid.Empty;
+                var variantName = productItems.Count == 1 ? productItems[0].Name : string.Empty;
+                var price = productItems.Count == 1 ? productItems[0].SalePrice : p.SalePrice;
+                AddToCart(p, variantId, variantName, price);
+            }
         };
 
         _leftPanel.Controls.Add(_productGrid);
@@ -904,18 +929,24 @@ public partial class SalesForm : LocalizableFormBase
             {
                 if (string.IsNullOrWhiteSpace(code)) return;
 
-                var matches = await _posProductStore.FindByBarcodeAsync(code);
+                var variantIds = await _barcodeService.FindVariantIdsByBarcodeAsync(code);
 
-                if (matches.Count == 0)
+                if (variantIds.Count == 0)
                 {
                     AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {code}");
                     _productSearch.Text = code;
                     return;
                 }
 
-                if (matches.Count == 1)
+                if (variantIds.Count == 1)
                 {
-                    var item = matches[0];
+                    var item = (await _posProductStore.FindByBarcodeAsync(code)).FirstOrDefault();
+                    if (item is null)
+                    {
+                        AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {code}");
+                        _productSearch.Text = code;
+                        return;
+                    }
                     var prod = _products.FirstOrDefault(p => p.Id == item.ProductId);
                     if (prod is null)
                     {
@@ -927,16 +958,21 @@ public partial class SalesForm : LocalizableFormBase
                 }
                 else
                 {
-                    // Shared barcode: pick the first for now (full picker in 5.3).
-                    var item = matches[0];
-                    var prod = _products.FirstOrDefault(p => p.Id == item.ProductId);
-                    if (prod is null)
+                    // Shared barcode: show picker.
+                    using var picker = new SharedBarcodePickerDialog(
+                        _services.GetRequiredService<DzentoPOS2.Data.Context.AppDbContext>(),
+                        variantIds.AsReadOnly());
+                    if (picker.ShowDialog(this) == DialogResult.OK)
                     {
-                        AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {code}");
-                        _productSearch.Text = code;
-                        return;
+                        var item = (await _posProductStore.FindByBarcodeAsync(code))
+                            .FirstOrDefault(x => x.VariantId == picker.SelectedVariantId);
+                        if (item is not null)
+                        {
+                            var prod = _products.FirstOrDefault(p => p.Id == item.ProductId);
+                            if (prod is not null)
+                                AddToCart(prod, item.VariantId, item.Name, item.SalePrice);
+                        }
                     }
-                    AddToCart(prod, item.VariantId, item.Name, item.SalePrice);
                 }
             };
             overlay.ShowDialog(this);

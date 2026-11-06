@@ -16,4 +16,7 @@ public interface IBarcodeService
 
     /// <summary>Returns the variant ID for a barcode, or null if not found.</summary>
     Task<Guid?> FindVariantIdByBarcodeAsync(string barcode);
+
+    /// <summary>Returns all variants sharing a barcode (for shared-barcode picker).</summary>
+    Task<List<Guid>> FindVariantIdsByBarcodeAsync(string barcode);
 }

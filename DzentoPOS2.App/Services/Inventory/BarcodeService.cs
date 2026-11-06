@@ -120,4 +120,15 @@ public class BarcodeService : IBarcodeService
             .FirstOrDefaultAsync();
         return b == Guid.Empty ? null : b;
     }
+
+    public async Task<List<Guid>> FindVariantIdsByBarcodeAsync(string barcode)
+    {
+        if (string.IsNullOrWhiteSpace(barcode)) return new List<Guid>();
+        return await _context.ProductBarcodes
+            .AsNoTracking()
+            .Where(x => x.Barcode == barcode.Trim())
+            .Select(x => x.VariantId)
+            .Distinct()
+            .ToListAsync();
+    }
 }

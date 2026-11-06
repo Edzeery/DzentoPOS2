@@ -1714,4 +1714,25 @@
   <data name="BackupLocationInvalid" xml:space="preserve">
     <value>المجلد المحدد غير صالح أو غير قابل للكتابة.</value>
   </data>
+  <data name="SharedBarcodeHint" xml:space="preserve">
+    <value>هذا الباركود مرتبط بعدة منتجات. اختر واحدًا:</value>
+  </data>
+  <data name="SelectVariant" xml:space="preserve">
+    <value>اختيار المتغير</value>
+  </data>
+  <data name="PleaseSelectVariant" xml:space="preserve">
+    <value>يرجى اختيار متغير</value>
+  </data>
+  <data name="SelectSharedBarcode" xml:space="preserve">
+    <value>اختيار باركود مشترك</value>
+  </data>
+  <data name="StockLabel" xml:space="preserve">
+    <value>المخزون</value>
+  </data>
+  <data name="Select" xml:space="preserve">
+    <value>اختيار</value>
+  </data>
+  <data name="AddToCart" xml:space="preserve">
+    <value>إضافة للسلة</value>
+  </data>
 </root>

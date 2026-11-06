@@ -1715,4 +1715,25 @@
   <data name="BackupLocationInvalid" xml:space="preserve">
     <value>The selected folder is invalid or not writable.</value>
   </data>
+  <data name="SharedBarcodeHint" xml:space="preserve">
+    <value>This barcode is linked to multiple products. Choose one:</value>
+  </data>
+  <data name="SelectVariant" xml:space="preserve">
+    <value>Select Variant</value>
+  </data>
+  <data name="PleaseSelectVariant" xml:space="preserve">
+    <value>Please select a variant</value>
+  </data>
+  <data name="SelectSharedBarcode" xml:space="preserve">
+    <value>Select Shared Barcode</value>
+  </data>
+  <data name="StockLabel" xml:space="preserve">
+    <value>Stock</value>
+  </data>
+  <data name="Select" xml:space="preserve">
+    <value>Select</value>
+  </data>
+  <data name="AddToCart" xml:space="preserve">
+    <value>Add to Cart</value>
+  </data>
 </root>

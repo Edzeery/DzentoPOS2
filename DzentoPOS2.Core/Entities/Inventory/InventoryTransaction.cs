@@ -11,6 +11,8 @@ namespace DzentoPOS2.Core.Entities.Inventory
     {
         public Guid ProductId { get; set; }
 
+        public Guid VariantId { get; set; }
+
         public Guid WarehouseId { get; set; }
 
         // 🔥 Value Object
@@ -18,11 +20,22 @@ namespace DzentoPOS2.Core.Entities.Inventory
 
         public MovementType TransactionType { get; set; }
 
+        public decimal QuantityBefore { get; set; }
+
+        public decimal QuantityAfter { get; set; }
+
+        public string? SourceType { get; set; }
+
+        public Guid? SourceId { get; set; }
+
+        public Guid? UserId { get; set; }
+
         public string? ReferenceNumber { get; set; }
 
         public string? Notes { get; set; }
 
         public virtual Product Product { get; set; } = null!;
+        public virtual ProductVariant Variant { get; set; } = null!;
         public virtual Warehouse Warehouse { get; set; } = null!;
     }
 }

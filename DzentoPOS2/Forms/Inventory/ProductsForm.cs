@@ -1,7 +1,11 @@
+using DzentoPOS2.App.Authorization;
+using DzentoPOS2.WinForms.Services.Barcodes;
 using DzentoPOS2.App.Services.Inventory;
+using DzentoPOS2.Core.Constants;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
+using DzentoPOS2.Shared.Helpers;
 using DzentoPOS2.WinForms.Configurations;
 using DzentoPOS2.WinForms.Controls;
 using DzentoPOS2.WinForms.Helpers;
@@ -15,10 +19,16 @@ public partial class ProductsForm : LocalizableFormBase
 {
     private readonly IProductService _productService;
     private readonly ICurrentSettingsService _currentSettings;
+    private readonly IAuthorizationGuard _guard;
+    private readonly IBarcodeScanService _barcodeScan;
+    private readonly DzentoPOS2.WinForms.Services.Images.IImageService _imageService;
+    private readonly IBarcodeService _barcodeService;
+    private readonly Microsoft.EntityFrameworkCore.IDbContextFactory<DzentoPOS2.Data.Context.AppDbContext> _contextFactory;
 
     // Top bar
     private readonly Panel _topBar;
     private readonly EZTextBox _searchBox;
+    private readonly BarcodeScanButton _btnScan;
     private readonly ComboBox _cmbWarehouse;
     private readonly ComboBox _cmbCategoryFilter;
     private readonly ComboBox _cmbStatusFilter;
@@ -46,6 +56,12 @@ public partial class ProductsForm : LocalizableFormBase
     private List<ProductCategoryDto> _categories = new();
     private List<WarehouseDto> _warehouses = new();
 
+    /// <summary>How long the search box must be idle before it queries.</summary>
+    private const int SearchDebounceMs = 300;
+
+    private readonly System.Windows.Forms.Timer _searchDebounce;
+    private string _lastLoadedTerm = string.Empty;
+
     private static readonly Color CardColor1 = AppColors.Primary;
     private static readonly Color CardColor2 = AppColors.Info;
     private static readonly Color CardColor3 = AppColors.Warning;
@@ -54,11 +70,21 @@ public partial class ProductsForm : LocalizableFormBase
     public ProductsForm(
         IProductService productService,
         ICurrentSettingsService currentSettings,
-        ILanguageService languageService)
+        ILanguageService languageService,
+        IAuthorizationGuard guard,
+        IBarcodeScanService barcodeScan,
+        DzentoPOS2.WinForms.Services.Images.IImageService imageService,
+        IBarcodeService barcodeService,
+        Microsoft.EntityFrameworkCore.IDbContextFactory<DzentoPOS2.Data.Context.AppDbContext> contextFactory)
         : base(languageService)
     {
         _productService = productService;
         _currentSettings = currentSettings;
+        _guard = guard;
+        _barcodeScan = barcodeScan;
+        _imageService = imageService;
+        _barcodeService = barcodeService;
+        _contextFactory = contextFactory;
         Size = new Size(1400, 800);
         MinimumSize = new Size(1000, 600);
         BackColor = AppColors.Background;
@@ -84,7 +110,45 @@ public partial class ProductsForm : LocalizableFormBase
             PlaceholderColor = Color.FromArgb(150, 160, 166),
             Font = new Font("Segoe UI", 10F)
         };
-        _searchBox.TextChanged += async (_, _) => await LoadGridAsync();
+        _btnScan = new BarcodeScanButton
+        {
+            Location = new Point(305, 10),
+            Size = new Size(32, 30),
+            TargetTextBox = _searchBox,
+            ScanService = _barcodeScan
+        };
+        _btnScan.BarcodeScanned += (_, _) => RunSafe(LoadGridAsync);
+
+        _searchDebounce = new System.Windows.Forms.Timer { Interval = SearchDebounceMs };
+        _searchDebounce.Tick += async (_, _) =>
+        {
+            _searchDebounce.Stop();
+            if (IsDisposedOrDisposing) return;
+
+            // Editing back to the term already on screen must not re-query.
+            var term = _searchBox.Text?.Trim() ?? string.Empty;
+            if (string.Equals(term, _lastLoadedTerm, StringComparison.Ordinal)) return;
+
+            try
+            {
+                await LoadGridAsync();
+            }
+            catch (Exception ex) when (!IsDisposedOrDisposing)
+            {
+                AppMessageBox.Error(ex, AppStrings.SearchProducts);
+            }
+        };
+        Disposed += (_, _) => _searchDebounce.Dispose();
+
+        _searchBox.TextChanged += (_, _) =>
+        {
+            if (IsDisposedOrDisposing) return;
+
+            // Coalesce keystrokes into one query per pause instead of running a
+            // full load (SQL query + column rebuild + rebind) on every key.
+            _searchDebounce.Stop();
+            _searchDebounce.Start();
+        };
 
         _cmbWarehouse = CreateFilterCombo(320, 14, 140);
         _cmbCategoryFilter = CreateFilterCombo(480, 14, 140);
@@ -97,12 +161,13 @@ public partial class ProductsForm : LocalizableFormBase
         _btnAdd = ButtonFactory.ToolSolid(IconChar.Plus, AppStrings.AddProduct, ButtonTone.Primary, ButtonFactory.ButtonSize.Medium);
         _btnAdd.Size = new Size(130, 36);
         _btnAdd.Location = new Point(800, 12);
-        _btnAdd.Click += async (_, _) => await AddProduct();
+        _btnAdd.Click += (_, _) => RunSafe(AddProduct);
 
         _topBar.Controls.AddRange(new Control[]
         {
             new Label { Text = "??", Location = new Point(2, 18), Size = new Size(20, 20), Font = new Font("Segoe UI", 12F) },
             _searchBox,
+            _btnScan,
             _lblWarehouseFilter,
             _cmbWarehouse,
             _lblCategoryFilter,
@@ -137,7 +202,7 @@ public partial class ProductsForm : LocalizableFormBase
         DataGridViewStyleHelper.ApplyModernStyle(_grid, withHover: true);
 
         _grid.SelectionChanged += (_, _) => ShowProductDetails();
-        _grid.CellDoubleClick += async (_, _) => await EditProduct();
+        _grid.CellDoubleClick += (_, _) => RunSafe(EditProduct);
 
         var gridContainer = new Panel
         {
@@ -215,13 +280,34 @@ public partial class ProductsForm : LocalizableFormBase
     protected override async void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
+
+        // Affordance: disable create when the user lacks permission.
         try
         {
-            await LoadLookupsAsync();
-            await LoadStatsAsync();
-            await LoadGridAsync();
+            bool canCreate = await _guard.IsAllowedAsync(Permissions.ProductsCreate);
+            bool canEdit = await _guard.IsAllowedAsync(Permissions.ProductsEdit);
+            bool canDelete = await _guard.IsAllowedAsync(Permissions.ProductsDelete);
+            if (!IsDisposedOrDisposing)
+            {
+                _btnAdd.Enabled = canCreate;
+            }
         }
         catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"ProductsForm permission check failed: {ex.Message}");
+        }
+
+        try
+        {
+            // Navigation can dispose this page while these are still running, so
+            // stop between steps instead of touching a disposed control tree.
+            await LoadLookupsAsync();
+            if (IsDisposedOrDisposing) return;
+            await LoadStatsAsync();
+            if (IsDisposedOrDisposing) return;
+            await LoadGridAsync();
+        }
+        catch (Exception ex) when (!IsDisposedOrDisposing)
         {
             MessageBox.Show($"{AppStrings.ErrorMsg}: {ex.Message}", AppStrings.ErrorMsg, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
@@ -248,6 +334,7 @@ public partial class ProductsForm : LocalizableFormBase
     private async Task LoadLookupsAsync()
     {
         _categories = await _productService.GetCategoriesAsync();
+        if (IsDisposedOrDisposing) return;
         _cmbCategoryFilter.Items.Clear();
         _cmbCategoryFilter.Items.Add(AppStrings.All);
         foreach (var c in _categories)
@@ -255,6 +342,7 @@ public partial class ProductsForm : LocalizableFormBase
         _cmbCategoryFilter.SelectedIndex = 0;
 
         _warehouses = await _productService.GetWarehousesAsync();
+        if (IsDisposedOrDisposing) return;
         _cmbWarehouse.Items.Clear();
         _cmbWarehouse.Items.Add(AppStrings.All);
         foreach (var w in _warehouses)
@@ -268,11 +356,12 @@ public partial class ProductsForm : LocalizableFormBase
     private async Task LoadStatsAsync()
     {
         var stats = await _productService.GetInventoryStatsAsync();
+        if (IsDisposedOrDisposing) return;
 
-        _kpiCards[0].SetData(stats.TotalProducts.ToString("N0"), string.Empty, true);
-        _kpiCards[1].SetData(stats.ActiveProducts.ToString("N0"), string.Empty, true);
-        _kpiCards[2].SetData(stats.LowStockProducts.ToString("N0"), string.Empty, stats.LowStockProducts == 0);
-        _kpiCards[3].SetData(FormatMoney(stats.TotalStockValue), string.Empty, true);
+        _kpiCards[0].SetValue(stats.TotalProducts, KpiValueKind.Count);
+        _kpiCards[1].SetValue(stats.ActiveProducts, KpiValueKind.Count);
+        _kpiCards[2].SetValue(stats.LowStockProducts, KpiValueKind.Count);
+        _kpiCards[3].SetValue(stats.TotalStockValue, KpiValueKind.Money);
     }
 
     private void BuildKpiCards()
@@ -294,10 +383,18 @@ public partial class ProductsForm : LocalizableFormBase
 
     private async Task LoadGridAsync()
     {
+        if (IsDisposedOrDisposing) return;
+
         var term = _searchBox.Text?.Trim();
         _products = string.IsNullOrWhiteSpace(term)
             ? await _productService.GetAllAsync()
             : await _productService.SearchAsync(term);
+
+        if (IsDisposedOrDisposing) return;
+
+        // Remember what the grid is showing so the debounced search can skip a
+        // repeat query for the same term.
+        _lastLoadedTerm = term ?? string.Empty;
 
         var catFilter = _cmbCategoryFilter.SelectedIndex;
         if (catFilter > 0 && catFilter <= _categories.Count)
@@ -334,6 +431,8 @@ public partial class ProductsForm : LocalizableFormBase
 
     private async void ShowProductDetails()
     {
+        if (IsDisposedOrDisposing) return;
+
         if (_grid.CurrentRow?.DataBoundItem is not ProductDto product)
         {
             _lblDetailTitle.Text = AppStrings.SelectProductDetail;
@@ -349,7 +448,7 @@ public partial class ProductsForm : LocalizableFormBase
             infoPanel.Controls.Add(new Label
             {
                 Text = $"{AppStrings.ProductLabel}: {product.Name}\n" +
-                       $"SKU: {product.SKU ?? "â€”"}\n" +
+                       $"SKU: {product.SKU ?? "—"}\n" +
                        $"{AppStrings.CategoryFilter}: {product.CategoryName}\n" +
                        $"{AppStrings.Unit}: {product.UnitName}",
                 Font = new Font("Segoe UI", 10F),
@@ -375,6 +474,8 @@ public partial class ProductsForm : LocalizableFormBase
         }
 
         var stocks = await _productService.GetProductStocksAsync(product.Id);
+        if (IsDisposedOrDisposing) return;
+
         var stockPanel = _tabStock.Controls[0] as Panel;
         if (stockPanel != null)
         {
@@ -407,6 +508,37 @@ public partial class ProductsForm : LocalizableFormBase
                     y += 22;
                 }
             }
+
+            var actions = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Bottom,
+                Height = 56,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                BackColor = AppColors.Surface
+            };
+
+            var btnAdjust = ButtonFactory.Primary(AppStrings.AdjustStock);
+            btnAdjust.Size = new Size(160, 44);
+            btnAdjust.Margin = new Padding(10, 6, 0, 6);
+            btnAdjust.Click += (_, _) =>
+            {
+                // The page can be navigated away from (and disposed) while this
+                // toolbar is still on screen; ShowDialog(this) reads this form's
+                // window handle and throws ObjectDisposedException when it is gone.
+                if (IsDisposedOrDisposing) return;
+
+                using var dialog = new StockAdjustDialog(
+                    _productService,
+                    product.Id,
+                    stocks.Sum(s => s.Quantity));
+
+                if (dialog.ShowDialog(this) == DialogResult.OK)
+                    ShowProductDetails();
+            };
+
+            actions.Controls.Add(btnAdjust);
+            stockPanel.Controls.Add(actions);
         }
     }
 
@@ -428,21 +560,28 @@ public partial class ProductsForm : LocalizableFormBase
 
     private async Task AddProduct()
     {
-        using var dialog = new ProductEditDialog(_productService, _languageService);
+        if (IsDisposedOrDisposing) return;
+
+        using var dialog = new ProductEditDialog(_productService, _languageService, null, _barcodeScan, _imageService, _barcodeService, _contextFactory);
         if (dialog.ShowDialog() == DialogResult.OK)
         {
+            if (IsDisposedOrDisposing) return;
             await LoadGridAsync();
+            if (IsDisposedOrDisposing) return;
             await LoadStatsAsync();
         }
     }
 
     private async Task EditProduct()
     {
+        if (IsDisposedOrDisposing) return;
         if (_grid.CurrentRow?.DataBoundItem is not ProductDto product) return;
-        using var dialog = new ProductEditDialog(_productService, _languageService, product);
+        using var dialog = new ProductEditDialog(_productService, _languageService, product, _barcodeScan, _imageService, _barcodeService, _contextFactory);
         if (dialog.ShowDialog() == DialogResult.OK)
         {
+            if (IsDisposedOrDisposing) return;
             await LoadGridAsync();
+            if (IsDisposedOrDisposing) return;
             await LoadStatsAsync();
         }
     }

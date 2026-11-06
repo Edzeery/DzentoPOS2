@@ -9,12 +9,17 @@ namespace DzentoPOS2.Core.Entities.Inventory
 {
     public class ProductBarcode : AuditableEntity
     {
-        public Guid ProductId { get; set; }
+        // Legacy: kept nullable for backward compat; new code uses VariantId.
+        public Guid? ProductId { get; set; }
+
+        public Guid VariantId { get; set; }
 
         public string Barcode { get; set; } = string.Empty;
 
         public bool IsPrimary { get; set; }
 
-        public virtual Product Product { get; set; } = null!;
+        public virtual Product? Product { get; set; }
+
+        public virtual ProductVariant Variant { get; set; } = null!;
     }
 }

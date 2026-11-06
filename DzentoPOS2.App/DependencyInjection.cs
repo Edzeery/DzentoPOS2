@@ -1,6 +1,7 @@
 ﻿using DzentoPOS2.App.Authentication;
 using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Accounting;
+using DzentoPOS2.App.Services.Events;
 using DzentoPOS2.App.Services.Identity;
 using DzentoPOS2.App.Services.Identity.Interfaces;
 using DzentoPOS2.App.Services.Inventory;
@@ -9,7 +10,10 @@ using DzentoPOS2.App.Services.Purchases;
 using DzentoPOS2.App.Services.Reports;
 using DzentoPOS2.App.Services.Reports.Interfaces;
 using DzentoPOS2.App.Services.Sales;
+using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.App.Session;
+using DzentoPOS2.Data.Context;
+using Microsoft.EntityFrameworkCore;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
@@ -30,14 +34,32 @@ namespace DzentoPOS2.App
             // Regional configuration (currency / country / time zone) is shared
             // by the application layer and the user interface.
             services.AddSingleton<Shared.Helpers.RegionalContext>();
+            services.AddSingleton<IBusinessClock, BusinessClock>();
+            services.AddScoped<IStoreContextService, StoreContextService>();
+            services.AddScoped<IDocumentNumberService, DocumentNumberService>();
+            services.AddScoped<IBackupService>(sp =>
+    new BackupService(
+        sp.GetRequiredService<IDbContextFactory<AppDbContext>>(),
+        backupDirectory: null,
+        guard: sp.GetService<IAuthorizationGuard>()));
 
             services.AddScoped<IAuthService, AuthService>();
 
             services.AddSingleton<ICurrentUserService,
                 CurrentUserService>();
 
+            // Singleton so every scoped service and every form of the running
+            // shell share the same sale / cash-drawer notifications.
+            services.AddSingleton<ISalesEventPublisher, SalesEventPublisher>();
+
             services.AddScoped<IPermissionService,
                 PermissionService>();
+
+            services.AddScoped<IAuthorizationGuard,
+                AuthorizationGuard>();
+
+            services.AddScoped<IAuditService,
+                AuditService>();
 
     services.AddScoped<IPasswordHasher,
         PasswordHasher>();
@@ -53,17 +75,22 @@ namespace DzentoPOS2.App
                 DashboardService>();
 
             services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IBarcodeService, BarcodeService>();
+            services.AddScoped<IStockService, StockService>();
             services.AddScoped<IExpenseService, ExpenseService>();
 
             services.AddScoped<IProductCategoryService, ProductCategoryService>();
             services.AddScoped<IProductUnitService, ProductUnitService>();
 
             services.AddScoped<ISaleService, SaleService>();
+            services.AddScoped<ISalesPolicy, SalesPolicy>();
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<ISupplierService, SupplierService>();
             services.AddScoped<IPurchaseService, PurchaseService>();
 
             services.AddScoped<ICashSessionService, CashSessionService>();
+
+            services.AddScoped<IModuleService, ModuleService>();
 
             return services;
         }

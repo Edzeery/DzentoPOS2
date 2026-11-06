@@ -1,10 +1,10 @@
 # قائمة المهام — DzentoPOS2
 
-**آخر تحديث:** 2026-10-22
+**آخر تحديث:** 2026-10-31
 **المرجع البصري:** [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md) — [`docs/design-system-plan.md`](docs/design-system-plan.md)
 **قاعدة القبول:** كل بند لا يُعتبر منجزًا إلا إذا تحقّق دليل قابل للقياس (بناء نظيف + فحص آلي عند 375/768/1440).
 
-**المفتاح:** ⬜ لم يبدأ · 🟨 قيد التنفيذ · ✅ مكتمل ومُتحقَّق
+**المفتاح:** ⬜ لم يبدأ · 🟨 قيد التنفيذ · ✅ مكتمل ومُتحقَّق · ⏭️ مُستبدَل بمرحلة أحدث
 
 
 | # | المهمة | الحالة | دليل الإنجاز |
@@ -117,18 +117,104 @@
 | B.3 | تسجيل النماذج في DI + ترجمة العناوين | ✅ | تسجيل `ProductCategoriesForm`/`ProductUnitsForm` في `Infrastructure\DependencyInjection.cs`؛ 12 مفتاحًا في `AppStrings` + ar/en/fr + خصائص `AppStrings.Designer.cs`. فحص `B.4.1` (حلّ النموذجين من DI) |
 | B.4 | فحوصات CRUD آلية (إضافة/تعديل/حذف + تكرار الاسم) | ✅ | المِضيف: **10/10** لقسم B — `B.1.1–B.1.4`, `B.2.1–B.2.4`, `B.3.1`, `B.4.1–B.4.4` |
 
-## C — صندوق النقود اليومية (مكتملة)
+## C — صندوق النقود اليومية (مكتملة — مُستبدَلة بـ E3)
 
 | # | المهمة | الحالة | دليل الإنجاز |
 |---|---|---|---|
-| C.1 | جلسة صندوق يومية (`CashSession`) مربوطة بحركات الصندوق | ✅ | كيان `CashSession` + `CashSessionStatus` + `CashSessionConfiguration` + migration `20261023082755_AddCashSessions` + `ICashSessionRepository`/`CashSessionRepository` + `ICashSessionService`/`CashSessionService` (فتح جلسة واحدة لكل صندوق، إغلاق يحسب المتوقع من حركات الصندوق بإشارة `MovementType` ويضبط `ExpectedBalance`/`Difference`/`Status` و`Cashbox.CurrentBalance`) + `CashboxSeeder` في `DbInitializer`. فحوص `C.1.0–C.1.6`: فتح 1000 ثم حركتا بيع 500/شراء 200 ثم إغلاق 1350 ⇒ المتوقع 1300 والفرق 50 والرصيد 1350، ومنع فتح جلسة ثانية |
-| C.2 | نموذج افتتاح/إغلاق الصندوق مع الرصيد الافتتاحي والختامي | ✅ | `CashSessionForm` (صندوق + رصيد افتتاحي + فتح + رصيد ختامي + إغلاق + شبكة الجلسات + ملصق حالة) + زر `btnCashSessions` في `MainForm` + تسجيل DI + 14 مفتاح ترجمة (ar/en/fr + `AppStrings.Designer.cs`). فحوص `C.2.1–C.2.5`: الحل من DI، عناصر النموذج، حالة الأزرار، ظهور الزر ونصّه المترجم، والنقر يفتح النموذج |
+| C.1 | جلسة صندوق يومية (`CashSession`) مربوطة بحركات الصندوق — مُستبدَلة بـ E3 | ⏭️ | كيان `CashSession` + `CashSessionStatus` + `CashSessionConfiguration` + migration `20261023082755_AddCashSessions` + `ICashSessionRepository`/`CashSessionRepository` + `ICashSessionService`/`CashSessionService` (فتح جلسة واحدة لكل صندوق، إغلاق يحسب المتوقع من حركات الصندوق بإشارة `MovementType` ويضبط `ExpectedBalance`/`Difference`/`Status` و`Cashbox.CurrentBalance`) + `CashboxSeeder` في `DbInitializer`. فحوص `C.1.0–C.1.6`: فتح 1000 ثم حركتا بيع 500/شراء 200 ثم إغلاق 1350 ⇒ المتوقع 1300 والفرق 50 والرصيد 1350، ومنع فتح جلسة ثانية. **استُبدلت بنموذج E3 المربوط بالجلسة والملخّص الموحَّد** |
+| C.2 | نموذج افتتاح/إغلاق الصندوق مع الرصيد الافتتاحي والختامي — مُستبدَلة بـ E3 | ⏭️ | `CashSessionForm` (صندوق + رصيد افتتاحي + فتح + رصيد ختامي + إغلاق + شبكة الجلسات + ملصق حالة) + زر `btnCashSessions` في `MainForm` + تسجيل DI + 14 مفتاح ترجمة (ar/en/fr + `AppStrings.Designer.cs`). فحوص `C.2.1–C.2.5`: الحل من DI، عناصر النموذج، حالة الأزرار، ظهور الزر ونصّه المترجم، والنقر يفتح النموذج. **استُبدل بـ `CashSessionForm` الجديد (لوحة KPI) و`CashSessionOpenDialog` في F3** |
 
 ## D — الأداء ومراجعة هوية Apple/DPI (مكتملة)
 
 | # | المهمة | الحالة | دليل الإنجاز |
 |---|---|---|---|
 | D.1 | خفض استعلامات لوحة التحكم (~25 متسلسلة) | ✅ | `DashboardService`: تجميع KPI لكل جدول في استعلام واحد (`GroupBy(_ => 1)` + `Sum(شرط ? قيمة : null)`)، ودمج قراءة المبيعات اليومية/الشهرية، ودمج أسماء التصنيفات في استعلام التوزيع. فحص `D.1.1` عبر `DbCommandInterceptor`: **19 أمرًا** (الهدف ≤ 22) + `D.1.2`: 30 نقطة اتجاه |
-| D.2 | إيقاف `EnableSensitiveDataLogging` / `DetailedErrors` في البناء الإصدار | ✅ | غُلِّف الاستدعاءان بـ `#if DEBUG` في `DzentoPOS2.Data\DependencyInjection.cs`. فحص `D.2.1` يتحقق أن البوابة قبل الاستدعاءين وأن `#endif` بعدهما |
 | D.3 | مراجعة هوية Apple ودقة DPI للشاشات عالية الكثافة | ✅ | لا أصول/هوية Apple في الحل (Windows-only)، و`ApplicationHighDpiMode=PerMonitorV2` في `DzentoPOS2.WinForms.csproj`. فحص `D.3.1`: `AutoScaleMode=Font` و`DeviceDpi=96`، و`D.3.2`: وجود `PerMonitorV2` |
 
+## E — صحة المبيعات والمخزون والصندوق (مكتملة)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| E1 | صحة إجماليات الفاتورة والتفصيل وترقيم المستندات | ✅ | `InvoiceCalculator` (تقريب كل سطر ثم المجموع، `AwayFromZero`) + `DocumentNumberService` (تسلسل يومي). دليل: `InvoiceCalculatorTests` (وحدة) و`SaleServiceE1Tests.SavedInvoiceTotalsMatchCalculator` (تكامل) — الإجماليات المحفوظة = مخرجات الحاسبة |
+| E2 | خصم المخزون المتتبَّع واسترجاعه عند الإلغاء | ✅ | `StockService` (حركات `SaleOut`/`VoidIn` + منع الرصيد السالب) و`SaleService.VoidAsync` يعيد الكمية للمخزون. دليل: `SaleServiceE2Tests` (خصم + دفتر حركات + استرجاع عند الإلغاء + منع الرصيد السالب) و`BusinessClockTests` |
+| E3 | ربط حركات الصندوق والفواتير بالجلسة + قيود FK + فهرس الجلسة المفتوحة الفريد | ✅ | migration `20261023140849_E3_CashSessionLinking` (FK restrict: `CashTransactions`/`SalesInvoices` → `CashSessions`) و`20261027164243_E3_UniqueOpenSessionIndex` (`UX_CashSessions_OpenPerCashbox` فهرس فريد مفلتر `"Status" = 0 AND "IsDeleted" = 0`). دليل: `SaleServiceE3Tests` (منها انحدار عيب FK عند إتمام البيع) و`MigrationSmokeTests` و`LegacySchemaRepairTests` |
+
+## F — استكمال دورة البيع (مكتملة)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| F1 | تحصين إقلاع المتجر وإصلاح المخطط القديم وتوطين الأخطاء | ✅ | `LegacySchemaRepair` يُصلح مخطط SQLite القديم قبل الترحيلات، والإقلاع يهيّئ الفرع/المستودع/الصندوق مرة واحدة، و`ExceptionFormatter`/`ExceptionLogger` (رسائل محلية + سجل ملفات). دليل: `LegacySchemaRepairTests` و`MigrationSmokeTests` و`ExceptionFormatterTests` و`ExceptionLoggerTests` |
+| F2 | أوضاع الخصم (نسبة/مبلغ) وصحة الدفع (يشمل Part 0/F2b) | ✅ | commit `40bae45`: دعم النسبة والمبلغ، الدفع المطبَّق/الباقي/الصرف، واشتراط زبون للبيع الآجل. **Part 0 (F2b)**: سقف الخصم يُطبَّق على الوضعين معًا عبر النسبة الفعلية `DiscountAmount/Subtotal*100`، وتهيئة `sales.max_discount_percent` عند التنفيذ (`AppSettingKeys` + `AppSettingSeeder`)، وتوطين أخطاء المجال عبر `CodedDomainException`/`DomainErrorCodes`/`ExceptionFormatter.LocalizeCode`، وتثبيت `_numPaid.Maximum = 99,999,999`. دليل: `SaleServiceF2Tests` (`Discount_ceiling_*` للوضعين + parity) و`ReceiptLocalizationTests` (0 نص إنجليزي مكتوب صراحةً في قالب الطباعة) |
+| F3 | لوحة تحكم الصندوق + الإجماليات الحية + الفرض | ✅ | `CashSessionOpenDialog` (نموذج أول: التخطيط في `.Designer.cs` والمنطق في `.cs`) و`CashSessionForm` مُعاد بناؤه (8 بطاقات `KpiCard`، تدفّق 4→2→1، RTL، وضع داكن، تنسيق عبر `RegionalContext`)، و`ISalesEventPublisher` مفرد يُطلق `SaleCompleted`/`SaleVoided`/`CashMovementAdded` **بعد الـcommit** + شريحة في شريط الحالة، و`GetSessionSummaryAsync` مصدر وحيد يستخدمه `CloseSessionAsync` (لا إغلاق مرتين)، وربط المصروفات بالصندوق. دليل: `CashSessionE3Tests` (11) و`CashSessionPolicyTests` (3، اكتشاف يوم العمل السابق بالتوقيت المحلي) — الوحدة 79 والتكامل 37، بناء نظيف (0 أخطاء / 21 تحذير `NU1701`)
+| F3b | ترقية آمنة لفهرس الجلسة المفتوحة الفريد + توطين لواحق KPI المختصرة | ✅ | `LegacySchemaRepair` يغلق الجلسات المفتوحة المكرّرة لكل صندوق قبل `MigrateAsync` داخل معاملة واحدة وبشكل مُكرَّر الأمان (idempotent): يُبقي الأحدث بـ`OpenedAtUtc` ويغلق الباقي بـ`Status = Closed` و`ClosedAtUtc = max(OpenedAtUtc, آخر حركة/فاتورة مرتبطة)` مع الحفاظ على الأرصدة وإلحاق الملاحظة «Auto-closed by upgrade (duplicate open session)» وتسجيل معرّفات الجلسة/الصندوق، دون حذف أي صف أو لمس الفواتير/الحركات. والترحيل `20261027164243_E3_UniqueOpenSessionIndex` أصبح كامل الأمان عند الترقية: `DROP INDEX IF EXISTS "IX_CashSessions_CashboxId"` و`CREATE UNIQUE INDEX IF NOT EXISTS "UX_CashSessions_OpenPerCashbox"`، و`Down()` متماثل (`DROP INDEX IF EXISTS` + `CREATE INDEX IF NOT EXISTS`)، فلا ينهار الإقلاع سواء كان الفهرس مفقودًا أو موجودًا مسبقًا. وتوطين لواحق `KpiValueFormatter.Compact` عبر `KpiCompactSuffixes` ومفاتيح `KpiSuffixThousand/Million/Billion` في base/ar/en/fr + `Designer` (فرق 0). دليل: `LegacySchemaRepairTests` (4 فحوص ترقية عبر ترحيلات حقيقية: وجود تكرار ينجح ويُغلق الأقدم، وغياب التكرار لا يغيّر شيئاً، وقاعدة جديدة تفرض الفهرس، وفهرس موجود مسبقًا يجعل الترحيل بلا أثر) — الوحدة 84 والتكامل 41، وبناء محلول نظيف (0 أخطاء / 21 تحذير `NU1701`)، و`dotnet ef migrations has-pending-model-changes` نظيف |
+
+## G — الإطار: العودة إلى استهداف .NET 9 (ترحيل .NET 10 مُلغى)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| G0 | تثبيت SDK عبر `global.json` | ❌ مُلغى | commit `e5646fa`، ثم أُزيل `global.json`: إصدار SDK `10.0.403` لا يمكن استخدامه من Visual Studio 2022 |
+| G1 | إعادة استهداف الحل إلى `net10.0` / `net10.0-windows` ومحاذاة حزم `Microsoft.*` إلى `10.0.14` | ❌ مُلغى | commit `3c07feb`، ثم أُلغي: مشاريع `net10.0` لا تُبنى على VS 2022 (MSBuild 17.x) — التفاصيل في `docs/net9-retarget.md` |
+| G2 | تدقيق الحزم (توافق / ترخيص / ثغرات / إهمال) | ✅ | commit `0d67e28`: لا حزم مصابة؛ `xunit 2.9.3` مُهمَل فقط؛ قرار تراخيص AutoMapper/QuestPDF/AForge؛ `docs/net10-package-audit.md` |
+| G3 | مراجعة تغييرات .NET 10 وEF Core 10 المكسِرة | ✅ (تاريخي) | commit `e57b7f8`: القائمة في `docs/net10-breaking-changes.md`؛ أُبقيت الإصلاحات اللازمة على .NET 9 أيضًا: WFO1000 عبر `.editorconfig`، و`[DisallowNull]` على `EZComboBox.SelectedValue`، وأعمدة ربط الجلسة في `InitialCreate` |
+| G4 | العودة إلى استهداف .NET 9 ومحاذاة حزم `Microsoft.*` إلى `9.0.22` | ✅ | إعادة TFM إلى `net9.0` / `net9.0-windows`، وإزالة `global.json`، و`ProductVersion` → `9.0.22`، وإضافة `NuGet.config` لإصلاح استعادة الحزم؛ 0 أخطاء / 21 تحذير `NU1701`، الوحدة 84 والتكامل 41، و`has-pending-model-changes` نظيف، وقاعدة بيانات جديدة تُطبّق 9 ترحيلات (56 جدولًا)؛ `docs/net9-retarget.md` |
+| G5 | تشغيل مسار الإقلاع على نسخ قواعد بيانات حقيقية | ✅ | commit `5c367f9` (على .NET 10)؛ مسار الإقلاع لا يخصّ إصدار الإطار: `docs/net10-smoke-run.md` |
+
+## I — لوحة التحكم: البطاقات + الفلترة + ربح المخزون
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| I.1 | KpiCard owner-draw (الPhase A) | ✅ | Controls/KpiCard.cs (commit 51a6f4b) |
+| I.2 | ShadowEngine Suspend/Resume | ✅ | ServicesUI/ShadowEngine.cs (commit 2744199) |
+| I.3 | MainForm timed collapse | ✅ | Forms/Layout/MainForm.cs (commit 2744199) |
+| I.4 | KpiValueFormatter culture | ✅ | Shared/Helpers/KpiValueFormatter.cs + tests |
+| I.5 | ProfitSummaryModule | ✅ | Modules/Dashboard/ProfitSummaryModule.cs |
+| I.6 | Dashboard filters by member/date | 🟨 | Forms/Dashboard/DashboardForm.cs + DashboardService |
+| I.7 | Expected stock profit | ✅ | DashboardService + ProfitCalculator |
+| I.8 | Docs sync | ⬜ | pending |
+
+## H — إعادة بناء حساب الأرباح (المراحل 1–4) ✅
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| H.1 | المرحلة 1: بيانات (UnitCost/ListPrice/DiscountAmount/IsCostEstimated على SalesInvoiceItem؛ FeesAmount على SalesInvoice) + ترحيل ProfitRebuild_Phase1 | ✅ | migration `20261102113616_ProfitRebuild_Phase1` (backfill) |
+| H.2 | المرحلة 2: إصلاح SalesInvoice.Create (خصم قبل ضريبة) + DTOs (Fees) | ✅ | `dotnet build` نظيف |
+| H.3 | المرحلة 3: متوسط متحرك في PurchaseService + توحيد العملة | ✅ | `ProfitFlowTests` |
+| H.4 | المرحلة 4: تثبيت التكلفة في البيع + ProfitCalculator + اختبارات | ✅ | Unit 109 + Integration 59 |
+
+## G1 — استكمال E4–E7 (اكتشاف الكاميرا، نطاق لكل صفحة، الأمان/التدقيق، مسارات البيانات والنسخ الاحتياطي)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| G1.1 | إصلاح اكتشاف الكاميرا (E6) | ✅ | commits `5a05f17`, `54794df`, `8835855`. `CameraDeviceEnumerator` يستخدم `FilterInfoCollection(FilterCategory.VideoInputDevice)` بدل تعداد GUID/COM المعطوب؛ `BarcodeScannerOverlay`/`SettingsForm` يعيدان التعداد بزر **Refresh**؛ الحفظ بمعرّف moniker مع رجوع آمن؛ تلميح «لا جهاز» يعرض بنية العملية (32/64)؛ دعم IP/MJPEG عبر `MJPEGStream`. دليل: بناء 0 أخطاء / 21 تحذير `NU1701`، الوحدة **84/84**، التكامل **41/41**، و`has-pending-model-changes` نظيف. |
+| G1.2 | إيقاف مشاركة `DbContext` واحد للجلسة كاملة (نطاق لكل صفحة) | ✅ | `Program.cs` يبني المزوّد بـ`ValidateScopes = true` و`ValidateOnBuild = true` في DEBUG (السطور 34–39). `DependencyInjection.cs` (Data) يسجّل `AddDbContext<AppDbContext>` و`AddDbContextFactory<AppDbContext>` بـ`ServiceLifetime.Scoped` (السطور 43–71) فلا يعود مصنع السياق Singleton يستهلك `DbContextOptions` محدود النطاق. `MainForm` لم يعد يستقبل `AppDbContext` مباشرة (حُذف الحقل `_context` غير المستخدم؛ السطور 50–53، 84–103) ويستخدم `_contextFactory.CreateDbContext()` قصير العمر فقط. `NavigationService` يحقن `IServiceScopeFactory` وينشئ نطاقًا لكل صفحة ويحرّره مع الصفحة السابقة (`Navigation/NavigationService.cs` السطور 9–30 و75–115). `AppApplicationContext` يحقن `IServiceScopeFactory` وينشئ نطاقًا لكل نافذة عليا (تسجيل الدخول/الغلاف) ويحرّره عند الاستبدال أو فشل الدخول (`Infrastructure/AppApplicationContext.cs`). دليل: `ScopeLifetimeTests` (3 فحوص تكامل): المزوّد يُبنى مع التحقق من النطاقات، `AppDbContext` واحد داخل النطاق ومختلف بين نطاقين، والمصنع مختلف بين نطاقين ويعيد سياقًا جديدًا في كل استدعاء. النتيجة: بناء 0 أخطاء / 21 تحذير `NU1701`، الوحدة **84/84**، التكامل **44/44**، و`has-pending-model-changes` نظيف، والتطبيق يقلع بلا استثناءات مع التحقق مفعّلًا. |
+| G1.3 | تحصين الأمان والصلاحيات والتدقيق (E7) | ✅ | **فرض تغيير كلمة المرور:** `User.MustChangePassword` (`DzentoPOS2.Core/Entities/Identity/User.cs:26`) مع افتراضي `false` (`UserConfiguration.cs:30`) وترحيل `20261029145702_G1_3_MustChangePassword`؛ `AdminSeeder` يضع العلامة على الحساب المُهيّأ ويعيد رفعها إن كان ما زال يستخدم كلمة المرور الافتراضية (`AdminSeeder.cs:33-65`)؛ `LoginForm` يفتح `ChangePasswordDialog` (`Forms/Auth/ChangePasswordDialog.cs:16`) ويمنع فتح الغلاف، وعند الإلغاء يسجّل الخروج (`LoginForm.cs:502`, `528`). `ChangePasswordAsync` يمسح العلامة ويستخدم النسخة المتعقَّبة من المستخدم (`AuthService.cs`). **فرض الصلاحيات في طبقة الخدمة:** `IAuthorizationGuard.DemandAsync` (`App/Authorization/AuthorizationGuard.cs:25`) يرمي `CodedDomainException` بالرمز `auth.permission_denied` (`CodedDomainException.cs:27`) المترجَم إلى `AppStrings.AccessDenied` (`ExceptionFormatter.cs:141`)، ويُسجّل كل رفض في `AuditLogs`؛ مطبَّق في `UserService` (L58/118/178)، `RoleService` (L54/101/175)، `ProductService` (L91/147/180)، `SaleService` (L142/355). **تدقيق:** `AuditService` (`App/Authorization/AuditService.cs:28`) بسياق مستقل يسجّل Login/Logout/ChangePassword/تجاوز SuperAdmin (مرة واحدة عند الدخول) ورفض الصلاحيات، ولا يُفشل العملية إن فشل التدقيق (يُسجَّل عبر `ILogger`). وصلاحيات جديدة `CashSessionsOpen/Close` و`UnitsCreate/Edit/Delete` مع منحها في `RolePermissionSeeder`. دليل: `SecurityG13Tests` — 7 فحوص تكامل: `Forced_password_change_is_flagged_on_login_and_cleared_after_the_change`، `Login_and_password_change_are_written_to_the_audit_log`، `Guard_denies_a_user_without_the_permission_and_writes_an_audit_entry`، `Guard_allows_an_admin_account_without_a_permission_row`، `Guard_denies_an_unauthenticated_caller`، `Seeded_admin_is_flagged_and_re_seeding_keeps_the_flag_without_duplicating_the_account`، `Re_seeding_does_not_force_a_change_after_the_admin_password_was_replaced`. النتيجة: بناء 0 أخطاء / 21 تحذير `NU1701`، الوحدة **84/84**، التكامل **51/51**، `has-pending-model-changes` نظيف، والتطبيق يقلع 25 ثانية بلا استثناءات مع التحقق مفعّلًا. |
+| G1.4 | مسارات البيانات، PRAGMAs/interceptor، النسخ الاحتياطي عبر الإنترنت (E4/E5) | ✅ | AppPaths.cs (DzentoPOS2.Core/Configuration/AppPaths.cs) يحيل DB وuser-settings.json وملف المظهر والعلامة التجارية والسجلات إلى %LocalAppData%\\DzentoPOS2\\ مع ترحيل مرة واحدة من دليل قاعدة التطبيق (نسخ + التحقق من الطول والمحتوى، لا تُكتب فوق الأصل ولا يُنقل، مع -wal)؛ UserPreferencesService.cs (DzentoPOS2/Configurations/UserPreferencesService.cs) يُقرأ من AppPaths.UserSettingsPath؛ ThemeManager.cs (DzentoPOS2/Themes/ThemeManager.cs) يُخزّن المظهر في %LocalAppData%\\DzentoPOS2\\theme.json؛ StoreBranding.cs (DzentoPOS2/Services/StoreBranding.cs) يُقرأ/يكتب العلامة التجارية من %LocalAppData%\\DzentoPOS2\\branding.json؛ ExceptionLogger.cs (DzentoPOS2.App/Diagnostics/ExceptionLogger.cs) يُسجّل السجلات في %LocalAppData%\\DzentoPOS2\\logs\\. PRAGMAs/interceptor: SqliteConnectionInterceptor.cs (DzentoPOS2.Data/Interceptors/SqliteConnectionInterceptor.cs) يضبط foreign_keys=ON、busy_timeout=5000、synchronous=NORMAL عند ConnectionOpened، ويُزال SaveChangesAsync override من AppDbContext.cs؛ SqliteStartup.cs (DzentoPOS2.Data/SqliteStartup.cs) يضبط journal_mode=WAL مرة واحدة عند البدء عبر EnsureWalModeAsync خارج المعاملات، يُستدعى في DbInitializer.cs وProgram.cs. النسخ الاحتياطي: BackupService.cs (DzentoPOS2.App/Services/Systems/BackupService.cs) يستخدم SqliteConnection.BackupDatabase (واجهة API عبر الإنترنت، لا نسخ ملف خام) مع احتفاظ آخر 7 نسخ، نسخ تلقائي عند الإغلاق (بحد أقصى مرة واحدة في اليوم)، التحقق من صلاحية الملف قبل الاستعادة، استعادة مع نسخة احتياطية آمنة + إعادة تشغيل (SettingsForm.cs بطاقة Backup/Restore مع CreateBackupAsync/ RestoreAsync/ ApplyRetention/ ValidateBackupAsync). دليل: بناء 0 أخطاء / 21 تحذير NU1701، الوحدة 84/84، التكامل 51/51، has-pending-model-changes نظيف، LocalizationParityTests ناجح (المفاتيح Backup/BackupFolder/BackupNow/BackupFileInvalid/BackupHint/BackupCreated/RestoreBackup/RestoreConfirm في base/ar/en/fr + AppStrings.Designer.cs، وفرق = 0).
+| G1.5 | إعادة تعيين كلمة مرور SuperAdmin (طوارئ) | ✅ | AdminSeeder يدعم إعادة التعيين через ADMIN_EMERGENCY_RESET=true (متغير بيئة) أو Admin:EmergencyReset=true (appsettings.json). при التفعيل: إعادة تعيين كلمة المرور إلى admin وتعيين MustChangePassword=true، وإجبار تغيير كلمة المرور при следующем входе. documented suggested future methods: email-based reset، security questions، recovery code، super-admin reset. دليل: بناء 0 أخطاء / 21 تحذير NU1701، الوحدة 84/84، التكامل 51/51.
+
+
+## H5 - Deferred Designer migration
+| H.5 | Move Fees/Discount inputs to SalesForm.Designer.cs within general designer migration task | ? | Documented only |
+
+## K — نظام الكتالوج المتعدد الأنشطة (متغيرات + أنشطة + صور + POS)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| K.0 | Phase 0: دمج fix/barcode-scanner + توثيق (database-design.md, architecture.md, docs/decisions.md) + فحص مسار خصم المخزون | ✅ | merge commit d3f38ff؛ build 0 errors/43 warnings؛ database-design.md + architecture.md محدّثان؛ docs/decisions.md (10 ADR) |
+| K.1 | Phase 1: نموذج البيانات + الهجرة + دمج الباركودات + قواعد التفرد | ✅ | migration CatalogPhase1_DataModel؛ backfill verified on real DB (2 products→2 default variants, 0 orphans/empty)؛ unit 124 + integration 70 pass؛ build 0 errors |
+| K.2 | Phase 2: ملف النشاط والوحدات (feature flags) + معالج الإعداد الأول + الإعدادات | ✅ | AppSettingKeys (4 modules + configured + allow_duplicate_barcodes)؛ AppSettingSeeder؛ IModuleService/ModuleService؛ FirstRunModulesDialog؛ MainForm.Load triggers wizard؛ build 0 errors |
+| K.3 | Phase 3: صفحة المنتجات (محرر المتغيرات، مولّد التوليفات، باركودات، Brand، صور) | ✅ | Brand + ProductKind + رفع صور + إدارة باركودات + محرر متغيرات (يدوي + مولّد توليفات تلقائي من الخصائص) في ProductVariantsDialog؛ IImageService/ImageService؛ مولّد التوليفات في Core (VariantCombinationGenerator) مع اختبارات وحدة؛ وضع داكن موحّد |
+| K.4 | Phase 4: المخزون والشراء والبيع على VariantId + إعادة ربط InventoryProfitCalculator | ✅ | StockChange + StockService + InventoryTransaction على VariantId؛ SaleService/PurchaseService يمرّران VariantId؛ متوسط التكلفة المتحرك لكل متغيّر + مزامنة Product.CostPrice للافتراضي؛ InventoryProfitCalculator على VariantId؛ ProductService يجمع المخزون لكل مستودع؛ unit 124/124 + integration 70/70؛ build 0 errors |
+| K.5 | Phase 5: واجهة POS الجديدة + منتقي متغيرات + اختيار باركود مشترك | ⬜ | pending |
+| K.6 | Phase 6: وحدات النشاط (بقالة، هواتف، رقمي) | ⬜ | pending |
+| K.7 | Phase 7: أداء + اختبارات + مراجعة وثائق + CHANGELOG | ⬜ | pending |
+
+## L — بنود التنظيف الستة (قبل استئناف المرحلة 5)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| L.1 | إعادة بناء `Todos.md` بترميز UTF-8 صالح مع الحفاظ على القسم K | ✅ | commit `04ad4d8`: الملف بترميز UTF-8 صالح وقسم K محفوظ، و0 آثار ترميز معطوب |
+| L.2 | فصل فرع الكتالوج عن فرع لوحة التحكم (محليًا فقط) | ✅ | `feature/catalog-variants` من `6dbf285` يحمل المراحل 0–4؛ `feature/dashboard-filters` المحلي أُعيد إلى `1426964`؛ `origin/feature/dashboard-filters` دون تغيير (`6dbf285`) |
+| L.3 | تخطيط `TableLayoutPanel` متجاوب لنوافذ المتغيرات والباركودات والوحدات + تدقيق تخطيط داخل التطبيق | ✅ | commit `c6d2d6e`؛ `--layout-audit` يقيس التطبيق الحقيقي عند 375/768/1440: 72 سيناريو / 0 مخالفة / 2016 عنصرًا |
+| L.4 | نقل كل النصوص العربية المكتوبة في الكود إلى `AppStrings` (ar/en/fr) | ✅ | commit `c318639`؛ 0 نص عربي في 618 ملف إنتاج عند الالتزام (619 بعد إضافة أداة تدقيق الترحيل) بما فيها `U+FDFC`؛ 533 مفتاحًا في كل ملف بلا فرق و0 قيمة فارغة؛ `docs/evidence/localization-audit.json` |
+| L.5 | اختيار مجلد النسخ الاحتياطي في معالج الإعداد الأول والإعدادات | ✅ | commit `7244954`؛ `%LocalAppData%\DzentoPOS2\backup-location.json`؛ الوحدة 146/146 + التكامل 70/70 |
+| L.6 | إثبات الترحيل على نسخة من قاعدة البيانات الحقيقية + خطة إزالة الأعمدة القديمة | ✅ | `--migration-audit`: 0 صف محذوف أو مغيّر، 0 جدول/عمود مفقود، 15 ترحيلًا قبل/بعد؛ `docs/migration-evidence-2026-11-06.md` + ADR-11 |

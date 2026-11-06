@@ -1,3 +1,4 @@
+using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Core.Entities.Accounting;
 using DzentoPOS2.Data.Context;
 using Microsoft.EntityFrameworkCore;
@@ -13,13 +14,13 @@ namespace DzentoPOS2.Data.Seed
 
             var categories = new List<ExpenseCategory>
             {
-                new() { Name = "إيجار", Description = "إيجار المحل أو المخزن" },
-                new() { Name = "رواتب", Description = "رواتب وأجور الموظفين" },
-                new() { Name = "فواتير", Description = "فواتير الكهرباء والماء والاتصالات" },
-                new() { Name = "صيانة", Description = "صيانة وتصليح المعدات" },
-                new() { Name = "نقل", Description = "مصاريف النقل والشحن" },
-                new() { Name = "تسويق", Description = "مصاريف الإعلان والتسويق" },
-                new() { Name = "متنوعة", Description = "مصاريف أخرى متنوعة" },
+                new() { Name = AppStrings.ExpenseRent, Description = AppStrings.ExpenseRentDescription },
+                new() { Name = AppStrings.ExpenseSalaries, Description = AppStrings.ExpenseSalariesDescription },
+                new() { Name = AppStrings.ExpenseBills, Description = AppStrings.ExpenseBillsDescription },
+                new() { Name = AppStrings.ExpenseMaintenance, Description = AppStrings.ExpenseMaintenanceDescription },
+                new() { Name = AppStrings.ExpenseTransport, Description = AppStrings.ExpenseTransportDescription },
+                new() { Name = AppStrings.ExpenseMarketing, Description = AppStrings.ExpenseMarketingDescription },
+                new() { Name = AppStrings.ExpenseMisc, Description = AppStrings.ExpenseMiscDescription },
             };
 
             await context.ExpenseCategories.AddRangeAsync(categories);

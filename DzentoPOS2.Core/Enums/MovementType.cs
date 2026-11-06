@@ -14,6 +14,14 @@ namespace DzentoPOS2.Core.Enums
         StockAdjustmentIncrease = 5,
         StockAdjustmentDecrease = 6,
         StockTransferIn = 7,
-        StockTransferOut = 8
+        StockTransferOut = 8,
+        SaleOut = 9,
+        PurchaseIn = 10,
+        SaleVoidIn = 11,
+        Opening = 12,
+        SaleCashIn = 13,
+        SaleVoidCashOut = 14,
+        SessionPayIn = 15,
+        SessionPayOut = 16
     }
 }

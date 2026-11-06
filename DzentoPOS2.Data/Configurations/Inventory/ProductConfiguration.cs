@@ -23,6 +23,15 @@ namespace DzentoPOS2.Data.Configurations.Inventory
             builder.Property(x => x.Barcode)
                 .HasMaxLength(64);
 
+            builder.Property(x => x.Brand)
+                .HasMaxLength(100);
+
+            builder.Property(x => x.ImagePath)
+                .HasMaxLength(500);
+
+            builder.Property(x => x.ThumbnailPath)
+                .HasMaxLength(500);
+
             builder.Property(x => x.Description)
                 .HasMaxLength(1000);
 
@@ -61,8 +70,10 @@ namespace DzentoPOS2.Data.Configurations.Inventory
             builder.HasIndex(x => x.SKU)
                 .IsUnique();
 
-            builder.HasIndex(x => x.Barcode)
-                .IsUnique();
+            builder.HasIndex(x => x.Barcode);
+
+            builder.Property(x => x.ProductKind)
+                .HasConversion<int>();
 
             builder.HasOne(x => x.Category)
                 .WithMany(x => x.Products)

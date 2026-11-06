@@ -1,4 +1,5 @@
-﻿using DzentoPOS2.Core.ValueObjects.Common;
+﻿using DzentoPOS2.Localization.Resources;
+using DzentoPOS2.Core.ValueObjects.Common;
 
 namespace DzentoPOS2.Core.ValueObjects.Identity
 {
@@ -17,7 +18,7 @@ namespace DzentoPOS2.Core.ValueObjects.Identity
         public PhoneNumber(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentException("رقم الهاتف مطلوب");
+                throw new ArgumentException(AppStrings.PhoneRequired);
 
             Value = value;
         }

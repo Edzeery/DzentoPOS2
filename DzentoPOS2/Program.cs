@@ -1,6 +1,9 @@
+using DzentoPOS2.App.Diagnostics;
 using DzentoPOS2.Data.Seed;
+using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.WinForms.Configurations;
+using DzentoPOS2.WinForms.Diagnostics;
 using DzentoPOS2.WinForms.Infrastructure;
 using DzentoPOS2.WinForms.Themes;
 using Microsoft.Extensions.Configuration;
@@ -13,9 +16,32 @@ internal static class Program
     public static IServiceProvider? ServiceProvider { get; private set; }
 
     [STAThread]
-    static void Main()
+    static void Main(string[] args)
     {
         ApplicationConfiguration.Initialize();
+
+        RegisterGlobalExceptionHandlers();
+
+        // Every writable location (database, preferences, theme, logs,
+        // backups) lives under %LocalAppData%\DzentoPOS2.
+        DzentoPOS2.Core.Configuration.AppPaths.EnsureCreated();
+
+        // Automated layout audit, run by the real executable:
+        //   DzentoPOS2.WinForms.exe --layout-audit
+        if (args.Any(a => string.Equals(a, "--layout-audit", StringComparison.OrdinalIgnoreCase)))
+        {
+            Environment.ExitCode = UiLayoutAudit.Run();
+            return;
+        }
+
+        // Migration audit, run by the real executable against a copy of the
+        // live database (the original is never opened for writing):
+        //   DzentoPOS2.WinForms.exe --migration-audit [--source <db>] [--work <dir>] [--keep]
+        if (args.Any(a => string.Equals(a, "--migration-audit", StringComparison.OrdinalIgnoreCase)))
+        {
+            Environment.ExitCode = MigrationAudit.Run(args);
+            return;
+        }
 
         var services = new ServiceCollection();
 
@@ -27,7 +53,15 @@ internal static class Program
 
         services.AddWinForms(configuration);
 
+#if DEBUG
+        ServiceProvider = services.BuildServiceProvider(new ServiceProviderOptions
+        {
+            ValidateScopes = true,
+            ValidateOnBuild = true
+        });
+#else
         ServiceProvider = services.BuildServiceProvider();
+#endif
 
         // Language: the persisted user preference always wins, the
         // appsettings value is only the fallback for a fresh installation.
@@ -59,5 +93,51 @@ internal static class Program
             .GetResult();
 
         Application.Run(ServiceProvider.GetRequiredService<AppApplicationContext>());
+    }
+
+    /// <summary>
+    /// Writes anything that escapes an event handler or an <c>async void</c>
+    /// method to the rolling log before the process dies, so the next failure
+    /// comes with a stack trace instead of only a message box.
+    /// Under a debugger the default is left alone (VS keeps breaking on the
+    /// exception, which is what a developer wants); the handler still runs
+    /// when the app is started normally.
+    /// </summary>
+    private static void RegisterGlobalExceptionHandlers()
+    {
+        if (!System.Diagnostics.Debugger.IsAttached)
+            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+
+        // Exceptions on the UI thread: event handlers and async void
+        // continuations end up here.
+        Application.ThreadException += (_, e) => ReportUnhandled(e.Exception, "Unhandled UI exception");
+
+        // Exceptions on other threads: the process is already going down, so
+        // logging is all that can be done.
+        AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+        {
+            if (e.ExceptionObject is Exception exception)
+                ExceptionLogger.Write(exception, "Unhandled background exception (terminating)");
+        };
+    }
+
+    private static void ReportUnhandled(Exception exception, string context)
+    {
+        try
+        {
+            var logPath = ExceptionLogger.Write(exception, context);
+
+            var message = logPath is null
+                ? $"{AppStrings.ErrorMsg}{Environment.NewLine}{Environment.NewLine}{exception.Message}"
+                : $"{AppStrings.ErrorMsg}{Environment.NewLine}{Environment.NewLine}{logPath}";
+
+            // Plain MessageBox on purpose: AppMessageBox builds its own form and
+            // must not be re-entered from inside the exception handler.
+            MessageBox.Show(message, AppStrings.ErrorMsg, MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        catch
+        {
+            // Reporting must never take the process down on its own.
+        }
     }
 }

@@ -45,6 +45,7 @@ namespace DzentoPOS2.Core.Constants
         public const string SalesCreate = "permissions.sales.create";
         public const string SalesReturn = "permissions.sales.return";
         public const string SalesDelete = "permissions.sales.delete";
+        public const string SalesDiscountOverride = "permissions.sales.discountoverride";
 
         // Purchases
         public const string PurchasesView = "permissions.purchases.view";
@@ -73,8 +74,24 @@ namespace DzentoPOS2.Core.Constants
         // Reports
         public const string ReportsView = "permissions.reports.view";
 
+        // Cash Sessions
+        public const string CashSessionsView = "permissions.cashsessions.view";
+        public const string CashSessionsOpen = "permissions.cashsessions.open";
+        public const string CashSessionsClose = "permissions.cashsessions.close";
+        public const string CashSessionsMovements = "permissions.cashsessions.movements";
+
+        // Units
+        public const string UnitsView = "permissions.units.view";
+        public const string UnitsCreate = "permissions.units.create";
+        public const string UnitsEdit = "permissions.units.edit";
+        public const string UnitsDelete = "permissions.units.delete";
+
         // Settings
         public const string SettingsView = "permissions.settings.view";
         public const string SettingsEdit = "permissions.settings.edit";
+
+        // Backup
+        public const string BackupCreate = "permissions.backup.create";
+        public const string BackupRestore = "permissions.backup.restore";
     }
 }

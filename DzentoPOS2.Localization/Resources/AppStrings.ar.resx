@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -897,7 +897,18 @@
   <data name="CameraDevice" xml:space="preserve">
     <value>الكاميرا</value>
   </data>
-  <data name="NoCameraFound" xml:space="preserve">
+    <data name="CameraDriverBitnessHint" xml:space="preserve">
+    <value>شغّل DroidCam Client أولاً؛ يجب أن يتطابق التطبيق مع مشغّل 32/64 بت ({0}-bit).</value>
+  </data>  <data name="ContinuousScan" xml:space="preserve">
+    <value>مسح مستمر</value>
+  </data>
+  <data name="ManualEntry" xml:space="preserve">
+    <value>إدخال يدوي</value>
+  </data>
+  <data name="Period" xml:space="preserve">
+    <value>الفترة</value>
+  </data>
+<data name="NoCameraFound" xml:space="preserve">
     <value>لم يتم العثور على كاميرا</value>
   </data>
   <data name="ScanBarcode" xml:space="preserve">
@@ -1066,6 +1077,641 @@
     <value>مفتوحة</value>
   </data>
   <data name="SessionClosed" xml:space="preserve">
-    <value>مغلقة</value>
+    <value>مغلق</value>
+  </data>
+  <data name="OpeningStock" xml:space="preserve">
+    <value>مخزون افتتاحي</value>
+  </data>
+  <data name="AdjustStock" xml:space="preserve">
+    <value>تعديل المخزون</value>
+  </data>
+  <data name="NewQuantity" xml:space="preserve">
+    <value>الكمية الجديدة</value>
+  </data>
+  <data name="AdjustmentReason" xml:space="preserve">
+    <value>السبب</value>
+  </data>
+  <data name="Apply" xml:space="preserve">
+    <value>تطبيق</value>
+  </data>
+  <data name="AdjustmentReasonRequired" xml:space="preserve">
+    <value>سبب التعديل مطلوب</value>
+  </data>
+  <data name="Ok" xml:space="preserve">
+    <value>موافق</value>
+  </data>
+  <data name="ErrorForeignKey" xml:space="preserve">
+    <value>تعذّر إتمام العملية لأن هذا السجل مرتبط ببيانات أخرى.</value>
+  </data>
+  <data name="ErrorUnique" xml:space="preserve">
+    <value>يوجد سجل بنفس القيمة مسبقًا.</value>
+  </data>
+  <data name="ErrorNotNull" xml:space="preserve">
+    <value>هناك قيمة مطلوبة مفقودة.</value>
+  </data>
+  <data name="ErrorConcurrency" xml:space="preserve">
+    <value>تم تعديل البيانات بواسطة عملية أخرى. يرجى المحاولة مرة أخرى.</value>
+  </data>
+  <data name="ErrorDomain" xml:space="preserve">
+    <value>تعذّر إتمام العملية.</value>
+  </data>
+  <data name="ErrorUnknown" xml:space="preserve">
+    <value>حدث خطأ غير متوقع.</value>
+  </data>
+  <data name="StoreNotInitialized" xml:space="preserve">
+    <value>لم تتم تهيئة المتجر. أعد تشغيل التطبيق لتهيئته.</value>
+  </data>
+  <data name="ErrorDetails" xml:space="preserve">
+    <value>التفاصيل</value>
+  </data>
+  <data name="ErrorCopyDetails" xml:space="preserve">
+    <value>نسخ</value>
+  </data>
+  <data name="ErrorDetailsCopied" xml:space="preserve">
+    <value>تم النسخ</value>
+  </data>
+  <data name="ErrorLoggedToFile" xml:space="preserve">
+    <value>تم حفظ نسخة من الخطأ في ملف السجل.</value>
+  </data>
+  <data name="DiscountModePercent" xml:space="preserve">
+    <value>نسبة</value>
+  </data>
+  <data name="DiscountModeAmount" xml:space="preserve">
+    <value>مبلغ</value>
+  </data>
+  <data name="AfterDiscount" xml:space="preserve">
+    <value>بعد الخصم</value>
+  </data>
+  <data name="TaxAmount" xml:space="preserve">
+    <value>الضريبة</value>
+  </data>
+  <data name="Fees" xml:space="preserve">
+    <value>الرسوم</value>
+  </data>
+  <data name="ProfitSummaryTitle" xml:space="preserve">
+    <value>ملخص الأرباح</value>
+  </data>
+  <data name="NetRevenue" xml:space="preserve">
+    <value>الإيراد الصافي</value>
+  </data>
+  <data name="CostOfGoods" xml:space="preserve">
+    <value>تكلفة البضاعة</value>
+  </data>
+  <data name="Returns" xml:space="preserve">
+    <value>المرتجعات</value>
+  </data>
+  <data name="GrossProfit" xml:space="preserve">
+    <value>الربح الإجمالي</value>
+  </data>
+  <data name="ExpectedSold" xml:space="preserve">
+    <value>مباع</value>
+  </data>
+  <data name="ExpectedStock" xml:space="preserve">
+    <value>مخزون</value>
+  </data>
+  <data name="NetProfit" xml:space="preserve">
+    <value>الربح الصافي</value>
+  </data>
+  <data name="EstimatedCostNote" xml:space="preserve">
+    <value>يتضمن تكلفة مقدّرة</value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>الباقي</value>
+  </data>
+  <data name="PayInFull" xml:space="preserve">
+    <value>دفع كامل</value>
+  </data>
+  <data name="CreditSaleRequiresCustomer" xml:space="preserve">
+    <value>يجب اختيار عميل عندما لا يتم دفع كامل المبلغ.</value>
+  </data>
+  <data name="CreditSaleConfirm" xml:space="preserve">
+    <value>المبلغ المتبقي على {0} هو {1}. هل تريد المتابعة؟</value>
+  </data>
+  <data name="DiscountExceedsLimit" xml:space="preserve">
+    <value>الخصم يتجاوز الحد المسموح به.</value>
+  </data>
+  <data name="Other" xml:space="preserve">
+    <value>أخرى</value>
+  </data>
+  <data name="WalkInCustomer" xml:space="preserve">
+    <value>عميل نقدي</value>
+  </data>
+  <data name="TransactionSale" xml:space="preserve">
+    <value>بيع</value>
+  </data>
+  <data name="TransactionPurchase" xml:space="preserve">
+    <value>شراء</value>
+  </data>
+  <data name="MinimumLabel" xml:space="preserve">
+    <value>الحد الأدنى</value>
+  </data>
+  <data name="DiscountExceedsSubtotal" xml:space="preserve">
+    <value>لا يمكن أن يتجاوز الخصم المجموع الفرعي.</value>
+  </data>
+  <data name="InvalidTaxRate" xml:space="preserve">
+    <value>يجب أن تكون نسبة الضريبة بين 0 و 100.</value>
+  </data>
+  <data name="InsufficientStock" xml:space="preserve">
+    <value>المخزون غير كافٍ لإتمام هذه العملية.</value>
+  </data>
+  <data name="ReceiptInvoice" xml:space="preserve">
+    <value>فاتورة</value>
+  </data>
+  <data name="SessionAlreadyClosed" xml:space="preserve">
+    <value>جلسة الصندوق مغلقة بالفعل.</value>
+  </data>
+  <data name="OpenCashDrawer" xml:space="preserve">
+    <value>فتح جلسة الصندوق</value>
+  </data>
+  <data name="CashDrawer" xml:space="preserve">
+    <value>الصندوق النقدي</value>
+  </data>
+  <data name="DrawerOpen" xml:space="preserve">
+    <value>الصندوق مفتوح</value>
+  </data>
+  <data name="DrawerClosed" xml:space="preserve">
+    <value>الصندوق مغلق</value>
+  </data>
+  <data name="DrawerNotOpen" xml:space="preserve">
+    <value>افتح الصندوق النقدي قبل إتمام البيع.</value>
+  </data>
+  <data name="SessionSummary" xml:space="preserve">
+    <value>ملخص الجلسة</value>
+  </data>
+  <data name="TotalSales" xml:space="preserve">
+    <value>إجمالي المبيعات</value>
+  </data>
+  <data name="CashSales" xml:space="preserve">
+    <value>المبيعات النقدية</value>
+  </data>
+  <data name="NonCashSales" xml:space="preserve">
+    <value>بطاقة / أخرى</value>
+  </data>
+  <data name="Invoices" xml:space="preserve">
+    <value>الفواتير</value>
+  </data>
+  <data name="Voids" xml:space="preserve">
+    <value>الملغاة</value>
+  </data>
+  <data name="PayIn" xml:space="preserve">
+    <value>إيداع</value>
+  </data>
+  <data name="PayOut" xml:space="preserve">
+    <value>سحب</value>
+  </data>
+  <data name="SessionOpenedSuccess" xml:space="preserve">
+    <value>تم فتح جلسة الصندوق.</value>
+  </data>
+  <data name="SessionClosedSuccess" xml:space="preserve">
+    <value>تم إغلاق جلسة الصندوق.</value>
+  </data>
+  <data name="PreviousBusinessDayWarning" xml:space="preserve">
+    <value>تم فتح الصندوق في يوم عمل سابق. أغلقه قبل المتابعة.</value>
+  </data>
+  <data name="ConfirmCloseSession" xml:space="preserve">
+    <value>هل تريد إغلاق جلسة الصندوق الحالية؟</value>
+  </data>
+  <data name="OpenSession" xml:space="preserve">
+    <value>فتح الجلسة</value>
+  </data>
+  <data name="CloseSession" xml:space="preserve">
+    <value>إغلاق الجلسة</value>
+  </data>
+  <data name="KpiSuffixThousand" xml:space="preserve">
+    <value>ألف</value>
+  </data>
+  <data name="KpiSuffixMillion" xml:space="preserve">
+    <value>مليون</value>
+  </data>
+  <data name="KpiSuffixBillion" xml:space="preserve">
+    <value>مليار</value>
+  </data>
+    <data name="Backup" xml:space="preserve">
+    <value>نسخة احتياطية</value>
+  </data>
+  <data name="BackupHint" xml:space="preserve">
+    <value>إنشاء نسخة احتياطية من بياناتك</value>
+  </data>
+  <data name="BackupNow" xml:space="preserve">
+    <value>نسخ احتياطي الآن</value>
+  </data>
+  <data name="BackupFolder" xml:space="preserve">
+    <value>مجلد النسخ الاحتياطي</value>
+  </data>
+  <data name="BackupCreated" xml:space="preserve">
+    <value>تم إنشاء النسخة الاحتياطية</value>
+  </data>
+  <data name="BackupFileInvalid" xml:space="preserve">
+    <value>ملف النسخة الاحتياطية غير صالح</value>
+  </data><data name="RestoreBackup" xml:space="preserve">
+    <value>استعادة نسخة احتياطية</value>
+  </data>
+  <data name="RestoreConfirm" xml:space="preserve">
+    <value>سيتم استبدال قاعدة البيانات الحالية بالنسخة المحددة وستعيد التطبيق التشغيل. هل تريد المتابعة؟</value>
+  </data>
+  <data name="InvalidRecoveryKey" xml:space="preserve">
+    <value>مفتاح الاسترداد غير صالح أو منتهي الصلاحية.</value>
+  </data>
+  <data name="RecoveryKeyLockedOut" xml:space="preserve">
+    <value>محاولات فاشلة كثيرة. حاول again after 15 minutes.</value>
+  </data>
+  <data name="PasswordMustDiffer" xml:space="preserve">
+    <value>يجب أن تختلف كلمة المرور الجديدة عن الحالية.</value>
+  </data>
+  <data name="CameraSource" xml:space="preserve">
+    <value>مصدر الكاميرا</value>
+  </data>
+  <data name="CameraSourceLocal" xml:space="preserve">
+    <value>كاميرا محلية</value>
+  </data>
+  <data name="CameraSourceIp" xml:space="preserve">
+    <value>كاميرا IP (رابط MJPEG)</value>
+  </data>
+  <data name="CameraUrl" xml:space="preserve">
+    <value>رابط الكاميرا</value>
+  </data>
+  <data name="CameraUrlInvalid" xml:space="preserve">
+    <value>أدخل رابط http/https صالح (مثال: http://192.168.1.20:4747/video).</value>
+  </data>
+  <data name="TestConnection" xml:space="preserve">
+    <value>اختبار الاتصال</value>
+  </data>
+  <data name="ConnectionSuccess" xml:space="preserve">
+    <value>الاتصال ناجح.</value>
+  </data>
+  <data name="ConnectionFailed" xml:space="preserve">
+    <value>فشل الاتصال.</value>
+  </data>
+  <data name="ForgotPassword" xml:space="preserve">
+    <value>نسيت كلمة المرور</value>
+  </data>
+  <data name="RecoveryKey" xml:space="preserve">
+    <value>مفتاح الاسترداد</value>
+  </data>
+  <data name="RecoveryKeyHint" xml:space="preserve">
+    <value>أدخل اسم المستخدم ومفتاح الاسترداد لإعادة تعيين كلمة المرور.</value>
+  </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>إعادة تعيين كلمة المرور</value>
+  </data>
+  <data name="FillAllFields" xml:space="preserve">
+    <value>يرجى ملء جميع الحقول.</value>
+  </data>
+  <data name="RecoveryKeyStoreWarning" xml:space="preserve">
+    <value>احفظ هذا المفتاح في مكان آمن. لن يُعرض مرة أخرى. ستحتاجه لإعادة تعيين كلمة المرور إذا نسيتها.</value>
+  </data>
+  <data name="IStoredIt" xml:space="preserve">
+    <value>لقد حفظت مفتاح الاسترداد في مكان آمن.</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>نسخ</value>
+  </data>
+    <data name="DatePresetToday" xml:space="preserve">
+    <value>اليوم</value>
+  </data>
+  <data name="DatePresetYesterday" xml:space="preserve">
+    <value>أمس</value>
+  </data>
+  <data name="DatePresetLast7Days" xml:space="preserve">
+    <value>آخر 7 أيام</value>
+  </data>
+  <data name="DatePresetThisMonth" xml:space="preserve">
+    <value>هذا الشهر</value>
+  </data>
+  <data name="DatePresetCustom" xml:space="preserve">
+    <value>مخصص</value>
+  </data>
+  <data name="AllCustomers" xml:space="preserve">
+    <value>كل العملاء</value>
+  </data>
+  <data name="RoleNotFound" xml:space="preserve">
+    <value>الدور غير موجود</value>
+  </data>
+  <data name="CurrencySymbolEgp" xml:space="preserve">
+    <value>ج.م</value>
+  </data>
+  <data name="DebitAccountCustomer" xml:space="preserve">
+    <value>حساب مدين</value>
+  </data>
+  <data name="CurrencySymbolKwd" xml:space="preserve">
+    <value>د.ك</value>
+  </data>
+  <data name="UnitPiece" xml:space="preserve">
+    <value>قطعة</value>
+  </data>
+  <data name="CurrencySymbolAed" xml:space="preserve">
+    <value>د.إ</value>
+  </data>
+  <data name="UnitLiter" xml:space="preserve">
+    <value>لتر</value>
+  </data>
+  <data name="UnitItem" xml:space="preserve">
+    <value>حبة</value>
+  </data>
+  <data name="UnitBox" xml:space="preserve">
+    <value>صندوق</value>
+  </data>
+  <data name="CreditAccountCustomer" xml:space="preserve">
+    <value>حساب دائن</value>
+  </data>
+  <data name="CurrencyMismatch" xml:space="preserve">
+    <value>عدم تطابق العملة</value>
+  </data>
+  <data name="UnitCarton" xml:space="preserve">
+    <value>كرتونة</value>
+  </data>
+  <data name="GenerateCombinations" xml:space="preserve">
+    <value>توليد التوليفات</value>
+  </data>
+  <data name="VariantsTab" xml:space="preserve">
+    <value>المتغيرات</value>
+  </data>
+  <data name="BarcodeAlreadyUsed" xml:space="preserve">
+    <value>الباركود مستخدم مسبقًا</value>
+  </data>
+  <data name="ExpenseTransportDescription" xml:space="preserve">
+    <value>مصاريف النقل والشحن</value>
+  </data>
+  <data name="CategoryConstructionDescription" xml:space="preserve">
+    <value>مواد البناء والتشييد</value>
+  </data>
+  <data name="CategoryOfficeDescription" xml:space="preserve">
+    <value>الأدوات المكتبية والقرطاسية</value>
+  </data>
+  <data name="CategoryConstruction" xml:space="preserve">
+    <value>مواد بناء</value>
+  </data>
+  <data name="ExpenseTransport" xml:space="preserve">
+    <value>نقل</value>
+  </data>
+  <data name="ExpenseMaintenanceDescription" xml:space="preserve">
+    <value>صيانة وتصليح المعدات</value>
+  </data>
+  <data name="UnitKilogramSymbol" xml:space="preserve">
+    <value>كجم</value>
+  </data>
+  <data name="ManageBarcodes" xml:space="preserve">
+    <value>إدارة الباركودات</value>
+  </data>
+  <data name="UnitKilogram" xml:space="preserve">
+    <value>كيلو جرام</value>
+  </data>
+  <data name="CategoryFood" xml:space="preserve">
+    <value>مواد غذائية</value>
+  </data>
+  <data name="CategoryFoodDescription" xml:space="preserve">
+    <value>المواد الغذائية والمشروبات</value>
+  </data>
+  <data name="ExpenseMiscDescription" xml:space="preserve">
+    <value>مصاريف أخرى متنوعة</value>
+  </data>
+  <data name="ExpenseMarketingDescription" xml:space="preserve">
+    <value>مصاريف الإعلان والتسويق</value>
+  </data>
+  <data name="ExpenseMisc" xml:space="preserve">
+    <value>متنوعة</value>
+  </data>
+  <data name="CategoryBeverages" xml:space="preserve">
+    <value>مشروبات</value>
+  </data>
+  <data name="CategoryCleaningDescription" xml:space="preserve">
+    <value>منتجات التنظيف والتعقيم</value>
+  </data>
+  <data name="CategoryOffice" xml:space="preserve">
+    <value>مستلزمات مكتبية</value>
+  </data>
+  <data name="ExpenseMarketing" xml:space="preserve">
+    <value>تسويق</value>
+  </data>
+  <data name="CategoryBeveragesDescription" xml:space="preserve">
+    <value>المشروبات الساخنة والباردة</value>
+  </data>
+  <data name="CategoryCleaning" xml:space="preserve">
+    <value>منظفات</value>
+  </data>
+  <data name="CurrencySymbolJod" xml:space="preserve">
+    <value>د.أ</value>
+  </data>
+  <data name="CurrencySymbolLbp" xml:space="preserve">
+    <value>ل.ل</value>
+  </data>
+  <data name="CurrencySymbolIqd" xml:space="preserve">
+    <value>د.ع</value>
+  </data>
+  <data name="CurrencySymbolBhd" xml:space="preserve">
+    <value>د.ب</value>
+  </data>
+  <data name="CurrencySymbolQar" xml:space="preserve">
+    <value>ر.ق</value>
+  </data>
+  <data name="CurrencySymbolOmr" xml:space="preserve">
+    <value>ر.ع</value>
+  </data>
+  <data name="CurrencySymbolTnd" xml:space="preserve">
+    <value>د.ت</value>
+  </data>
+  <data name="CurrencySymbolLyd" xml:space="preserve">
+    <value>د.ل</value>
+  </data>
+  <data name="CurrencySymbolSdg" xml:space="preserve">
+    <value>ج.س</value>
+  </data>
+  <data name="CurrencySymbolSyp" xml:space="preserve">
+    <value>ل.س</value>
+  </data>
+  <data name="CurrencySymbolMad" xml:space="preserve">
+    <value>د.م.</value>
+  </data>
+  <data name="CurrencySymbolDzd" xml:space="preserve">
+    <value>دج</value>
+  </data>
+  <data name="MainCashbox" xml:space="preserve">
+    <value>الصندوق الرئيسي</value>
+  </data>
+  <data name="AmountCannotBeNegative" xml:space="preserve">
+    <value>لا يمكن أن يكون المبلغ سالباً</value>
+  </data>
+  <data name="CurrencyRequired" xml:space="preserve">
+    <value>العملة مطلوبة</value>
+  </data>
+  <data name="Generate" xml:space="preserve">
+    <value>توليد</value>
+  </data>
+  <data name="MainBranch" xml:space="preserve">
+    <value>الفرع الرئيسي</value>
+  </data>
+  <data name="MainWarehouse" xml:space="preserve">
+    <value>المخزن الرئيسي</value>
+  </data>
+  <data name="InvoiceNumberRequired" xml:space="preserve">
+    <value>رقم الفاتورة مطلوب</value>
+  </data>
+  <data name="InvoiceNumberTooShort" xml:space="preserve">
+    <value>رقم الفاتورة قصير جدًا</value>
+  </data>
+  <data name="CurrencySymbolSar" xml:space="preserve">
+    <value>ر.س</value>
+  </data>
+  <data name="CurrencySymbolRialSign" xml:space="preserve">
+    <value>﷼</value>
+  </data>
+  <data name="EmailRequired" xml:space="preserve">
+    <value>البريد الإلكتروني مطلوب</value>
+  </data>
+  <data name="InvalidEmailFormat" xml:space="preserve">
+    <value>تنسيق بريد إلكتروني غير صالح</value>
+  </data>
+  <data name="PhoneRequired" xml:space="preserve">
+    <value>رقم الهاتف مطلوب</value>
+  </data>
+  <data name="ExpenseMaintenance" xml:space="preserve">
+    <value>صيانة</value>
+  </data>
+  <data name="VariantCreatedFormat" xml:space="preserve">
+    <value>تم إنشاء {0} متغيّر.</value>
+  </data>
+  <data name="ModuleGrocery" xml:space="preserve">
+    <value>بقالة (وزن/دفعات/صلاحية)</value>
+  </data>
+  <data name="ModulePhones" xml:space="preserve">
+    <value>هواتف / إلكترونيات (IMEI/ضمان)</value>
+  </data>
+  <data name="AddAttributeBeforeGenerate" xml:space="preserve">
+    <value>أضف خاصية واحدة على الأقل قبل التوليد.</value>
+  </data>
+  <data name="AttributeNeedsAtLeastOneValue" xml:space="preserve">
+    <value>كل خاصية يجب أن تحتوي على قيمة واحدة على الأقل.</value>
+  </data>
+  <data name="NoNewCombinations" xml:space="preserve">
+    <value>لا توجد توليفات جديدة (كلها موجودة).</value>
+  </data>
+  <data name="ChooseActivityModules" xml:space="preserve">
+    <value>اختيار وحدات النشاط</value>
+  </data>
+  <data name="SelectEnabledModules" xml:space="preserve">
+    <value>اختر الوحدات المفعّلة (يمكن تعديلها لاحقًا في الإعدادات):</value>
+  </data>
+  <data name="RoleAlreadyExists" xml:space="preserve">
+    <value>الدور موجود مسبقاً</value>
+  </data>
+  <data name="ModuleDigital" xml:space="preserve">
+    <value>منتجات رقمية (أكواد/شحن)</value>
+  </data>
+  <data name="ModuleGeneralRetail" xml:space="preserve">
+    <value>تجزئة عامة</value>
+  </data>
+  <data name="SaveAndContinue" xml:space="preserve">
+    <value>حفظ ومتابعة</value>
+  </data>
+  <data name="Attributes" xml:space="preserve">
+    <value>الخصائص</value>
+  </data>
+  <data name="Attribute" xml:space="preserve">
+    <value>الخاصية</value>
+  </data>
+  <data name="Values" xml:space="preserve">
+    <value>القيم</value>
+  </data>
+  <data name="Cost" xml:space="preserve">
+    <value>التكلفة</value>
+  </data>
+  <data name="AttributeLabel" xml:space="preserve">
+    <value>الخاصية:</value>
+  </data>
+  <data name="ValuesCommaSeparatedLabel" xml:space="preserve">
+    <value>القيم (بفاصلة):</value>
+  </data>
+  <data name="VariantHasStockCannotDelete" xml:space="preserve">
+    <value>لا يمكن حذف متغيّر عليه مخزون.</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>الاسم:</value>
+  </data>
+  <data name="PriceLabel" xml:space="preserve">
+    <value>سعر:</value>
+  </data>
+  <data name="CostLabel" xml:space="preserve">
+    <value>تكلفة:</value>
+  </data>
+  <data name="Variants" xml:space="preserve">
+    <value>متغيرات</value>
+  </data>
+  <data name="Barcodes" xml:space="preserve">
+    <value>باركودات</value>
+  </data>
+  <data name="CurrencyUsDollar" xml:space="preserve">
+    <value>دولار أمريكي</value>
+  </data>
+  <data name="CurrencyEuro" xml:space="preserve">
+    <value>يورو</value>
+  </data>
+  <data name="CurrencyEgyptianPound" xml:space="preserve">
+    <value>جنيه مصري</value>
+  </data>
+  <data name="ExpenseSalariesDescription" xml:space="preserve">
+    <value>رواتب وأجور الموظفين</value>
+  </data>
+  <data name="ExpenseBills" xml:space="preserve">
+    <value>فواتير</value>
+  </data>
+  <data name="ExpenseBillsDescription" xml:space="preserve">
+    <value>فواتير الكهرباء والماء والاتصالات</value>
+  </data>
+  <data name="ExpenseRent" xml:space="preserve">
+    <value>إيجار</value>
+  </data>
+  <data name="ExpenseRentDescription" xml:space="preserve">
+    <value>إيجار المحل أو المخزن</value>
+  </data>
+  <data name="ExpenseSalaries" xml:space="preserve">
+    <value>رواتب</value>
+  </data>
+  <data name="RoleCannotBeDeleted" xml:space="preserve">
+    <value>لا يمكن حذف هذا الدور</value>
+  </data>
+  <data name="RoleDeleted" xml:space="preserve">
+    <value>تم حذف الدور بنجاح</value>
+  </data>
+  <data name="RoleCreated" xml:space="preserve">
+    <value>تم إنشاء الدور بنجاح</value>
+  </data>
+  <data name="RoleNameInUse" xml:space="preserve">
+    <value>اسم الدور مستخدم مسبقاً</value>
+  </data>
+  <data name="RoleUpdated" xml:space="preserve">
+    <value>تم تحديث الدور بنجاح</value>
+  </data>
+  <data name="DeleteAttribute" xml:space="preserve">
+    <value>حذف خاصية</value>
+  </data>
+  <data name="CurrencyKuwaitiDinar" xml:space="preserve">
+    <value>دينار كويتي</value>
+  </data>
+  <data name="AddAttribute" xml:space="preserve">
+    <value>إضافة خاصية</value>
+  </data>
+  <data name="ReceiptFooterThankYou" xml:space="preserve">
+    <value>شكراً لتسوقكم معنا</value>
+  </data>
+  <data name="CurrencySaudiRiyal" xml:space="preserve">
+    <value>ريال سعودي</value>
+  </data>
+  <data name="CurrencyUaeDirham" xml:space="preserve">
+    <value>درهم إماراتي</value>
+  </data>
+  <data name="BackupLocation" xml:space="preserve">
+    <value>موقع النسخ الاحتياطي</value>
+  </data>
+  <data name="ChooseBackupFolder" xml:space="preserve">
+    <value>اختيار مجلد...</value>
+  </data>
+  <data name="BackupLocationHint" xml:space="preserve">
+    <value>تُحفظ النسخ الاحتياطية خارج قاعدة البيانات، ويمكنك اختيار مجلد آخر.</value>
+  </data>
+  <data name="BackupLocationChanged" xml:space="preserve">
+    <value>تم تحديث مجلد النسخ الاحتياطي.</value>
+  </data>
+  <data name="BackupLocationInvalid" xml:space="preserve">
+    <value>المجلد المحدد غير صالح أو غير قابل للكتابة.</value>
   </data>
 </root>

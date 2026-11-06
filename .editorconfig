@@ -1,0 +1,20 @@
+root = true
+
+# -----------------------------------------------------------------------------
+# WinForms designer-serialization analyzer (WFO1000)
+# -----------------------------------------------------------------------------
+# Targeting net9.0-windows/net10.0-windows turns on the WinForms code-serialization
+# analyzer WFO1000 ("Property does not configure the code serialization for its
+# property content"), which is reported as an error by default.
+#
+# The custom controls in EZControls and DzentoPOS2.WinForms are only consumed
+# programmatically in this solution (never through the Visual Studio designer).
+# The designer only needs these serialization hints at design time, so the
+# diagnostic is not applicable here and is disabled for the two WinForms projects.
+# Revisit if these controls are ever surfaced in the designer, or when their
+# properties are annotated with [DefaultValue] / [DesignerSerializationVisibility].
+[EZControls/**/*.cs]
+dotnet_diagnostic.WFO1000.severity = none
+
+[DzentoPOS2/**/*.cs]
+dotnet_diagnostic.WFO1000.severity = none

@@ -1,5 +1,6 @@
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Shared.Contracts.DTOs.Reports;
+using DzentoPOS2.Shared.Helpers;
 using DzentoPOS2.WinForms.Controls;
 using DzentoPOS2.WinForms.Themes;
 using FontAwesome.Sharp;
@@ -9,6 +10,10 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
     internal class KpiCardsModule
     {
         private readonly List<KpiCard> _cards = new();
+        private DashboardCardData? _actualProfit;
+        private decimal _monthlyDiscounts;
+        private decimal _monthlyFees;
+        private decimal _netProfit;
 
         private static Color[] Colors => AppColors.KpiPalette;
 
@@ -48,13 +53,13 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             var titles = GetTitles();
             for (int i = 0; i < Keys.Length; i++)
             {
-                var card = new KpiCard(Keys[i], titles[i], Icons[i], Colors[i]);
+                var card = new KpiCard(Keys[i], titles[i], Icons[i], Colors[i % Colors.Length]);
                 _cards.Add(card);
-                grid.Controls.Add(card, i % 4, i / 4);
             }
 
-            for (int i = Keys.Length; i < 12; i++)
-                grid.Controls.Add(new Panel(), i % 4, i / 4);
+            Reflow(grid);
+
+            grid.Resize += (_, _) => Reflow(grid);
 
             return grid;
         }
@@ -66,28 +71,47 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             AppStrings.ActiveProductsKPI,AppStrings.LowStockKPI,AppStrings.ActiveCustomers,AppStrings.ActiveSuppliers
         ];
 
+        private void Reflow(TableLayoutPanel grid)
+        {
+            if (_cards.Count == 0) return;
+            int cols = grid.Width < 520 ? 1 : grid.Width < 900 ? 2 : 4;
+            if (cols == grid.ColumnCount && grid.Controls.Count == _cards.Count) return;
+
+            grid.SuspendLayout();
+            grid.Controls.Clear();
+            grid.ColumnCount = cols;
+            grid.RowStyles.Clear();
+            int rows = (int)Math.Ceiling(_cards.Count / (double)cols);
+            for (int r = 0; r < rows; r++)
+                grid.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            for (int i = 0; i < _cards.Count; i++)
+                grid.Controls.Add(_cards[i], i % cols, i / cols);
+            grid.ResumeLayout();
+        }
+
         public void Update(DashboardSummaryDto data)
         {
-            var map = new Dictionary<string, DashboardCardData>
-            {
-                [Keys[0]] = data.SalesToday,
-                [Keys[1]] = data.PurchasesToday,
-                [Keys[2]] = data.SalesCount,
-                [Keys[3]] = data.PurchasesCount,
-                [Keys[4]] = data.MonthlySales,
-                [Keys[5]] = data.MonthlyPurchases,
-                [Keys[6]] = data.ExpectedProfit,
-                [Keys[7]] = data.ActualProfit,
-                [Keys[8]] = data.ActiveProducts,
-                [Keys[9]] = data.LowStock,
-                [Keys[10]] = data.ActiveCustomers,
-                [Keys[11]] = data.ActiveSuppliers,
-            };
+            _actualProfit = data.ActualProfit;
+            _monthlyDiscounts = data.MonthlyDiscountAmount;
+            _monthlyFees = data.MonthlyFeesAmount;
+            _netProfit = data.NetProfit.Value;
+
+            var map = DashboardKpiCardMap.Build(data);
+
+            var digits = KpiCard.CurrencyDigits;
+            var culture = System.Globalization.CultureInfo.CurrentCulture;
+            var expectedFormula = $"{AppStrings.ExpectedProfit} = {AppStrings.ExpectedSold} + {AppStrings.ExpectedStock}";
 
             foreach (var card in _cards)
             {
                 if (map.TryGetValue(card.CardKey, out var d))
-                    card.SetData(d.DisplayValue, d.TrendDisplay, d.IsUp);
+                {
+                    card.SetValue(d.Value, d.Kind, d.TrendKind, d.TrendPercent);
+                    card.SetEstimated(d.HasEstimatedCost);
+                }
+
+                if (card.CardKey == "ExpectedProfit")
+                    card.SetTooltip(expectedFormula);
             }
         }
     }

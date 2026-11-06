@@ -22,9 +22,21 @@ namespace DzentoPOS2.Data.Configurations.Sales
             builder.Property(x => x.Total)
                 .HasPrecision(18, 2);
 
+            builder.Property(x => x.UnitCost)
+                .HasPrecision(18, 2);
+
+            builder.Property(x => x.ListPrice)
+                .HasPrecision(18, 2);
+
+            builder.Property(x => x.DiscountAmount)
+                .HasPrecision(18, 2);
+
+            builder.Property(x => x.IsCostEstimated)
+                .HasDefaultValue(true);
+
             builder.Property(x => x.Description)
                 .IsRequired()
-                .HasMaxLength(256)
+                .HasMaxLength(1000)
                 .HasDefaultValue("");
 
             builder.Property(x => x.CreatedAt)
@@ -32,6 +44,8 @@ namespace DzentoPOS2.Data.Configurations.Sales
 
             builder.Property(x => x.IsDeleted)
                 .HasDefaultValue(false);
+
+            builder.HasIndex(x => x.VariantId);
         }
     }
 }

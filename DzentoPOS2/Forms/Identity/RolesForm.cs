@@ -42,30 +42,30 @@ public partial class RolesForm : LocalizableFormBase
 
         _btnAdd = ButtonFactory.ToolAdd("Add");
         _btnAdd.Location = new Point(16, 12);
-        _btnAdd.Click += async (_, _) => await AddRole();
+        _btnAdd.Click += (_, _) => RunSafe(AddRole);
 
         _btnEdit = ButtonFactory.ToolEdit("Edit");
         _btnEdit.Location = new Point(124, 12);
-        _btnEdit.Click += async (_, _) => await EditRole();
+        _btnEdit.Click += (_, _) => RunSafe(EditRole);
 
         _btnDelete = ButtonFactory.ToolDelete("Delete");
         _btnDelete.Location = new Point(232, 12);
-        _btnDelete.Click += async (_, _) => await DeleteRole();
+        _btnDelete.Click += (_, _) => RunSafe(DeleteRole);
 
         _topPanel.Controls.AddRange(new Control[] { _btnDelete, _btnEdit, _btnAdd });
 
         _grid = new DataGridView { Dock = DockStyle.Fill, ReadOnly = true, MultiSelect = false };
         DataGridViewStyleHelper.ApplyModernStyle(_grid);
-        _grid.CellDoubleClick += async (_, _) => await EditRole();
+        _grid.CellDoubleClick += (_, _) => RunSafe(EditRole);
 
         Controls.Add(_grid);
         Controls.Add(_topPanel);
     }
 
-    protected override async void OnLoad(EventArgs e)
+    protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
-        await LoadDataAsync();
+        RunSafe(LoadDataAsync);
     }
 
     protected override void LoadText()
@@ -80,6 +80,8 @@ public partial class RolesForm : LocalizableFormBase
     {
         var result = await _roleService.GetPagedAsync(
             new PagedRequest { PageSize = int.MaxValue });
+
+        if (IsDisposedOrDisposing) return;
 
         _roles = result.Success && result.Data != null
             ? result.Data.Items.ToList()

@@ -1,6 +1,7 @@
 ﻿using DzentoPOS2.Core.Common;
 using DzentoPOS2.Core.ValueObjects.Common;
-using DzentoPOS2.Core.ValueObjects.Inventory; 
+using DzentoPOS2.Core.ValueObjects.Inventory;
+using DzentoPOS2.Core.Enums; 
 
 namespace DzentoPOS2.Core.Entities.Inventory
 {
@@ -13,6 +14,14 @@ namespace DzentoPOS2.Core.Entities.Inventory
         public string? Barcode { get; set; }
 
         public string? Description { get; set; }
+
+        public string? Brand { get; set; }
+
+        public ProductKind ProductKind { get; set; } = DzentoPOS2.Core.Enums.ProductKind.Standard;
+
+        public string? ImagePath { get; set; }
+
+        public string? ThumbnailPath { get; set; }
 
         public Guid CategoryId { get; set; }
 

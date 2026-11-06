@@ -25,15 +25,24 @@ namespace DzentoPOS2.Data.Configurations.Inventory
                     .HasPrecision(18, 2);
             });
 
+            builder.Property(x => x.Version)
+                .IsConcurrencyToken();
+
             builder.HasIndex(x => new
             {
                 x.ProductId,
+                x.VariantId,
                 x.WarehouseId
             }).IsUnique();
 
             builder.HasOne(x => x.Product)
                 .WithMany(x => x.Stocks)
                 .HasForeignKey(x => x.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(x => x.Variant)
+                .WithMany()
+                .HasForeignKey(x => x.VariantId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(x => x.Warehouse)

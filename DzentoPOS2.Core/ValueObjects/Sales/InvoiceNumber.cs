@@ -1,4 +1,5 @@
-﻿using DzentoPOS2.Core.ValueObjects.Common;
+﻿using DzentoPOS2.Localization.Resources;
+using DzentoPOS2.Core.ValueObjects.Common;
 
 namespace DzentoPOS2.Core.ValueObjects.Sales
 {
@@ -11,10 +12,10 @@ namespace DzentoPOS2.Core.ValueObjects.Sales
         public InvoiceNumber(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentException("رقم الفاتورة مطلوب");
+                throw new ArgumentException(AppStrings.InvoiceNumberRequired);
 
             if (value.Length < 5)
-                throw new ArgumentException("رقم الفاتورة قصير جدًا");
+                throw new ArgumentException(AppStrings.InvoiceNumberTooShort);
 
             Value = value;
         }

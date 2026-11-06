@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using DzentoPOS2.Localization.Resources;
+using AutoMapper;
 using DzentoPOS2.Shared.Contracts.DTOs.Identity.Roles;
 using DzentoPOS2.App.Services.Identity.Interfaces;
 using DzentoPOS2.Core.Entities.Identity;
@@ -24,12 +25,15 @@ namespace DzentoPOS2.App.Services.Identity
 
         private readonly IMapper _mapper;
 
+        private readonly DzentoPOS2.App.Authorization.IAuthorizationGuard _authorizationGuard;
+
         public RoleService(
             IRoleRepository roleRepository,
             IPermissionRepository permissionRepository,
             IRolePermissionRepository rolePermissionRepository,
             IUnitOfWork unitOfWork,
-            IMapper mapper)
+            IMapper mapper,
+            DzentoPOS2.App.Authorization.IAuthorizationGuard authorizationGuard)
         {
             _roleRepository = roleRepository;
 
@@ -41,11 +45,16 @@ namespace DzentoPOS2.App.Services.Identity
             _unitOfWork = unitOfWork;
 
             _mapper = mapper;
+
+            _authorizationGuard = authorizationGuard;
         }
 
         public async Task<Result> CreateAsync(
             CreateRoleDto dto)
         {
+            await _authorizationGuard.DemandAsync(
+                DzentoPOS2.Core.Constants.Permissions.RolesCreate);
+
             var exists =
                 await _roleRepository.ExistsAsync(x =>
                     x.Name == dto.Name);
@@ -53,7 +62,7 @@ namespace DzentoPOS2.App.Services.Identity
             if (exists)
             {
                 return Result.Failed(
-                    "الدور موجود مسبقاً");
+                    AppStrings.RoleAlreadyExists);
             }
 
             var role = new Role
@@ -84,12 +93,15 @@ namespace DzentoPOS2.App.Services.Identity
             await _unitOfWork.SaveChangesAsync();
 
             return Result.Succeeded(
-                "تم إنشاء الدور بنجاح");
+                AppStrings.RoleCreated);
         }
 
         public async Task<Result> UpdateAsync(
             UpdateRoleDto dto)
         {
+            await _authorizationGuard.DemandAsync(
+                DzentoPOS2.Core.Constants.Permissions.RolesEdit);
+
             var role =
                 await _roleRepository
                     .GetWithPermissionsAsync(dto.Id);
@@ -97,7 +109,7 @@ namespace DzentoPOS2.App.Services.Identity
             if (role == null)
             {
                 return Result.Failed(
-                    "الدور غير موجود");
+                    AppStrings.RoleNotFound);
             }
 
             var duplicate =
@@ -108,7 +120,7 @@ namespace DzentoPOS2.App.Services.Identity
             if (duplicate)
             {
                 return Result.Failed(
-                    "اسم الدور مستخدم مسبقاً");
+                    AppStrings.RoleNameInUse);
             }
 
             role.Name = dto.Name;
@@ -155,12 +167,15 @@ namespace DzentoPOS2.App.Services.Identity
             await _unitOfWork.SaveChangesAsync();
 
             return Result.Succeeded(
-                "تم تحديث الدور بنجاح");
+                AppStrings.RoleUpdated);
         }
 
         public async Task<Result> DeleteAsync(
             Guid id)
         {
+            await _authorizationGuard.DemandAsync(
+                DzentoPOS2.Core.Constants.Permissions.RolesDelete);
+
             var role =
                 await _roleRepository
                     .GetWithPermissionsAsync(id);
@@ -168,13 +183,13 @@ namespace DzentoPOS2.App.Services.Identity
             if (role == null)
             {
                 return Result.Failed(
-                    "الدور غير موجود");
+                    AppStrings.RoleNotFound);
             }
 
             if (role.Name == "SuperAdmin")
             {
                 return Result.Failed(
-                    "لا يمكن حذف هذا الدور");
+                    AppStrings.RoleCannotBeDeleted);
             }
 
             _roleRepository.Remove(role);
@@ -182,7 +197,7 @@ namespace DzentoPOS2.App.Services.Identity
             await _unitOfWork.SaveChangesAsync();
 
             return Result.Succeeded(
-                "تم حذف الدور بنجاح");
+                AppStrings.RoleDeleted);
         }
 
         public async Task<Result<RoleDetailsDto>>
@@ -195,7 +210,7 @@ namespace DzentoPOS2.App.Services.Identity
             if (role == null)
             {
                 return Result<RoleDetailsDto>
-                    .Failed("الدور غير موجود");
+                    .Failed(AppStrings.RoleNotFound);
             }
 
             var dto = _mapper.Map<RoleDetailsDto>(role);

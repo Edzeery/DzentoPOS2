@@ -13,12 +13,18 @@ namespace DzentoPOS2.Core.Entities.Inventory
     {
         public Guid ProductId { get; set; }
 
+        public Guid VariantId { get; set; }
+
         public Product Product { get; set; } = null!;
+
+        public ProductVariant Variant { get; set; } = null!;
 
         public Guid WarehouseId { get; set; }
 
         public Warehouse Warehouse { get; set; } = null!;
 
         public Quantity Quantity { get; set; } = null!;
+
+        public int Version { get; set; }
     }
 }

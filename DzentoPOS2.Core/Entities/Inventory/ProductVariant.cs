@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DzentoPOS2.Core.Common;
+using DzentoPOS2.Core.ValueObjects.Common;
+using DzentoPOS2.Core.ValueObjects.Inventory;
 
 namespace DzentoPOS2.Core.Entities.Inventory
 {
@@ -11,9 +9,28 @@ namespace DzentoPOS2.Core.Entities.Inventory
     {
         public Guid ProductId { get; set; }
 
+        // Legacy display name (kept for compatibility; new code uses attribute values).
         public string Name { get; set; } = string.Empty;
 
+        public string? SKU { get; set; }
+
         public decimal AdditionalPrice { get; set; }
+
+        public Money CostPrice { get; set; } = null!;
+
+        public Money SalePrice { get; set; } = null!;
+
+        public Quantity MinimumStock { get; set; } = null!;
+
+        public bool TrackStock { get; set; } = true;
+
+        public bool IsActive { get; set; } = true;
+
+        public bool IsDefault { get; set; } = false;
+
+        public string? ImagePath { get; set; }
+
+        public string? ThumbnailPath { get; set; }
 
         public virtual Product Product { get; set; } = null!;
     }

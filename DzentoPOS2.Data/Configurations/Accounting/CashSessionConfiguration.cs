@@ -34,6 +34,11 @@ namespace DzentoPOS2.Data.Configurations.Accounting
 
             builder.HasIndex(x => x.Status);
 
+            builder.HasIndex(x => x.CashboxId)
+                .IsUnique()
+                .HasFilter("\"Status\" = 0 AND \"IsDeleted\" = 0")
+                .HasDatabaseName("UX_CashSessions_OpenPerCashbox");
+
             builder.HasOne<Cashbox>()
                 .WithMany()
                 .HasForeignKey(x => x.CashboxId)

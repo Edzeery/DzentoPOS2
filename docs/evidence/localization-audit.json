@@ -1,0 +1,75 @@
+{
+    "GeneratedAt":  "2026-11-06T12:04:57.9174135+01:00",
+    "Scope":  [
+                  "DzentoPOS2",
+                  "DzentoPOS2.App",
+                  "DzentoPOS2.Core",
+                  "DzentoPOS2.Data",
+                  "DzentoPOS2.Shared",
+                  "DzentoPOS2.Localization",
+                  "EZControls"
+              ],
+    "ArabicRanges":  [
+                         "\\u0600-\\u06FF",
+                         "\\u0750-\\u077F",
+                         "\\u08A0-\\u08FF",
+                         "\\uFB50-\\uFDFF",
+                         "\\uFE70-\\uFEFF"
+                     ],
+    "FilesScanned":  619,
+    "HardcodedArabicLiteralCount":  0,
+    "Offenders":  [
+
+                  ],
+    "Resx":  [
+                 {
+                     "File":  "AppStrings.resx",
+                     "Keys":  533,
+                     "EmptyValues":  0,
+                     "ReplacementChars":  0
+                 },
+                 {
+                     "File":  "AppStrings.en.resx",
+                     "Keys":  533,
+                     "EmptyValues":  0,
+                     "ReplacementChars":  0
+                 },
+                 {
+                     "File":  "AppStrings.ar.resx",
+                     "Keys":  533,
+                     "EmptyValues":  0,
+                     "ReplacementChars":  0
+                 },
+                 {
+                     "File":  "AppStrings.fr.resx",
+                     "Keys":  533,
+                     "EmptyValues":  0,
+                     "ReplacementChars":  0
+                 }
+             ],
+    "ResxParity":  [
+                       {
+                           "File":  "AppStrings.resx",
+                           "Missing":  0,
+                           "Extra":  0
+                       },
+                       {
+                           "File":  "AppStrings.en.resx",
+                           "Missing":  0,
+                           "Extra":  0
+                       },
+                       {
+                           "File":  "AppStrings.ar.resx",
+                           "Missing":  0,
+                           "Extra":  0
+                       },
+                       {
+                           "File":  "AppStrings.fr.resx",
+                           "Missing":  0,
+                           "Extra":  0
+                       }
+                   ],
+    "UnitTests":  "146/146 passed",
+    "IntegrationTests":  "70/70 passed",
+    "LayoutAudit":  "72 scenarios, 0 violations, 2016 controls"
+}

@@ -55,4 +55,14 @@ public class AppSettings
 
     /// <summary>Name of the DirectShow video device used for scanning.</summary>
     public string BarcodeCameraDevice { get; set; } = "";
+
+    /// <summary>
+    /// Camera source type: "Local" (DirectShow device) or "Ip" (MJPEG URL).
+    /// </summary>
+    public string BarcodeCameraSource { get; set; } = "Local";
+
+    /// <summary>
+    /// MJPEG URL for IP camera source (e.g. http://192.168.1.20:4747/video).
+    /// </summary>
+    public string BarcodeCameraUrl { get; set; } = "";
 }

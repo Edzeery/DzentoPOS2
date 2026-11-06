@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -897,7 +897,18 @@
   <data name="CameraDevice" xml:space="preserve">
     <value>Camera</value>
   </data>
-  <data name="NoCameraFound" xml:space="preserve">
+    <data name="CameraDriverBitnessHint" xml:space="preserve">
+    <value>Start DroidCam Client first; the app must match its 32/64-bit driver ({0}-bit).</value>
+  </data>  <data name="ContinuousScan" xml:space="preserve">
+    <value>Continuous scan</value>
+  </data>
+  <data name="ManualEntry" xml:space="preserve">
+    <value>Manual entry</value>
+  </data>
+  <data name="Period" xml:space="preserve">
+    <value>Period</value>
+  </data>
+<data name="NoCameraFound" xml:space="preserve">
     <value>No camera found</value>
   </data>
   <data name="ScanBarcode" xml:space="preserve">
@@ -1067,5 +1078,640 @@
   </data>
   <data name="SessionClosed" xml:space="preserve">
     <value>Closed</value>
+  </data>
+  <data name="OpeningStock" xml:space="preserve">
+    <value>Opening stock</value>
+  </data>
+  <data name="AdjustStock" xml:space="preserve">
+    <value>Adjust stock</value>
+  </data>
+  <data name="NewQuantity" xml:space="preserve">
+    <value>New quantity</value>
+  </data>
+  <data name="AdjustmentReason" xml:space="preserve">
+    <value>Reason</value>
+  </data>
+  <data name="Apply" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="AdjustmentReasonRequired" xml:space="preserve">
+    <value>An adjustment reason is required</value>
+  </data>
+  <data name="Ok" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="ErrorForeignKey" xml:space="preserve">
+    <value>The operation could not be completed because this record is referenced by other data.</value>
+  </data>
+  <data name="ErrorUnique" xml:space="preserve">
+    <value>A record with the same value already exists.</value>
+  </data>
+  <data name="ErrorNotNull" xml:space="preserve">
+    <value>A required value is missing.</value>
+  </data>
+  <data name="ErrorConcurrency" xml:space="preserve">
+    <value>The data was changed by another operation. Please try again.</value>
+  </data>
+  <data name="ErrorDomain" xml:space="preserve">
+    <value>The operation could not be completed.</value>
+  </data>
+  <data name="ErrorUnknown" xml:space="preserve">
+    <value>An unexpected error occurred.</value>
+  </data>
+  <data name="StoreNotInitialized" xml:space="preserve">
+    <value>The store is not initialized. Restart the application to set it up.</value>
+  </data>
+  <data name="ErrorDetails" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="ErrorCopyDetails" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="ErrorDetailsCopied" xml:space="preserve">
+    <value>Copied</value>
+  </data>
+  <data name="ErrorLoggedToFile" xml:space="preserve">
+    <value>A copy of the error was saved to the log file.</value>
+  </data>
+  <data name="DiscountModePercent" xml:space="preserve">
+    <value>Percent</value>
+  </data>
+  <data name="DiscountModeAmount" xml:space="preserve">
+    <value>Amount</value>
+  </data>
+  <data name="AfterDiscount" xml:space="preserve">
+    <value>After discount</value>
+  </data>
+  <data name="TaxAmount" xml:space="preserve">
+    <value>Tax</value>
+  </data>
+  <data name="Fees" xml:space="preserve">
+    <value>Fees</value>
+  </data>
+  <data name="ProfitSummaryTitle" xml:space="preserve">
+    <value>Profit Summary</value>
+  </data>
+  <data name="NetRevenue" xml:space="preserve">
+    <value>Net Revenue</value>
+  </data>
+  <data name="CostOfGoods" xml:space="preserve">
+    <value>Cost of Goods</value>
+  </data>
+  <data name="Returns" xml:space="preserve">
+    <value>Returns</value>
+  </data>
+  <data name="GrossProfit" xml:space="preserve">
+    <value>Gross Profit</value>
+  </data>
+  <data name="ExpectedSold" xml:space="preserve">
+    <value>Sold</value>
+  </data>
+  <data name="ExpectedStock" xml:space="preserve">
+    <value>Stock</value>
+  </data>
+  <data name="NetProfit" xml:space="preserve">
+    <value>Net Profit</value>
+  </data>
+  <data name="EstimatedCostNote" xml:space="preserve">
+    <value>Includes estimated cost</value>
+  </data>
+  <data name="Change" xml:space="preserve">
+    <value>Change</value>
+  </data>
+  <data name="PayInFull" xml:space="preserve">
+    <value>Pay in full</value>
+  </data>
+  <data name="CreditSaleRequiresCustomer" xml:space="preserve">
+    <value>A customer is required when the sale is not paid in full.</value>
+  </data>
+  <data name="CreditSaleConfirm" xml:space="preserve">
+    <value>The outstanding balance for {0} is {1}. Continue?</value>
+  </data>
+  <data name="DiscountExceedsLimit" xml:space="preserve">
+    <value>Discount exceeds the allowed maximum.</value>
+  </data>
+  <data name="Other" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="WalkInCustomer" xml:space="preserve">
+    <value>Walk-in customer</value>
+  </data>
+  <data name="TransactionSale" xml:space="preserve">
+    <value>Sale</value>
+  </data>
+  <data name="TransactionPurchase" xml:space="preserve">
+    <value>Purchase</value>
+  </data>
+  <data name="MinimumLabel" xml:space="preserve">
+    <value>Minimum</value>
+  </data>
+  <data name="DiscountExceedsSubtotal" xml:space="preserve">
+    <value>Discount cannot exceed the subtotal.</value>
+  </data>
+  <data name="InvalidTaxRate" xml:space="preserve">
+    <value>The tax rate must be between 0 and 100.</value>
+  </data>
+  <data name="InsufficientStock" xml:space="preserve">
+    <value>Not enough stock to complete this operation.</value>
+  </data>
+  <data name="ReceiptInvoice" xml:space="preserve">
+    <value>Invoice</value>
+  </data>
+  <data name="SessionAlreadyClosed" xml:space="preserve">
+    <value>This cash session is already closed.</value>
+  </data>
+  <data name="OpenCashDrawer" xml:space="preserve">
+    <value>Open Cash Session</value>
+  </data>
+  <data name="CashDrawer" xml:space="preserve">
+    <value>Cash Drawer</value>
+  </data>
+  <data name="DrawerOpen" xml:space="preserve">
+    <value>Drawer Open</value>
+  </data>
+  <data name="DrawerClosed" xml:space="preserve">
+    <value>Drawer Closed</value>
+  </data>
+  <data name="DrawerNotOpen" xml:space="preserve">
+    <value>Open the cash drawer before making a sale.</value>
+  </data>
+  <data name="SessionSummary" xml:space="preserve">
+    <value>Session Summary</value>
+  </data>
+  <data name="TotalSales" xml:space="preserve">
+    <value>Total Sales</value>
+  </data>
+  <data name="CashSales" xml:space="preserve">
+    <value>Cash Sales</value>
+  </data>
+  <data name="NonCashSales" xml:space="preserve">
+    <value>Card / Other</value>
+  </data>
+  <data name="Invoices" xml:space="preserve">
+    <value>Invoices</value>
+  </data>
+  <data name="Voids" xml:space="preserve">
+    <value>Voids</value>
+  </data>
+  <data name="PayIn" xml:space="preserve">
+    <value>Pay In</value>
+  </data>
+  <data name="PayOut" xml:space="preserve">
+    <value>Pay Out</value>
+  </data>
+  <data name="SessionOpenedSuccess" xml:space="preserve">
+    <value>Cash session opened.</value>
+  </data>
+  <data name="SessionClosedSuccess" xml:space="preserve">
+    <value>Cash session closed.</value>
+  </data>
+  <data name="PreviousBusinessDayWarning" xml:space="preserve">
+    <value>The cash drawer was opened on a previous business day. Close it before continuing.</value>
+  </data>
+  <data name="ConfirmCloseSession" xml:space="preserve">
+    <value>Close the current cash session?</value>
+  </data>
+  <data name="OpenSession" xml:space="preserve">
+    <value>Open Session</value>
+  </data>
+  <data name="CloseSession" xml:space="preserve">
+    <value>Close Session</value>
+  </data>
+  <data name="KpiSuffixThousand" xml:space="preserve">
+    <value>K</value>
+  </data>
+  <data name="KpiSuffixMillion" xml:space="preserve">
+    <value>M</value>
+  </data>
+  <data name="KpiSuffixBillion" xml:space="preserve">
+    <value>B</value>
+  </data>
+    <data name="Backup" xml:space="preserve">
+    <value>Backup</value>
+  </data>
+  <data name="BackupHint" xml:space="preserve">
+    <value>Create a backup of your data</value>
+  </data>
+  <data name="BackupNow" xml:space="preserve">
+    <value>Backup now</value>
+  </data>
+  <data name="BackupFolder" xml:space="preserve">
+    <value>Backup folder</value>
+  </data>
+  <data name="BackupCreated" xml:space="preserve">
+    <value>Backup created</value>
+  </data>
+  <data name="BackupFileInvalid" xml:space="preserve">
+    <value>Invalid backup file</value>
+  </data><data name="RestoreBackup" xml:space="preserve">
+    <value>Restore backup</value>
+  </data>
+  <data name="RestoreConfirm" xml:space="preserve">
+    <value>The current data will be replaced by the selected backup and the application will restart. Continue?</value>
+  </data>
+  <data name="InvalidRecoveryKey" xml:space="preserve">
+    <value>Invalid or expired recovery key.</value>
+  </data>
+  <data name="RecoveryKeyLockedOut" xml:space="preserve">
+    <value>Too many failed attempts. Try again in 15 minutes.</value>
+  </data>
+  <data name="PasswordMustDiffer" xml:space="preserve">
+    <value>New password must differ from the current one.</value>
+  </data>
+  <data name="CameraSource" xml:space="preserve">
+    <value>Camera source</value>
+  </data>
+  <data name="CameraSourceLocal" xml:space="preserve">
+    <value>Local camera</value>
+  </data>
+  <data name="CameraSourceIp" xml:space="preserve">
+    <value>IP camera (MJPEG URL)</value>
+  </data>
+  <data name="CameraUrl" xml:space="preserve">
+    <value>Camera URL</value>
+  </data>
+  <data name="CameraUrlInvalid" xml:space="preserve">
+    <value>Enter a valid http/https URL (e.g. http://192.168.1.20:4747/video).</value>
+  </data>
+  <data name="TestConnection" xml:space="preserve">
+    <value>Test connection</value>
+  </data>
+  <data name="ConnectionSuccess" xml:space="preserve">
+    <value>Connection successful.</value>
+  </data>
+  <data name="ConnectionFailed" xml:space="preserve">
+    <value>Connection failed.</value>
+  </data>
+  <data name="ForgotPassword" xml:space="preserve">
+    <value>Forgot password</value>
+  </data>
+  <data name="RecoveryKey" xml:space="preserve">
+    <value>Recovery key</value>
+  </data>
+  <data name="RecoveryKeyHint" xml:space="preserve">
+    <value>Enter your user name and recovery key to reset your password.</value>
+  </data>
+  <data name="ResetPassword" xml:space="preserve">
+    <value>Reset password</value>
+  </data>
+  <data name="FillAllFields" xml:space="preserve">
+    <value>Please fill all fields.</value>
+  </data>
+  <data name="RecoveryKeyStoreWarning" xml:space="preserve">
+    <value>Store this key in a safe place. It will not be shown again. You will need it to reset your password if you forget it.</value>
+  </data>
+  <data name="IStoredIt" xml:space="preserve">
+    <value>I have stored the recovery key in a safe place.</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+    <data name="DatePresetToday" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="DatePresetYesterday" xml:space="preserve">
+    <value>Yesterday</value>
+  </data>
+  <data name="DatePresetLast7Days" xml:space="preserve">
+    <value>Last 7 days</value>
+  </data>
+  <data name="DatePresetThisMonth" xml:space="preserve">
+    <value>This month</value>
+  </data>
+  <data name="DatePresetCustom" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="AllCustomers" xml:space="preserve">
+    <value>All customers</value>
+  </data>
+  <data name="RoleNotFound" xml:space="preserve">
+    <value>Role not found</value>
+  </data>
+  <data name="CurrencySymbolEgp" xml:space="preserve">
+    <value>ج.م</value>
+  </data>
+  <data name="DebitAccountCustomer" xml:space="preserve">
+    <value>Debit account</value>
+  </data>
+  <data name="CurrencySymbolKwd" xml:space="preserve">
+    <value>د.ك</value>
+  </data>
+  <data name="UnitPiece" xml:space="preserve">
+    <value>Piece</value>
+  </data>
+  <data name="CurrencySymbolAed" xml:space="preserve">
+    <value>د.إ</value>
+  </data>
+  <data name="UnitLiter" xml:space="preserve">
+    <value>Liter</value>
+  </data>
+  <data name="UnitItem" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="UnitBox" xml:space="preserve">
+    <value>Box</value>
+  </data>
+  <data name="CreditAccountCustomer" xml:space="preserve">
+    <value>Credit account</value>
+  </data>
+  <data name="CurrencyMismatch" xml:space="preserve">
+    <value>Currency mismatch</value>
+  </data>
+  <data name="UnitCarton" xml:space="preserve">
+    <value>Carton</value>
+  </data>
+  <data name="GenerateCombinations" xml:space="preserve">
+    <value>Generate combinations</value>
+  </data>
+  <data name="VariantsTab" xml:space="preserve">
+    <value>Variants</value>
+  </data>
+  <data name="BarcodeAlreadyUsed" xml:space="preserve">
+    <value>Barcode already in use</value>
+  </data>
+  <data name="ExpenseTransportDescription" xml:space="preserve">
+    <value>Transport and shipping expenses</value>
+  </data>
+  <data name="CategoryConstructionDescription" xml:space="preserve">
+    <value>Construction and building materials</value>
+  </data>
+  <data name="CategoryOfficeDescription" xml:space="preserve">
+    <value>Office and stationery supplies</value>
+  </data>
+  <data name="CategoryConstruction" xml:space="preserve">
+    <value>Building materials</value>
+  </data>
+  <data name="ExpenseTransport" xml:space="preserve">
+    <value>Transport</value>
+  </data>
+  <data name="ExpenseMaintenanceDescription" xml:space="preserve">
+    <value>Equipment maintenance and repair</value>
+  </data>
+  <data name="UnitKilogramSymbol" xml:space="preserve">
+    <value>kg</value>
+  </data>
+  <data name="ManageBarcodes" xml:space="preserve">
+    <value>Manage barcodes</value>
+  </data>
+  <data name="UnitKilogram" xml:space="preserve">
+    <value>Kilogram</value>
+  </data>
+  <data name="CategoryFood" xml:space="preserve">
+    <value>Food</value>
+  </data>
+  <data name="CategoryFoodDescription" xml:space="preserve">
+    <value>Food and beverages</value>
+  </data>
+  <data name="ExpenseMiscDescription" xml:space="preserve">
+    <value>Other miscellaneous expenses</value>
+  </data>
+  <data name="ExpenseMarketingDescription" xml:space="preserve">
+    <value>Advertising and marketing expenses</value>
+  </data>
+  <data name="ExpenseMisc" xml:space="preserve">
+    <value>Miscellaneous</value>
+  </data>
+  <data name="CategoryBeverages" xml:space="preserve">
+    <value>Beverages</value>
+  </data>
+  <data name="CategoryCleaningDescription" xml:space="preserve">
+    <value>Cleaning and sanitizing products</value>
+  </data>
+  <data name="CategoryOffice" xml:space="preserve">
+    <value>Office supplies</value>
+  </data>
+  <data name="ExpenseMarketing" xml:space="preserve">
+    <value>Marketing</value>
+  </data>
+  <data name="CategoryBeveragesDescription" xml:space="preserve">
+    <value>Hot and cold beverages</value>
+  </data>
+  <data name="CategoryCleaning" xml:space="preserve">
+    <value>Cleaning</value>
+  </data>
+  <data name="CurrencySymbolJod" xml:space="preserve">
+    <value>د.أ</value>
+  </data>
+  <data name="CurrencySymbolLbp" xml:space="preserve">
+    <value>ل.ل</value>
+  </data>
+  <data name="CurrencySymbolIqd" xml:space="preserve">
+    <value>د.ع</value>
+  </data>
+  <data name="CurrencySymbolBhd" xml:space="preserve">
+    <value>د.ب</value>
+  </data>
+  <data name="CurrencySymbolQar" xml:space="preserve">
+    <value>ر.ق</value>
+  </data>
+  <data name="CurrencySymbolOmr" xml:space="preserve">
+    <value>ر.ع</value>
+  </data>
+  <data name="CurrencySymbolTnd" xml:space="preserve">
+    <value>د.ت</value>
+  </data>
+  <data name="CurrencySymbolLyd" xml:space="preserve">
+    <value>د.ل</value>
+  </data>
+  <data name="CurrencySymbolSdg" xml:space="preserve">
+    <value>ج.س</value>
+  </data>
+  <data name="CurrencySymbolSyp" xml:space="preserve">
+    <value>ل.س</value>
+  </data>
+  <data name="CurrencySymbolMad" xml:space="preserve">
+    <value>د.م.</value>
+  </data>
+  <data name="CurrencySymbolDzd" xml:space="preserve">
+    <value>دج</value>
+  </data>
+  <data name="MainCashbox" xml:space="preserve">
+    <value>Main cash register</value>
+  </data>
+  <data name="AmountCannotBeNegative" xml:space="preserve">
+    <value>Amount cannot be negative</value>
+  </data>
+  <data name="CurrencyRequired" xml:space="preserve">
+    <value>Currency is required</value>
+  </data>
+  <data name="Generate" xml:space="preserve">
+    <value>Generate</value>
+  </data>
+  <data name="MainBranch" xml:space="preserve">
+    <value>Main branch</value>
+  </data>
+  <data name="MainWarehouse" xml:space="preserve">
+    <value>Main warehouse</value>
+  </data>
+  <data name="InvoiceNumberRequired" xml:space="preserve">
+    <value>Invoice number is required</value>
+  </data>
+  <data name="InvoiceNumberTooShort" xml:space="preserve">
+    <value>Invoice number is too short</value>
+  </data>
+  <data name="CurrencySymbolSar" xml:space="preserve">
+    <value>ر.س</value>
+  </data>
+  <data name="CurrencySymbolRialSign" xml:space="preserve">
+    <value>﷼</value>
+  </data>
+  <data name="EmailRequired" xml:space="preserve">
+    <value>Email is required</value>
+  </data>
+  <data name="InvalidEmailFormat" xml:space="preserve">
+    <value>Invalid email format</value>
+  </data>
+  <data name="PhoneRequired" xml:space="preserve">
+    <value>Phone number is required</value>
+  </data>
+  <data name="ExpenseMaintenance" xml:space="preserve">
+    <value>Maintenance</value>
+  </data>
+  <data name="VariantCreatedFormat" xml:space="preserve">
+    <value>{0} variant(s) created.</value>
+  </data>
+  <data name="ModuleGrocery" xml:space="preserve">
+    <value>Grocery (weight/batches/expiry)</value>
+  </data>
+  <data name="ModulePhones" xml:space="preserve">
+    <value>Phones / electronics (IMEI/warranty)</value>
+  </data>
+  <data name="AddAttributeBeforeGenerate" xml:space="preserve">
+    <value>Add at least one attribute before generating.</value>
+  </data>
+  <data name="AttributeNeedsAtLeastOneValue" xml:space="preserve">
+    <value>Every attribute must have at least one value.</value>
+  </data>
+  <data name="NoNewCombinations" xml:space="preserve">
+    <value>No new combinations (all already exist).</value>
+  </data>
+  <data name="ChooseActivityModules" xml:space="preserve">
+    <value>Choose activity modules</value>
+  </data>
+  <data name="SelectEnabledModules" xml:space="preserve">
+    <value>Select the enabled modules (you can change this later in Settings):</value>
+  </data>
+  <data name="RoleAlreadyExists" xml:space="preserve">
+    <value>Role already exists</value>
+  </data>
+  <data name="ModuleDigital" xml:space="preserve">
+    <value>Digital products (codes/top-up)</value>
+  </data>
+  <data name="ModuleGeneralRetail" xml:space="preserve">
+    <value>General retail</value>
+  </data>
+  <data name="SaveAndContinue" xml:space="preserve">
+    <value>Save and continue</value>
+  </data>
+  <data name="Attributes" xml:space="preserve">
+    <value>Attributes</value>
+  </data>
+  <data name="Attribute" xml:space="preserve">
+    <value>Attribute</value>
+  </data>
+  <data name="Values" xml:space="preserve">
+    <value>Values</value>
+  </data>
+  <data name="Cost" xml:space="preserve">
+    <value>Cost</value>
+  </data>
+  <data name="AttributeLabel" xml:space="preserve">
+    <value>Attribute:</value>
+  </data>
+  <data name="ValuesCommaSeparatedLabel" xml:space="preserve">
+    <value>Values (comma-separated):</value>
+  </data>
+  <data name="VariantHasStockCannotDelete" xml:space="preserve">
+    <value>Cannot delete a variant that has stock.</value>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Name:</value>
+  </data>
+  <data name="PriceLabel" xml:space="preserve">
+    <value>Price:</value>
+  </data>
+  <data name="CostLabel" xml:space="preserve">
+    <value>Cost:</value>
+  </data>
+  <data name="Variants" xml:space="preserve">
+    <value>Variants</value>
+  </data>
+  <data name="Barcodes" xml:space="preserve">
+    <value>Barcodes</value>
+  </data>
+  <data name="CurrencyUsDollar" xml:space="preserve">
+    <value>US Dollar</value>
+  </data>
+  <data name="CurrencyEuro" xml:space="preserve">
+    <value>Euro</value>
+  </data>
+  <data name="CurrencyEgyptianPound" xml:space="preserve">
+    <value>Egyptian Pound</value>
+  </data>
+  <data name="ExpenseSalariesDescription" xml:space="preserve">
+    <value>Employee salaries and wages</value>
+  </data>
+  <data name="ExpenseBills" xml:space="preserve">
+    <value>Bills</value>
+  </data>
+  <data name="ExpenseBillsDescription" xml:space="preserve">
+    <value>Electricity, water and telecom bills</value>
+  </data>
+  <data name="ExpenseRent" xml:space="preserve">
+    <value>Rent</value>
+  </data>
+  <data name="ExpenseRentDescription" xml:space="preserve">
+    <value>Shop or warehouse rent</value>
+  </data>
+  <data name="ExpenseSalaries" xml:space="preserve">
+    <value>Salaries</value>
+  </data>
+  <data name="RoleCannotBeDeleted" xml:space="preserve">
+    <value>This role cannot be deleted</value>
+  </data>
+  <data name="RoleDeleted" xml:space="preserve">
+    <value>Role deleted successfully</value>
+  </data>
+  <data name="RoleCreated" xml:space="preserve">
+    <value>Role created successfully</value>
+  </data>
+  <data name="RoleNameInUse" xml:space="preserve">
+    <value>Role name is already in use</value>
+  </data>
+  <data name="RoleUpdated" xml:space="preserve">
+    <value>Role updated successfully</value>
+  </data>
+  <data name="DeleteAttribute" xml:space="preserve">
+    <value>Delete attribute</value>
+  </data>
+  <data name="CurrencyKuwaitiDinar" xml:space="preserve">
+    <value>Kuwaiti Dinar</value>
+  </data>
+  <data name="AddAttribute" xml:space="preserve">
+    <value>Add attribute</value>
+  </data>
+  <data name="ReceiptFooterThankYou" xml:space="preserve">
+    <value>Thank you for shopping with us</value>
+  </data>
+  <data name="CurrencySaudiRiyal" xml:space="preserve">
+    <value>Saudi Riyal</value>
+  </data>
+  <data name="CurrencyUaeDirham" xml:space="preserve">
+    <value>UAE Dirham</value>
+  </data>
+  <data name="BackupLocation" xml:space="preserve">
+    <value>Backup location</value>
+  </data>
+  <data name="ChooseBackupFolder" xml:space="preserve">
+    <value>Choose folder...</value>
+  </data>
+  <data name="BackupLocationHint" xml:space="preserve">
+    <value>Backups are stored outside the database. You can choose a different folder.</value>
+  </data>
+  <data name="BackupLocationChanged" xml:space="preserve">
+    <value>Backup folder updated.</value>
+  </data>
+  <data name="BackupLocationInvalid" xml:space="preserve">
+    <value>The selected folder is invalid or not writable.</value>
   </data>
 </root>

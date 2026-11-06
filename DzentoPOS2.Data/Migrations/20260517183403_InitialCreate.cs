@@ -1807,11 +1807,61 @@ namespace DzentoPOS2.Data.Migrations
                 name: "IX_Warehouses_Name",
                 table: "Warehouses",
                 column: "Name");
+
+            // Cash-session linking columns. They belong to the E3 feature, but the
+            // E3 migration was regenerated at a point where it only emitted the
+            // foreign keys. EF 8 recreated the columns implicitly while rebuilding
+            // the tables for AddForeignKey; EF 9 and EF 10 copy the full target column
+            // list instead, so a brand-new database (where LegacySchemaRepair has
+            // nothing to repair) fails with "no such column". Defining them in the
+            // baseline - which is always already applied whenever the repair runs -
+            // keeps fresh installs, upgraded databases and the removed-E3 legacy
+            // states consistent without changing the final schema.
+            migrationBuilder.AddColumn<Guid>(
+                name: "CashSessionId",
+                table: "CashTransactions",
+                type: "TEXT",
+                nullable: true);
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "SourceId",
+                table: "CashTransactions",
+                type: "TEXT",
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "SourceType",
+                table: "CashTransactions",
+                type: "TEXT",
+                maxLength: 50,
+                nullable: true);
+
+            migrationBuilder.AddColumn<Guid>(
+                name: "CashSessionId",
+                table: "SalesInvoices",
+                type: "TEXT",
+                nullable: true);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropColumn(
+                name: "CashSessionId",
+                table: "SalesInvoices");
+
+            migrationBuilder.DropColumn(
+                name: "SourceType",
+                table: "CashTransactions");
+
+            migrationBuilder.DropColumn(
+                name: "SourceId",
+                table: "CashTransactions");
+
+            migrationBuilder.DropColumn(
+                name: "CashSessionId",
+                table: "CashTransactions");
+
             migrationBuilder.DropTable(
                 name: "ActivityLogs");
 

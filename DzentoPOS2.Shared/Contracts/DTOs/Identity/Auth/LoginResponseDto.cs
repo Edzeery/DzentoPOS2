@@ -20,6 +20,12 @@
 
         public bool IsAdmin { get; set; }
 
+        /// <summary>
+        /// <c>true</c> when the account still uses a seeded/assigned password
+        /// and must change it before the shell opens.
+        /// </summary>
+        public bool MustChangePassword { get; set; }
+
         public DateTime LoginTime { get; set; }
     }
 }

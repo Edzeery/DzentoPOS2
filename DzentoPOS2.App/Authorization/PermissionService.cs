@@ -23,6 +23,10 @@ namespace DzentoPOS2.App.Authorization
             if (!_currentUser.IsAuthenticated)
                 return false;
 
+            // SuperAdmin has all permissions by default
+            if (string.Equals(_currentUser.RoleName, "SuperAdmin", StringComparison.OrdinalIgnoreCase))
+                return true;
+
             if (_permissionsCache.Count == 0)
                 await LoadPermissions();
 

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DzentoPOS2.Core.Entities.Inventory;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -20,14 +16,24 @@ namespace DzentoPOS2.Data.Configurations.Inventory
 
             builder.Property(x => x.Barcode)
                 .IsRequired()
-                .HasMaxLength(200);
+                .HasMaxLength(64);
 
             builder.HasIndex(x => x.Barcode)
                 .IsUnique();
 
+            builder.HasIndex(x => x.VariantId);
+
+            builder.Property(x => x.ProductId)
+                .IsRequired(false);
+
             builder.HasOne(x => x.Product)
                 .WithMany(x => x.Barcodes)
                 .HasForeignKey(x => x.ProductId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.HasOne(x => x.Variant)
+                .WithMany()
+                .HasForeignKey(x => x.VariantId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }

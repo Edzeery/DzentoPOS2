@@ -70,6 +70,41 @@ namespace DzentoPOS2.WinForms.Helpers
 
         protected virtual void LoadText() { }
 
+        /// <summary>
+        /// <c>true</c> once the form is being disposed or already disposed, i.e.
+        /// it can no longer be used. Async continuations and deferred event
+        /// handlers must bail out when this is <c>true</c>; touching a disposed
+        /// form (for example <c>ShowDialog(this)</c>, which reads the owner's
+        /// window handle) throws <see cref="ObjectDisposedException"/>.
+        /// </summary>
+        protected bool IsDisposedOrDisposing => IsDisposed || Disposing;
+
+        /// <summary>
+        /// Runs an asynchronous UI operation as a safe fire-and-forget: skipped
+        /// when the form is already gone, and an exception is logged and shown
+        /// instead of escaping from an <c>async void</c> handler (which would
+        /// otherwise crash the process). When the page was navigated away from
+        /// while the work was in flight the failure is a consequence of that and
+        /// is silently dropped.
+        /// </summary>
+        protected async void RunSafe(Func<Task> work)
+        {
+            if (IsDisposedOrDisposing || work is null)
+                return;
+
+            try
+            {
+                await work();
+            }
+            catch (Exception ex)
+            {
+                if (IsDisposedOrDisposing)
+                    return;
+
+                AppMessageBox.Error(ex);
+            }
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing && _languageSubscribed && _languageService != null)

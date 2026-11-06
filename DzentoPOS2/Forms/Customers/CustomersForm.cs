@@ -1,4 +1,6 @@
+using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Partners;
+using DzentoPOS2.Core.Constants;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Partners;
@@ -21,10 +23,13 @@ public partial class CustomersForm : LocalizableFormBase
     private readonly DataGridView _grid;
     private List<CustomerDto> _customers = new();
 
-    public CustomersForm(ICustomerService customerService, ILanguageService languageService)
+    private readonly IAuthorizationGuard _guard;
+
+    public CustomersForm(ICustomerService customerService, ILanguageService languageService, IAuthorizationGuard guard)
         : base(languageService)
     {
         _customerService = customerService;
+        _guard = guard;
         Size = new Size(1100, 650);
         BackColor = AppColors.Background;
         StartPosition = FormStartPosition.CenterParent;
@@ -39,15 +44,15 @@ public partial class CustomersForm : LocalizableFormBase
 
         _btnAdd = ButtonFactory.ToolAdd("Add");
         _btnAdd.Location = new Point(16, 12);
-        _btnAdd.Click += async (_, _) => await AddCustomer();
+        _btnAdd.Click += (_, _) => RunSafe(AddCustomer);
 
         _btnEdit = ButtonFactory.ToolEdit("Edit");
         _btnEdit.Location = new Point(124, 12);
-        _btnEdit.Click += async (_, _) => await EditCustomer();
+        _btnEdit.Click += (_, _) => RunSafe(EditCustomer);
 
         _btnDelete = ButtonFactory.ToolDelete("Delete");
         _btnDelete.Location = new Point(232, 12);
-        _btnDelete.Click += async (_, _) => await DeleteCustomer();
+        _btnDelete.Click += (_, _) => RunSafe(DeleteCustomer);
 
         _lblSearch = new Label
         {
@@ -63,22 +68,46 @@ public partial class CustomersForm : LocalizableFormBase
             Font = new Font("Segoe UI", 10F),
             PlaceholderText = AppStrings.Search
         };
-        _searchBox.TextChanged += async (_, _) => await LoadDataAsync();
+        _searchBox.TextChanged += (_, _) => RunSafe(LoadDataAsync);
 
         _topPanel.Controls.AddRange(new Control[] { _btnDelete, _btnEdit, _btnAdd, _lblSearch, _searchBox });
 
         _grid = new DataGridView { Dock = DockStyle.Fill };
         DataGridViewStyleHelper.ApplyModernStyle(_grid);
-        _grid.CellDoubleClick += async (_, _) => await EditCustomer();
+        _grid.CellDoubleClick += (_, _) => RunSafe(EditCustomer);
 
         Controls.Add(_grid);
         Controls.Add(_topPanel);
     }
 
-    protected override async void OnLoad(EventArgs e)
+    protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
-        await LoadDataAsync();
+
+        // Affordance: disable create/edit/delete when the user lacks permission.
+        _ = ApplyPermissionsAsync();
+
+        RunSafe(LoadDataAsync);
+    }
+
+    private async Task ApplyPermissionsAsync()
+    {
+        try
+        {
+            bool canCreate = await _guard.IsAllowedAsync(Permissions.CustomersCreate);
+            bool canEdit = await _guard.IsAllowedAsync(Permissions.CustomersEdit);
+            bool canDelete = await _guard.IsAllowedAsync(Permissions.CustomersDelete);
+            if (!IsDisposedOrDisposing)
+            {
+                _btnAdd.Enabled = canCreate;
+                _btnEdit.Enabled = canEdit;
+                _btnDelete.Enabled = canDelete;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"CustomersForm permission check failed: {ex.Message}");
+        }
     }
 
     protected override void LoadText()
@@ -94,6 +123,8 @@ public partial class CustomersForm : LocalizableFormBase
         _customers = string.IsNullOrWhiteSpace(term)
             ? await _customerService.GetAllAsync()
             : await _customerService.SearchAsync(term);
+
+        if (IsDisposedOrDisposing) return;
 
         _grid.DataSource = null;
         _grid.Columns.Clear();

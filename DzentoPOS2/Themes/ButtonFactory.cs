@@ -19,9 +19,9 @@ namespace DzentoPOS2.WinForms.Themes
 
         public static Size GetSize(ButtonSize size) => size switch
         {
-            ButtonSize.Small => new Size(96, 32),
-            ButtonSize.Large => new Size(160, 44),
-            _ => new Size(120, 38)
+            ButtonSize.Small => new Size(110, 34),
+            ButtonSize.Large => new Size(170, 46),
+            _ => new Size(130, 40)
         };
 
         // =========================
@@ -68,10 +68,11 @@ namespace DzentoPOS2.WinForms.Themes
             var button = new ThemedIconButton
             {
                 IconChar = icon,
-                IconSize = 18,
+                IconSize = 17,
                 Text = $"  {text}",
                 Size = GetSize(size),
-                Tone = tone
+                Tone = tone,
+                AutoSize = false
             };
 
             button.ApplyTheme();

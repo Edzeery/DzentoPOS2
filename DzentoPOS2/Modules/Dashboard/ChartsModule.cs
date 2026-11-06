@@ -103,7 +103,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
                 ApplyChartTheme(_columnChart);
                 ApplyChartTheme(_pieChart);
             }
-            catch { }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"ApplyChartsTheme failed: {ex.Message}"); }
         }
 
         private static void ApplyChartTheme(Chart chart)

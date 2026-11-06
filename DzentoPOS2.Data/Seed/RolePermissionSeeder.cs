@@ -52,6 +52,9 @@ namespace DzentoPOS2.Data.Seed
                     Permissions.ProductsEdit,
 
                     Permissions.CategoriesView,
+                    Permissions.UnitsView,
+                    Permissions.UnitsCreate,
+                    Permissions.UnitsEdit,
 
                     Permissions.InventoryView,
                     Permissions.InventoryAdjust,
@@ -59,11 +62,29 @@ namespace DzentoPOS2.Data.Seed
                     Permissions.SalesView,
                     Permissions.SalesCreate,
                     Permissions.SalesReturn,
+                    Permissions.SalesDiscountOverride,
 
                     Permissions.CustomersView,
                     Permissions.CustomersCreate,
 
-                    Permissions.ReportsView
+                    Permissions.SuppliersView,
+                    Permissions.SuppliersCreate,
+                    Permissions.SuppliersEdit,
+
+                    Permissions.PurchasesView,
+                    Permissions.PurchasesCreate,
+
+                    Permissions.ExpensesView,
+                    Permissions.ExpensesCreate,
+
+                    Permissions.CashSessionsView,
+                    Permissions.CashSessionsOpen,
+                    Permissions.CashSessionsClose,
+                    Permissions.CashSessionsMovements,
+
+                    Permissions.ReportsView,
+                    Permissions.SettingsView,
+                    Permissions.BackupCreate
                 });
 
             // CASHIER
@@ -78,8 +99,13 @@ namespace DzentoPOS2.Data.Seed
                     Permissions.SalesCreate,
 
                     Permissions.CustomersView,
+                    Permissions.CustomersCreate,
 
-                    Permissions.ProductsView
+                    Permissions.ProductsView,
+                    Permissions.CashSessionsView,
+                    Permissions.CashSessionsOpen,
+                    Permissions.CashSessionsClose,
+                    Permissions.CashSessionsMovements
                 });
         }
 

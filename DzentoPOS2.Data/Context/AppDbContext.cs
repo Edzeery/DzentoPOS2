@@ -20,7 +20,7 @@ namespace DzentoPOS2.Data.Context
             : base(options)
         {
         }
-         
+
         #region Identity
 
          
@@ -59,6 +59,12 @@ namespace DzentoPOS2.Data.Context
         public DbSet<ProductPrice> ProductPrices => Set<ProductPrice>();
 
         public DbSet<ProductVariant> ProductVariants => Set<ProductVariant>();
+
+        public DbSet<AttributeDefinition> AttributeDefinitions => Set<AttributeDefinition>();
+
+        public DbSet<AttributeValue> AttributeValues => Set<AttributeValue>();
+
+        public DbSet<VariantAttribute> VariantAttributes => Set<VariantAttribute>();
 
         public DbSet<ProductStock> ProductStocks => Set<ProductStock>();
 
@@ -159,6 +165,8 @@ namespace DzentoPOS2.Data.Context
         public DbSet<Attachment> Attachments => Set<Attachment>();
 
         public DbSet<Sequence> Sequences => Set<Sequence>();
+
+        public DbSet<DocumentSequence> DocumentSequences => Set<DocumentSequence>();
 
         #endregion
 

@@ -1,4 +1,6 @@
 using AutoMapper;
+using DzentoPOS2.App.Services.Systems;
+using DzentoPOS2.App.Session;
 using DzentoPOS2.Core.Entities.Businesses;
 using DzentoPOS2.Core.Entities.Inventory;
 using DzentoPOS2.Core.ValueObjects.Common;
@@ -8,6 +10,7 @@ using DzentoPOS2.Data.Repositories.Businesses.Interfaces;
 using DzentoPOS2.Data.Repositories.Common.Interfaces;
 using DzentoPOS2.Data.Repositories.Inventory.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
+using DzentoPOS2.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace DzentoPOS2.App.Services.Inventory;
@@ -22,6 +25,11 @@ public class ProductService : IProductService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly AppDbContext _context;
+    private readonly IStockService _stockService;
+    private readonly IStoreContextService _storeContext;
+    private readonly ICurrentUserService _currentUser;
+    private readonly DzentoPOS2.App.Authorization.IAuthorizationGuard _authorizationGuard;
+    private readonly RegionalContext _regional;
 
     public ProductService(
         IProductRepository productRepo,
@@ -31,7 +39,12 @@ public class ProductService : IProductService
         IWarehouseRepository warehouseRepo,
         IUnitOfWork unitOfWork,
         IMapper mapper,
-        AppDbContext context)
+        AppDbContext context,
+        IStockService stockService,
+        IStoreContextService storeContext,
+        ICurrentUserService currentUser,
+        DzentoPOS2.App.Authorization.IAuthorizationGuard authorizationGuard,
+        RegionalContext regional)
     {
         _productRepo = productRepo;
         _categoryRepo = categoryRepo;
@@ -41,6 +54,11 @@ public class ProductService : IProductService
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _context = context;
+        _stockService = stockService;
+        _storeContext = storeContext;
+        _currentUser = currentUser;
+        _authorizationGuard = authorizationGuard;
+        _regional = regional;
     }
 
     public async Task<List<ProductDto>> GetAllAsync()
@@ -74,29 +92,84 @@ public class ProductService : IProductService
 
     public async Task<ProductDto> CreateAsync(CreateProductDto dto)
     {
+        await _authorizationGuard.DemandAsync(
+            DzentoPOS2.Core.Constants.Permissions.ProductsCreate);
+
         var product = new Product
         {
             Name = dto.Name,
             SKU = dto.SKU,
             Barcode = string.IsNullOrWhiteSpace(dto.Barcode) ? null : dto.Barcode.Trim(),
+            Brand = string.IsNullOrWhiteSpace(dto.Brand) ? null : dto.Brand.Trim(),
+            ProductKind = dto.ProductKind,
             Description = dto.Description,
             CategoryId = dto.CategoryId,
             UnitId = dto.UnitId,
-            CostPrice = new Money(dto.CostPrice, "SAR"),
-            SalePrice = new Money(dto.SalePrice, "SAR"),
+            CostPrice = new Money(dto.CostPrice, _regional.CurrencyCode),
+            SalePrice = new Money(dto.SalePrice, _regional.CurrencyCode),
             MinimumStock = new Quantity(dto.MinimumStock),
             TrackStock = dto.TrackStock,
-            IsActive = dto.IsActive
+            IsActive = dto.IsActive,
+            ImagePath = string.IsNullOrWhiteSpace(dto.ImagePath) ? null : dto.ImagePath,
+            ThumbnailPath = string.IsNullOrWhiteSpace(dto.ThumbnailPath) ? null : dto.ThumbnailPath
         };
 
-        await _productRepo.AddAsync(product);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.BeginTransactionAsync();
 
-        return MapProduct(product);
+        try
+        {
+            await _productRepo.AddAsync(product);
+            await _unitOfWork.SaveChangesAsync();
+
+            // Phase 1: every product gets a hidden default variant.
+            var defaultVariant = new ProductVariant
+            {
+                ProductId = product.Id,
+                Name = product.Name,
+                CostPrice = new Money(dto.CostPrice, _regional.CurrencyCode),
+                SalePrice = new Money(dto.SalePrice, _regional.CurrencyCode),
+                MinimumStock = new Quantity(dto.MinimumStock),
+                TrackStock = dto.TrackStock,
+                IsActive = dto.IsActive,
+                IsDefault = true
+            };
+            _context.ProductVariants.Add(defaultVariant);
+            await _unitOfWork.SaveChangesAsync();
+
+            if (product.TrackStock && dto.OpeningStock > 0)
+            {
+                var branchId = await _storeContext.GetDefaultBranchIdAsync();
+                var warehouseId = await _storeContext
+                    .GetDefaultWarehouseIdAsync(branchId);
+
+                await _stockService.AdjustAsync(
+                    product.Id,
+                    warehouseId,
+                    dto.OpeningStock,
+                    "Opening stock",
+                    _currentUser.UserId,
+                    isOpening: true);
+
+                await _unitOfWork.SaveChangesAsync();
+            }
+
+            await _unitOfWork.CommitTransactionAsync();
+
+            return MapProduct(product);
+        }
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            _context.ChangeTracker.Clear();
+            throw;
+        }
     }
 
     public async Task<ProductDto> UpdateAsync(UpdateProductDto dto)
     {
+        await _authorizationGuard.DemandAsync(
+            DzentoPOS2.Core.Constants.Permissions.ProductsEdit);
+
         // The shared context can still track this product from an earlier read.
         // Reading it tracked (instead of attaching a detached copy) avoids the
         // "another instance with the same key is already being tracked" error.
@@ -110,14 +183,20 @@ public class ProductService : IProductService
         product.Name = dto.Name;
         product.SKU = dto.SKU;
         product.Barcode = string.IsNullOrWhiteSpace(dto.Barcode) ? null : dto.Barcode.Trim();
+        product.Brand = string.IsNullOrWhiteSpace(dto.Brand) ? null : dto.Brand.Trim();
+        product.ProductKind = dto.ProductKind;
         product.Description = dto.Description;
         product.CategoryId = dto.CategoryId;
         product.UnitId = dto.UnitId;
-        product.CostPrice = new Money(dto.CostPrice, "SAR");
-        product.SalePrice = new Money(dto.SalePrice, "SAR");
+        product.CostPrice = new Money(dto.CostPrice, _regional.CurrencyCode);
+        product.SalePrice = new Money(dto.SalePrice, _regional.CurrencyCode);
         product.MinimumStock = new Quantity(dto.MinimumStock);
         product.TrackStock = dto.TrackStock;
         product.IsActive = dto.IsActive;
+        if (!string.IsNullOrWhiteSpace(dto.ImagePath))
+            product.ImagePath = dto.ImagePath;
+        if (!string.IsNullOrWhiteSpace(dto.ThumbnailPath))
+            product.ThumbnailPath = dto.ThumbnailPath;
 
         _productRepo.Update(product);
         await _unitOfWork.SaveChangesAsync();
@@ -127,6 +206,9 @@ public class ProductService : IProductService
 
     public async Task DeleteAsync(Guid id)
     {
+        await _authorizationGuard.DemandAsync(
+            DzentoPOS2.Core.Constants.Permissions.ProductsDelete);
+
         var product = await _context.Products
             .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
         if (product == null) return;
@@ -190,6 +272,40 @@ public class ProductService : IProductService
         };
     }
 
+    public async Task AdjustStockAsync(
+        Guid productId,
+        decimal targetQuantity,
+        string reason)
+    {
+        if (string.IsNullOrWhiteSpace(reason))
+            throw new ArgumentException("An adjustment reason is required", nameof(reason));
+
+        var branchId = await _storeContext.GetDefaultBranchIdAsync();
+        var warehouseId = await _storeContext.GetDefaultWarehouseIdAsync(branchId);
+
+        await _unitOfWork.BeginTransactionAsync();
+
+        try
+        {
+            await _stockService.AdjustAsync(
+                productId,
+                warehouseId,
+                targetQuantity,
+                reason,
+                _currentUser.UserId,
+                isOpening: false);
+
+            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.CommitTransactionAsync();
+        }
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            _context.ChangeTracker.Clear();
+            throw;
+        }
+    }
+
     public async Task<List<ProductStockDto>> GetProductStocksAsync(Guid productId)
     {
         var stocks = await _context.ProductStocks
@@ -197,12 +313,15 @@ public class ProductService : IProductService
             .Include(s => s.Warehouse)
             .ToListAsync();
 
-        return stocks.Select(s => new ProductStockDto
-        {
-            WarehouseId = s.WarehouseId,
-            WarehouseName = s.Warehouse?.Name ?? "",
-            Quantity = s.Quantity?.Value ?? 0
-        }).ToList();
+        return stocks
+            .GroupBy(s => new { s.WarehouseId, WarehouseName = s.Warehouse?.Name ?? "" })
+            .Select(g => new ProductStockDto
+            {
+                WarehouseId = g.Key.WarehouseId,
+                WarehouseName = g.Key.WarehouseName,
+                Quantity = g.Sum(x => x.Quantity?.Value ?? 0)
+            })
+            .ToList();
     }
 
     private Task<List<ProductDto>> MapWithCategoryAndUnit(IEnumerable<Product> products)
@@ -219,6 +338,10 @@ public class ProductService : IProductService
         Name = product.Name,
         SKU = product.SKU,
         Barcode = product.Barcode,
+        Brand = product.Brand,
+        ProductKind = product.ProductKind,
+        ImagePath = product.ImagePath,
+        ThumbnailPath = product.ThumbnailPath,
         Description = product.Description,
         CategoryId = product.CategoryId,
         CategoryName = product.Category?.Name ?? "",
@@ -229,6 +352,6 @@ public class ProductService : IProductService
         MinimumStock = product.MinimumStock?.Value ?? 0,
         TrackStock = product.TrackStock,
         IsActive = product.IsActive,
-        Currency = product.CostPrice?.Currency ?? "SAR"
+        Currency = product.CostPrice?.Currency ?? _regional.CurrencyCode
     };
 }

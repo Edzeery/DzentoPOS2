@@ -1,6 +1,8 @@
 using AutoMapper;
+using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Accounting;
 using DzentoPOS2.App.Session;
+using DzentoPOS2.Core.Constants;
 using DzentoPOS2.Core.Entities.Accounting;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Data.Repositories.Accounting.Interfaces;
@@ -10,14 +12,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DzentoPOS2.App.Services.Accounting;
 
-public class ExpenseService : IExpenseService
-{
-    private readonly IExpenseRepository _expenseRepo;
-    private readonly IExpenseCategoryRepository _categoryRepo;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
-    private readonly ICurrentUserService _currentUser;
-    private readonly AppDbContext _context;
+    public class ExpenseService : IExpenseService
+    {
+        private readonly IExpenseRepository _expenseRepo;
+        private readonly IExpenseCategoryRepository _categoryRepo;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+        private readonly ICurrentUserService _currentUser;
+        private readonly AppDbContext _context;
+        private readonly DzentoPOS2.App.Services.Systems.IStoreContextService _storeContext;
+        private readonly IAuthorizationGuard _guard;
 
     public ExpenseService(
         IExpenseRepository expenseRepo,
@@ -25,7 +29,9 @@ public class ExpenseService : IExpenseService
         IUnitOfWork unitOfWork,
         IMapper mapper,
         ICurrentUserService currentUser,
-        AppDbContext context)
+        AppDbContext context,
+        DzentoPOS2.App.Services.Systems.IStoreContextService storeContext,
+        IAuthorizationGuard guard)
     {
         _expenseRepo = expenseRepo;
         _categoryRepo = categoryRepo;
@@ -33,6 +39,8 @@ public class ExpenseService : IExpenseService
         _mapper = mapper;
         _currentUser = currentUser;
         _context = context;
+        _storeContext = storeContext;
+        _guard = guard;
     }
 
     public async Task<List<ExpenseDto>> GetAllAsync()
@@ -61,24 +69,82 @@ public class ExpenseService : IExpenseService
 
     public async Task<ExpenseDto> CreateAsync(CreateExpenseDto dto)
     {
+        await _guard.DemandAsync(Permissions.ExpensesCreate);
+
+        // Wrapped so a failure during the pre-transaction lookups also rolls
+        // back and clears the shared change tracker.
+        try
+        {
+            return await CreateInternalAsync(dto);
+        }
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            _context.ChangeTracker.Clear();
+            throw;
+        }
+    }
+
+    private async Task<ExpenseDto> CreateInternalAsync(CreateExpenseDto dto)
+    {
+        var branchId = _currentUser.User?.BranchId ?? Guid.Empty;
+        if (branchId == Guid.Empty)
+            branchId = await _storeContext.GetDefaultBranchIdAsync();
+
+        var cashboxId = await _storeContext.GetDefaultCashboxIdAsync(branchId);
+        var session = await _context.CashSessions
+            .FirstOrDefaultAsync(x =>
+                x.CashboxId == cashboxId &&
+                x.Status == Core.Enums.CashSessionStatus.Open &&
+                !x.IsDeleted)
+            ?? throw new DzentoPOS2.Core.Exceptions.CashSessionRequiredException();
+
         var expense = new Expense
         {
             Title = dto.Title,
             ExpenseCategoryId = dto.ExpenseCategoryId,
-            BranchId = _currentUser.User?.BranchId ?? Guid.Empty,
+            BranchId = branchId,
             Amount = dto.Amount,
             ExpenseDate = dto.ExpenseDate,
             Notes = dto.Notes
         };
 
-        await _expenseRepo.AddAsync(expense);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.BeginTransactionAsync();
+
+        try
+        {
+            await _expenseRepo.AddAsync(expense);
+
+            await _context.CashTransactions.AddAsync(new CashTransaction
+            {
+                CashboxId = cashboxId,
+                CashSessionId = session.Id,
+                Amount = dto.Amount,
+                TransactionType = Core.Enums.MovementType.Purchase,
+                SourceType = "Expense",
+                SourceId = expense.Id,
+                ReferenceNumber = expense.Id.ToString(),
+                Notes = dto.Title,
+                TransactionDate = DateTime.UtcNow
+            });
+
+            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.CommitTransactionAsync();
+        }
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            _context.ChangeTracker.Clear();
+            throw;
+        }
 
         return await MapSingle(expense);
     }
 
     public async Task<ExpenseDto> UpdateAsync(UpdateExpenseDto dto)
     {
+        await _guard.DemandAsync(Permissions.ExpensesEdit);
+
         var expense = await _context.Expenses
             .FirstOrDefaultAsync(e => e.Id == dto.Id && !e.IsDeleted);
         if (expense == null)
@@ -98,11 +164,26 @@ public class ExpenseService : IExpenseService
 
     public async Task DeleteAsync(Guid id)
     {
+        await _guard.DemandAsync(Permissions.ExpensesDelete);
+
         var expense = await _context.Expenses
             .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
         if (expense == null) return;
-        _expenseRepo.Remove(expense);
-        await _unitOfWork.SaveChangesAsync();
+
+        await _unitOfWork.BeginTransactionAsync();
+
+        try
+        {
+            _expenseRepo.Remove(expense);
+            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.CommitTransactionAsync();
+        }
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            _context.ChangeTracker.Clear();
+            throw;
+        }
     }
 
     public async Task<List<ExpenseCategoryDto>> GetCategoriesAsync()

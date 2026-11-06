@@ -14,6 +14,7 @@ public partial class UserMenuControl : UserControl, IThemeAware
     private readonly IconPictureBox _chevron = new();
     private readonly Panel _textPanel = new();
     private readonly ContextMenuStrip _menu = new();
+    private readonly ToolTip _toolTip = new();
 
     public UserMenuControl()
     {
@@ -112,6 +113,44 @@ public partial class UserMenuControl : UserControl, IThemeAware
         _name.Text = string.IsNullOrWhiteSpace(user.FullName) ? user.UserName : user.FullName;
         _role.Text = user.RoleName;
         _avatar.Image = user.Avatar ?? CreateInitialsAvatar(_name.Text);
+        _toolTip.SetToolTip(this, _name.Text);
+        _toolTip.SetToolTip(_name, _name.Text);
+        _toolTip.SetToolTip(_role, _role.Text);
+    }
+
+    /// <summary>
+    /// Re-applies the localized texts of the user menu (the menu items are
+    /// created once, so they must be refreshed on a language change).
+    /// </summary>
+    public void ApplyLocalization()
+    {
+        if (IsDisposed) return;
+
+        foreach (ToolStripItem item in _menu.Items)
+        {
+            if (item is not HeaderPopupMenuItem menuItem || menuItem.Tag is not UserMenuAction action)
+                continue;
+
+            switch (action)
+            {
+                case UserMenuAction.Profile:
+                    menuItem.Text = AppStrings.Profile;
+                    menuItem.Description = AppStrings.ProfileDetails;
+                    break;
+                case UserMenuAction.ChangePassword:
+                    menuItem.Text = AppStrings.ChangePassword;
+                    menuItem.Description = AppStrings.ChangePasswordDetails;
+                    break;
+                case UserMenuAction.Logout:
+                    menuItem.Text = AppStrings.Logout;
+                    menuItem.Description = AppStrings.LogoutDetails;
+                    break;
+            }
+        }
+
+        _toolTip.SetToolTip(_name, _name.Text);
+        _toolTip.SetToolTip(_role, _role.Text);
+        Invalidate();
     }
 
     protected override void OnPaint(PaintEventArgs e)

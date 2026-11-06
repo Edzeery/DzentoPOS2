@@ -11,7 +11,14 @@ namespace DzentoPOS2.Core.Entities.Sales
     {
         public Guid SalesInvoiceId { get; set; }
 
+        /// <summary>Net amount applied to the invoice (never more than the total).</summary>
         public decimal Amount { get; set; }
+
+        /// <summary>Cash handed over by the customer (may exceed <see cref="Amount"/>).</summary>
+        public decimal TenderedAmount { get; set; }
+
+        /// <summary>Change given back to the customer.</summary>
+        public decimal ChangeAmount { get; set; }
 
         public DateTime PaymentDate { get; set; } = DateTime.UtcNow;
 

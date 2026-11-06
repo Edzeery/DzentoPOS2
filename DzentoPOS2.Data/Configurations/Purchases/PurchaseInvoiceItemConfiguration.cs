@@ -27,6 +27,8 @@ namespace DzentoPOS2.Data.Configurations.Purchases
 
             builder.Property(x => x.IsDeleted)
                 .HasDefaultValue(false);
+
+            builder.HasIndex(x => x.VariantId);
         }
     }
 }

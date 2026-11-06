@@ -3,10 +3,13 @@ using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
 using DzentoPOS2.WinForms.Themes;
+using DzentoPOS2.WinForms.Services.Barcodes;
+using DzentoPOS2.WinForms.Controls;
+using DzentoPOS2.WinForms.Helpers;
 
 namespace DzentoPOS2.WinForms.Forms.Inventory;
 
-public class ProductEditDialog : Form
+public class ProductEditDialog : ThemedDialog
 {
     private readonly IProductService _productService;
     private readonly ILanguageService _languageService;
@@ -15,30 +18,53 @@ public class ProductEditDialog : Form
     private readonly Label _lblName;
     private readonly Label _lblSKU;
     private readonly Label _lblBarcode;
+    private readonly Label _lblBrand;
+    private readonly Label _lblProductKind;
     private readonly Label _lblCategory;
     private readonly Label _lblUnit;
     private readonly Label _lblCost;
     private readonly Label _lblSale;
     private readonly Label _lblMinStock;
+    private readonly Label _lblOpeningStock;
     private readonly TextBox _txtName;
     private readonly TextBox _txtSKU;
     private readonly TextBox _txtBarcode;
+    private readonly TextBox _txtBrand;
+    private readonly ComboBox _cmbProductKind;
     private readonly ComboBox _cmbCategory;
     private readonly ComboBox _cmbUnit;
     private readonly NumericUpDown _numCost;
     private readonly NumericUpDown _numSale;
     private readonly NumericUpDown _numMinStock;
+    private readonly NumericUpDown _numOpeningStock;
     private readonly CheckBox _chkActive;
     private readonly Button _btnSave;
     private readonly Button _btnCancel;
+    private readonly Button _btnImage = new() { Text = AppStrings.ChooseImage, Size = new Size(120, 32) };
+    private readonly Button _btnBarcodes = new() { Text = AppStrings.Barcodes, Size = new Size(120, 32) };
+    private readonly Button _btnVariants = new() { Text = AppStrings.Variants, Size = new Size(120, 32) };
 
-    public ProductEditDialog(IProductService productService, ILanguageService languageService, ProductDto? existing = null)
+    private readonly IBarcodeScanService? _scanService;
+    private readonly DzentoPOS2.WinForms.Services.Images.IImageService? _imageService;
+    private readonly IBarcodeService? _barcodeService;
+    private readonly Microsoft.EntityFrameworkCore.IDbContextFactory<DzentoPOS2.Data.Context.AppDbContext>? _contextFactory;
+    private string? _imagePath;
+    private string? _thumbnailPath;
+    private readonly PictureBox _picImage = new() { Size = new Size(96, 96), SizeMode = PictureBoxSizeMode.Zoom, BorderStyle = BorderStyle.FixedSingle };
+
+    public ProductEditDialog(IProductService productService, ILanguageService languageService, ProductDto? existing = null, IBarcodeScanService? scanService = null, DzentoPOS2.WinForms.Services.Images.IImageService? imageService = null, IBarcodeService? barcodeService = null, Microsoft.EntityFrameworkCore.IDbContextFactory<DzentoPOS2.Data.Context.AppDbContext>? contextFactory = null)
     {
         _productService = productService;
         _languageService = languageService;
         _existing = existing;
+        _scanService = scanService;
+        _imageService = imageService;
+        _barcodeService = barcodeService;
+        _contextFactory = contextFactory;
+        _imagePath = existing?.ImagePath;
+        _thumbnailPath = existing?.ThumbnailPath;
 
-        Size = new Size(520, 500);
+        Size = new Size(520, 700);
         StartPosition = FormStartPosition.CenterParent;
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false;
@@ -62,10 +88,14 @@ public class ProductEditDialog : Form
         _lblCost = lbl(AppStrings.CostPrice + ":", 210);
         _lblSale = lbl(AppStrings.SalePrice + ":", 248);
         _lblMinStock = lbl(AppStrings.MinimumStock + ":", 286);
+        _lblOpeningStock = lbl(AppStrings.OpeningStock + ":", 324);
+        _lblBrand = lbl("Brand:", 362);
+        _lblProductKind = lbl("Kind:", 400);
 
         _txtName = new TextBox { Location = new Point(150, 20), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F) };
         _txtSKU = new TextBox { Location = new Point(150, 58), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F) };
         _txtBarcode = new TextBox { Location = new Point(150, 96), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F) };
+        var _btnScanBarcode = new BarcodeScanButton { Location = new Point(485, 96), Size = new Size(28, 28), TargetTextBox = _txtBarcode, ScanService = _scanService };
 
         _cmbCategory = new ComboBox { Location = new Point(150, 134), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F), DropDownStyle = ComboBoxStyle.DropDownList };
         _cmbUnit = new ComboBox { Location = new Point(150, 172), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F), DropDownStyle = ComboBoxStyle.DropDownList };
@@ -73,30 +103,53 @@ public class ProductEditDialog : Form
         _numCost = new NumericUpDown { Location = new Point(150, 210), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F), DecimalPlaces = 2, Maximum = 999999 };
         _numSale = new NumericUpDown { Location = new Point(150, 248), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F), DecimalPlaces = 2, Maximum = 999999 };
         _numMinStock = new NumericUpDown { Location = new Point(150, 286), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F), DecimalPlaces = 0, Maximum = 999999 };
+        _numOpeningStock = new NumericUpDown { Location = new Point(150, 324), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F), DecimalPlaces = 0, Maximum = 999999 };
+        _txtBrand = new TextBox { Location = new Point(150, 362), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F) };
+        _cmbProductKind = new ComboBox { Location = new Point(150, 400), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F), DropDownStyle = ComboBoxStyle.DropDownList };
 
-        _chkActive = new CheckBox { Text = AppStrings.ProductActive, Location = new Point(150, 324), Size = new Size(200, 28), Font = new Font("Segoe UI", 10F), Checked = true };
+        _chkActive = new CheckBox { Text = AppStrings.ProductActive, Location = new Point(150, 440), Size = new Size(200, 28), Font = new Font("Segoe UI", 10F), Checked = true };
+
+        _picImage.Location = new Point(20, 480);
+        _btnImage.Location = new Point(130, 510);
+        _btnImage.Click += async (_, _) => await PickImageAsync();
+        _btnBarcodes.Location = new Point(260, 510);
+        _btnBarcodes.Click += async (_, _) => await ManageBarcodesAsync();
+        _btnVariants.Location = new Point(390, 510);
+        _btnVariants.Click += async (_, _) => await ManageVariantsAsync();
 
         _btnSave = ButtonFactory.Primary(AppStrings.Save);
-        _btnSave.Location = new Point(150, 368);
+        _btnSave.Location = new Point(150, 560);
         _btnSave.Size = new Size(120, 40);
         _btnSave.Click += async (_, _) => await SaveAsync();
 
         _btnCancel = ButtonFactory.Neutral(AppStrings.Cancel);
-        _btnCancel.Location = new Point(290, 368);
+        _btnCancel.Location = new Point(290, 560);
         _btnCancel.Size = new Size(120, 40);
         _btnCancel.DialogResult = DialogResult.Cancel;
+
+        if (_existing != null)
+        {
+            _lblOpeningStock.Visible = false;
+            _numOpeningStock.Visible = false;
+            _btnBarcodes.Visible = false;
+            _btnVariants.Visible = false;
+        }
 
         Controls.AddRange(new Control[]
         {
             _lblName, _txtName,
             _lblSKU, _txtSKU,
-            _lblBarcode, _txtBarcode,
+            _lblBarcode, _txtBarcode, _btnScanBarcode,
             _lblCategory, _cmbCategory,
             _lblUnit, _cmbUnit,
             _lblCost, _numCost,
             _lblSale, _numSale,
             _lblMinStock, _numMinStock,
+            _lblOpeningStock, _numOpeningStock,
+            _lblBrand, _txtBrand,
+            _lblProductKind, _cmbProductKind,
             _chkActive,
+            _picImage, _btnImage, _btnBarcodes, _btnVariants,
             _btnSave, _btnCancel
         });
 
@@ -122,6 +175,7 @@ public class ProductEditDialog : Form
         _lblCost.Text = AppStrings.CostPrice + ":";
         _lblSale.Text = AppStrings.SalePrice + ":";
         _lblMinStock.Text = AppStrings.MinimumStock + ":";
+        _lblOpeningStock.Text = AppStrings.OpeningStock + ":";
         _chkActive.Text = AppStrings.ProductActive;
         _btnSave.Text = AppStrings.Save;
         _btnCancel.Text = AppStrings.Cancel;
@@ -154,7 +208,14 @@ public class ProductEditDialog : Form
             _txtName.Text = _existing.Name;
             _txtSKU.Text = _existing.SKU;
             _txtBarcode.Text = _existing.Barcode;
+            _txtBrand.Text = _existing.Brand ?? "";
+            _cmbProductKind.SelectedItem = _existing.ProductKind;
             _numCost.Value = _existing.CostPrice;
+            if (!string.IsNullOrWhiteSpace(_existing.ThumbnailPath) && _imageService != null)
+            {
+                var img = await _imageService.LoadAsync(_existing.ImagePath, true);
+                if (img != null) _picImage.Image = img;
+            }
             _numSale.Value = _existing.SalePrice;
             _numMinStock.Value = _existing.MinimumStock;
             _chkActive.Checked = _existing.IsActive;
@@ -180,6 +241,11 @@ public class ProductEditDialog : Form
         _cmbUnit.DisplayMember = "Name";
         _cmbUnit.ValueMember = "Id";
         _cmbUnit.SelectedIndex = 0;
+
+        _cmbProductKind.Items.Clear();
+        foreach (DzentoPOS2.Core.Enums.ProductKind k in Enum.GetValues(typeof(DzentoPOS2.Core.Enums.ProductKind)))
+            _cmbProductKind.Items.Add(k);
+        _cmbProductKind.SelectedIndex = 0;
     }
 
     private static void SelectCombo(ComboBox cmb, Guid id)
@@ -197,6 +263,42 @@ public class ProductEditDialog : Form
                 cmb.SelectedIndex = i;
                 return;
             }
+        }
+    }
+
+    private async Task ManageVariantsAsync()
+    {
+        if (_existing == null || _contextFactory == null) return;
+        using var ctx = _contextFactory.CreateDbContext();
+        using var dlg = new ProductVariantsDialog(ctx, _existing.Id);
+        dlg.ShowDialog(this);
+    }
+
+    private async Task ManageBarcodesAsync()
+    {
+        if (_existing == null || _barcodeService == null) return;
+        var variantId = await _barcodeService.GetDefaultVariantIdAsync(_existing.Id);
+        if (variantId == Guid.Empty) return;
+        using var dlg = new ProductBarcodesDialog(_barcodeService, variantId);
+        dlg.ShowDialog(this);
+    }
+
+    private async Task PickImageAsync()
+    {
+        if (_imageService == null) return;
+        using var ofd = new OpenFileDialog { Filter = "Images|*.jpg;*.jpeg;*.png;*.bmp" };
+        if (ofd.ShowDialog() != DialogResult.OK) return;
+        try
+        {
+            var (img, thumb) = await _imageService.SaveAsync(ofd.FileName, "products");
+            _imagePath = img;
+            _thumbnailPath = thumb;
+            var preview = await _imageService.LoadAsync(img, true);
+            if (preview != null) _picImage.Image = preview;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, AppStrings.ErrorMsg, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
 
@@ -229,11 +331,16 @@ public class ProductEditDialog : Form
                 Name = _txtName.Text.Trim(),
                 SKU = _txtSKU.Text.Trim(),
                 Barcode = _txtBarcode.Text.Trim(),
+                Brand = _txtBrand.Text.Trim(),
+                ProductKind = (DzentoPOS2.Core.Enums.ProductKind)(_cmbProductKind.SelectedItem ?? DzentoPOS2.Core.Enums.ProductKind.Standard),
+                ImagePath = _imagePath,
+                ThumbnailPath = _thumbnailPath,
                 CategoryId = categoryId,
                 UnitId = unitId,
                 CostPrice = _numCost.Value,
                 SalePrice = _numSale.Value,
                 MinimumStock = _numMinStock.Value,
+                OpeningStock = _numOpeningStock.Value,
                 IsActive = _chkActive.Checked
             });
         }
@@ -245,6 +352,10 @@ public class ProductEditDialog : Form
                 Name = _txtName.Text.Trim(),
                 SKU = _txtSKU.Text.Trim(),
                 Barcode = _txtBarcode.Text.Trim(),
+                Brand = _txtBrand.Text.Trim(),
+                ProductKind = (DzentoPOS2.Core.Enums.ProductKind)(_cmbProductKind.SelectedItem ?? DzentoPOS2.Core.Enums.ProductKind.Standard),
+                ImagePath = _imagePath,
+                ThumbnailPath = _thumbnailPath,
                 CategoryId = categoryId,
                 UnitId = unitId,
                 CostPrice = _numCost.Value,

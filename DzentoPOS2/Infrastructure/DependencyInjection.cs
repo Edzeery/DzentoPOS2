@@ -15,6 +15,8 @@ using DzentoPOS2.WinForms.Forms.Sales;
 using DzentoPOS2.WinForms.Forms.Settings;
 using DzentoPOS2.WinForms.Forms.Suppliers;
 using DzentoPOS2.WinForms.Navigation;
+using DzentoPOS2.WinForms.Services.Barcodes;
+using DzentoPOS2.WinForms.Services.Images;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -27,6 +29,10 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        // Make the configuration available to scoped services (e.g. AdminSeeder
+        // reads Admin:EmergencyReset from it).
+        services.AddSingleton(configuration);
+
         // Localization
         services.AddLocalizationModule();
 
@@ -43,6 +49,8 @@ public static class DependencyInjection
         services.AddSingleton<AppApplicationContext>();
         services.AddSingleton<IUserPreferencesService, UserPreferencesService>();
         services.AddSingleton<ICurrentSettingsService, CurrentSettingsService>();
+        services.AddSingleton<IBarcodeScanService, BarcodeScanService>();
+        services.AddSingleton<IImageService, ImageService>();
         services.AddSingleton<INavigationService, NavigationService>();
        
         // Forms
@@ -53,6 +61,7 @@ public static class DependencyInjection
         services.AddTransient<RolesForm>();
 
         services.AddTransient<ProductsForm>();
+        services.AddTransient<ProductsHubForm>();
         services.AddTransient<PurchasesForm>();
         services.AddTransient<SalesForm>();
         services.AddTransient<CustomersForm>();
@@ -64,6 +73,8 @@ public static class DependencyInjection
             services.AddTransient<ProductCategoriesForm>();
             services.AddTransient<ProductUnitsForm>();
             services.AddTransient<CashSessionForm>();
+        services.AddTransient<CashSessionOpenDialog>();
+        services.AddTransient<Forms.Setup.FirstRunModulesDialog>();
 
         return services;
     }

@@ -1,4 +1,5 @@
-﻿namespace DzentoPOS2.WinForms.Forms.Inventory
+﻿using DzentoPOS2.Localization.Resources;
+namespace DzentoPOS2.WinForms.Forms.Inventory
 {
     partial class ProductsForm
     {
@@ -18,7 +19,7 @@
             components = new System.ComponentModel.Container();
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1400, 800);
-            Text = "إدارة المخزون";
+            Text = AppStrings.InventoryManagement;
         }
     }
 }

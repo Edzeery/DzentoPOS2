@@ -1,4 +1,6 @@
+using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Accounting;
+using DzentoPOS2.Core.Constants;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Accounting;
@@ -11,6 +13,7 @@ namespace DzentoPOS2.WinForms.Forms.Accounting;
 public partial class ExpensesForm : LocalizableFormBase
 {
     private readonly IExpenseService _expenseService;
+    private readonly IAuthorizationGuard _guard;
     private readonly Panel _topPanel;
     private readonly Panel _filterPanel;
     private readonly ComboBox _cmbCategory;
@@ -27,10 +30,11 @@ public partial class ExpensesForm : LocalizableFormBase
     private List<ExpenseDto> _expenses = new();
     private List<ExpenseCategoryDto> _categories = new();
 
-    public ExpensesForm(IExpenseService expenseService, ILanguageService languageService)
+    public ExpensesForm(IExpenseService expenseService, ILanguageService languageService, IAuthorizationGuard guard)
         : base(languageService)
     {
         _expenseService = expenseService;
+        _guard = guard;
         Size = new Size(1100, 650);
         BackColor = AppColors.Background;
         StartPosition = FormStartPosition.CenterParent;
@@ -45,15 +49,15 @@ public partial class ExpensesForm : LocalizableFormBase
 
         _btnAdd = ButtonFactory.ToolAdd("Add");
         _btnAdd.Location = new Point(16, 12);
-        _btnAdd.Click += async (_, _) => await AddExpense();
+        _btnAdd.Click += (_, _) => RunSafe(AddExpense);
 
         _btnEdit = ButtonFactory.ToolEdit("Edit");
         _btnEdit.Location = new Point(124, 12);
-        _btnEdit.Click += async (_, _) => await EditExpense();
+        _btnEdit.Click += (_, _) => RunSafe(EditExpense);
 
         _btnDelete = ButtonFactory.ToolDelete("Delete");
         _btnDelete.Location = new Point(232, 12);
-        _btnDelete.Click += async (_, _) => await DeleteExpense();
+        _btnDelete.Click += (_, _) => RunSafe(DeleteExpense);
 
         _topPanel.Controls.AddRange(new Control[] { _btnDelete, _btnEdit, _btnAdd });
 
@@ -109,7 +113,7 @@ public partial class ExpensesForm : LocalizableFormBase
             Cursor = Cursors.Hand,
             TextImageRelation = TextImageRelation.ImageBeforeText
         };
-        _btnFilter.Click += async (_, _) => await LoadDataAsync();
+        _btnFilter.Click += (_, _) => RunSafe(LoadDataAsync);
 
         _filterPanel.Controls.AddRange(new Control[]
         {
@@ -121,17 +125,46 @@ public partial class ExpensesForm : LocalizableFormBase
 
         _grid = new DataGridView { Dock = DockStyle.Fill };
         DataGridViewStyleHelper.ApplyModernStyle(_grid);
-        _grid.CellDoubleClick += async (_, _) => await EditExpense();
+        _grid.CellDoubleClick += (_, _) => RunSafe(EditExpense);
 
         Controls.Add(_grid);
         Controls.Add(_filterPanel);
         Controls.Add(_topPanel);
     }
 
-    protected override async void OnLoad(EventArgs e)
+    protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
+
+        _ = ApplyPermissionsAsync();
+
+        RunSafe(LoadLookupsAndDataAsync);
+    }
+
+    private async Task ApplyPermissionsAsync()
+    {
+        try
+        {
+            bool canCreate = await _guard.IsAllowedAsync(Permissions.ExpensesCreate);
+            bool canEdit = await _guard.IsAllowedAsync(Permissions.ExpensesEdit);
+            bool canDelete = await _guard.IsAllowedAsync(Permissions.ExpensesDelete);
+            if (!IsDisposedOrDisposing)
+            {
+                _btnAdd.Enabled = canCreate;
+                _btnEdit.Enabled = canEdit;
+                _btnDelete.Enabled = canDelete;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine("ExpensesForm permission check failed: " + ex.Message);
+        }
+    }
+
+    private async Task LoadLookupsAndDataAsync()
+    {
         _categories = await _expenseService.GetCategoriesAsync();
+        if (IsDisposedOrDisposing) return;
         _cmbCategory.Items.Clear();
         _cmbCategory.Items.Add(new { Name = AppStrings.All, Id = Guid.Empty });
         foreach (var c in _categories)
@@ -157,6 +190,8 @@ public partial class ExpensesForm : LocalizableFormBase
         var from = _dtpFrom.Value.Date;
         var to = _dtpTo.Value.Date.AddDays(1);
         _expenses = await _expenseService.GetByDateRangeAsync(from, to);
+
+        if (IsDisposedOrDisposing) return;
 
         var selectedId = GetSelectedCategoryId();
         if (selectedId != Guid.Empty)

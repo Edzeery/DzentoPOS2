@@ -42,7 +42,7 @@ public sealed class CalculatorOutcome
 /// as the tax rate. The choice is made by the user, nothing is applied
 /// silently.
 /// </summary>
-public class SalesCalculatorDialog : Form
+public class SalesCalculatorDialog : ThemedDialog
 {
     private readonly ILanguageService _languageService;
     private readonly List<ProductOption> _products;

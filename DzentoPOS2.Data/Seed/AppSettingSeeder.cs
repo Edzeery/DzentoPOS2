@@ -1,4 +1,6 @@
-﻿using DzentoPOS2.Core.Entities.Systems;
+﻿using DzentoPOS2.Localization.Resources;
+using DzentoPOS2.Core.Entities.Systems;
+using DzentoPOS2.Core.Systems;
 using DzentoPOS2.Data.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,11 +10,14 @@ namespace DzentoPOS2.Data.Seed
     {
         public static async Task SeedAsync(AppDbContext context)
         {
-            if (await context.AppSettings.AnyAsync())
-                return;
-
             var settings = new List<AppSetting>
             {
+                new() { Key = AppSettingKeys.ModuleGrocery, Value = "false", Group = "Modules" },
+                new() { Key = AppSettingKeys.ModulePhones, Value = "false", Group = "Modules" },
+                new() { Key = AppSettingKeys.ModuleDigital, Value = "false", Group = "Modules" },
+                new() { Key = AppSettingKeys.ModuleGeneral, Value = "true", Group = "Modules" },
+                new() { Key = AppSettingKeys.ModulesConfigured, Value = "false", Group = "Modules" },
+                new() { Key = AppSettingKeys.AllowDuplicateBarcodes, Value = "false", Group = "Catalog" },
                 new() { Key = "app.name", Value = "DzentoPOS2", Group = "General" },
                 new() { Key = "app.version", Value = "1.0.0", Group = "General" },
                 new() { Key = "company.name", Value = "", Group = "Company" },
@@ -20,13 +25,27 @@ namespace DzentoPOS2.Data.Seed
                 new() { Key = "company.phone", Value = "", Group = "Company" },
                 new() { Key = "company.email", Value = "", Group = "Company" },
                 new() { Key = "company.tax_number", Value = "", Group = "Company" },
-                new() { Key = "pos.default_customer", Value = "عميل نقدي", Group = "POS" },
-                new() { Key = "pos.receipt_footer", Value = "شكراً لتسوقكم معنا", Group = "POS" },
+                new() { Key = "pos.default_customer", Value = AppStrings.WalkInCustomer, Group = "POS" },
+                new() { Key = "pos.receipt_footer", Value = AppStrings.ReceiptFooterThankYou, Group = "POS" },
+                new() { Key = AppSettingKeys.MaxDiscountPercent, Value = "100", Group = "Sales" },
                 new() { Key = "inventory.low_stock_threshold", Value = "10", Group = "Inventory" },
+                new() { Key = "inventory.allow_negative_stock", Value = "false", Group = "Inventory" },
                 new() { Key = "currency.default", Value = "SAR", Group = "Currency" },
             };
 
-            await context.AppSettings.AddRangeAsync(settings);
+            var existingKeys = await context.AppSettings
+                .AsNoTracking()
+                .Select(x => x.Key)
+                .ToListAsync();
+
+            var missing = settings
+                .Where(x => !existingKeys.Contains(x.Key))
+                .ToList();
+
+            if (missing.Count == 0)
+                return;
+
+            await context.AppSettings.AddRangeAsync(missing);
             await context.SaveChangesAsync();
         }
     }

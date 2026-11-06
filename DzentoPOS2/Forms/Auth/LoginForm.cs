@@ -20,6 +20,8 @@ namespace DzentoPOS2.WinForms.Forms.Auth
 
         private readonly IValidator<LoginDto> _validator;
 
+        private readonly IValidator<ChangePasswordDto> _changePasswordValidator;
+
         public event EventHandler<UserSession>? LoginSuccess;
 
         private readonly ILanguageService _languageService;
@@ -34,12 +36,14 @@ namespace DzentoPOS2.WinForms.Forms.Auth
         public LoginForm(
             IAuthService authService,
             IValidator<LoginDto> validator,
+            IValidator<ChangePasswordDto> changePasswordValidator,
             ILanguageService languageService,
             IUserPreferencesService? preferences)
         {
             InitializeComponent();
             _authService = authService;
             _validator = validator;
+            _changePasswordValidator = changePasswordValidator;
 
             _languageService = languageService;
             _preferences = preferences;
@@ -396,8 +400,8 @@ namespace DzentoPOS2.WinForms.Forms.Auth
         private void ConfigureLanguageComboBox()
         {
             HeaderComboBoxStyle.Apply(comboBoxLang);
-            comboBoxLang.Items = new[] { "العربية", "English", "Français" };
-          
+            comboBoxLang.Items = new[] { AppStrings.LanguageArabic, "English", "Français" };
+
             iconPictureBoxlanguage.BackColor = Color.Transparent;
             iconPictureBoxlanguage.IconColor = HeaderColors.Accent;
         }
@@ -408,6 +412,7 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             labelWelcomeBack.Text = AppStrings.WelcomeBack;
             labelWelcomeDes.Text = AppStrings.WelcomeDes;
             ButtonLogin.Text = AppStrings.Login;
+            LinkForgotPassword.Text = AppStrings.ForgotPassword;
             this.Text = AppStrings.Login;
             lblUserName.Text = AppStrings.Username;
             lblPassword.Text = AppStrings.Password;
@@ -461,7 +466,7 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             if (!ckbRememberMe.Checked)
                 CredentialStore.Delete();
         }
-         
+
 
         private async void ButtonLogin_Click(object sender, EventArgs e)
         {
@@ -493,6 +498,24 @@ namespace DzentoPOS2.WinForms.Forms.Auth
                     return;
                 }
 
+                // Accounts that still use a seeded/assigned password must set a
+                // real one before the shell opens.
+                if (result.Data!.MustChangePassword)
+                {
+                    using var changePassword = new ChangePasswordDialog(
+                        _authService,
+                        _changePasswordValidator,
+                        _languageService,
+                        result.Data.UserId);
+
+                    if (changePassword.ShowDialog(this) != DialogResult.OK)
+                    {
+                        // Cancelled: stay signed out and on the login screen.
+                        await _authService.LogoutAsync();
+                        return;
+                    }
+                }
+
                 // 🔥 تحويل DTO → Session (مهم جدًا)
                 var session = new UserSession
                 {
@@ -502,7 +525,8 @@ namespace DzentoPOS2.WinForms.Forms.Auth
                     RoleName = result.Data.RoleName,
                     BranchName = result.Data.BranchName,
                     BranchId = result.Data.BranchId,
-                    IsAdmin = result.Data.IsAdmin
+                    IsAdmin = result.Data.IsAdmin,
+                    MustChangePassword = result.Data.MustChangePassword
                 };
                 _settings.RememberMe = ckbRememberMe.Checked;
 
@@ -531,6 +555,12 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             }
         }
 
+        private async void LinkForgotPassword_Click(object sender, EventArgs e)
+        {
+            using var forgot = new ForgotPasswordDialog(_authService, _languageService);
+            forgot.ShowDialog(this);
+        }
+
         private void LoginForm_Load(object sender, EventArgs e)
         {
             ApplyResponsiveSizing();
@@ -543,8 +573,8 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             //combo.Add(items.ToArray());
 
 
-             comboBoxLang.ItemHeight = 30;
-             comboBoxLang.MaxDropDownItems = 6; 
+            comboBoxLang.ItemHeight = 30;
+            comboBoxLang.MaxDropDownItems = 6;
         }
 
         private void comboBoxLang_SelectedIndexChanged(object sender, EventArgs e)
@@ -565,6 +595,11 @@ namespace DzentoPOS2.WinForms.Forms.Auth
 
             FormLocalizationHelper.ApplyDirection(this, _languageService);
             LoadText();
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }

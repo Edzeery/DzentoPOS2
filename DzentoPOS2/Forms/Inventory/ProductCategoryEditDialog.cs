@@ -1,4 +1,5 @@
 using DzentoPOS2.App.Services.Inventory;
+using DzentoPOS2.WinForms.Helpers;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
@@ -6,7 +7,7 @@ using DzentoPOS2.WinForms.Themes;
 
 namespace DzentoPOS2.WinForms.Forms.Inventory;
 
-public class ProductCategoryEditDialog : Form
+public class ProductCategoryEditDialog : ThemedDialog
 {
     private readonly IProductCategoryService _categoryService;
     private readonly ILanguageService _languageService;

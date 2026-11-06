@@ -1,69 +1,80 @@
-using FontAwesome.Sharp;
+﻿using FontAwesome.Sharp;
+using DzentoPOS2.Localization.Resources;
+using DzentoPOS2.Shared.Contracts.DTOs.Reports;
+using DzentoPOS2.Shared.Helpers;
 using DzentoPOS2.WinForms.ServicesUI;
 using DzentoPOS2.WinForms.Themes;
+using System.Globalization;
+using System.Windows.Forms;
+using System.Drawing.Drawing2D;
 
 namespace DzentoPOS2.WinForms.Controls
 {
     public class KpiCard : Panel, IThemeAware
     {
-        private readonly Label _lblTitle;
-        private readonly Label _lblValue;
-        private readonly Label _lblTrend;
+        private static readonly Font TitleFont = new("Segoe UI", 9.5F);
+        private static readonly Font TrendFont = new("Segoe UI Semibold", 9.5F);
+        private static readonly Font ValueFont = new("Segoe UI", 24F, FontStyle.Bold);
+        private static readonly Font EstimatedFont = new("Segoe UI", 9F);
+
         private readonly IconPictureBox _iconBox;
         private readonly Panel _iconBadge;
         private readonly Panel _accentLeft;
         private readonly string _key;
         private readonly int _baseElevation;
         private int _currentElevation;
-        private string _prefix = "";
-        private string _suffix = "";
+        private readonly ToolTip _toolTip;
+
+        private KpiValueKind _valueKind = KpiValueKind.Count;
+        private int _currencyDigits = 2;
         private decimal _currentNum;
         private decimal _targetNum;
         private System.Windows.Forms.Timer? _animTimer;
         private Color _baseAccent = Color.Gray;
         private Color _appliedAccent = Color.Gray;
 
+        private string _title = string.Empty;
+        private string _trendText = string.Empty;
+        private KpiTrendKind _trendKind = KpiTrendKind.None;
+        private bool _estimated;
+        private Rectangle _valueRect;
+        private Rectangle _estimatedRect;
+        private Rectangle _titleRect;
+        private Rectangle _trendRect;
+
+        public static bool ReduceMotion { get; set; }
+        static KpiCard()
+        {
+            ReduceMotion = !SystemInformation.UIEffectsEnabled;
+            try { Microsoft.Win32.SystemEvents.UserPreferenceChanged += (_, _) => ReduceMotion = !SystemInformation.UIEffectsEnabled; }
+            catch (Exception) { /* ignore */ }
+        }
+
+        public static int CurrencyDigits { get; set; } = 2;
+
         public string CardKey => _key;
-        public string CardTitle { get => _lblTitle.Text; set => _lblTitle.Text = value; }
-        public string CardValue { get => _lblValue.Text; set => _lblValue.Text = value; }
-        public string CardTrend
-        {
-            get
-            {
-                var parts = _lblTrend.Text.Split(' ');
-                return parts.Length > 1 ? string.Join(" ", parts, 1, parts.Length - 1) : _lblTrend.Text;
-            }
-            set => UpdateTrendText(value, _isUp);
-        }
-
+        public string CardTitle { get => _title; set { _title = value ?? string.Empty; Invalidate(); } }
         public IconChar Icon { get => _iconBox.IconChar; set => _iconBox.IconChar = value; }
+        public Color AccentColor { get => _appliedAccent; set { _baseAccent = value; ApplyAccent(AppColors.AdaptAccent(value)); } }
 
-        /// <summary>
-        /// The accent color of the card. The value is stored as a base color and
-        /// adapted for the active theme, so a card keeps its identity in both
-        /// light and dark mode.
-        /// </summary>
-        public Color AccentColor
-        {
-            get => _appliedAccent;
-            set
-            {
-                _baseAccent = value;
-                ApplyAccent(AppColors.AdaptAccent(value));
-            }
-        }
-
-        private bool _isUp = true;
-
-        public KpiCard() : this("", "", IconChar.QuestionCircle, Color.Gray, 4)
-        {
-        }
+        public KpiCard() : this("", "", IconChar.QuestionCircle, Color.Gray, 4) { }
 
         public KpiCard(string key, string title, IconChar icon, Color accent, int baseElevation = 4)
         {
             _key = key;
             _baseElevation = baseElevation;
             _currentElevation = baseElevation;
+            _title = title ?? string.Empty;
+            _toolTip = new ToolTip
+            {
+                InitialDelay = 200,
+                AutoPopDelay = 8000,
+                ReshowDelay = 100,
+                ShowAlways = false
+            };
+
+            SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.ResizeRedraw, true);
+            DoubleBuffered = true;
 
             Size = new Size(300, 150);
             MinimumSize = new Size(200, 120);
@@ -72,17 +83,14 @@ namespace DzentoPOS2.WinForms.Controls
             Cursor = Cursors.Hand;
 
             _accentLeft = new Panel { Width = 5, Dock = DockStyle.Left, BackColor = accent };
-
             _iconBadge = new Panel
             {
                 Size = new Size(40, 40),
                 Location = new Point(22, 20),
-                Anchor = AnchorStyles.Top | AnchorStyles.Left,
-                Cursor = Cursors.Hand,
-                BackColor = Color.Transparent
+                BackColor = Color.Transparent,
+                Cursor = Cursors.Hand
             };
             RadiusControl.Apply(_iconBadge, 10);
-
             AccentColor = accent;
 
             _iconBox = new IconPictureBox
@@ -97,62 +105,26 @@ namespace DzentoPOS2.WinForms.Controls
             };
             _iconBadge.Controls.Add(_iconBox);
 
-            _lblTitle = new Label
-            {
-                Text = title,
-                Font = new Font("Segoe UI", 9.5F),
-                ForeColor = AppColors.InkMuted,
-                Location = new Point(74, 24),
-                Size = new Size(120, 18),
-                AutoSize = false,
-                AutoEllipsis = true,
-                BackColor = Color.Transparent,
-                Cursor = Cursors.Hand
-            };
-
-            _lblValue = new Label
-            {
-                Text = "0",
-                Font = new Font("Segoe UI", 24F, FontStyle.Bold),
-                ForeColor = accent,
-                Location = new Point(22, 70),
-                AutoSize = true,
-                BackColor = Color.Transparent,
-                Cursor = Cursors.Hand
-            };
-
-            _lblTrend = new Label
-            {
-                Text = "\u25B2 0%",
-                Font = new Font("Segoe UI Semibold", 9.5F),
-                ForeColor = AppColors.InkMuted,
-                Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                Location = new Point(Math.Max(22, Width - 100), 28),
-                AutoSize = true,
-                BackColor = Color.Transparent,
-                Cursor = Cursors.Hand
-            };
-
-            Controls.AddRange([_accentLeft, _iconBadge, _lblTitle, _lblValue, _lblTrend]);
-
-            Resize += (_, _) => UpdateLayout();
+            Controls.AddRange(new Control[] { _accentLeft, _iconBadge });
 
             MouseEnter += (_, _) => SetHover(true);
-            MouseLeave += (_, _) => SetHover(false);
-            foreach (Control c in Controls)
+            MouseLeave += (_, _) =>
             {
-                c.MouseEnter += (_, _) => SetHover(true);
-                c.MouseLeave += (_, _) => SetHover(false);
-            }
-
-            SetRoundedRegion();
-
-            UpdateLayout();
+                if (!ClientRectangle.Contains(PointToClient(Cursor.Position)))
+                    SetHover(false);
+            };
+            MouseMove += (_, e) =>
+            {
+                if (_estimatedRect.Contains(e.Location))
+                    _toolTip.Show(AppStrings.EstimatedCostNote, this, e.Location.X + 10, e.Location.Y + 10);
+                else if (_titleRect.Contains(e.Location) && TextRenderer.MeasureText(_title, TitleFont).Width > _titleRect.Width)
+                    _toolTip.Show(_title, this, e.Location.X + 10, e.Location.Y + 10);
+                else
+                    _toolTip.Hide(this);
+            };
 
             HandleCreated += (_, _) => ApplyTheme();
-            if (IsHandleCreated)
-                ApplyTheme();
-
+            if (IsHandleCreated) ApplyTheme();
             ThemeManager.ThemeChanged += OnThemeChanged;
         }
 
@@ -163,181 +135,181 @@ namespace DzentoPOS2.WinForms.Controls
             ApplyTheme();
         }
 
-        private void UpdateLayout()
+        protected override void OnPaint(PaintEventArgs e)
         {
-            if (IsDisposed) return;
+            base.OnPaint(e);
+            var g = e.Graphics;
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-            int trendLeft = Math.Max(74, Width - _lblTrend.Width - 22);
-            _lblTrend.Location = new Point(trendLeft, 28);
+            var rtl = RightToLeft == RightToLeft.Yes;
+            var flags = TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine;
+            if (rtl) flags |= TextFormatFlags.RightToLeft | TextFormatFlags.Right;
 
-            // Keep the title clear of the trend badge on narrow cards.
-            _lblTitle.Width = Math.Max(40, trendLeft - 84);
+            // background rounded
+            using (var path = RoundedRect(ClientRectangle, 12))
+            using (var brush = new SolidBrush(AppColors.Surface))
+                g.FillPath(brush, path);
 
-            _lblValue.Location = new Point(22, Math.Max(60, Height - _lblValue.Height - 28));
+            // accent
+            _accentLeft.BackColor = _appliedAccent;
+
+            // icon badge already child
+
+            // accent strip side follows reading direction
+            _accentLeft.Dock = rtl ? DockStyle.Right : DockStyle.Left;
+
+            // icon badge position follows reading direction
+            _iconBadge.Location = rtl
+                ? new Point(Width - _iconBadge.Width - 22, 20)
+                : new Point(22, 20);
+
+            // trend measure
+            int trendWidth = 0;
+            if (!string.IsNullOrEmpty(_trendText))
+            {
+                var trendSize = TextRenderer.MeasureText(g, _trendText, TrendFont, Size, TextFormatFlags.NoPadding);
+                trendWidth = trendSize.Width + 8;
+            }
+            int iconWidth = _iconBadge.Width + 12;
+
+            // title + trend rects (mirrored for RTL, no overlap with icon)
+            if (rtl)
+            {
+                _trendRect = string.IsNullOrEmpty(_trendText)
+                    ? Rectangle.Empty
+                    : new Rectangle(12, 24, trendWidth, 18);
+                int titleX = trendWidth + 24;
+                int titleWidth = Math.Max(20, Width - trendWidth - 98);
+                _titleRect = new Rectangle(titleX, 24, titleWidth, 18);
+            }
+            else
+            {
+                _titleRect = new Rectangle(74, 24, Math.Max(20, Width - trendWidth - 98), 18);
+                _trendRect = string.IsNullOrEmpty(_trendText)
+                    ? Rectangle.Empty
+                    : new Rectangle(Width - trendWidth - 12, 24, trendWidth, 18);
+            }
+
+            TextRenderer.DrawText(g, _title, TitleFont, _titleRect, AppColors.InkMuted, flags);
+
+            if (!string.IsNullOrEmpty(_trendText))
+                TextRenderer.DrawText(g, _trendText, TrendFont, _trendRect, AppColors.InkMuted, flags);
+
+            // estimated
+            if (_estimated)
+            {
+                _estimatedRect = new Rectangle(rtl ? 12 : Width - 24, 4, 20, 16);
+                TextRenderer.DrawText(g, "⚠", EstimatedFont, _estimatedRect, AppColors.Warning, TextFormatFlags.NoPadding);
+            }
+            else _estimatedRect = Rectangle.Empty;
+
+            // value
+            _valueRect = new Rectangle(22, Math.Max(60, Height - 40 - 28), Width - 44, 40);
+            var valueText = FormatValue(_currentNum);
+            TextRenderer.DrawText(g, valueText, ValueFont, _valueRect, _appliedAccent, TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | (rtl ? TextFormatFlags.RightToLeft : 0));
+
+            // hover effect already background
+        }
+
+        private static GraphicsPath RoundedRect(Rectangle bounds, int radius)
+        {
+            var path = new GraphicsPath();
+            var d = radius * 2;
+            path.AddArc(bounds.X, bounds.Y, d, d, 180, 90);
+            path.AddArc(bounds.Right - d, bounds.Y, d, d, 270, 90);
+            path.AddArc(bounds.Right - d, bounds.Bottom - d, d, d, 0, 90);
+            path.AddArc(bounds.X, bounds.Bottom - d, d, d, 90, 90);
+            path.CloseFigure();
+            return path;
         }
 
         public void ApplyTheme()
         {
             if (IsDisposed) return;
-
-            ApplyAccent(AppColors.AdaptAccent(_baseAccent));
             BackColor = AppColors.Surface;
-            _lblTitle.ForeColor = AppColors.InkMuted;
-            _lblTrend.ForeColor = _lblTrend.Text.Contains('%') ? (_lblTrend.Text.Contains("\u25B2") ? AppColors.Success : AppColors.Danger) : AppColors.InkMuted;
             Invalidate();
         }
 
         private void ApplyAccent(Color color)
         {
             _appliedAccent = color;
-            if (_accentLeft != null) _accentLeft.BackColor = color;
-            if (_lblValue != null) _lblValue.ForeColor = color;
+            if (_iconBadge != null) _iconBadge.BackColor = ThemeManager.IsDark ? Blend(AppColors.Surface, color, 0.30f) : Blend(Color.White, color, 0.15f);
             if (_iconBox != null) _iconBox.IconColor = Color.White;
-            if (_iconBadge != null)
-            {
-                // A light pastel badge in light mode, a tinted dark badge in dark
-                // mode: a white pastel patch would glow on the dark card.
-                _iconBadge.BackColor = ThemeManager.IsDark
-                    ? Blend(AppColors.Surface, color, 0.30f)
-                    : Blend(Color.White, color, 0.15f);
-            }
+            Invalidate();
         }
 
         private static Color Blend(Color background, Color accent, float accentShare)
-            => Color.FromArgb(
-                (int)(background.R + (accent.R - background.R) * accentShare),
-                (int)(background.G + (accent.G - background.G) * accentShare),
-                (int)(background.B + (accent.B - background.B) * accentShare));
+            => Color.FromArgb((int)(background.R + (accent.R - background.R) * accentShare), (int)(background.G + (accent.G - background.G) * accentShare), (int)(background.B + (accent.B - background.B) * accentShare));
 
-        public void SetData(string value, string trend, bool isUp)
+        public void SetValue(decimal value, KpiValueKind kind, KpiTrendKind trendKind = KpiTrendKind.None, decimal trendPercent = 0, int? currencyDigits = null)
         {
-            _isUp = isUp;
-            UpdateTrendText(trend, isUp);
-            AnimateValue(value);
-        }
-
-        private void UpdateTrendText(string trend, bool isUp)
-        {
-            bool isPercent = trend.Contains('%');
-            _lblTrend.Text = isPercent ? $"{(isUp ? "\u25B2" : "\u25BC")} {trend}" : trend;
-            _lblTrend.ForeColor = isPercent
-                ? (isUp ? AppColors.Success : AppColors.Danger)
-                : AppColors.InkMuted;
-        }
-
-        private void AnimateValue(string newValue)
-        {
-            var parsed = TryParseNumeric(newValue);
-            if (parsed.HasValue)
+            _valueKind = kind;
+            _currencyDigits = currencyDigits ?? CurrencyDigits;
+            _targetNum = value;
+            ApplyTrend(trendKind, trendPercent);
+            if (ReduceMotion || !IsHandleCreated)
             {
-                _targetNum = parsed.Value;
-                StartAnimation();
+                _currentNum = _targetNum;
+                Invalidate(_valueRect);
+                return;
             }
-            else
-            {
-                _lblValue.Text = newValue;
-            }
-        }
-
-        private decimal? TryParseNumeric(string text)
-        {
-            if (string.IsNullOrEmpty(text)) return null;
-            var cleaned = new string(text.Where(c => char.IsDigit(c) || c == '.' || c == '-' || c == ',').ToArray());
-            cleaned = cleaned.Replace(",", "");
-            if (decimal.TryParse(cleaned, System.Globalization.NumberStyles.Any,
-                System.Globalization.CultureInfo.InvariantCulture, out var result))
-            {
-                _prefix = text.TrimEnd(cleaned.ToCharArray()).Trim();
-                _suffix = text.Substring(text.Length - (text.Length - text.LastIndexOfAny("0123456789".ToCharArray()) - 1)).Trim();
-                if (_suffix == text) _suffix = "";
-                return result;
-            }
-            return null;
-        }
-
-        private void StartAnimation()
-        {
-            _animTimer?.Stop();
-            _animTimer?.Dispose();
-
-            int totalSteps = 24;
-            int interval = 16;
-            decimal start = _currentNum;
-            decimal range = _targetNum - start;
-            int step = 0;
-
-            _animTimer = new System.Windows.Forms.Timer
-            {
-                Interval = interval
-            };
-            _animTimer.Tick += (_, _) =>
-            {
-                step++;
-                if (step >= totalSteps)
-                {
-                    _currentNum = _targetNum;
-                    _lblValue.Text = FormatDisplayValue(_targetNum);
-                    _animTimer?.Stop();
-                    return;
-                }
-                double t = (double)step / totalSteps;
-                double eased = 1 - Math.Pow(1 - t, 3);
-                _currentNum = start + (decimal)((double)range * eased);
-                _lblValue.Text = FormatDisplayValue(_currentNum);
-            };
+            _animTimer ??= new System.Windows.Forms.Timer { Interval = 16 };
+            _animTimer.Tick -= AnimTick;
+            _animTimer.Tick += AnimTick;
             _animTimer.Start();
         }
 
-        private string FormatDisplayValue(decimal num)
+        private void AnimTick(object? sender, EventArgs e)
         {
-            var formatted = num.ToString("N0");
-            return $"{_prefix}{formatted}{_suffix}".Trim();
+            if (_currentNum == _targetNum) { _animTimer?.Stop(); return; }
+            var diff = _targetNum - _currentNum;
+            _currentNum += diff / 8m;
+            if (Math.Abs(_targetNum - _currentNum) < 0.0001m) _currentNum = _targetNum;
+            Invalidate(_valueRect);
         }
 
-        private void SetHover(bool hovering)
+        private void ApplyTrend(KpiTrendKind kind, decimal percent)
         {
-            _currentElevation = hovering ? _baseElevation + 4 : _baseElevation;
-            ShadowEngine.Enable(this, _currentElevation);
-        }
-
-        private void SetRoundedRegion()
-        {
-            Resize += (_, _) => ApplyRegion();
-            ApplyRegion();
-        }
-
-        private void ApplyRegion()
-        {
-            if (Width <= 0 || Height <= 0) return;
-
-            var r = Math.Min(12, Math.Min(Width, Height) / 2);
-            if (r <= 0)
+            _trendKind = kind;
+            _trendText = kind switch
             {
-                // Still being laid out: GDI+ rejects a zero sized arc.
-                var stale = Region;
-                Region = null;
-                stale?.Dispose();
-                return;
-            }
+                KpiTrendKind.Change => percent == 0 ? "0%" : $"{(percent >= 0 ? "\u2191" : "\u2193")} {Math.Abs(percent):0.#}%",
+                KpiTrendKind.Margin => $"{AppStrings.Margin} {percent:0.#}%",
+                _ => string.Empty
+            };
+            Invalidate();
+        }
 
-            using var path = new System.Drawing.Drawing2D.GraphicsPath();
-            path.AddArc(0, 0, r, r, 180, 90);
-            path.AddArc(Width - r, 0, r, r, 270, 90);
-            path.AddArc(Width - r, Height - r, r, r, 0, 90);
-            path.AddArc(0, Height - r, r, r, 90, 90);
-            path.CloseFigure();
-            var oldRegion = Region;
-            Region = new Region(path);
-            oldRegion?.Dispose();
+        private string FormatValue(decimal value)
+        {
+            var culture = CultureInfo.CurrentCulture;
+            return KpiValueFormatter.Format(value, _valueKind, culture, _currencyDigits);
+        }
+
+        public void SetEstimated(bool value)
+        {
+            _estimated = value;
+            Invalidate();
+        }
+
+        public void SetTooltip(string text) { _toolTip.SetToolTip(this, text); }
+
+        public void SetDetail(string text) { /* no-op in owner-draw */ }
+
+        private void SetHover(bool hover)
+        {
+            BackColor = hover ? Blend(AppColors.Surface, _appliedAccent, 0.05f) : AppColors.Surface;
+            Invalidate();
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                _animTimer?.Stop();
-                _animTimer?.Dispose();
                 ThemeManager.ThemeChanged -= OnThemeChanged;
+                _animTimer?.Dispose();
+                _toolTip?.Dispose();
             }
             base.Dispose(disposing);
         }

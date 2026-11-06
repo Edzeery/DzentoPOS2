@@ -15,5 +15,6 @@ public interface IProductService
     Task<List<WarehouseDto>> GetWarehousesAsync();
     Task<ProductInventoryStatsDto> GetInventoryStatsAsync();
     Task<List<ProductStockDto>> GetProductStocksAsync(Guid productId);
+    Task AdjustStockAsync(Guid productId, decimal targetQuantity, string reason);
     Task<ProductDto?> GetBySkuAsync(string sku);
 }

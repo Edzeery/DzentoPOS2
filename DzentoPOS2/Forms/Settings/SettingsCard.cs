@@ -25,7 +25,7 @@ internal sealed class SettingsCard : Panel
     private const int StackedInputHeight = 36;
     private const int RowGap = 8;
     private const int LabelWidth = 190;
-    private const int StackedLabelWidth = 140;
+    private const int StackedLabelWidth = 180;
 
     private readonly TableLayoutPanel _stack;
     private readonly Label _titleLabel;
@@ -185,7 +185,7 @@ internal sealed class SettingsCard : Panel
         if (widthChanged)
         {
             _innerWidth = innerWidth;
-            _stacked = innerWidth < 560;
+            _stacked = innerWidth < 812;
 
             // The title and the hint wrap inside the available width.
             _titleLabel.MaximumSize = new Size(innerWidth, 0);

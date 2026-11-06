@@ -1,3 +1,4 @@
+using DzentoPOS2.Localization.Resources;
 namespace DzentoPOS2.WinForms.Forms.Accounting
 {
     partial class ExpensesForm
@@ -18,7 +19,7 @@ namespace DzentoPOS2.WinForms.Forms.Accounting
             components = new System.ComponentModel.Container();
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1100, 650);
-            Text = "المصروفات";
+            Text = AppStrings.Expenses;
         }
     }
 }

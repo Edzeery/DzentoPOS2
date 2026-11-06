@@ -12,7 +12,7 @@ using System.Reflection;
 
 namespace DzentoPOS2.WinForms.Forms.Purchases;
 
-public class PurchaseEditDialog : Form
+public class PurchaseEditDialog : ThemedDialog
 {
     private readonly IPurchaseService _purchaseService;
     private readonly IProductService _productService;

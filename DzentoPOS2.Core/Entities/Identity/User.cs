@@ -18,6 +18,31 @@ namespace DzentoPOS2.Core.Entities.Identity
 
         public bool IsActive { get; set; } = true;
 
+        /// <summary>
+        /// Set when an account still uses a seeded/administrator-assigned
+        /// password. The shell must force a password change before the user can
+        /// work, and a successful change clears the flag.
+        /// </summary>
+        public bool MustChangePassword { get; set; }
+
+        /// <summary>
+        /// BCrypt hash of the recovery key. The key itself is shown once at
+        /// generation time and is never stored in clear text. Null means no
+        /// recovery key has been issued yet.
+        /// </summary>
+        public string? RecoveryKeyHash { get; set; }
+
+        /// <summary>
+        /// Number of consecutive failed recovery-key attempts. Reset on success.
+        /// </summary>
+        public int RecoveryFailedCount { get; set; }
+
+        /// <summary>
+        /// UTC time until which recovery-key attempts are locked out.
+        /// Null means not locked.
+        /// </summary>
+        public DateTime? RecoveryLockedUntilUtc { get; set; }
+
         public Guid? BranchId { get; set; }
 
         public virtual Branch? Branch { get; set; }

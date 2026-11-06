@@ -7,12 +7,19 @@ using DzentoPOS2.WinForms.Helpers;
 using DzentoPOS2.WinForms.Services;
 using DzentoPOS2.WinForms.Services.Barcodes;
 using DzentoPOS2.WinForms.Themes;
+using Microsoft.Extensions.DependencyInjection;
+using DzentoPOS2.App.Services.Barcodes;
+using DzentoPOS2.App.Authorization;
+using DzentoPOS2.App.Services.Systems;
+using DzentoPOS2.Core.Constants;
 
 namespace DzentoPOS2.WinForms.Forms.Settings;
 
 public partial class SettingsForm : LocalizableFormBase
 {
     private readonly ICurrentSettingsService _currentSettings;
+    private readonly IBackupService? _backupService;
+    private readonly IServiceProvider _services;
 
     private readonly TableLayoutPanel _root;
     private readonly TableLayoutPanel _page;
@@ -24,6 +31,7 @@ public partial class SettingsForm : LocalizableFormBase
     private readonly SettingsCard _appearanceCard;
     private readonly SettingsCard _printingCard;
     private readonly SettingsCard _barcodeCard;
+    private readonly SettingsCard _backupCard;
     private readonly SettingsCard _aboutCard;
 
     private readonly PictureBox _picLogo;
@@ -50,6 +58,16 @@ public partial class SettingsForm : LocalizableFormBase
     private readonly ThemedComboBox _cmbCamera;
     private readonly ThemedButton _btnRefreshCameras;
 
+    private readonly ThemedComboBox _cmbCameraSource;
+    private readonly TextBox _txtCameraUrl;
+    private readonly ThemedButton _btnTestCamera;
+
+    private readonly Label _lblBackupHint;
+    private readonly Label _lblBackupFolder;
+    private readonly ThemedButton _btnChooseBackupFolder;
+    private readonly ThemedButton _btnBackupNow;
+    private readonly ThemedButton _btnRestoreBackup;
+
     private readonly Label _lblVersion;
 
     private readonly ThemedButton _btnSave;
@@ -67,12 +85,28 @@ public partial class SettingsForm : LocalizableFormBase
     private readonly List<ReceiptItem> _receipts = new();
     private readonly List<CameraItem> _cameras = new();
 
-    public SettingsForm(
+    // FormDesigner must not know about the extra constructor params; build
+        // via the service provider at runtime (NavigationService does). This
+        // parameterless ctor keeps the designer working if opened.
+        public SettingsForm()
+            : this(
+                Program.ServiceProvider?.GetRequiredService<ICurrentSettingsService>()!,
+                Program.ServiceProvider?.GetRequiredService<ILanguageService>()!,
+                Program.ServiceProvider?.GetRequiredService<IBackupService>()!,
+                Program.ServiceProvider!)
+        {
+        }
+
+        public SettingsForm(
         ICurrentSettingsService currentSettings,
-        ILanguageService languageService)
+        ILanguageService languageService,
+        IBackupService backupService,
+        IServiceProvider services)
         : base(languageService)
     {
         _currentSettings = currentSettings;
+        _backupService = backupService;
+        _services = services;
 
         BackColor = AppColors.Background;
         Size = new Size(940, 720);
@@ -180,6 +214,7 @@ public partial class SettingsForm : LocalizableFormBase
 
         _txtStoreName = new TextBox
         {
+            AutoSize = false,
             Font = AppStyle.BodyFont,
             BorderStyle = BorderStyle.FixedSingle,
             MaxLength = 120
@@ -263,7 +298,79 @@ public partial class SettingsForm : LocalizableFormBase
         _barcodeCard.AddFields(
             new SettingsField("cameraEnabled", AppStrings.EnableCameraScanning, _chkCameraBarcode),
             new SettingsField("cameraDevice", AppStrings.CameraDevice, _cmbCamera));
+
+        _cmbCameraSource = new ThemedComboBox();
+        _cmbCameraSource.Add(AppStrings.CameraSourceLocal, AppStrings.CameraSourceIp);
+        _cmbCameraSource.SelectedIndexChanged += (_, _) => UpdateCameraSourceVisibility();
+
+        _txtCameraUrl = new TextBox
+        {
+            AutoSize = false,
+            Font = AppStyle.BodyFont,
+            Width = 300
+        };
+        _txtCameraUrl.TextChanged += (_, _) => ValidateCameraUrl();
+
+        _btnTestCamera = ButtonFactory.Neutral(AppStrings.TestConnection, ButtonFactory.ButtonSize.Small);
+        _btnTestCamera.Click += async (_, _) => await TestCameraConnectionAsync();
+
+        _barcodeCard.AddFields(new SettingsField("cameraSource", AppStrings.CameraSource, _cmbCameraSource));
+        _barcodeCard.AddControl(_txtCameraUrl, 28);
+        _barcodeCard.AddControl(_btnTestCamera);
         _barcodeCard.AddControl(_btnRefreshCameras);
+
+        // ── Backup & Restore ───────────────────────────────────────────────
+        _backupCard = new SettingsCard(AppStrings.Backup, AppStrings.SettingsDescription);
+
+        _lblBackupHint = new Label
+        {
+            Font = AppStyle.BodyFont,
+            ForeColor = AppColors.InkMuted,
+            AutoSize = true,
+            MaximumSize = new Size(620, 0),
+            UseMnemonic = false
+        };
+
+        _lblBackupFolder = new Label
+        {
+            Font = AppStyle.BodyFont,
+            ForeColor = AppColors.Ink,
+            AutoSize = true,
+            MaximumSize = new Size(620, 0),
+            UseMnemonic = false
+        };
+
+        _btnBackupNow = ButtonFactory.Primary(AppStrings.BackupNow, ButtonFactory.ButtonSize.Small);
+        _btnBackupNow.Click += async (_, _) => await BackupNowAsync();
+        _btnBackupNow.Margin = new Padding(0, 0, 8, 0);
+
+        _btnRestoreBackup = ButtonFactory.Neutral(AppStrings.RestoreBackup, ButtonFactory.ButtonSize.Small);
+        _btnRestoreBackup.Click += async (_, _) => await RestoreBackupAsync();
+
+        _btnChooseBackupFolder = ButtonFactory.Neutral(AppStrings.ChooseBackupFolder, ButtonFactory.ButtonSize.Small);
+        _btnChooseBackupFolder.Click += (_, _) => ChooseBackupFolder();
+        _btnChooseBackupFolder.Margin = new Padding(0, 0, 8, 0);
+
+        // Affordance: disable backup/restore when the user lacks permission.
+        _ = ApplyBackupPermissionsAsync();
+
+        var backupButtons = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = true,
+            AutoSize = false,
+            BackColor = Color.Transparent,
+            Margin = Padding.Empty
+        };
+        backupButtons.Controls.Add(_btnChooseBackupFolder);
+        backupButtons.Controls.Add(_btnBackupNow);
+        backupButtons.Controls.Add(_btnRestoreBackup);
+
+        _lblBackupHint.Text = AppStrings.BackupLocationHint;
+        _backupCard.AddControl(_lblBackupHint);
+        _backupCard.AddControl(_lblBackupFolder);
+        _backupCard.AddControl(backupButtons);
 
         // ── About ──────────────────────────────────────────────────────────
         _aboutCard = new SettingsCard(AppStrings.About, AppStrings.SettingsDescription);
@@ -283,6 +390,7 @@ public partial class SettingsForm : LocalizableFormBase
         _cards.Add(_appearanceCard);
         _cards.Add(_printingCard);
         _cards.Add(_barcodeCard);
+        _cards.Add(_backupCard);
         _cards.Add(_aboutCard);
 
         // ── Footer ─────────────────────────────────────────────────────────
@@ -352,6 +460,10 @@ public partial class SettingsForm : LocalizableFormBase
         SelectValue(_cmbReceiptWidth, _receipts, r => r.Value, _settings.ReceiptWidthMm.ToString());
         SelectValue(_cmbCamera, _cameras, c => c.Moniker, _settings.BarcodeCameraDevice);
 
+        _cmbCameraSource.SelectedIndex = string.Equals(_settings.BarcodeCameraSource, "Ip", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+        _txtCameraUrl.Text = _settings.BarcodeCameraUrl;
+        UpdateCameraSourceVisibility();
+
         _txtStoreName.Text = _settings.StoreName;
         _chkDarkMode.Checked = ThemeManager.Mode == ThemeMode.Dark;
         _chkRememberMe.Checked = _settings.RememberMe;
@@ -396,6 +508,20 @@ public partial class SettingsForm : LocalizableFormBase
         _barcodeCard.SetFieldLabel("cameraDevice", AppStrings.CameraDevice);
         _chkCameraBarcode.Text = AppStrings.EnableCameraScanning;
         _btnRefreshCameras.Text = AppStrings.Refresh;
+        _btnTestCamera.Text = AppStrings.TestConnection;
+
+        _cmbCameraSource.ClearItems();
+        _cmbCameraSource.Add(AppStrings.CameraSourceLocal, AppStrings.CameraSourceIp);
+        if (_cmbCameraSource.SelectedItem == null)
+            _cmbCameraSource.SelectedIndex = 0;
+
+        _backupCard.Title = AppStrings.Backup;
+        _backupCard.Hint = AppStrings.BackupHint;
+        _lblBackupHint.Text = AppStrings.BackupLocationHint;
+        _lblBackupFolder.Text = AppStrings.BackupFolder + ": " + (_backupService?.BackupDirectory ?? string.Empty);
+        _btnChooseBackupFolder.Text = AppStrings.ChooseBackupFolder;
+        _btnBackupNow.Text = AppStrings.BackupNow;
+        _btnRestoreBackup.Text = AppStrings.RestoreBackup;
 
         _aboutCard.Title = AppStrings.About;
         _lblVersion.Text = $"{AppStrings.Version}: {Application.ProductVersion}   |   DzentoPOS2";
@@ -420,7 +546,126 @@ public partial class SettingsForm : LocalizableFormBase
     {
         SelectValue(_cmbLanguage, _languages, l => l.Code, _settings.Language);
         SelectValue(_cmbCountry, _countries, c => c.Code, _settings.CountryCode);
+        _backupCard.Title = AppStrings.Backup;
+        _backupCard.Hint = AppStrings.BackupHint;
+        _lblBackupHint.Text = AppStrings.BackupLocationHint;
+        _lblBackupFolder.Text = AppStrings.BackupFolder + ": " + (_backupService?.BackupDirectory ?? string.Empty);
+        _btnChooseBackupFolder.Text = AppStrings.ChooseBackupFolder;
+        _btnBackupNow.Text = AppStrings.BackupNow;
+        _btnRestoreBackup.Text = AppStrings.RestoreBackup;
         LayoutCards();
+    }
+
+    private async Task ApplyBackupPermissionsAsync()
+    {
+        try
+        {
+            var guard = _services?.GetService<IAuthorizationGuard>();
+            if (guard is null) return;
+
+            bool canCreate = await guard.IsAllowedAsync(Permissions.BackupCreate);
+            bool canRestore = await guard.IsAllowedAsync(Permissions.BackupRestore);
+
+            if (!IsDisposed)
+            {
+                _btnBackupNow.Enabled = canCreate;
+                _btnRestoreBackup.Enabled = canRestore;
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"ApplyBackupPermissions failed: {ex.Message}");
+        }
+    }
+
+    private async Task BackupNowAsync()
+    {
+        if (_backupService is null) return;
+
+        _btnBackupNow.Enabled = false;
+
+        try
+        {
+            await _backupService.CreateBackupAsync();
+            _backupService.ApplyRetention();
+            AppMessageBox.Success(AppStrings.BackupCreated);
+            _lblBackupFolder.Text = AppStrings.BackupFolder + ": " + (_backupService?.BackupDirectory ?? string.Empty);
+        }
+        catch (Exception ex)
+        {
+            AppMessageBox.Error(ex.Message);
+        }
+        finally
+        {
+            if (!IsDisposed)
+                _btnBackupNow.Enabled = true;
+        }
+    }
+
+    private async Task RestoreBackupAsync()
+    {
+        if (_backupService is null) return;
+
+        using var dialog = new OpenFileDialog
+        {
+            Title = AppStrings.RestoreBackup,
+            Filter = "Backup|*.db|All files|*.*",
+            InitialDirectory = _backupService is not null && Directory.Exists(_backupService.BackupDirectory)
+                ? _backupService.BackupDirectory
+                : Environment.CurrentDirectory
+        };
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+            return;
+
+        if (!AppMessageBox.Confirm(AppStrings.RestoreConfirm))
+            return;
+
+        try
+        {
+            await _backupService.ValidateBackupAsync(dialog.FileName);
+            await _backupService.RestoreAsync(dialog.FileName);
+
+            AppMessageBox.Success(AppStrings.DataSaved);
+
+            // The restored database replaces the live file; running
+            // services/cache cannot be trusted anymore, restart cleanly.
+            Application.Restart();
+            Environment.Exit(0);
+        }
+        catch (Exception ex)
+        {
+            AppMessageBox.Error(ex.Message);
+        }
+    }
+
+    private void ChooseBackupFolder()
+    {
+        if (_backupService is null) return;
+
+        using var dialog = new FolderBrowserDialog
+        {
+            Description = AppStrings.BackupLocation,
+            UseDescriptionForTitle = true,
+            ShowNewFolderButton = true,
+            SelectedPath = Directory.Exists(_backupService.BackupDirectory)
+                ? _backupService.BackupDirectory
+                : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+        };
+
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+            return;
+
+        try
+        {
+            _backupService.SetBackupDirectory(dialog.SelectedPath);
+            _lblBackupFolder.Text = AppStrings.BackupFolder + ": " + _backupService.BackupDirectory;
+            AppMessageBox.Success(AppStrings.BackupLocationChanged);
+        }
+        catch (Exception ex)
+        {
+            AppMessageBox.Error(ex.Message);
+        }
     }
 
     // ── Data loading ───────────────────────────────────────────────────────
@@ -478,6 +723,8 @@ public partial class SettingsForm : LocalizableFormBase
             .Select(p => new PrinterItem(p, p)));
 
         _cmbPrinter.Bind(_printers, "Display", "Name");
+        if (_cmbPrinter.SelectedItem == null && _printers.Count > 0)
+            _cmbPrinter.SelectedIndex = 0;
     }
 
     private void LoadOrientations()
@@ -504,6 +751,7 @@ public partial class SettingsForm : LocalizableFormBase
 
     private void LoadCameras()
     {
+        string? previousMoniker = _cmbCamera.SelectedItem is CameraItem current ? current.Moniker : _settings.BarcodeCameraDevice;
         _cameras.Clear();
         _cameras.Add(new CameraItem(string.Empty, AppStrings.NoCameraFound));
 
@@ -518,6 +766,76 @@ public partial class SettingsForm : LocalizableFormBase
         }
 
         _cmbCamera.Bind(_cameras, "Display", "Moniker");
+
+        if (!string.IsNullOrWhiteSpace(previousMoniker))
+        {
+            SelectValue(_cmbCamera, _cameras, c => c.Moniker, previousMoniker);
+        }
+    }
+
+    private void UpdateCameraSourceVisibility()
+    {
+        bool isIp = _cmbCameraSource.SelectedIndex == 1;
+        _txtCameraUrl.Visible = isIp;
+        _btnTestCamera.Visible = isIp;
+        _cmbCamera.Enabled = !isIp;
+        _btnRefreshCameras.Enabled = !isIp;
+    }
+
+    private void ValidateCameraUrl()
+    {
+        if (_txtCameraUrl.Visible)
+        {
+            bool valid = CameraUrlValidator.IsValid(_txtCameraUrl.Text);
+            _txtCameraUrl.BackColor = valid ? Color.White : Color.MistyRose;
+        }
+    }
+
+    private async Task TestCameraConnectionAsync()
+    {
+        string url = _txtCameraUrl.Text.Trim();
+        if (!CameraUrlValidator.IsValid(url))
+        {
+            AppMessageBox.Error(AppStrings.CameraUrlInvalid);
+            return;
+        }
+
+        _btnTestCamera.Enabled = false;
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var result = await Task.Run(() =>
+            {
+                // Simple HTTP HEAD/GET to verify connectivity.
+                try
+                {
+                    using var client = new System.Net.Http.HttpClient
+                    {
+                        Timeout = TimeSpan.FromSeconds(5)
+                    };
+                    var response = client.GetAsync(url, cts.Token).GetAwaiter().GetResult();
+                    return response.IsSuccessStatusCode;
+                }
+                catch
+                {
+                    return false;
+                }
+            }, cts.Token);
+
+            if (result)
+                AppMessageBox.Success(AppStrings.ConnectionSuccess);
+            else
+                AppMessageBox.Error(AppStrings.ConnectionFailed);
+        }
+        catch (Exception ex)
+        {
+            AppMessageBox.Error(ex.Message);
+        }
+        finally
+        {
+            if (!IsDisposed)
+                _btnTestCamera.Enabled = true;
+        }
     }
 
     private void RefreshPaperSizes()
@@ -539,6 +857,9 @@ public partial class SettingsForm : LocalizableFormBase
 
     private void ChooseLogo()
     {
+        // OpenFileDialog.ShowDialog(owner) reads the owner's window handle.
+        if (IsDisposedOrDisposing) return;
+
         using var dialog = new OpenFileDialog
         {
             Title = AppStrings.ChooseImage,
@@ -626,6 +947,8 @@ public partial class SettingsForm : LocalizableFormBase
         settings.ReceiptWidthMm = int.TryParse(_cmbReceiptWidth.SelectedItem is ReceiptItem receipt ? receipt.Value : _settings.ReceiptWidthMm.ToString(), out int width) ? width : _settings.ReceiptWidthMm;
         settings.CameraBarcodeEnabled = _chkCameraBarcode.Checked;
         settings.BarcodeCameraDevice = _cmbCamera.SelectedItem is CameraItem camera ? camera.Moniker : _settings.BarcodeCameraDevice;
+        settings.BarcodeCameraSource = _cmbCameraSource.SelectedIndex == 1 ? "Ip" : "Local";
+        settings.BarcodeCameraUrl = _txtCameraUrl.Text.Trim();
 
         var desiredMode = _chkDarkMode.Checked ? ThemeMode.Dark : ThemeMode.Light;
         if (ThemeManager.Mode != desiredMode)

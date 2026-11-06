@@ -2,6 +2,20 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] - 2026-11-06 (Phase 5 batch 5.2: virtualized POS list and layout)
+
+### Added
+- **`PosProductList`**: virtualized, owner-drawn control with VScrollBar, double buffering,
+  RTL/LTR, card/list modes, single animation timer, keyboard navigation, image LRU cache
+  with strict Dispose.
+- **`PosCardLayoutCalculator`**: pure layout calculator (columns, item size, sub-rectangles)
+  for 375/768/1440 in card and list modes, RTL-aware. 10 unit tests.
+- **`PosCardRects`**: record with Image, Name, Sku, Price, Badge, AddButton rectangles.
+
+### Verified
+- Build 0 errors; Unit **174/174** (was 146, +28 new); Integration **70/70**.
+- Layout calculator validates all sub-rects fit within card bounds at all widths.
+
 ## [Unreleased] - 2026-11-06 (Phase 5 batch 5.1: POS cache and catalog notifier)
 
 ### Added

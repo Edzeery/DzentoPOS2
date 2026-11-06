@@ -2,6 +2,28 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] - 2026-11-06 (Phase 5 batch 5.1: POS cache and catalog notifier)
+
+### Added
+- **`PosProductStore`** (`IPosProductStore`): in-memory cache of sellable variants with a
+  barcode → variants index. Loads once via a single projection query; `FindByBarcodeAsync`
+  uses the index (no DB query per scan). `UpdateStock` applies incremental deltas.
+- **`ICatalogChangeNotifier` / `CatalogChangeNotifier`**: event-based notifier. `ProductService`
+  and `BarcodeService` raise change events; `PosProductStore` subscribes and invalidates
+  (full) or updates stock (incremental).
+- **`PosProductItem`**: lightweight record (VariantId, ProductId, Name, SKU, SalePrice,
+  Stock, IsActive, HasVariants, UnitId, UnitName, CategoryId, ImagePath, ThumbnailPath,
+  PrimaryBarcode).
+
+### Changed
+- `SaleService` now calls `_posProductStore.UpdateStock` after commit (sale) and after void
+  (restore) instead of triggering a full reload.
+- `SalesForm.ScanBarcode` uses `_posProductStore.FindByBarcodeAsync` (in-memory index).
+
+### Verified
+- Build 0 errors; Unit **146/146**; Integration **70/70**.
+- Migration audit: PASSED (real DB copy).
+
 ## [Unreleased] - 2026-11-06 (Phase 5 batch 5.0: variant-based selling)
 
 ### Added

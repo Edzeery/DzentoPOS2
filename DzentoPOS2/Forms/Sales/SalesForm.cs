@@ -36,6 +36,7 @@ public partial class SalesForm : LocalizableFormBase
 
     private readonly ISaleService _saleService;
     private readonly IProductService _productService;
+    private readonly IPosProductStore _posProductStore;
     private readonly ICustomerService _customerService;
     private readonly ICurrentSettingsService _currentSettings;
     private readonly ICashSessionService _cashSessionService;
@@ -105,6 +106,7 @@ public partial class SalesForm : LocalizableFormBase
     public SalesForm(
         ISaleService saleService,
         IProductService productService,
+        IPosProductStore posProductStore,
         ICustomerService customerService,
         ICurrentSettingsService currentSettings,
         ICashSessionService cashSessionService,
@@ -115,6 +117,7 @@ public partial class SalesForm : LocalizableFormBase
     {
         _saleService = saleService;
         _productService = productService;
+        _posProductStore = posProductStore;
         _customerService = customerService;
         _currentSettings = currentSettings;
         _cashSessionService = cashSessionService;
@@ -901,36 +904,40 @@ public partial class SalesForm : LocalizableFormBase
             {
                 if (string.IsNullOrWhiteSpace(code)) return;
 
-                var variantId = await _barcodeService.FindVariantIdByBarcodeAsync(code);
+                var matches = await _posProductStore.FindByBarcodeAsync(code);
 
-                if (variantId is null)
+                if (matches.Count == 0)
                 {
                     AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {code}");
                     _productSearch.Text = code;
                     return;
                 }
 
-                // Load variant details to get product, name and price.
-                using var context = _services.GetRequiredService<DzentoPOS2.Data.Context.AppDbContext>();
-                var variant = await context.ProductVariants
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(v => v.Id == variantId.Value && v.IsActive);
-                if (variant is null)
+                if (matches.Count == 1)
                 {
-                    AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {code}");
-                    _productSearch.Text = code;
-                    return;
+                    var item = matches[0];
+                    var prod = _products.FirstOrDefault(p => p.Id == item.ProductId);
+                    if (prod is null)
+                    {
+                        AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {code}");
+                        _productSearch.Text = code;
+                        return;
+                    }
+                    AddToCart(prod, item.VariantId, item.Name, item.SalePrice);
                 }
-
-                var prod = _products.FirstOrDefault(p => p.Id == variant.ProductId);
-                if (prod is null)
+                else
                 {
-                    AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {code}");
-                    _productSearch.Text = code;
-                    return;
+                    // Shared barcode: pick the first for now (full picker in 5.3).
+                    var item = matches[0];
+                    var prod = _products.FirstOrDefault(p => p.Id == item.ProductId);
+                    if (prod is null)
+                    {
+                        AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {code}");
+                        _productSearch.Text = code;
+                        return;
+                    }
+                    AddToCart(prod, item.VariantId, item.Name, item.SalePrice);
                 }
-
-                AddToCart(prod, variant.Id, variant.Name, variant.SalePrice.Amount);
             };
             overlay.ShowDialog(this);
         }

@@ -1,9 +1,9 @@
 {
-  "GeneratedAt": "2026-11-06T19:08:52.704272+01:00",
+  "GeneratedAt": "2026-11-06T20:17:09.1691155+01:00",
   "SourceDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\DzentoPOS2\\Database\\DzentoPOS.db",
   "SourceBytes": 1118208,
   "SourceHadWal": false,
-  "WorkDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\Temp\\DzentoPOS2.MigrationAudit\\20261106-190851\\DzentoPOS.db",
+  "WorkDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\Temp\\DzentoPOS2.MigrationAudit\\20261106-201707\\DzentoPOS.db",
   "IntegrityBefore": "ok",
   "IntegrityAfter": "ok",
   "ForeignKeyViolationsBefore": 0,
@@ -18,7 +18,7 @@
     "Attachments": 0,
     "AttributeDefinitions": 0,
     "AttributeValues": 0,
-    "AuditLogs": 161,
+    "AuditLogs": 163,
     "Branches": 1,
     "CashRegisters": 0,
     "CashSessions": 10,
@@ -71,7 +71,7 @@
     "Users": 3,
     "VariantAttributes": 0,
     "Warehouses": 1,
-    "__EFMigrationsHistory": 15,
+    "__EFMigrationsHistory": 16,
     "__EFMigrationsLock": 0
   },
   "RowCountsAfter": {
@@ -80,7 +80,7 @@
     "Attachments": 0,
     "AttributeDefinitions": 0,
     "AttributeValues": 0,
-    "AuditLogs": 161,
+    "AuditLogs": 163,
     "Branches": 1,
     "CashRegisters": 0,
     "CashSessions": 10,
@@ -138,15 +138,14 @@
   },
   "RowsRemoved": 0,
   "RowsChanged": 0,
-  "RowsAdded": 3,
+  "RowsAdded": 2,
   "MissingTables": [],
   "MissingColumns": [],
   "RemovedRowKeys": [],
   "ChangedRowDetails": [],
   "AddedRowKeys": [
-    "Customers:str:52A93371-283B-47E1-837C-7B9ACF90B351\u0001",
-    "Customers:str:5FD698D3-809E-4F22-A392-0440624D43FF\u0001",
-    "__EFMigrationsHistory:str:20261106174513_VariantNameOnSalesInvoiceItem\u0001"
+    "Customers:str:47100891-E43A-45DE-AE62-9155802DE073\u0001",
+    "Customers:str:9776C601-70BD-4436-97CD-CB483C50DE04\u0001"
   ],
   "MigrationsBefore": [
     "20260517183403_InitialCreate",
@@ -163,7 +162,8 @@
     "20261031220740_G2_1_RecoveryLockoutColumns",
     "20261102113616_ProfitRebuild_Phase1",
     "20261105123610_FreshAccountsSeed",
-    "20261105165317_CatalogPhase1_DataModel"
+    "20261105165317_CatalogPhase1_DataModel",
+    "20261106174513_VariantNameOnSalesInvoiceItem"
   ],
   "MigrationsAfter": [
     "20260517183403_InitialCreate",

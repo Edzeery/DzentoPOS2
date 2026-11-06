@@ -224,7 +224,7 @@
 | # | المهمة | الحالة | دليل الإنجاز |
 |---|---|---|---|
 | M.5.0 | بيع المتغيّر + هجرة + اختبارات | ✅ | `CreateSaleItemDto.VariantId` + `VariantName`؛ `SaleService` يأخذ السعر والتكلفة من المتغيّر؛ `SalesInvoiceItem.VariantName` (هجرة `20261106174513` nullable)؛ `IBarcodeService.FindVariantIdByBarcodeAsync`؛ مسح الباركود يستخدم `ProductBarcodes`؛ integration 70/70 + unit 146/146؛ migration audit PASSED على قاعدة حقيقية (0 rows removed) وقاعدة اصطناعية (5000 متغير، 0 rows removed)؛ ADR-12 |
-| M.5.1 | الكاش والفهرس والإشعار | ⬜ | pending |
+| M.5.1 | الكاش والفهرس والإشعار | ✅ | `PosProductStore` (فهرس باركود→متغيرات في الذاكرة, إبطال عبر `ICatalogChangeNotifier`, تحديث مخزون تزايدي)؛ `CatalogChangeNotifier` مُطلق من `ProductService` + `BarcodeService`؛ `SaleService` يُحدّث المخزون تزايديًا؛ build 0 errors; unit 146/146; integration 70/70; migration audit PASSED |
 | M.5.2 | العنصر المرسوم والتخطيط والصور | ⬜ | pending |
 | M.5.3 | المنتقي واختيار الباركود المشترك | ⬜ | pending |
 | M.5.4 | القياس والترجمة والتوثيق | ⬜ | pending |

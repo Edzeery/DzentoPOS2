@@ -32,6 +32,7 @@ namespace DzentoPOS2.App.Services.Sales
         private readonly ISalesEventPublisher _events;
         private readonly DzentoPOS2.App.Authorization.IAuthorizationGuard _authorizationGuard;
         private readonly IPermissionService _permissionService;
+    private readonly IPosProductStore _posProductStore;
 
         public SaleService(
             ISalesInvoiceRepository invoiceRepo,
@@ -46,7 +47,8 @@ namespace DzentoPOS2.App.Services.Sales
             ISalesPolicy salesPolicy,
             ISalesEventPublisher events,
             DzentoPOS2.App.Authorization.IAuthorizationGuard authorizationGuard,
-            IPermissionService permissionService)
+            IPermissionService permissionService,
+            IPosProductStore posProductStore)
         {
             _invoiceRepo = invoiceRepo;
             _unitOfWork = unitOfWork;
@@ -61,6 +63,7 @@ namespace DzentoPOS2.App.Services.Sales
             _events = events;
             _authorizationGuard = authorizationGuard;
             _permissionService = permissionService;
+            _posProductStore = posProductStore;
         }
 
         public async Task<List<SaleDto>> GetAllAsync()
@@ -377,6 +380,15 @@ namespace DzentoPOS2.App.Services.Sales
                     await _unitOfWork.SaveChangesAsync();
                     await _unitOfWork.CommitTransactionAsync();
 
+                    // Incrementally update POS cache stock (no full reload).
+                    foreach (var item in dto.Items)
+                    {
+                        var variantId = item.VariantId != Guid.Empty
+                            ? item.VariantId
+                            : defaultVariantIds[item.ProductId];
+                        _posProductStore.UpdateStock(variantId, -item.Quantity);
+                    }
+
                     // Raised only after the commit, so a subscriber that reads
                     // the database observes the committed invoice, payment and
                     // cash row.
@@ -516,6 +528,12 @@ namespace DzentoPOS2.App.Services.Sales
 
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
+
+                // Incrementally restore POS cache stock.
+                foreach (var item in invoice.Items)
+                {
+                    _posProductStore.UpdateStock(item.VariantId, item.Quantity);
+                }
 
                 _events.PublishSaleVoided(new SaleVoidedEventArgs(
                     invoice.Id,

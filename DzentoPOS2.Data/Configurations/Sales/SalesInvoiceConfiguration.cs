@@ -122,6 +122,9 @@ namespace DzentoPOS2.Data.Configurations.Sales
 
             builder.HasIndex(x => x.CashSessionId);
 
+            builder.HasIndex(x => x.CreatedAt);
+            builder.HasIndex(x => new { x.CreatedBy, x.CreatedAt });
+
             builder.HasOne<DzentoPOS2.Core.Entities.Accounting.CashSession>()
                 .WithMany()
                 .HasForeignKey(x => x.CashSessionId)

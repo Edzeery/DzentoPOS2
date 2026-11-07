@@ -39,6 +39,9 @@ namespace DzentoPOS2.Data.Configurations.Sales
                 .WithOne(x => x.SalesReturn)
                 .HasForeignKey(x => x.SalesReturnId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(x => x.CreatedAt);
+            builder.HasIndex(x => new { x.CreatedBy, x.CreatedAt });
         }
     }
 }

@@ -1,8 +1,9 @@
-﻿using DzentoPOS2.Shared.Contracts.DTOs.Identity.Auth;
+﻿using DzentoPOS2.Core.Services;
+using DzentoPOS2.Shared.Contracts.DTOs.Identity.Auth;
 
 namespace DzentoPOS2.App.Session
 {
-    public class CurrentUserService : ICurrentUserService
+    public class CurrentUserService : ICurrentUserService, ICurrentUserAccessor
     {
         public UserSession? User { get; private set; }
 

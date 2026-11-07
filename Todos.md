@@ -181,6 +181,18 @@
 | J.2 | Fix: SuspendLayout/ResumeLayout(false) around Width change in AnimateCollapse + PerformLayout() at end | done | MainForm.cs - per-frame under 16ms, collapse under 250ms |
 | J.3 | P3: Arabic misalignment of Cashbox and Inventory movement | P3 | Logged only, not fixed (no slowness) |
 
+## L - Phase C: Audit + Permissions + Dashboard Filter
+
+| # | Task | Status | Evidence |
+|---|---|---|---|
+| L.1 | ICurrentUserAccessor in Core + SaveChangesInterceptor in Data (CreatedBy/UpdatedBy when empty) | done | Core/Services/ICurrentUserAccessor.cs; Data/Interceptors/AuditSaveChangesInterceptor.cs; App DI registers accessor; legacy null preserved |
+| L.2 | Index migration (CreatedAt) and (CreatedBy, CreatedAt) on SalesInvoices/PurchaseInvoices/SalesReturns/Expenses | done | HasIndex in 4 configurations; migration 20261107124946_PhaseC_IndexesAndAudit |
+| L.3 | permissions.dashboard.view_all in Permissions.cs (Admin/SuperAdmin via seeder upgrade path) | done | Core/Constants/Permissions.cs; PermissionSeeder auto-seeds; RolePermissionSeeder grants SuperAdmin all |
+| L.4 | DashboardFilterDto presets {Today,Yesterday,Last7Days,ThisMonth,Custom}, CustomFrom/CustomTo local, UserId?, default Today | done | Shared/Contracts/DTOs/Reports/DashboardFilterDto.cs |
+| L.5 | DashboardRangeResolver pure on IBusinessClock -> [StartUtc,EndUtc) + equal previous period; reject From>To or >366 days | done | App/Services/Reports/DashboardRangeResolver.cs |
+| L.6 | Unit tests Africa/Algiers + Asia/Tokyo (boundaries, leap year) | done | tests/UnitTests/DashboardRangeResolverTests.cs (13 tests); Unit 400/400 |
+| L.7 | Legacy null shows 'unspecified' (no guess) | P3 | interceptor preserves null; UI display deferred to Phase E/F |
+
 ## H — إعادة بناء حساب الأرباح (المراحل 1–4) ✅
 
 | # | المهمة | الحالة | دليل الإنجاز |

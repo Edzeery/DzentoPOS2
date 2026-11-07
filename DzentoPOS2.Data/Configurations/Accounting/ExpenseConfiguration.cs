@@ -38,6 +38,9 @@ namespace DzentoPOS2.Data.Configurations.Accounting
             builder.HasIndex(x => x.ExpenseCategoryId);
 
             builder.HasIndex(x => x.ExpenseDate);
+
+            builder.HasIndex(x => x.CreatedAt);
+            builder.HasIndex(x => new { x.CreatedBy, x.CreatedAt });
         }
     }
 }

@@ -1,4 +1,4 @@
-using DzentoPOS2.App.Services.Reports.Interfaces;
+﻿using DzentoPOS2.App.Services.Reports.Interfaces;
 using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.Core.Services.Sales;
 using DzentoPOS2.Data.Context;
@@ -28,50 +28,22 @@ namespace DzentoPOS2.App.Services.Reports
 
         public async Task<DashboardSummaryDto> GetSummaryAsync(DashboardFilterDto? filter = null)
         {
-            filter ??= new DashboardFilterDto { DatePreset = DashboardDatePreset.Month };
+            filter ??= new DashboardFilterDto { Preset = DashboardDatePreset.Today };
 
             var localNow = _clock.Now;
             DateTime rangeStartUtc, rangeEndUtc, compareStartUtc, compareEndUtc;
             DateTime chartStartUtc;
 
-            switch (filter.DatePreset)
-            {
-                case DashboardDatePreset.Today:
-                    (rangeStartUtc, rangeEndUtc) = _clock.TodayRangeUtc();
-                    compareStartUtc = _regional.StartOfLocalDayUtc(localNow.Date.AddDays(-1));
-                    compareEndUtc = rangeStartUtc;
-                    chartStartUtc = rangeStartUtc;
-                    break;
-                case DashboardDatePreset.Yesterday:
-                    var yStart = _regional.StartOfLocalDayUtc(localNow.Date.AddDays(-1));
-                    rangeStartUtc = yStart;
-                    rangeEndUtc = _regional.StartOfLocalDayUtc(localNow.Date);
-                    compareStartUtc = _regional.StartOfLocalDayUtc(localNow.Date.AddDays(-2));
-                    compareEndUtc = yStart;
-                    chartStartUtc = rangeStartUtc;
-                    break;
-                case DashboardDatePreset.LastWeek:
-                    rangeStartUtc = _regional.StartOfLocalDayUtc(localNow.Date.AddDays(-6));
-                    rangeEndUtc = _regional.StartOfLocalDayUtc(localNow.Date.AddDays(1));
-                    compareStartUtc = _regional.StartOfLocalDayUtc(localNow.Date.AddDays(-13));
-                    compareEndUtc = rangeStartUtc;
-                    chartStartUtc = rangeStartUtc;
-                    break;
-                case DashboardDatePreset.Custom when filter.CustomFromUtc.HasValue && filter.CustomToUtc.HasValue:
-                    rangeStartUtc = filter.CustomFromUtc.Value;
-                    rangeEndUtc = filter.CustomToUtc.Value;
-                    compareStartUtc = rangeStartUtc;
-                    compareEndUtc = rangeEndUtc;
-                    chartStartUtc = rangeStartUtc;
-                    break;
-                default: // Month
-                    rangeStartUtc = _regional.StartOfLocalMonthUtc();
-                    rangeEndUtc = _regional.ToUtcSafe(new DateTime(localNow.Year, localNow.Month, 1).AddMonths(1));
-                    compareStartUtc = _regional.ToUtcSafe(new DateTime(localNow.Year, localNow.Month, 1).AddMonths(-1));
-                    compareEndUtc = rangeStartUtc;
-                    chartStartUtc = _regional.StartOfLocalDayUtc(localNow.Date.AddDays(-29));
-                    break;
-            }
+            var resolved = DashboardRangeResolver.Resolve(_clock, filter);
+            rangeStartUtc = resolved.StartUtc;
+            rangeEndUtc = resolved.EndUtc;
+            compareStartUtc = resolved.PreviousStartUtc;
+            compareEndUtc = resolved.PreviousEndUtc;
+
+            if (filter.Preset == DashboardDatePreset.ThisMonth)
+                chartStartUtc = _regional.StartOfLocalDayUtc(localNow.Date.AddDays(-29));
+            else
+                chartStartUtc = rangeStartUtc;
 
             var monthStart = rangeStartUtc;
             var nextMonthStart = rangeEndUtc;
@@ -83,8 +55,8 @@ namespace DzentoPOS2.App.Services.Reports
 
             var dto = new DashboardSummaryDto();
 
-            await ComputeKpiCards(dto, todayStart, tomorrowStart, yesterdayStart, monthStart, nextMonthStart, lastMonthStart, filter?.CustomerId);
-            await ComputeChartData(dto, thirtyDaysAgo, tomorrowStart, localNow, filter?.CustomerId);
+            await ComputeKpiCards(dto, todayStart, tomorrowStart, yesterdayStart, monthStart, nextMonthStart, lastMonthStart, filter?.UserId);
+            await ComputeChartData(dto, thirtyDaysAgo, tomorrowStart, localNow, filter?.UserId);
             await ComputeRecentTransactions(dto);
             await ComputeInsights(dto);
 
@@ -95,14 +67,14 @@ namespace DzentoPOS2.App.Services.Reports
             DateTime todayStart, DateTime tomorrowStart,
             DateTime yesterdayStart,
             DateTime monthStart, DateTime nextMonthStart, DateTime lastMonthStart,
-            Guid? customerId)
+            Guid? userId)
         {
             // Sales — invoice value (Total), periods expressed as half-open ranges.
             // Note: SQLite cannot SUM decimal columns directly, so amounts are cast to
             // double in SQL (translated to CAST(x AS REAL)) and converted back on read.
             // One grouped query computes every sales KPI instead of six round trips.
             var salesStats = await _context.SalesInvoices
-                .Where(s => !s.IsVoided && (customerId == null || s.CustomerId == customerId.Value))
+                .Where(s => !s.IsVoided && (userId == null || s.CreatedBy == userId.Value))
                 .GroupBy(_ => 1)
                 .Select(g => new
                 {
@@ -143,12 +115,12 @@ namespace DzentoPOS2.App.Services.Reports
 
             // Store operating expenses are never attributed to a single customer
             // when the dashboard is filtered by customer (accrual, period scope).
-            if (customerId.HasValue)
+            if (userId.HasValue)
                 monthlyExpenses = 0m;
 
             var monthlyReturnsTotal = await _context.SalesReturns
                 .Where(r => r.CreatedAt >= monthStart && r.CreatedAt < nextMonthStart
-                    && (customerId == null || r.CustomerId == customerId.Value))
+                    && (userId == null || r.CreatedBy == userId.Value))
                 .SumAsync(r => (double?)r.TotalAmount) is double mrt ? (decimal)mrt : 0m;
 
             // Single grouped query for month invoices with items + fees (no N+1).
@@ -157,7 +129,7 @@ namespace DzentoPOS2.App.Services.Reports
                 join invoice in _context.SalesInvoices on item.SalesInvoiceId equals invoice.Id
                 where invoice.CreatedAt >= monthStart && invoice.CreatedAt < nextMonthStart
                     && !invoice.IsVoided
-                    && (customerId == null || invoice.CustomerId == customerId.Value)
+                    && (userId == null || invoice.CreatedBy == userId.Value)
                 select new
                 {
                     item.SalesInvoiceId,
@@ -223,7 +195,7 @@ namespace DzentoPOS2.App.Services.Reports
                 join inv in _context.SalesInvoices on r.SalesInvoiceId equals inv.Id
                 where r.CreatedAt >= monthStart && r.CreatedAt < nextMonthStart
                     && !inv.IsVoided
-                    && (customerId == null || r.CustomerId == customerId.Value)
+                    && (userId == null || r.CreatedBy == userId.Value)
                 select new
                 {
                     r.SalesInvoiceId,
@@ -406,7 +378,7 @@ namespace DzentoPOS2.App.Services.Reports
             }
         }
 
-        private async Task ComputeChartData(DashboardSummaryDto dto, DateTime thirtyDaysAgoUtc, DateTime tomorrowStartUtc, DateTime localNow, Guid? customerId)
+        private async Task ComputeChartData(DashboardSummaryDto dto, DateTime thirtyDaysAgoUtc, DateTime tomorrowStartUtc, DateTime localNow, Guid? userId)
         {
             var sixMonthsAgo = _regional.ToUtcSafe(new DateTime(localNow.Year, localNow.Month, 1).AddMonths(-5));
 
@@ -414,7 +386,7 @@ namespace DzentoPOS2.App.Services.Reports
             // the month-over-month comparison.
             var salesRows = await _context.SalesInvoices
                 .Where(s => !s.IsVoided && s.CreatedAt >= sixMonthsAgo && s.CreatedAt < tomorrowStartUtc
-                    && (customerId == null || s.CustomerId == customerId.Value))
+                    && (userId == null || s.CreatedBy == userId.Value))
                 .Select(s => new { s.CreatedAt, Total = (double?)s.Total.Amount })
                 .ToListAsync();
 
@@ -518,9 +490,9 @@ namespace DzentoPOS2.App.Services.Reports
                 })
                 .ToListAsync();
 
-            var customerIds = salesRaw.Select(s => s.CustomerId).Distinct().ToList();
+            var userIds = salesRaw.Select(s => s.CustomerId).Distinct().ToList();
             var customerNames = await _context.Customers.AsNoTracking()
-                .Where(c => customerIds.Contains(c.Id))
+                .Where(c => userIds.Contains(c.Id))
                 .Select(c => new { c.Id, c.FullName })
                 .ToDictionaryAsync(x => x.Id, x => x.FullName);
 

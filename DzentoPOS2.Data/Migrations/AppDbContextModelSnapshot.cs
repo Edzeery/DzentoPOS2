@@ -301,11 +301,15 @@ namespace DzentoPOS2.Data.Migrations
 
                     b.HasIndex("BranchId");
 
+                    b.HasIndex("CreatedAt");
+
                     b.HasIndex("ExpenseCategoryId");
 
                     b.HasIndex("ExpenseDate");
 
                     b.HasIndex("Title");
+
+                    b.HasIndex("CreatedBy", "CreatedAt");
 
                     b.ToTable("Expenses", (string)null);
                 });
@@ -1874,8 +1878,12 @@ namespace DzentoPOS2.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedAt");
+
                     b.HasIndex("InvoiceNumber")
                         .IsUnique();
+
+                    b.HasIndex("CreatedBy", "CreatedAt");
 
                     b.ToTable("PurchaseInvoices", (string)null);
                 });
@@ -2252,7 +2260,11 @@ namespace DzentoPOS2.Data.Migrations
 
                     b.HasIndex("CashSessionId");
 
+                    b.HasIndex("CreatedAt");
+
                     b.HasIndex("IsVoided");
+
+                    b.HasIndex("CreatedBy", "CreatedAt");
 
                     b.ToTable("SalesInvoices", (string)null);
                 });
@@ -2501,8 +2513,12 @@ namespace DzentoPOS2.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CreatedAt");
+
                     b.HasIndex("ReturnNumber")
                         .IsUnique();
+
+                    b.HasIndex("CreatedBy", "CreatedAt");
 
                     b.ToTable("SalesReturns", (string)null);
                 });

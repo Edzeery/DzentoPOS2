@@ -222,26 +222,25 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
             {
                 0 => DashboardDatePreset.Today,
                 1 => DashboardDatePreset.Yesterday,
-                2 => DashboardDatePreset.LastWeek,
+                2 => DashboardDatePreset.Last7Days,
+                3 => DashboardDatePreset.ThisMonth,
                 4 => DashboardDatePreset.Custom,
-                _ => DashboardDatePreset.Month
+                _ => DashboardDatePreset.Today
             };
-            Guid? cust = null;
-            if (_cmbCustomer.SelectedItem is CustomerOption opt && opt.Id.HasValue) cust = opt.Id;
 
             DateTime? from = null, to = null;
             if (preset == DashboardDatePreset.Custom)
             {
-                from = _regional.ToUtcSafe(_dtFrom.Value.Date);
-                to = _regional.ToUtcSafe(_dtTo.Value.Date.AddDays(1));
+                from = _dtFrom.Value.Date;
+                to = _dtTo.Value.Date;
             }
 
             return new DashboardFilterDto
             {
-                DatePreset = preset,
-                CustomFromUtc = from,
-                CustomToUtc = to,
-                CustomerId = cust
+                Preset = preset,
+                CustomFrom = from,
+                CustomTo = to,
+                UserId = null
             };
         }
 

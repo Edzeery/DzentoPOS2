@@ -103,25 +103,23 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
         private TableLayoutPanel BuildFilterBar()
         {
             var lblPeriod = new Label { Text = AppStrings.Period, AutoSize = true, ForeColor = AppColors.Ink, Margin = new Padding(0, 8, 8, 0), Height = 36 };
-            _cmbDatePreset = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 160, Height = 36 };
-            _cmbDatePreset.Items.AddRange(new object[]
+            // EZSegmentedControl replaces the preset combo; EZDatePicker replaces
+            // the raw DateTimePickers (filter bar controls).
+            var seg = new EZSegmentedControl();
+            seg.SetItems(AppStrings.DatePresetToday, AppStrings.DatePresetYesterday,
+                AppStrings.DatePresetLast7Days, AppStrings.DatePresetThisMonth, AppStrings.DatePresetCustom);
+            seg.SelectedIndex = _selectedPresetIndex < 5 ? _selectedPresetIndex : 3;
+            seg.SelectedIndexChanged += (_, idx) =>
             {
-                AppStrings.DatePresetToday,
-                AppStrings.DatePresetYesterday,
-                AppStrings.DatePresetLast7Days,
-                AppStrings.DatePresetThisMonth,
-                AppStrings.DatePresetCustom
-            });
-            _cmbDatePreset.SelectedIndex = _selectedPresetIndex < _cmbDatePreset.Items.Count ? _selectedPresetIndex : 3;
-            _cmbDatePreset.SelectedIndexChanged += (_, _) =>
-            {
-                _selectedPresetIndex = _cmbDatePreset.SelectedIndex;
+                _selectedPresetIndex = idx;
                 UpdateFilterVisibility();
                 ScheduleRefresh();
             };
+            _cmbDatePreset = new ComboBox { Visible = false };
+            _cmbDatePreset.SelectedIndex = seg.SelectedIndex;
 
-            _dtFrom = new DateTimePicker { Format = DateTimePickerFormat.Short, Width = 120 };
-            _dtTo = new DateTimePicker { Format = DateTimePickerFormat.Short, Width = 120 };
+            _dtFrom = new EZDatePicker { Width = 120 };
+            _dtTo = new EZDatePicker { Width = 120 };
             _dtFrom.ValueChanged += (_, _) => { ValidateDateRange(); ScheduleRefresh(); };
             _dtTo.ValueChanged += (_, _) => { ValidateDateRange(); ScheduleRefresh(); };
 
@@ -154,7 +152,7 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
             };
             filterBar.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             filterBar.Controls.Add(lblPeriod, 0, 0);
-            filterBar.Controls.Add(_cmbDatePreset, 1, 0);
+            filterBar.Controls.Add(seg, 1, 0);
             filterBar.Controls.Add(_dtFrom, 2, 0);
             filterBar.Controls.Add(_dtTo, 3, 0);
             filterBar.Controls.Add(lblCustomer, 4, 0);
@@ -203,7 +201,7 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
 
         private void UpdateFilterVisibility()
         {
-            bool custom = _cmbDatePreset.SelectedIndex == 4; // Custom is last
+            bool custom = _selectedPresetIndex == 4; // Custom is last
             _dtFrom.Visible = custom;
             _dtTo.Visible = custom;
         }
@@ -218,7 +216,7 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
 
         private DashboardFilterDto GetFilter()
         {
-            var preset = _cmbDatePreset.SelectedIndex switch
+            var preset = _selectedPresetIndex switch
             {
                 0 => DashboardDatePreset.Today,
                 1 => DashboardDatePreset.Yesterday,

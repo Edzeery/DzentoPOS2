@@ -193,6 +193,22 @@
 | L.6 | Unit tests Africa/Algiers + Asia/Tokyo (boundaries, leap year) | done | tests/UnitTests/DashboardRangeResolverTests.cs (13 tests); Unit 400/400 |
 | L.7 | Legacy null shows 'unspecified' (no guess) | P3 | interceptor preserves null; UI display deferred to Phase E/F |
 
+## M - Phase E: Docs + Filter Bar
+
+| # | Task | Status | Evidence |
+|---|---|---|---|
+| M.1 | EZSegmentedControl + EZDatePicker controls | done | DzentoPOS2/Controls/EZSegmentedControl.cs + EZDatePicker.cs |
+| M.2 | Filter bar uses new controls | done | DashboardForm.BuildFilterBar (seg + EZDatePicker) |
+| M.3 | Docs sync (CHANGELOG, architecture, database-design, design-system-plan) | partial | CHANGELOG updated; other docs pending |
+
+## N - Phase F: Responsive Verification
+
+| # | Task | Status | Evidence |
+|---|---|---|---|
+| N.1 | KpiCard responsive matrix 375/768/1440 (via 200-420 card widths) | partial | KpiCardLayoutTests 120 cases + render smoke 9 PNGs |
+| N.2 | LocalizationParityTests | done | 400 unit tests pass incl. parity |
+| N.3 | Final close-out | pending | awaiting review |
+
 ## H — إعادة بناء حساب الأرباح (المراحل 1–4) ✅
 
 | # | المهمة | الحالة | دليل الإنجاز |

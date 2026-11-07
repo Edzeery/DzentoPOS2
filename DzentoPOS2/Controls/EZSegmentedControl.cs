@@ -60,7 +60,11 @@ namespace DzentoPOS2.WinForms.Controls
             if (_buttons.Count > 0) SelectIndex(0);
         }
 
-        public int SelectedIndex => _selectedIndex;
+        public int SelectedIndex
+        {
+            get => _selectedIndex;
+            set => SelectIndex(value);
+        }
 
         public void SelectIndex(int index)
         {

@@ -173,6 +173,14 @@
 | I.8 | Docs sync | ًںں¨ | Phase 0 commit f65f990; Todos.md encoding repaired; Phase A report pending |
 | I.9 | Header controls per-paint Font/Brush/Pen (pre-existing, disposed) | ًںں¨ P3 | Controls/Header/* deferred; not hot paths; documented in Phase A report |
 
+## J - Phase B: Sidebar Performance
+
+| # | Task | Status | Evidence |
+|---|---|---|---|
+| J.1 | Measure per-frame / full-collapse / main-screen-open before and after | done | BEFORE: maxFrame 27-32ms (target <=16), avgFrame 21-22ms, collapse 210-219ms (target <=250), NAV Dashboard 873ms, frames=4. AFTER: maxFrame 5.9-10.9ms, avgFrame 4.0-5.6ms, collapse 195-210ms, NAV 855ms, frames=7-8. perf.log + perf-shots (before/collapsed/dashboard) in %LocalAppData%\DzentoPOS2 |
+| J.2 | Fix: SuspendLayout/ResumeLayout(false) around Width change in AnimateCollapse + PerformLayout() at end | done | MainForm.cs - per-frame under 16ms, collapse under 250ms |
+| J.3 | P3: Arabic misalignment of Cashbox and Inventory movement | P3 | Logged only, not fixed (no slowness) |
+
 ## H — إعادة بناء حساب الأرباح (المراحل 1–4) ✅
 
 | # | المهمة | الحالة | دليل الإنجاز |

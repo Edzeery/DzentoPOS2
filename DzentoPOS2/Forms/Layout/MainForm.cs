@@ -1005,9 +1005,14 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             double eased = 1 - Math.Pow(1 - t, 3);
 
             int width = _collapseFrom + (int)Math.Round((_collapseTo - _collapseFrom) * eased);
+            // Defer the (expensive) full-form layout to the end of the animation:
+            // only the sidebar strip repaints per frame, the content area snaps
+            // once when the animation finishes. This keeps per-frame cost under
+            // the 16 ms budget.
+            SuspendLayout();
             SidebarPanel.Width = Math.Clamp(width, AppStyle.SidebarCollapsedWidth, AppStyle.SidebarExpandedWidth);
-
             UpdateUserInfoVisibility(SidebarPanel.Width >= AppStyle.SidebarExpandedWidth - 10);
+            ResumeLayout(false);
 
             if (t >= 1.0)
             {
@@ -1024,6 +1029,8 @@ namespace DzentoPOS2.WinForms.Forms.Layout
 
             ShadowEngine.Resume();
             ApplySidebarCollapseState();
+            // Apply the width changes that were deferred during the animation.
+            PerformLayout();
         }
 
         private void ApplySidebarCollapseState()

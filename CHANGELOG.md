@@ -2,6 +2,25 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] - 2026-11-07 (Dashboard filters + KPI hardening + sidebar perf)
+
+### Added
+- **KPI card owner-draw rewrite.** `KpiCard` paints everything in a single `OnPaint` pass (no child controls); pure `KpiCardLayout.ComputeLayout` (Shared) with RTL mirror and title-width-aware stacking; `KpiPaintCache` (DPI/theme/close-aware) eliminates per-paint `Font/Brush/Pen` allocations; FontAwesome glyphs via GDI+. Layout tests: 200-420px x LTR/RTL x 3 title widths x trend/warning present/absent.
+- **Explicit number separator policy** in `RegionalContext` (en = `,`/`.`; ar & fr = U+00A0 NBSP thousands + `,` decimal, `UseUserOverride=false`, Western digits) with override properties; `KpiValueFormatter` delegates. Exact-string tests for 13500.5 incl. U+00A0.
+- **Audit infrastructure.** `ICurrentUserAccessor` (Core) + `AuditSaveChangesInterceptor` (Data) fills `CreatedBy`/`UpdatedBy` when empty (legacy stays null -> "unspecified"); migration adds `(CreatedAt)` and `(CreatedBy, CreatedAt)` indexes on SalesInvoices/PurchaseInvoices/SalesReturns/Expenses.
+- **Permission `permissions.dashboard.view_all`** added to `Permissions.cs`, auto-seeded, granted to SuperAdmin (admin) via RolePermissionSeeder.
+- **Dashboard filter presets.** `DashboardFilterDto` now uses `DashboardDatePreset {Today, Yesterday, Last7Days, ThisMonth, Custom}` with `CustomFrom/CustomTo` local dates and `UserId?` (was `CustomerId`), default Today. `DashboardRangeResolver` (pure on `IBusinessClock`) returns `[StartUtc, EndUtc)` plus an equal previous period; rejects From>To or >366 days; unit tests on Africa/Algiers and Asia/Tokyo.
+- **Sidebar collapse performance.** `AnimateCollapse` defers full-form layout per frame (`SuspendLayout`/`ResumeLayout(false)` + `PerformLayout` at end): maxFrame 27-32ms -> 5.9-10.9ms, collapse 210-219ms -> 195-210ms.
+- **Expected profit preview** in `PurchaseEditDialog` (potential profit from items).
+- `EZSegmentedControl` and `EZDatePicker` controls.
+
+### Changed
+- `DataGridViewStyleHelper`, `RecentTransactionsModule`, `ChartsModule`, `ProfitSummaryModule`, `UIHelper` use cached fonts (no per-paint allocations in Controls/Modules; Header/* remain P3 debt).
+- `Todos.md` encoding repaired (UTF-8->CP1256->UTF-8 double-encoding reversed).
+
+### Verified
+- Build **0 errors / 21 warnings** (NU1701), Unit **400/400**, Integration **70/70**.
+
 ## [Unreleased] - 2026-11-05 (Catalog system Phase 3 complete + dark mode)
 
 ### Added

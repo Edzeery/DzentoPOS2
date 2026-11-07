@@ -34,6 +34,8 @@ public class PurchaseEditDialog : ThemedDialog
     private readonly DataGridView _itemsGrid;
     private readonly Label _lblTotal;
     private readonly Label _lblTotalValue;
+    private readonly Label _lblExpectedProfit;
+    private readonly Label _lblExpectedProfitValue;
     private readonly Button _btnSave;
     private readonly Button _btnCancel;
 
@@ -109,6 +111,17 @@ public class PurchaseEditDialog : ThemedDialog
             TextAlign = ContentAlignment.MiddleRight
         };
 
+        _lblExpectedProfit = MakeLabel("Expected profit:", 20, 385);
+        _lblExpectedProfitValue = new Label
+        {
+            Text = "0.00",
+            Location = new Point(460, 385),
+            Size = new Size(100, 20),
+            Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+            ForeColor = AppColors.Success,
+            TextAlign = ContentAlignment.MiddleRight
+        };
+
         _btnSave = ButtonFactory.Primary(AppStrings.CompletePurchase);
         _btnSave.Location = new Point(360, 400);
         _btnSave.Size = new Size(200, 40);
@@ -129,6 +142,7 @@ public class PurchaseEditDialog : ThemedDialog
             _btnAddItem,
             _itemsGrid,
             _lblTotal, _lblTotalValue,
+            _lblExpectedProfit, _lblExpectedProfitValue,
             _btnSave, _btnCancel
         });
 
@@ -238,6 +252,15 @@ public class PurchaseEditDialog : ThemedDialog
         _itemsGrid.DataSource = _items.ToList();
 
         _lblTotalValue.Text = _items.Sum(i => i.Total).ToString("N2");
+
+        decimal expected = 0m;
+        foreach (var item in _items)
+        {
+            var product = _products.FirstOrDefault(p => p.Id == item.ProductId);
+            if (product is null) continue;
+            expected += item.Quantity * (product.SalePrice - item.CostPrice);
+        }
+        _lblExpectedProfitValue.Text = expected.ToString("N2");
     }
 
     private async Task SaveAsync()

@@ -2,7 +2,6 @@ using DzentoPOS2.Core.Common;
 using DzentoPOS2.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace DzentoPOS2.Data.Interceptors;
 
@@ -36,9 +35,7 @@ public sealed class AuditSaveChangesInterceptor : SaveChangesInterceptor
     {
         if (context is null) return;
 
-        var sp = (context as Microsoft.EntityFrameworkCore.Infrastructure.IInfrastructure<IServiceProvider>)?.Instance;
-        var accessor = sp?.GetService<ICurrentUserAccessor>();
-        var userId = accessor?.UserId;
+        var userId = CurrentUserContext.UserId;
         if (userId is null) return;
 
         foreach (var entry in context.ChangeTracker.Entries<AuditableEntity>())

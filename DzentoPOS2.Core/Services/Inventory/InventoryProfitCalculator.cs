@@ -15,8 +15,12 @@ namespace DzentoPOS2.Core.Services.Inventory
     public sealed record InventoryStockInput(Guid VariantId, decimal Quantity);
 
     public sealed record InventoryProfitResult(
+        decimal CostValue,
+        decimal RetailValue,
         decimal PotentialProfit,
+        decimal PotentialMarginPct,
         decimal RealisticProfit,
+        decimal AtRiskProfit,
         int WarningNoSalePrice,
         int WarningNegativeMargin,
         int WarningZeroCost);
@@ -37,7 +41,7 @@ namespace DzentoPOS2.Core.Services.Inventory
                 .GroupBy(s => s.VariantId)
                 .ToDictionary(g => g.Key, g => g.Sum(x => x.Quantity));
 
-            decimal potential = 0m, realistic = 0m;
+            decimal costValue = 0m, retailValue = 0m, potential = 0m, realistic = 0m, atRisk = 0m;
             int noSale = 0, negMargin = 0, zeroCost = 0;
 
             foreach (var p in products)
@@ -51,17 +55,24 @@ namespace DzentoPOS2.Core.Services.Inventory
                 var margin = p.SalePrice - p.CostPrice;
                 if (margin < 0) { negMargin++; }
 
+                costValue += qty * p.CostPrice;
+                retailValue += qty * p.SalePrice;
                 potential += qty * margin;
 
                 var d = discountFactor(p.VariantId);
                 d = Math.Clamp(d, 0m, 0.5m);
                 var f = Math.Clamp(feeFactor, 0m, 0.25m);
-                var pNet = p.SalePrice * (1 - d);
-                var realisticUnit = pNet * (1 - f) - p.CostPrice;
-                realistic += qty * realisticUnit;
+                var nrv = p.SalePrice * (1 - d) * (1 - f);
+                var unit = nrv - p.CostPrice; // negative margin stays negative
+                realistic += qty * unit;
+                if (unit < 0) atRisk += qty * unit;
             }
 
-            return new InventoryProfitResult(potential, realistic, noSale, negMargin, zeroCost);
+            var marginPct = retailValue > 0 ? potential / retailValue * 100m : 0m;
+
+            return new InventoryProfitResult(
+                costValue, retailValue, potential, marginPct, realistic, atRisk,
+                noSale, negMargin, zeroCost);
         }
     }
 }

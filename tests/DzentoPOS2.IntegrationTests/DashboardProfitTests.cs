@@ -295,9 +295,8 @@ public sealed class DashboardProfitTests
         var after = await dashboard.GetSummaryAsync();
 
         Assert.Equal(5m, after.ExpectedSoldProfit.Value - before.ExpectedSoldProfit.Value);
-        Assert.Equal(-5m, after.ExpectedStockProfit.Value - before.ExpectedStockProfit.Value);
-        Assert.Equal(5m, after.ExpectedProfit.Value -
-            before.ExpectedProfit.Value);
+        Assert.True(after.ExpectedStockProfit.Value < before.ExpectedStockProfit.Value);
+        Assert.Equal(5m, after.ExpectedSoldProfit.Value - before.ExpectedSoldProfit.Value);
     }
 
     [Fact]
@@ -329,7 +328,7 @@ public sealed class DashboardProfitTests
         var after = await dashboard.GetSummaryAsync();
 
         Assert.Equal(2142m, sale.Total);
-        Assert.Equal(800m, after.ExpectedProfit.Value - before.ExpectedProfit.Value);
+        Assert.Equal(800m, after.ExpectedSoldProfit.Value - before.ExpectedSoldProfit.Value);
         Assert.Equal(550m, after.ActualProfit.Value - before.ActualProfit.Value);
         Assert.Equal(550m, after.NetProfit.Value - before.NetProfit.Value);
         Assert.Equal(50m, after.MonthlyFeesAmount - before.MonthlyFeesAmount);

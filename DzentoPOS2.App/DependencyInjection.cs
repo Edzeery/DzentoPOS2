@@ -52,6 +52,10 @@ namespace DzentoPOS2.App
             // shell share the same sale / cash-drawer notifications.
             services.AddSingleton<ISalesEventPublisher, SalesEventPublisher>();
 
+            services.AddSingleton<IInventoryChangedNotifier, InventoryChangedNotifier>();
+            services.AddScoped<IInventoryValuationService, InventoryValuationService>();
+            services.AddScoped<IInventorySnapshotService, InventorySnapshotService>();
+
             services.AddScoped<IPermissionService,
                 PermissionService>();
 

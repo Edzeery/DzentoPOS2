@@ -121,6 +121,20 @@ namespace DzentoPOS2.Core.Services.Sales
             revenue > 0 ? Round(profit / revenue * 100m, digits) : 0m;
 
         /// <summary>
+        /// Realization rate = actual profit of sold / expected profit at list price of sold.
+        /// Returns 0 when the denominator is zero.
+        /// </summary>
+        public static decimal CalculateRealizationRate(decimal actualProfit, decimal expectedAtListPrice, int digits = 2) =>
+            expectedAtListPrice != 0 ? Round(actualProfit / expectedAtListPrice * 100m, digits) : 0m;
+
+        /// <summary>
+        /// Forecast bias = sum(actual - expected) / sum(expected).
+        /// Returns 0 when the denominator is zero.
+        /// </summary>
+        public static decimal CalculateForecastBias(decimal actualSum, decimal expectedSum, int digits = 2) =>
+            expectedSum != 0 ? Round((actualSum - expectedSum) / expectedSum, digits) : 0m;
+
+        /// <summary>
         /// Full invoice profit breakdown. Fees and operating expenses are passed
         /// in (they are not part of the line math).
         /// </summary>

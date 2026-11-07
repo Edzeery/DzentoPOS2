@@ -1,3 +1,4 @@
+using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.App.Services.Reports.Interfaces;
 using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.Core.Services.Sales;
@@ -15,15 +16,21 @@ namespace DzentoPOS2.App.Services.Reports
         private readonly AppDbContext _context;
         private readonly RegionalContext _regional;
         private readonly IBusinessClock _clock;
+        private readonly IInventoryValuationService _valuation;
+        private readonly IInventorySnapshotService _snapshots;
 
         public DashboardService(
             AppDbContext context,
             RegionalContext regional,
-            IBusinessClock clock)
+            IBusinessClock clock,
+            IInventoryValuationService valuation,
+            IInventorySnapshotService snapshots)
         {
             _context = context;
             _regional = regional;
             _clock = clock;
+            _valuation = valuation;
+            _snapshots = snapshots;
         }
 
         public async Task<DashboardSummaryDto> GetSummaryAsync(DashboardFilterDto? filter = null)
@@ -183,23 +190,18 @@ namespace DzentoPOS2.App.Services.Reports
             // Per-invoice profit.
             decimal revenue = 0m, cost = 0m, expected = 0m, fees = 0m, monthlyDiscounts = 0m;
 
-            // Expected stock profit: grouped SQL over ProductStocks × Products.
-            var stockRows = await (
-                from s in _context.ProductStocks
-                join p in _context.Products on s.ProductId equals p.Id
-                where p.IsActive && p.TrackStock && !p.IsDeleted
-                group s by new { p.Id, Sale = p.SalePrice.Amount, Cost = p.CostPrice.Amount } into g
-                select new
-                {
-                    Qty = g.Sum(x => (double?)x.Quantity.Value) ?? 0d,
-                    Sale = (double)g.Key.Sale,
-                    Cost = (double)g.Key.Cost
-                }
-            ).ToListAsync();
+            // Inventory valuation (variant-level, NRV-based) replaces the old
+            // product-level stock profit calculation.
+            var valuation = await _valuation.GetValuationAsync();
+            var expectedStock = valuation.ExpectedProfit;
+            dto.InventoryCostValue = valuation.CostValue;
+            dto.InventoryRetailValue = valuation.RetailValue;
+            dto.InventoryPotentialProfit = valuation.PotentialProfit;
+            dto.InventoryExpectedProfit = valuation.ExpectedProfit;
+            dto.InventoryAtRiskProfit = valuation.AtRiskProfit;
 
-            var expectedStock = ProfitCalculator.CalculateExpectedStockProfit(
-                stockRows.Select(r => ((decimal)Math.Max(r.Qty, 0), (decimal)r.Sale, (decimal)r.Cost)),
-                _regional.CurrencyDecimalDigits);
+            // Daily snapshot (upsert, once per local day).
+            await _snapshots.UpsertTodayAsync(valuation);
             foreach (var g in monthRows.GroupBy(x => x.SalesInvoiceId))
             {
                 var profitLines = g.Select(x => new ProfitLine(
@@ -316,7 +318,7 @@ namespace DzentoPOS2.App.Services.Reports
             var actualMargin = ProfitCalculator.CalculateMargin(actualProfit, revenue, 1);
             var netMargin = ProfitCalculator.CalculateMargin(netProfit, revenue, 1);
 
-            SetCardData(dto.ExpectedProfit, expected, 0, KpiValueKind.Money);
+            SetCardData(dto.ExpectedProfit, expected + valuation.ExpectedProfit, 0, KpiValueKind.Money);
             SetCardData(dto.ExpectedSoldProfit, expected, 0, KpiValueKind.Money);
             SetCardData(dto.ExpectedStockProfit, expectedStock, 0, KpiValueKind.Money);
             SetCardData(dto.ActualProfit, actualProfit, 0, KpiValueKind.Money);

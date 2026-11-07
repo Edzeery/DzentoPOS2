@@ -91,6 +91,10 @@ public class PurchaseEditDialog : ThemedDialog
         _btnAddItem.Font = new Font("Segoe UI", 9F);
         _btnAddItem.Click += (_, _) => AddItem();
 
+        // تحديث الربح المتوقع لحظيًا عند تغيير الكمية أو السعر قبل الإضافة
+        _numQty.ValueChanged += (_, _) => RefreshItemsGrid();
+        _numCost.ValueChanged += (_, _) => RefreshItemsGrid();
+
         _itemsGrid = new DataGridView
         {
             Location = new Point(20, 170),
@@ -234,6 +238,7 @@ public class PurchaseEditDialog : ThemedDialog
         }
 
         _numQty.Value = 1;
+        _numCost.Value = 0;
         RefreshItemsGrid();
     }
 
@@ -260,6 +265,13 @@ public class PurchaseEditDialog : ThemedDialog
             if (product is null) continue;
             expected += item.Quantity * (product.SalePrice - item.CostPrice);
         }
+
+        // أضف الربح المتوقع للبند الحالي (المراد إضافته) إذا كان منتجًا محددًا
+        if (_cmbProduct.SelectedItem is ProductDto current && current.Id != Guid.Empty)
+        {
+            expected += _numQty.Value * (current.SalePrice - _numCost.Value);
+        }
+
         _lblExpectedProfitValue.Text = expected.ToString("N2");
     }
 

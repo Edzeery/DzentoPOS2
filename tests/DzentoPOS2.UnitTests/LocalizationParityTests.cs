@@ -110,7 +110,7 @@ public sealed class LocalizationParityTests
                 Assert.Equal("1,818,450.00", KpiValueFormatter.Format(1818450, KpiValueKind.Money, CultureInfo.CurrentCulture, 2));
 
                 CultureInfo.CurrentCulture = new CultureInfo("fr-FR");
-                Assert.Equal(1818450.ToString("N2", CultureInfo.CurrentCulture), KpiValueFormatter.Format(1818450, KpiValueKind.Money, CultureInfo.CurrentCulture, 2));
+                Assert.Equal("1\u00A0818\u00A0450,00", KpiValueFormatter.Format(1818450, KpiValueKind.Money, CultureInfo.CurrentCulture, 2));
             }
         }
         finally

@@ -170,7 +170,8 @@ public sealed class KpiValueFormatterTests
         try
         {
             CultureInfo.CurrentCulture = FrFr;
-            Assert.Equal(1234.ToString("#,##0", FrFr), KpiValueFormatter.Format(1234, KpiValueKind.Count));
+            // fr defaults to the approved NBSP + comma policy.
+            Assert.Equal("1\u00A0234", KpiValueFormatter.Format(1234, KpiValueKind.Count));
         }
         finally
         {

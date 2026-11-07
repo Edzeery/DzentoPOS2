@@ -70,7 +70,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             var lblTitle = new Label
             {
                 Text = title,
-                Font = new Font("Segoe UI Semibold", 12F),
+                Font = AppStyle.SubtitleFont,
                 ForeColor = AppColors.Ink,
                 Location = new Point(titleLeft, titleTop),
                 AutoSize = true,

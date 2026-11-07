@@ -72,8 +72,8 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             area.BackColor = AppColors.Surface;
             area.AxisX.MajorGrid.LineColor = AppColors.GridLine;
             area.AxisY.MajorGrid.LineColor = AppColors.GridLine;
-            area.AxisX.LabelStyle.Font = new Font("Segoe UI", 8F);
-            area.AxisY.LabelStyle.Font = new Font("Segoe UI", 8F);
+            area.AxisX.LabelStyle.Font = AppStyle.ChartAxisFont;
+            area.AxisY.LabelStyle.Font = AppStyle.ChartAxisFont;
             area.AxisX.LabelStyle.ForeColor = AppColors.InkMuted;
             area.AxisY.LabelStyle.ForeColor = AppColors.InkMuted;
 
@@ -90,7 +90,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
 
             chart.Legends.Add(new Legend
             {
-                Docking = Docking.Top, Font = new Font("Segoe UI", 9F), BackColor = AppColors.Surface, ForeColor = AppColors.Ink
+                Docking = Docking.Top, Font = AppStyle.SmallFont, BackColor = AppColors.Surface, ForeColor = AppColors.Ink
             });
             return chart;
         }
@@ -152,15 +152,15 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             area.BackColor = AppColors.Surface;
             area.AxisX.MajorGrid.LineColor = AppColors.GridLine;
             area.AxisY.MajorGrid.LineColor = AppColors.GridLine;
-            area.AxisX.LabelStyle.Font = new Font("Segoe UI", 8F);
-            area.AxisY.LabelStyle.Font = new Font("Segoe UI", 8F);
+            area.AxisX.LabelStyle.Font = AppStyle.ChartAxisFont;
+            area.AxisY.LabelStyle.Font = AppStyle.ChartAxisFont;
 
             chart.Series.Add(new Series { Name = AppStrings.SalesChart, ChartType = SeriesChartType.Column, Color = SalesSeriesColor, BorderWidth = 2 });
             chart.Series.Add(new Series { Name = AppStrings.PurchasesChart, ChartType = SeriesChartType.Column, Color = PurchasesSeriesColor, BorderWidth = 2 });
 
             chart.Legends.Add(new Legend
             {
-                Docking = Docking.Top, Font = new Font("Segoe UI", 9F), BackColor = AppColors.Surface, ForeColor = AppColors.Ink
+                Docking = Docking.Top, Font = AppStyle.SmallFont, BackColor = AppColors.Surface, ForeColor = AppColors.Ink
             });
             return chart;
         }
@@ -180,7 +180,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
                 ChartType = SeriesChartType.Pie,
                 IsValueShownAsLabel = true,
                 LabelFormat = "{0}",
-                Font = new Font("Segoe UI", 9F),
+                Font = AppStyle.SmallFont,
                 LabelForeColor = AppColors.Ink
             };
             series["PieLabelStyle"] = "Outside";
@@ -190,7 +190,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
 
             chart.Legends.Add(new Legend
             {
-                Docking = Docking.Bottom, Font = new Font("Segoe UI", 9F), BackColor = AppColors.Surface, ForeColor = AppColors.Ink
+                Docking = Docking.Bottom, Font = AppStyle.SmallFont, BackColor = AppColors.Surface, ForeColor = AppColors.Ink
             });
             return chart;
         }

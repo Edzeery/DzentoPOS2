@@ -9,6 +9,15 @@ public static class DataGridViewStyleHelper
     // never stacks duplicate event subscriptions.
     private static readonly ConditionalWeakTable<DataGridView, object> HoverBound = new();
 
+    /// <summary>Body font shared by every grid (created once, never in a paint path).</summary>
+    public static readonly Font BodyFont = new("Segoe UI", 9F);
+
+    /// <summary>Semibold header font.</summary>
+    public static readonly Font HeaderFont = new("Segoe UI Semibold", 9F);
+
+    /// <summary>Semibold emphasis used by status cells.</summary>
+    public static readonly Font EmphasizedFont = new("Segoe UI Semibold", 10F);
+
     private static Color AccentColor => AppColors.Primary;
     private static Color AccentSoft => AppColors.GridSelectionBackground;
     private static Color InkColor => AppColors.Ink;
@@ -34,7 +43,7 @@ public static class DataGridViewStyleHelper
     {
         ApplyBaseStyle(grid);
 
-        grid.Font = new Font("Segoe UI", 9F);
+        grid.Font = BodyFont;
         grid.RowTemplate.Height = 38;
         grid.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
         grid.GridColor = GridLineColor;
@@ -46,7 +55,7 @@ public static class DataGridViewStyleHelper
         {
             BackColor = AppColors.GridHeaderBackground,
             ForeColor = AppColors.GridHeaderForeground,
-            Font = new Font("Segoe UI Semibold", 9F),
+            Font = HeaderFont,
             Padding = new Padding(10, 0, 10, 0),
             Alignment = DataGridViewContentAlignment.MiddleLeft,
             SelectionBackColor = AppColors.GridHeaderBackground,

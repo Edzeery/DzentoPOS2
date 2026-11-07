@@ -10,61 +10,138 @@ using System.Drawing.Drawing2D;
 
 namespace DzentoPOS2.WinForms.Controls
 {
+    /// <summary>
+    /// Owner-drawn KPI card. Everything (surface, accent, icon badge, title,
+    /// trend, warning, value and caption) is painted in a single
+    /// <see cref="OnPaint"/> pass; there are no child controls and no absolute
+    /// coordinates outside <see cref="KpiCardLayout.ComputeLayout"/>.
+    /// </summary>
     public class KpiCard : Panel, IThemeAware
     {
-        private static readonly Font TitleFont = new("Segoe UI", 9.5F);
-        private static readonly Font TrendFont = new("Segoe UI Semibold", 9.5F);
-        private static readonly Font ValueFont = new("Segoe UI", 24F, FontStyle.Bold);
-        private static readonly Font EstimatedFont = new("Segoe UI", 9F);
+        private const int CardRadius = 12;
+        private const int BadgeRadius = 10;
+        private const int AccentWidth = 5;
+        private const int Padding = 16;
 
-        private readonly IconPictureBox _iconBox;
-        private readonly Panel _iconBadge;
-        private readonly Panel _accentLeft;
-        private readonly string _key;
-        private readonly int _baseElevation;
-        private int _currentElevation;
+        private const float TitlePoints = 9.5f;
+        private const float TrendPoints = 9.5f;
+        private const float ValuePoints = 24f;
+        private const float CaptionPoints = 9f;
+        private const float WarningPoints = 11f;
+        private const float MinValuePoints = 13f;
+
+        // FontAwesome loads its glyphs into a private font collection. The probe is a
+        // tiny subclass because the family resolver (FontFor) is protected; it is
+        // kept alive for the process lifetime and never touched from OnPaint.
+        private static readonly GlyphFontProbe GlyphProbe = new();
+
+        private sealed class GlyphFontProbe : IconPictureBox
+        {
+            public FontFamily FamilyFor(IconChar icon) => FontFor(icon);
+        }
+
+        // GDI+ is required for the private FontAwesome family; TextRenderer (GDI)
+        // renders it as a missing-glyph box.
+        private static readonly StringFormat GlyphFormat = CreateGlyphFormat();
+
+        private static StringFormat CreateGlyphFormat()
+            => new(StringFormat.GenericTypographic)
+            {
+                Alignment = StringAlignment.Center,
+                LineAlignment = StringAlignment.Center,
+                FormatFlags = StringFormatFlags.NoClip | StringFormatFlags.NoWrap
+            };
+
+        private readonly KpiPaintCache _paint = new();
         private readonly ToolTip _toolTip;
+        private readonly string _key;
+
+        private IconChar _icon;
+        private FontFamily _glyphFamily = FontFamily.GenericSansSerif;
+        private Color _baseAccent = Color.Gray;
+        private Color _appliedAccent = Color.Gray;
 
         private KpiValueKind _valueKind = KpiValueKind.Count;
         private int _currencyDigits = 2;
         private decimal _currentNum;
         private decimal _targetNum;
         private System.Windows.Forms.Timer? _animTimer;
-        private Color _baseAccent = Color.Gray;
-        private Color _appliedAccent = Color.Gray;
 
         private string _title = string.Empty;
+        private string _caption = string.Empty;
         private string _trendText = string.Empty;
+        private decimal _trendPercent;
         private KpiTrendKind _trendKind = KpiTrendKind.None;
         private bool _estimated;
-        private Rectangle _valueRect;
-        private Rectangle _estimatedRect;
-        private Rectangle _titleRect;
-        private Rectangle _trendRect;
+        private bool _hover;
+
+        private Rectangle _badgeBounds;
+        private GraphicsPath? _badgePath;
+        private Size _cardPathBounds;
+        private GraphicsPath? _cardPath;
+        private KpiCardLayoutResult _layout;
 
         public static bool ReduceMotion { get; set; }
+
         static KpiCard()
         {
             ReduceMotion = !SystemInformation.UIEffectsEnabled;
-            try { Microsoft.Win32.SystemEvents.UserPreferenceChanged += (_, _) => ReduceMotion = !SystemInformation.UIEffectsEnabled; }
-            catch (Exception) { /* ignore */ }
+            try
+            {
+                Microsoft.Win32.SystemEvents.UserPreferenceChanged +=
+                    (_, _) => ReduceMotion = !SystemInformation.UIEffectsEnabled;
+            }
+            catch (Exception)
+            {
+                // The system event is a best-effort refinement only.
+            }
         }
 
         public static int CurrencyDigits { get; set; } = 2;
 
         public string CardKey => _key;
-        public string CardTitle { get => _title; set { _title = value ?? string.Empty; Invalidate(); } }
-        public IconChar Icon { get => _iconBox.IconChar; set => _iconBox.IconChar = value; }
-        public Color AccentColor { get => _appliedAccent; set { _baseAccent = value; ApplyAccent(AppColors.AdaptAccent(value)); } }
 
-        public KpiCard() : this("", "", IconChar.QuestionCircle, Color.Gray, 4) { }
-
-        public KpiCard(string key, string title, IconChar icon, Color accent, int baseElevation = 4)
+        public string CardTitle
         {
-            _key = key;
-            _baseElevation = baseElevation;
-            _currentElevation = baseElevation;
+            get => _title;
+            set
+            {
+                _title = value ?? string.Empty;
+                Invalidate();
+            }
+        }
+
+        public IconChar Icon
+        {
+            get => _icon;
+            set
+            {
+                if (_icon == value) return;
+                _icon = value;
+                _glyphFamily = GlyphProbe.FamilyFor(value);
+                Invalidate();
+            }
+        }
+
+        public Color AccentColor
+        {
+            get => _appliedAccent;
+            set
+            {
+                _baseAccent = value;
+                ApplyAccent(AppColors.AdaptAccent(value));
+            }
+        }
+
+        public KpiCard() : this("", "", IconChar.QuestionCircle, Color.Gray) { }
+
+        public KpiCard(string key, string title, IconChar icon, Color accent)
+        {
+            _key = key ?? string.Empty;
             _title = title ?? string.Empty;
+            _icon = icon;
+            _glyphFamily = GlyphProbe.FamilyFor(icon);
+
             _toolTip = new ToolTip
             {
                 InitialDelay = 200,
@@ -73,7 +150,12 @@ namespace DzentoPOS2.WinForms.Controls
                 ShowAlways = false
             };
 
-            SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.ResizeRedraw, true);
+            SetStyle(
+                ControlStyles.OptimizedDoubleBuffer |
+                ControlStyles.AllPaintingInWmPaint |
+                ControlStyles.UserPaint |
+                ControlStyles.ResizeRedraw,
+                true);
             DoubleBuffered = true;
 
             Size = new Size(300, 150);
@@ -82,178 +164,375 @@ namespace DzentoPOS2.WinForms.Controls
             BackColor = AppColors.Surface;
             Cursor = Cursors.Hand;
 
-            _accentLeft = new Panel { Width = 5, Dock = DockStyle.Left, BackColor = accent };
-            _iconBadge = new Panel
-            {
-                Size = new Size(40, 40),
-                Location = new Point(22, 20),
-                BackColor = Color.Transparent,
-                Cursor = Cursors.Hand
-            };
-            RadiusControl.Apply(_iconBadge, 10);
             AccentColor = accent;
 
-            _iconBox = new IconPictureBox
-            {
-                IconChar = icon,
-                IconColor = Color.White,
-                IconSize = 22,
-                Location = new Point(9, 9),
-                Size = new Size(22, 22),
-                BackColor = Color.Transparent,
-                Cursor = Cursors.Hand
-            };
-            _iconBadge.Controls.Add(_iconBox);
-
-            Controls.AddRange(new Control[] { _accentLeft, _iconBadge });
-
             MouseEnter += (_, _) => SetHover(true);
-            MouseLeave += (_, _) =>
-            {
-                if (!ClientRectangle.Contains(PointToClient(Cursor.Position)))
-                    SetHover(false);
-            };
-            MouseMove += (_, e) =>
-            {
-                if (_estimatedRect.Contains(e.Location))
-                    _toolTip.Show(AppStrings.EstimatedCostNote, this, e.Location.X + 10, e.Location.Y + 10);
-                else if (_titleRect.Contains(e.Location) && TextRenderer.MeasureText(_title, TitleFont).Width > _titleRect.Width)
-                    _toolTip.Show(_title, this, e.Location.X + 10, e.Location.Y + 10);
-                else
-                    _toolTip.Hide(this);
-            };
+            MouseLeave += (_, _) => SetHover(false);
+            MouseMove += OnMouseMove;
 
             HandleCreated += (_, _) => ApplyTheme();
-            if (IsHandleCreated) ApplyTheme();
             ThemeManager.ThemeChanged += OnThemeChanged;
         }
 
-        private void OnThemeChanged(object? sender, EventArgs e)
-        {
-            if (IsDisposed) return;
-            if (InvokeRequired) { BeginInvoke(ApplyTheme); return; }
-            ApplyTheme();
-        }
-
+        /// <summary>
+        /// Pure geometry used by painting, hit testing and tooltips. The measured
+        /// trend width and the current DPI-scaled row heights are passed in.
+        /// </summary>
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
-            var g = e.Graphics;
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-            var rtl = RightToLeft == RightToLeft.Yes;
-            var flags = TextFormatFlags.EndEllipsis | TextFormatFlags.NoPadding | TextFormatFlags.SingleLine;
-            if (rtl) flags |= TextFormatFlags.RightToLeft | TextFormatFlags.Right;
+            var graphics = e.Graphics;
+            graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-            // background rounded
-            using (var path = RoundedRect(ClientRectangle, 12))
-            using (var brush = new SolidBrush(AppColors.Surface))
-                g.FillPath(brush, path);
+            _paint.EnsureDpi(DeviceDpi);
 
-            // accent
-            _accentLeft.BackColor = _appliedAccent;
+            bool rtl = RightToLeft == RightToLeft.Yes;
+            _layout = KpiCardLayout.ComputeLayout(ClientSize, rtl, BuildMetrics(graphics));
 
-            // icon badge already child
+            DrawSurface(graphics);
+            DrawAccent(graphics, rtl);
+            DrawIcon(graphics, _layout.Icon);
+            DrawTitle(graphics, _layout.Title, rtl);
+            DrawTrend(graphics, _layout.Trend, rtl);
+            DrawWarning(graphics, _layout.Estimated);
+            DrawValue(graphics, _layout.Value, rtl);
+            DrawCaption(graphics, _layout.Caption, rtl);
+        }
 
-            // accent strip side follows reading direction
-            _accentLeft.Dock = rtl ? DockStyle.Right : DockStyle.Left;
-
-            // icon badge position follows reading direction
-            _iconBadge.Location = rtl
-                ? new Point(Width - _iconBadge.Width - 22, 20)
-                : new Point(22, 20);
-
-            // trend measure
+        private KpiCardMetrics BuildMetrics(Graphics graphics)
+        {
             int trendWidth = 0;
             if (!string.IsNullOrEmpty(_trendText))
             {
-                var trendSize = TextRenderer.MeasureText(g, _trendText, TrendFont, Size, TextFormatFlags.NoPadding);
-                trendWidth = trendSize.Width + 8;
+                var text = RightToLeft == RightToLeft.Yes ? "\u200E" + _trendText : _trendText;
+                var font = _paint.GetTextFont("Segoe UI Semibold", TrendPoints, FontStyle.Regular);
+                var measured = TextRenderer.MeasureText(
+                    graphics,
+                    text,
+                    font,
+                    new Size(100_000, 1_000),
+                    TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix);
+                trendWidth = measured.Width + 4;
             }
-            int iconWidth = _iconBadge.Width + 12;
 
-            // title + trend rects (mirrored for RTL, no overlap with icon)
-            if (rtl)
+            int titleWidth = 0;
+            if (!string.IsNullOrEmpty(_title))
             {
-                _trendRect = string.IsNullOrEmpty(_trendText)
-                    ? Rectangle.Empty
-                    : new Rectangle(12, 24, trendWidth, 18);
-                int titleX = trendWidth + 24;
-                int titleWidth = Math.Max(20, Width - trendWidth - 98);
-                _titleRect = new Rectangle(titleX, 24, titleWidth, 18);
+                var measured = TextRenderer.MeasureText(
+                    graphics,
+                    _title,
+                    _paint.GetTextFont("Segoe UI", TitlePoints, FontStyle.Regular),
+                    new Size(100_000, 1_000),
+                    TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix);
+                titleWidth = measured.Width;
             }
-            else
+
+            return KpiCardMetrics.Default with
             {
-                _titleRect = new Rectangle(74, 24, Math.Max(20, Width - trendWidth - 98), 18);
-                _trendRect = string.IsNullOrEmpty(_trendText)
-                    ? Rectangle.Empty
-                    : new Rectangle(Width - trendWidth - 12, 24, trendWidth, 18);
-            }
-
-            TextRenderer.DrawText(g, _title, TitleFont, _titleRect, AppColors.InkMuted, flags);
-
-            if (!string.IsNullOrEmpty(_trendText))
-                TextRenderer.DrawText(g, _trendText, TrendFont, _trendRect, AppColors.InkMuted, flags);
-
-            // estimated
-            if (_estimated)
-            {
-                _estimatedRect = new Rectangle(rtl ? 12 : Width - 24, 4, 20, 16);
-                TextRenderer.DrawText(g, "⚠", EstimatedFont, _estimatedRect, AppColors.Warning, TextFormatFlags.NoPadding);
-            }
-            else _estimatedRect = Rectangle.Empty;
-
-            // value
-            _valueRect = new Rectangle(22, Math.Max(60, Height - 40 - 28), Width - 44, 40);
-            var valueText = FormatValue(_currentNum);
-            TextRenderer.DrawText(g, valueText, ValueFont, _valueRect, _appliedAccent, TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | (rtl ? TextFormatFlags.RightToLeft : 0));
-
-            // hover effect already background
+                AccentWidth = AccentWidth,
+                Padding = Padding,
+                HasTrend = trendWidth > 0,
+                TrendWidth = trendWidth,
+                TitleWidth = titleWidth,
+                HasEstimated = _estimated,
+                HasCaption = !string.IsNullOrEmpty(_caption)
+            };
         }
 
-        private static GraphicsPath RoundedRect(Rectangle bounds, int radius)
+        private void DrawSurface(Graphics graphics)
+        {
+            var path = GetCardPath();
+            var color = _hover
+                ? Blend(AppColors.Surface, _appliedAccent, 0.05f)
+                : AppColors.Surface;
+
+            graphics.FillPath(_paint.GetBrush(color), path);
+        }
+
+        private void DrawAccent(Graphics graphics, bool rtl)
+        {
+            if (ClientSize.Width <= 0 || ClientSize.Height <= 0) return;
+
+            var path = GetCardPath();
+            var state = graphics.Save();
+            try
+            {
+                graphics.SetClip(path);
+                var x = rtl ? ClientSize.Width - AccentWidth : 0;
+                graphics.FillRectangle(
+                    _paint.GetBrush(_appliedAccent),
+                    new Rectangle(x, 0, AccentWidth, ClientSize.Height));
+            }
+            finally
+            {
+                graphics.Restore(state);
+            }
+        }
+
+        private void DrawIcon(Graphics graphics, Rectangle bounds)
+        {
+            if (bounds.Width <= 2 || bounds.Height <= 2) return;
+
+            var background = ThemeManager.IsDark
+                ? Blend(AppColors.Surface, _appliedAccent, 0.32f)
+                : Blend(Color.White, _appliedAccent, 0.14f);
+
+            graphics.FillPath(_paint.GetBrush(background), GetBadgePath(bounds));
+
+            if (_icon == IconChar.None) return;
+
+            var glyph = char.ConvertFromUtf32((int)_icon);
+            if (string.IsNullOrEmpty(glyph)) return;
+
+            var foreground = ThemeManager.IsDark
+                ? Color.White
+                : Blend(_appliedAccent, Color.Black, 0.35f);
+
+            var font = _paint.GetPixelFont(_glyphFamily, bounds.Height * 0.62f, FontStyle.Regular);
+            graphics.DrawString(
+                glyph,
+                font,
+                _paint.GetBrush(foreground),
+                new RectangleF(bounds.X, bounds.Y, bounds.Width, bounds.Height),
+                GlyphFormat);
+        }
+
+        private void DrawTitle(Graphics graphics, Rectangle bounds, bool rtl)
+        {
+            if (bounds.Width <= 0 || string.IsNullOrEmpty(_title)) return;
+
+            var flags = TextFormatFlags.EndEllipsis |
+                        TextFormatFlags.NoPadding |
+                        TextFormatFlags.SingleLine |
+                        TextFormatFlags.NoPrefix |
+                        TextFormatFlags.VerticalCenter |
+                        (rtl
+                            ? TextFormatFlags.Right | TextFormatFlags.RightToLeft
+                            : TextFormatFlags.Left);
+
+            TextRenderer.DrawText(
+                graphics,
+                _title,
+                _paint.GetTextFont("Segoe UI", TitlePoints, FontStyle.Regular),
+                bounds,
+                AppColors.InkMuted,
+                flags);
+        }
+
+        private void DrawTrend(Graphics graphics, Rectangle bounds, bool rtl)
+        {
+            if (bounds.Width <= 0 || string.IsNullOrEmpty(_trendText)) return;
+
+            var text = rtl ? "\u200E" + _trendText : _trendText;
+            var color = _trendKind switch
+            {
+                KpiTrendKind.Change when _trendPercent >= 0 => AppColors.Success,
+                KpiTrendKind.Change => AppColors.Danger,
+                _ => AppColors.InkMuted
+            };
+
+            var flags = TextFormatFlags.EndEllipsis |
+                        TextFormatFlags.NoPadding |
+                        TextFormatFlags.SingleLine |
+                        TextFormatFlags.NoPrefix |
+                        TextFormatFlags.VerticalCenter |
+                        (rtl ? TextFormatFlags.Right : TextFormatFlags.Left);
+
+            if (rtl && _trendKind == KpiTrendKind.Margin)
+                flags |= TextFormatFlags.RightToLeft;
+
+            TextRenderer.DrawText(
+                graphics,
+                text,
+                _paint.GetTextFont("Segoe UI Semibold", TrendPoints, FontStyle.Regular),
+                bounds,
+                color,
+                flags);
+        }
+
+        private void DrawWarning(Graphics graphics, Rectangle bounds)
+        {
+            if (bounds.Width <= 0) return;
+
+            TextRenderer.DrawText(
+                graphics,
+                "\u26A0",
+                _paint.GetTextFont("Segoe UI", WarningPoints, FontStyle.Regular),
+                bounds,
+                AppColors.Warning,
+                TextFormatFlags.HorizontalCenter |
+                TextFormatFlags.VerticalCenter |
+                TextFormatFlags.NoPadding |
+                TextFormatFlags.SingleLine |
+                TextFormatFlags.NoPrefix);
+        }
+
+        private void DrawValue(Graphics graphics, Rectangle bounds, bool rtl)
+        {
+            if (bounds.Width <= 0) return;
+
+            var text = FormatValue(_currentNum);
+            if (rtl) text = "\u200E" + text;
+
+            var font = FitValueFont(graphics, text, bounds.Width);
+            var flags = TextFormatFlags.NoPadding |
+                        TextFormatFlags.SingleLine |
+                        TextFormatFlags.NoPrefix |
+                        TextFormatFlags.VerticalCenter |
+                        (rtl ? TextFormatFlags.Right : TextFormatFlags.Left);
+
+            // The value has the strongest contrast in the card (Ink, not accent).
+            TextRenderer.DrawText(graphics, text, font, bounds, AppColors.Ink, flags);
+        }
+
+        private void DrawCaption(Graphics graphics, Rectangle bounds, bool rtl)
+        {
+            if (bounds.Width <= 0 || string.IsNullOrEmpty(_caption)) return;
+
+            var flags = TextFormatFlags.EndEllipsis |
+                        TextFormatFlags.NoPadding |
+                        TextFormatFlags.SingleLine |
+                        TextFormatFlags.NoPrefix |
+                        TextFormatFlags.VerticalCenter |
+                        (rtl
+                            ? TextFormatFlags.Right | TextFormatFlags.RightToLeft
+                            : TextFormatFlags.Left);
+
+            TextRenderer.DrawText(
+                graphics,
+                _caption,
+                _paint.GetTextFont("Segoe UI", CaptionPoints, FontStyle.Regular),
+                bounds,
+                AppColors.InkMuted,
+                flags);
+        }
+
+        private Font FitValueFont(Graphics graphics, string text, int maxWidth)
+        {
+            var size = ValuePoints;
+            while (size > MinValuePoints)
+            {
+                var font = _paint.GetTextFont("Segoe UI", size, FontStyle.Bold);
+                var measured = TextRenderer.MeasureText(
+                    graphics,
+                    text,
+                    font,
+                    new Size(100_000, 1_000),
+                    TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix);
+
+                if (measured.Width <= maxWidth) return font;
+                size -= 1f;
+            }
+
+            return _paint.GetTextFont("Segoe UI", size, FontStyle.Bold);
+        }
+
+        private GraphicsPath GetCardPath()
+        {
+            if (_cardPath != null && _cardPathBounds == ClientSize)
+                return _cardPath;
+
+            _cardPath?.Dispose();
+            _cardPathBounds = ClientSize;
+            _cardPath = CreateRoundedPath(new Rectangle(Point.Empty, ClientSize), CardRadius);
+            return _cardPath;
+        }
+
+        private GraphicsPath GetBadgePath(Rectangle bounds)
+        {
+            if (_badgePath != null && _badgeBounds == bounds)
+                return _badgePath;
+
+            _badgePath?.Dispose();
+            _badgeBounds = bounds;
+            _badgePath = CreateRoundedPath(bounds, BadgeRadius);
+            return _badgePath;
+        }
+
+        private static GraphicsPath CreateRoundedPath(Rectangle bounds, int radius)
         {
             var path = new GraphicsPath();
-            var d = radius * 2;
-            path.AddArc(bounds.X, bounds.Y, d, d, 180, 90);
-            path.AddArc(bounds.Right - d, bounds.Y, d, d, 270, 90);
-            path.AddArc(bounds.Right - d, bounds.Bottom - d, d, d, 0, 90);
-            path.AddArc(bounds.X, bounds.Bottom - d, d, d, 90, 90);
+
+            if (bounds.Width <= 0 || bounds.Height <= 0)
+                return path;
+
+            int diameter = Math.Min(radius * 2, Math.Min(bounds.Width, bounds.Height));
+            if (diameter <= 0)
+            {
+                path.AddRectangle(bounds);
+                return path;
+            }
+
+            path.AddArc(bounds.X, bounds.Y, diameter, diameter, 180, 90);
+            path.AddArc(bounds.Right - diameter, bounds.Y, diameter, diameter, 270, 90);
+            path.AddArc(bounds.Right - diameter, bounds.Bottom - diameter, diameter, diameter, 0, 90);
+            path.AddArc(bounds.X, bounds.Bottom - diameter, diameter, diameter, 90, 90);
             path.CloseFigure();
             return path;
+        }
+
+        private void OnMouseMove(object? sender, MouseEventArgs e)
+        {
+            if (_layout.Estimated.Width > 0 && _layout.Estimated.Contains(e.Location))
+            {
+                _toolTip.Show(AppStrings.EstimatedCostNote, this, e.Location.X + 10, e.Location.Y + 10);
+                return;
+            }
+
+            if (_layout.Title.Width > 0 &&
+                _layout.Title.Contains(e.Location) &&
+                TextRenderer.MeasureText(_title, _paint.GetTextFont("Segoe UI", TitlePoints, FontStyle.Regular)).Width > _layout.Title.Width)
+            {
+                _toolTip.Show(_title, this, e.Location.X + 10, e.Location.Y + 10);
+                return;
+            }
+
+            _toolTip.Hide(this);
         }
 
         public void ApplyTheme()
         {
             if (IsDisposed) return;
+
             BackColor = AppColors.Surface;
+            _appliedAccent = AppColors.AdaptAccent(_baseAccent);
+            _paint.ClearBrushes();
             Invalidate();
         }
 
         private void ApplyAccent(Color color)
         {
             _appliedAccent = color;
-            if (_iconBadge != null) _iconBadge.BackColor = ThemeManager.IsDark ? Blend(AppColors.Surface, color, 0.30f) : Blend(Color.White, color, 0.15f);
-            if (_iconBox != null) _iconBox.IconColor = Color.White;
             Invalidate();
         }
 
         private static Color Blend(Color background, Color accent, float accentShare)
-            => Color.FromArgb((int)(background.R + (accent.R - background.R) * accentShare), (int)(background.G + (accent.G - background.G) * accentShare), (int)(background.B + (accent.B - background.B) * accentShare));
+            => Color.FromArgb(
+                (int)(background.R + (accent.R - background.R) * accentShare),
+                (int)(background.G + (accent.G - background.G) * accentShare),
+                (int)(background.B + (accent.B - background.B) * accentShare));
 
-        public void SetValue(decimal value, KpiValueKind kind, KpiTrendKind trendKind = KpiTrendKind.None, decimal trendPercent = 0, int? currencyDigits = null)
+        public void SetValue(
+            decimal value,
+            KpiValueKind kind,
+            KpiTrendKind trendKind = KpiTrendKind.None,
+            decimal trendPercent = 0,
+            int? currencyDigits = null)
         {
             _valueKind = kind;
             _currencyDigits = currencyDigits ?? CurrencyDigits;
             _targetNum = value;
             ApplyTrend(trendKind, trendPercent);
+
             if (ReduceMotion || !IsHandleCreated)
             {
                 _currentNum = _targetNum;
-                Invalidate(_valueRect);
+                Invalidate();
                 return;
             }
+
             _animTimer ??= new System.Windows.Forms.Timer { Interval = 16 };
             _animTimer.Tick -= AnimTick;
             _animTimer.Tick += AnimTick;
@@ -262,22 +541,36 @@ namespace DzentoPOS2.WinForms.Controls
 
         private void AnimTick(object? sender, EventArgs e)
         {
-            if (_currentNum == _targetNum) { _animTimer?.Stop(); return; }
+            if (_currentNum == _targetNum)
+            {
+                _animTimer?.Stop();
+                return;
+            }
+
             var diff = _targetNum - _currentNum;
             _currentNum += diff / 8m;
-            if (Math.Abs(_targetNum - _currentNum) < 0.0001m) _currentNum = _targetNum;
-            Invalidate(_valueRect);
+            if (Math.Abs(_targetNum - _currentNum) < 0.0001m)
+                _currentNum = _targetNum;
+
+            if (_layout.Value.Width > 0)
+                Invalidate(_layout.Value);
+            else
+                Invalidate();
         }
 
         private void ApplyTrend(KpiTrendKind kind, decimal percent)
         {
             _trendKind = kind;
+            _trendPercent = percent;
             _trendText = kind switch
             {
-                KpiTrendKind.Change => percent == 0 ? "0%" : $"{(percent >= 0 ? "\u2191" : "\u2193")} {Math.Abs(percent):0.#}%",
+                KpiTrendKind.Change => percent == 0
+                    ? "0%"
+                    : $"{(percent >= 0 ? "\u2191" : "\u2193")} {Math.Abs(percent):0.#}%",
                 KpiTrendKind.Margin => $"{AppStrings.Margin} {percent:0.#}%",
                 _ => string.Empty
             };
+
             Invalidate();
         }
 
@@ -289,17 +582,44 @@ namespace DzentoPOS2.WinForms.Controls
 
         public void SetEstimated(bool value)
         {
+            if (_estimated == value) return;
             _estimated = value;
             Invalidate();
         }
 
-        public void SetTooltip(string text) { _toolTip.SetToolTip(this, text); }
+        public void SetTooltip(string text) => _toolTip.SetToolTip(this, text);
 
-        public void SetDetail(string text) { /* no-op in owner-draw */ }
+        /// <summary>Optional caption line under the value (e.g. an estimated note).</summary>
+        public void SetDetail(string text)
+        {
+            _caption = text ?? string.Empty;
+            Invalidate();
+        }
 
         private void SetHover(bool hover)
         {
-            BackColor = hover ? Blend(AppColors.Surface, _appliedAccent, 0.05f) : AppColors.Surface;
+            if (_hover == hover) return;
+            _hover = hover;
+            Cursor = Cursors.Hand;
+            Invalidate();
+        }
+
+        private void OnThemeChanged(object? sender, EventArgs e)
+        {
+            if (IsDisposed) return;
+            if (InvokeRequired)
+            {
+                BeginInvoke(ApplyTheme);
+                return;
+            }
+
+            ApplyTheme();
+        }
+
+        protected override void OnDpiChangedAfterParent(EventArgs e)
+        {
+            base.OnDpiChangedAfterParent(e);
+            _paint.Reset();
             Invalidate();
         }
 
@@ -309,8 +629,12 @@ namespace DzentoPOS2.WinForms.Controls
             {
                 ThemeManager.ThemeChanged -= OnThemeChanged;
                 _animTimer?.Dispose();
-                _toolTip?.Dispose();
+                _toolTip.Dispose();
+                _paint.Dispose();
+                _cardPath?.Dispose();
+                _badgePath?.Dispose();
             }
+
             base.Dispose(disposing);
         }
     }

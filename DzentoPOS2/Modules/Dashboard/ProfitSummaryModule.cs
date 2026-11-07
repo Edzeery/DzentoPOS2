@@ -27,7 +27,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             _title = new Label
             {
                 Text = AppStrings.ProfitSummaryTitle,
-                Font = new Font("Segoe UI", 11F, FontStyle.Bold),
+                Font = AppStyle.CardTitleFont,
                 ForeColor = AppColors.Ink,
                 Dock = DockStyle.Top,
                 Height = 28,

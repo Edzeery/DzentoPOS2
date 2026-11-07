@@ -1,6 +1,9 @@
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Shared.Contracts.DTOs.Reports;
+using DzentoPOS2.Shared.Helpers;
 using DzentoPOS2.WinForms.Helpers;
+using DzentoPOS2.WinForms.Themes;
+using System.Globalization;
 
 namespace DzentoPOS2.WinForms.Modules.Dashboard
 {
@@ -25,21 +28,22 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
                 var column = grid.Columns[e.ColumnIndex];
                 if (column == null) return;
 
-                if (column.Name == "Amount" && e.Value != null)
-                    e.Value = $"{e.Value:N2}";
+                if (column.Name == "Amount" && e.Value is decimal amount)
+                    e.Value = KpiValueFormatter.Format(
+                        amount, KpiValueKind.Money, CultureInfo.CurrentCulture, 2);
 
                 if (column.Name == "Status" && e.CellStyle != null)
                 {
                     var val = e.Value?.ToString();
                     if (val == AppStrings.Paid)
                     {
-                        e.CellStyle.ForeColor = Color.FromArgb(76, 175, 80);
-                        e.CellStyle.Font = new Font("Segoe UI Semibold", 10F);
+                        e.CellStyle.ForeColor = AppColors.Success;
+                        e.CellStyle.Font = DataGridViewStyleHelper.EmphasizedFont;
                     }
                     else if (val == AppStrings.Pending)
                     {
-                        e.CellStyle.ForeColor = Color.FromArgb(255, 152, 0);
-                        e.CellStyle.Font = new Font("Segoe UI Semibold", 10F);
+                        e.CellStyle.ForeColor = AppColors.Warning;
+                        e.CellStyle.Font = DataGridViewStyleHelper.EmphasizedFont;
                     }
                 }
             };

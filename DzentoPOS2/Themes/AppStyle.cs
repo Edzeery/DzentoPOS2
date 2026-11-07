@@ -59,6 +59,15 @@ namespace DzentoPOS2.WinForms.Themes
         public static readonly Font BodyFont
             = new Font("Segoe UI", 10F);
 
+        public static readonly Font SmallFont
+            = new Font("Segoe UI", 9F);
+
+        public static readonly Font ChartAxisFont
+            = new Font("Segoe UI", 8F);
+
+        public static readonly Font CardTitleFont
+            = new Font("Segoe UI", 11F, FontStyle.Bold);
+
         public static readonly Font ButtonFont
             = new Font("Segoe UI Semibold", 10F);
 

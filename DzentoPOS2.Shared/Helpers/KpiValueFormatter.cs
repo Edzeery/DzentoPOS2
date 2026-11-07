@@ -73,29 +73,9 @@ public static class KpiValueFormatter
         if (culture == null)
             culture = CultureInfo.CurrentCulture;
 
-        var name = string.IsNullOrWhiteSpace(culture.Name) ? "en-US" : culture.Name;
-        var ci = new CultureInfo(name, false);
-        var nf = (NumberFormatInfo)ci.NumberFormat.Clone();
-
-        // Rule 3: Latin digits (0-9) even for Arabic cultures.
-        nf.NativeDigits = new[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
-        nf.DigitSubstitution = DigitShapes.None;
-
-        // Unambiguous ASCII separators: map Arabic-Indic separators to their
-        // ASCII equivalents so "13,500.00" renders identically everywhere.
-        var dec = nf.NumberDecimalSeparator;
-        var grp = nf.NumberGroupSeparator;
-        if (dec == "\u066B") dec = ".";
-        if (grp == "\u066C") grp = ",";
-        if (string.Equals(dec, grp, StringComparison.Ordinal))
-            grp = dec == "," ? "." : ",";
-        nf.NumberDecimalSeparator = dec;
-        nf.NumberGroupSeparator = grp;
-
-        nf.CurrencyDecimalSeparator = nf.NumberDecimalSeparator;
-        nf.CurrencyGroupSeparator = nf.NumberGroupSeparator;
-        ci.NumberFormat = nf;
-        return ci;
+        // The explicit separator policy lives in RegionalContext so the card,
+        // the reports and the receipts can never drift apart.
+        return RegionalContext.CreateNumberCulture(culture);
     }
 
     private static string Compact(

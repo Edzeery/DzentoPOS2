@@ -27,6 +27,21 @@ public sealed class RegionalContext
     /// <summary>Fraction digits of <see cref="CurrencyCode"/>.</summary>
     public int CurrencyDecimalDigits => RegionalCatalog.GetDecimalDigits(CurrencyCode);
 
+    /// <summary>
+    /// Optional override for the thousands separator. When null the explicit
+    /// language policy from <see cref="CreateNumberCulture"/> is used.
+    /// </summary>
+    public string? NumberGroupSeparator { get; set; }
+
+    /// <summary>
+    /// Optional override for the decimal separator. When null the explicit
+    /// language policy from <see cref="CreateNumberCulture"/> is used.
+    /// </summary>
+    public string? NumberDecimalSeparator { get; set; }
+
+    /// <summary>NO-BREAK SPACE used as the thousands separator for ar/fr.</summary>
+    public const string NoBreakSpace = "\u00A0";
+
     /// <summary>IANA identifier of the configured time zone.</summary>
     public string TimeZoneId
     {
@@ -112,8 +127,99 @@ public sealed class RegionalContext
     {
         var code = string.IsNullOrWhiteSpace(currencyCode) ? CurrencyCode : currencyCode;
         var digits = RegionalCatalog.GetDecimalDigits(code);
-        return amount.ToString("N" + digits, CultureInfo.CurrentCulture) + " " +
+        return amount.ToString("N" + digits, NumberCultureFor(CultureInfo.CurrentCulture)) + " " +
                RegionalCatalog.GetSymbol(code);
+    }
+
+    /// <summary>
+    /// Number culture for this store, applying the configured separator
+    /// overrides on top of the explicit language policy.
+    /// </summary>
+    public CultureInfo NumberCultureFor(CultureInfo culture)
+        => CreateNumberCulture(culture, NumberGroupSeparator, NumberDecimalSeparator);
+
+    /// <summary>
+    /// Builds the one and only number culture used for display. It is explicit
+    /// (never user overrides), always Western digits, and guarantees that the
+    /// thousands separator differs from the decimal separator.
+    ///
+    /// Policy: <c>en</c> uses "," / "."; <c>ar</c> and <c>fr</c> use a
+    /// NO-BREAK SPACE (U+00A0) for thousands and "," for decimals. Other
+    /// languages keep their own separators, normalized and forced distinct.
+    /// </summary>
+    public static CultureInfo CreateNumberCulture(
+        CultureInfo? culture = null,
+        string? groupSeparator = null,
+        string? decimalSeparator = null)
+    {
+        culture ??= CultureInfo.CurrentCulture;
+
+        var name = string.IsNullOrWhiteSpace(culture.Name) ? "en-US" : culture.Name;
+        var result = new CultureInfo(name, useUserOverride: false);
+        var number = (NumberFormatInfo)result.NumberFormat.Clone();
+
+        // Western digits everywhere (rule 3).
+        number.NativeDigits = new[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+        number.DigitSubstitution = DigitShapes.None;
+        number.NegativeSign = "-";
+        number.PositiveSign = "+";
+
+        var group = groupSeparator ?? DefaultGroupSeparator(result);
+        var dec = decimalSeparator ?? DefaultDecimalSeparator(result);
+
+        if (string.IsNullOrEmpty(group)) group = ",";
+        if (string.IsNullOrEmpty(dec)) dec = ".";
+
+        if (string.Equals(group, dec, StringComparison.Ordinal))
+            dec = group == "," ? "." : ",";
+
+        number.NumberGroupSeparator = group;
+        number.NumberDecimalSeparator = dec;
+        number.CurrencyGroupSeparator = group;
+        number.CurrencyDecimalSeparator = dec;
+
+        result.NumberFormat = number;
+        return result;
+    }
+
+    /// <summary>Default thousands separator for the UI language.</summary>
+    public static string DefaultGroupSeparator(CultureInfo culture)
+    {
+        culture ??= CultureInfo.CurrentCulture;
+
+        switch (culture.TwoLetterISOLanguageName)
+        {
+            case "ar":
+            case "fr":
+                return NoBreakSpace;
+
+            case "en":
+                return ",";
+
+            default:
+                var raw = culture.NumberFormat.NumberGroupSeparator;
+                return raw == "\u066C" ? "," : raw;
+        }
+    }
+
+    /// <summary>Default decimal separator for the UI language.</summary>
+    public static string DefaultDecimalSeparator(CultureInfo culture)
+    {
+        culture ??= CultureInfo.CurrentCulture;
+
+        switch (culture.TwoLetterISOLanguageName)
+        {
+            case "ar":
+            case "fr":
+                return ",";
+
+            case "en":
+                return ".";
+
+            default:
+                var raw = culture.NumberFormat.NumberDecimalSeparator;
+                return raw == "\u066B" ? "." : raw;
+        }
     }
 
     /// <summary>Resolves a time zone by id, falling back to the local one.</summary>

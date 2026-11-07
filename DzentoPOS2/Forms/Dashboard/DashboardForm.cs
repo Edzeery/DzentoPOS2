@@ -116,7 +116,6 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
                 ScheduleRefresh();
             };
             _cmbDatePreset = new ComboBox { Visible = false };
-            _cmbDatePreset.SelectedIndex = seg.SelectedIndex;
 
             _dtFrom = new EZDatePicker { Width = 120 };
             _dtTo = new EZDatePicker { Width = 120 };

@@ -46,7 +46,7 @@ namespace DzentoPOS2.WinForms.Controls
                 {
                     Text = items[i],
                     AutoSize = false,
-                    Width = 92,
+                    Width = 80,
                     Height = 30,
                     FlatStyle = FlatStyle.Flat,
                     Margin = new Padding(2),

@@ -100,7 +100,7 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
 
         protected override void OnInitialized() => RunSafe(RefreshSummaryAsync);
 
-        private TableLayoutPanel BuildFilterBar()
+        private FlowLayoutPanel BuildFilterBar()
         {
             var lblPeriod = new Label { Text = AppStrings.Period, AutoSize = true, ForeColor = AppColors.Ink, Margin = new Padding(0, 8, 8, 0), Height = 36 };
             // EZSegmentedControl replaces the preset combo; EZDatePicker replaces
@@ -142,20 +142,20 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
 
             LoadCustomers();
 
-            var filterBar = new TableLayoutPanel
+            var filterBar = new FlowLayoutPanel
             {
                 Dock = DockStyle.Top,
                 AutoSize = true,
-                ColumnCount = 6,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = true,
                 Margin = new Padding(0, 0, 0, 8)
             };
-            filterBar.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            filterBar.Controls.Add(lblPeriod, 0, 0);
-            filterBar.Controls.Add(seg, 1, 0);
-            filterBar.Controls.Add(_dtFrom, 2, 0);
-            filterBar.Controls.Add(_dtTo, 3, 0);
-            filterBar.Controls.Add(lblCustomer, 4, 0);
-            filterBar.Controls.Add(_cmbCustomer, 5, 0);
+            filterBar.Controls.Add(lblPeriod);
+            filterBar.Controls.Add(seg);
+            filterBar.Controls.Add(_dtFrom);
+            filterBar.Controls.Add(_dtTo);
+            filterBar.Controls.Add(lblCustomer);
+            filterBar.Controls.Add(_cmbCustomer);
 
             UpdateFilterVisibility();
             return filterBar;

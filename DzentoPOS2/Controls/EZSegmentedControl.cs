@@ -57,6 +57,9 @@ namespace DzentoPOS2.WinForms.Controls
                 _panel.Controls.Add(btn);
             }
             _panel.ResumeLayout();
+            // Size the control to fit its buttons so the parent flow layout
+            // can wrap correctly instead of overflowing/overlapping neighbours.
+            Width = items.Length * (80 + 4) + 8;
             if (_buttons.Count > 0) SelectIndex(0);
         }
 

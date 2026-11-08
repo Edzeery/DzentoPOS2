@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.Core.Entities.Inventory;
 using DzentoPOS2.Data.Context;
 using Microsoft.EntityFrameworkCore;
@@ -21,15 +22,67 @@ public class PosProductStore : IPosProductStore, IDisposable
 {
     private readonly AppDbContext _context;
     private readonly ICatalogChangeNotifier _notifier;
+    private readonly IActiveBranchContext _activeBranch;
     private List<PosProductItem>? _cache;
     private Dictionary<string, List<PosProductItem>>? _barcodeIndex;
     private readonly object _lock = new();
 
-    public PosProductStore(AppDbContext context, ICatalogChangeNotifier notifier)
+    public PosProductStore(AppDbContext context, ICatalogChangeNotifier notifier, IActiveBranchContext activeBranch)
     {
         _context = context;
         _notifier = notifier;
+        _activeBranch = activeBranch;
         _notifier.CatalogChanged += OnCatalogChanged;
+        _activeBranch.BranchChanged += OnBranchChanged;
+    }
+
+    private void OnBranchChanged(object? sender, ActiveBranchChangedEventArgs e)
+    {
+        // Reload stock only (not full catalog rebuild).
+        lock (_lock)
+        {
+            if (_cache is null) return;
+            // Re-fetch stock for the new branch's default warehouse.
+            _ = ReloadStockAsync();
+        }
+    }
+
+    private async Task ReloadStockAsync()
+    {
+        try
+        {
+            var branchId = _activeBranch.ActiveBranchId;
+            var warehouseId = await _context.Warehouses
+                .AsNoTracking()
+                .Where(w => w.BranchId == branchId && w.IsActive)
+                .OrderBy(w => w.CreatedAt)
+                .ThenBy(w => w.Id)
+                .Select(w => (Guid?)w.Id)
+                .FirstOrDefaultAsync();
+
+            if (warehouseId is null) return;
+
+            var stocks = await _context.ProductStocks
+                .AsNoTracking()
+                .Where(s => s.WarehouseId == warehouseId.Value)
+                .GroupBy(s => s.VariantId)
+                .Select(g => new { VariantId = g.Key, Total = g.Sum(s => s.Quantity.Value) })
+                .ToListAsync();
+
+            var stockMap = stocks.ToDictionary(s => s.VariantId, s => s.Total);
+
+            lock (_lock)
+            {
+                if (_cache is null) return;
+                for (int i = 0; i < _cache.Count; i++)
+                {
+                    var item = _cache[i];
+                    var newStock = stockMap.TryGetValue(item.VariantId, out var s) ? s : 0m;
+                    _cache[i] = item with { Stock = newStock };
+                }
+            }
+        }
+        catch { /* best effort */ }
     }
 
     private void OnCatalogChanged(object? sender, CatalogChangedEventArgs e)
@@ -129,12 +182,31 @@ public class PosProductStore : IPosProductStore, IDisposable
             .Where(b => variantIds.Contains(b.VariantId))
             .ToListAsync();
 
-        var stocks = await _context.ProductStocks
+        // Stock = default warehouse of the active branch only.
+        var branchId = _activeBranch.ActiveBranchId;
+        var warehouseId = await _context.Warehouses
             .AsNoTracking()
-            .Where(s => variantIds.Contains(s.VariantId))
-            .GroupBy(s => s.VariantId)
-            .Select(g => new { VariantId = g.Key, Total = g.Sum(s => s.Quantity.Value) })
-            .ToListAsync();
+            .Where(w => w.BranchId == branchId && w.IsActive)
+            .OrderBy(w => w.CreatedAt)
+            .ThenBy(w => w.Id)
+            .Select(w => (Guid?)w.Id)
+            .FirstOrDefaultAsync();
+
+        List<(Guid VariantId, decimal Total)> stocks;
+        if (warehouseId is not null)
+        {
+            var raw = await _context.ProductStocks
+                .AsNoTracking()
+                .Where(s => variantIds.Contains(s.VariantId) && s.WarehouseId == warehouseId.Value)
+                .GroupBy(s => s.VariantId)
+                .Select(g => new { VariantId = g.Key, Total = g.Sum(s => s.Quantity.Value) })
+                .ToListAsync();
+            stocks = raw.Select(x => (x.VariantId, x.Total)).ToList();
+        }
+        else
+        {
+            stocks = new List<(Guid, decimal)>();
+        }
 
         var variantCounts = await _context.ProductVariants
             .AsNoTracking()

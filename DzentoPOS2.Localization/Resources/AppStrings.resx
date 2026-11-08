@@ -1736,4 +1736,7 @@
   <data name="AddToCart" xml:space="preserve">
     <value>Add to Cart</value>
   </data>
+  <data name="BranchSwitchFailed" xml:space="preserve">
+    <value>Cannot switch branch (permission or non-empty cart).</value>
+  </data>
 </root>

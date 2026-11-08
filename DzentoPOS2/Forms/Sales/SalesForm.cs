@@ -4,6 +4,7 @@ using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.Core.Constants;
 using DzentoPOS2.App.Services.Partners;
 using DzentoPOS2.App.Services.Sales;
+using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.Core.Services.Sales;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
@@ -41,6 +42,7 @@ public partial class SalesForm : LocalizableFormBase
     private readonly ICurrentSettingsService _currentSettings;
     private readonly ICashSessionService _cashSessionService;
     private readonly IBarcodeService _barcodeService;
+    private readonly IBranchSwitchGuard _branchGuard;
     private readonly IServiceProvider _services;
 
     private readonly Panel _leftPanel;
@@ -111,6 +113,7 @@ public partial class SalesForm : LocalizableFormBase
         ICurrentSettingsService currentSettings,
         ICashSessionService cashSessionService,
         IBarcodeService barcodeService,
+        IBranchSwitchGuard branchGuard,
         IServiceProvider services,
         ILanguageService languageService)
         : base(languageService)
@@ -122,6 +125,7 @@ public partial class SalesForm : LocalizableFormBase
         _currentSettings = currentSettings;
         _cashSessionService = cashSessionService;
         _barcodeService = barcodeService;
+        _branchGuard = branchGuard;
         _services = services;
 
         Size = new Size(1200, 700);
@@ -1060,6 +1064,9 @@ public partial class SalesForm : LocalizableFormBase
             new DataGridViewButtonColumn { HeaderText = AppStrings.Delete, Text = "X", UseColumnTextForButtonValue = true, Width = 40 }
         });
         _cartGrid.DataSource = display;
+
+        // Update branch switch guard based on cart state.
+        _branchGuard.CanSwitchBranch = _cart.Count == 0;
 
         UpdateTotals();
     }

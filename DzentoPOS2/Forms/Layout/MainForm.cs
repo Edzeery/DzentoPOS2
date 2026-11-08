@@ -56,6 +56,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
         private readonly ICurrentUserService _currentUser;
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly DzentoPOS2.App.Authorization.IPermissionService _permissionService;
+        private readonly DzentoPOS2.App.Services.Systems.IActiveBranchContext _activeBranch;
 
         private readonly ILanguageService _languageService;
         private readonly IUserPreferencesService _preferences;
@@ -96,7 +97,8 @@ namespace DzentoPOS2.WinForms.Forms.Layout
              IBusinessClock clock,
              IServiceProvider services,
              IDbContextFactory<AppDbContext> contextFactory,
-             DzentoPOS2.App.Authorization.IPermissionService permissionService)
+             DzentoPOS2.App.Authorization.IPermissionService permissionService,
+             DzentoPOS2.App.Services.Systems.IActiveBranchContext activeBranch)
         {
             InitializeComponent();
 
@@ -104,6 +106,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             _navigation = navigation;
             _contextFactory = contextFactory;
             _permissionService = permissionService;
+            _activeBranch = activeBranch;
             _languageService = languageService;
             _preferences = preferences;
             _currentSettings = currentSettings;
@@ -1160,12 +1163,27 @@ namespace DzentoPOS2.WinForms.Forms.Layout
                 _ => 0
             };
 
-        private void BranchSelector_BranchChanged(object? sender, BranchChangedEventArgs e)
+        private async void BranchSelector_BranchChanged(object? sender, BranchChangedEventArgs e)
         {
-            _currentBranchName = e.Branch?.Name ?? string.Empty;
+            if (e.Branch is null) return;
+
+            // Check UI-level guard (cart not empty, etc.).
+            // IBranchSwitchGuard is resolved from the current page if available.
+            // For now, we attempt the switch and handle failure.
+            bool success = await _activeBranch.TrySwitchBranchAsync(e.Branch.Id);
+            if (!success)
+            {
+                AppMessageBox.Warning(AppStrings.BranchSwitchFailed);
+                return;
+            }
+
+            _currentBranchName = e.Branch.Name;
             lblBranch.Text = _currentBranchName;
             lblBranch.Visible = _currentBranchName.Length > 0;
             _toolTip.SetToolTip(lblBranch, _currentBranchName);
+
+            // Rebuild PosProductStore stock (if POS is open).
+            // This is handled by IActiveBranchContext.BranchChanged event.
         }
 
         private void UserMenu_MenuActionSelected(object? sender, UserMenuEventArgs e)

@@ -1735,4 +1735,7 @@
   <data name="AddToCart" xml:space="preserve">
     <value>إضافة للسلة</value>
   </data>
+  <data name="BranchSwitchFailed" xml:space="preserve">
+    <value>لا يمكن تبديل الفرع (صلاحية أو سلة غير فارغة).</value>
+  </data>
 </root>

@@ -228,3 +228,9 @@
 | M.5.2 | العنصر المرسوم والتخطيط والصور | ✅ | `PosProductList` (virtualized owner-draw, RTL/dark, card/list modes)؛ `PosCardLayoutCalculator` (pure, unit tests 174 pass at 375/768/1440)؛ LRU image cache with strict Dispose؛ build 0 errors; unit 174/174; integration 70/70 |
 | M.5.3 | المنتقي واختيار الباركود المشترك | ✅ | `VariantPickerDialog` (سمات + صورة + سعر + باركود)؛ `SharedBarcodePickerDialog` (قائمة متغيرات مشتركة)؛ `FindVariantIdsByBarcodeAsync`؛ `ScanBarcode` يستخدم ProductBarcodes (لا Product.Barcode)؛ 7 مفاتيح AppStrings جديدة؛ build 0 errors; unit 174/174; integration 70/70 |
 | M.5.4 | القياس والترجمة والتوثيق | ✅ | `--pos-benchmark`: 5000 متغير، cold load 404ms, scroll p95 10.7ms, scan p95 0.0ms, invalidate 187ms — PASSED؛ `docs/evidence/pos-benchmark-2026-11-06.json`؛ `docs/evidence/pos-layout-drawtobitmap.md`؛ build 0 errors; unit 174/174; integration 70/70 |
+
+## N — Phase 6: Active Branch Context (6.0a)
+
+| # | Task | Status | Evidence |
+|---|---|---|---|
+| N.6.0a | IActiveBranchContext (Singleton) + StoreContextService + PosProductStore stock filter + MainForm selector + SalesForm guard | Done | build 0 errors; unit 174/174; integration 70/70; migration audit PASSED; layout audit 0 violations |

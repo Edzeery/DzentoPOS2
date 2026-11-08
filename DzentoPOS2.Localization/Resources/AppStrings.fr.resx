@@ -1735,4 +1735,7 @@
   <data name="AddToCart" xml:space="preserve">
     <value>Ajouter au panier</value>
   </data>
+  <data name="BranchSwitchFailed" xml:space="preserve">
+    <value>Impossible de changer de succursale (permission ou panier non vide).</value>
+  </data>
 </root>

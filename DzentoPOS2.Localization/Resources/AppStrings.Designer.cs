@@ -2500,6 +2500,15 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("ProductActive", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Product Kind.
+        /// </summary>
+        public static string ProductKindLabel {
+            get {
+                return ResourceManager.GetString("ProductKindLabel", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Product.
@@ -4273,6 +4282,15 @@ namespace DzentoPOS2.Localization.Resources {
         public static string Barcodes {
             get {
                 return ResourceManager.GetString("Barcodes", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Brand.
+        /// </summary>
+        public static string BrandLabel {
+            get {
+                return ResourceManager.GetString("BrandLabel", resourceCulture);
             }
         }
         public static string CurrencyUsDollar {

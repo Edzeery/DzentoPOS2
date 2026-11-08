@@ -98,5 +98,6 @@ namespace DzentoPOS2.Core.Constants
         // Branches
         public const string BranchesSwitch = "permissions.branches.switch";
         public const string BranchesViewAll = "permissions.branches.view_all";
+        public const string BranchesActivitiesEdit = "permissions.branches.activities_edit";
     }
 }

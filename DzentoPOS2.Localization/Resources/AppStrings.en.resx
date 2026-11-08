@@ -1747,4 +1747,10 @@
   <data name="BranchSwitchCartNotEmpty" xml:space="preserve">
     <value>Cart is not empty.</value>
   </data>
+  <data name="BrandLabel" xml:space="preserve">
+    <value>Brand</value>
+  </data>
+  <data name="ProductKindLabel" xml:space="preserve">
+    <value>Product Kind</value>
+  </data>
 </root>

@@ -40,6 +40,8 @@ namespace DzentoPOS2.Data.Context
 
         public DbSet<Branch> Branches => Set<Branch>();
 
+        public DbSet<BranchActivity> BranchActivities => Set<BranchActivity>();
+
         public DbSet<Warehouse> Warehouses => Set<Warehouse>();
 
         public DbSet<CashRegister> CashRegisters => Set<CashRegister>();

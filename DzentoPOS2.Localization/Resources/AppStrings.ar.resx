@@ -1747,4 +1747,10 @@
   <data name="BranchSwitchCartNotEmpty" xml:space="preserve">
     <value>السلة غير فارغة — أتمّ البيع أو ألغه.</value>
   </data>
+  <data name="BrandLabel" xml:space="preserve">
+    <value>العلامة التجارية</value>
+  </data>
+  <data name="ProductKindLabel" xml:space="preserve">
+    <value>نوع المنتج</value>
+  </data>
 </root>

@@ -40,6 +40,8 @@ namespace DzentoPOS2.App
             services.AddSingleton<IActiveBranchContext, ActiveBranchContext>();
             services.AddSingleton<IBranchSwitchGuardRegistry, BranchSwitchGuardRegistry>();
             services.AddTransient<IBranchSwitchGuard, BranchSwitchGuard>();
+            services.AddScoped<ICapabilityService, CapabilityService>();
+            services.AddSingleton<IBranchLimitPolicy, BranchLimitPolicyStub>();
             services.AddScoped<IDocumentNumberService, DocumentNumberService>();
             services.AddScoped<IBackupService>(sp =>
     new BackupService(

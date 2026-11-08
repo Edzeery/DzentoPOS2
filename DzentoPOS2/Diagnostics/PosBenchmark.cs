@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using DzentoPOS2.App;
 using DzentoPOS2.App.Services.Sales;
+using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.Core.Configuration;
 using DzentoPOS2.Core.Entities.Businesses;
 using DzentoPOS2.Core.Entities.Inventory;
@@ -76,7 +77,8 @@ public static class PosBenchmark
             using var scope = sp.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var notifier = scope.ServiceProvider.GetRequiredService<ICatalogChangeNotifier>();
-            var store = new PosProductStore(context, notifier);
+            var activeBranch = scope.ServiceProvider.GetRequiredService<IActiveBranchContext>();
+            var store = new PosProductStore(context, notifier, activeBranch);
 
             // 3. Cold load.
             sw.Restart();

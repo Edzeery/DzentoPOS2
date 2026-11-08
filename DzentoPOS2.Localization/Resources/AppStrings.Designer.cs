@@ -457,6 +457,15 @@ namespace DzentoPOS2.Localization.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot switch branch (permission or non-empty cart)..
+        /// </summary>
+        public static string BranchSwitchFailed {
+            get {
+                return ResourceManager.GetString("BranchSwitchFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Purchase.
         /// </summary>
         public static string Buy {

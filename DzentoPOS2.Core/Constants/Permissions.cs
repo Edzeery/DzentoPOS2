@@ -94,5 +94,9 @@ namespace DzentoPOS2.Core.Constants
         // Backup
         public const string BackupCreate = "permissions.backup.create";
         public const string BackupRestore = "permissions.backup.restore";
+
+        // Branches
+        public const string BranchesSwitch = "permissions.branches.switch";
+        public const string BranchesViewAll = "permissions.branches.view_all";
     }
 }

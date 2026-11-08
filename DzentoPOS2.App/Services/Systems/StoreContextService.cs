@@ -18,11 +18,12 @@ public sealed class StoreContextService : IStoreContextService
 {
     private readonly AppDbContext _context;
     private readonly ICurrentUserService _currentUser;
+    private readonly IActiveBranchContext _activeBranch;
 
     private readonly object _gate = new();
 
     private StoreBranchInfo? _branchCache;
-    private Guid? _branchCacheUserBranchId;
+    private Guid? _branchCacheBranchId;
     private bool _branchCacheValid;
 
     private readonly Dictionary<Guid, Guid> _warehouseCache = new();
@@ -30,10 +31,13 @@ public sealed class StoreContextService : IStoreContextService
 
     public StoreContextService(
         AppDbContext context,
-        ICurrentUserService currentUser)
+        ICurrentUserService currentUser,
+        IActiveBranchContext activeBranch)
     {
         _context = context;
         _currentUser = currentUser;
+        _activeBranch = activeBranch;
+        _activeBranch.BranchChanged += (_, _) => Invalidate();
     }
 
     public void Invalidate()
@@ -41,7 +45,7 @@ public sealed class StoreContextService : IStoreContextService
         lock (_gate)
         {
             _branchCache = null;
-            _branchCacheUserBranchId = null;
+            _branchCacheBranchId = null;
             _branchCacheValid = false;
             _warehouseCache.Clear();
             _cashboxCache.Clear();
@@ -60,11 +64,11 @@ public sealed class StoreContextService : IStoreContextService
     public async Task<StoreBranchInfo?> GetDefaultBranchAsync(
         CancellationToken cancellationToken = default)
     {
-        var preferred = _currentUser.BranchId;
+        var preferred = _activeBranch.ActiveBranchId;
 
         lock (_gate)
         {
-            if (_branchCacheValid && _branchCacheUserBranchId == preferred)
+            if (_branchCacheValid && _branchCacheBranchId == preferred)
                 return _branchCache;
         }
 
@@ -73,7 +77,7 @@ public sealed class StoreContextService : IStoreContextService
         lock (_gate)
         {
             _branchCache = branch;
-            _branchCacheUserBranchId = preferred;
+            _branchCacheBranchId = preferred;
             _branchCacheValid = true;
         }
 

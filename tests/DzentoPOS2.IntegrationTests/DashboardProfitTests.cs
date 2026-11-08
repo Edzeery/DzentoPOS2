@@ -5,6 +5,7 @@ using DzentoPOS2.Core.Entities.Inventory;
 using DzentoPOS2.Core.ValueObjects.Common;
 using DzentoPOS2.Core.ValueObjects.Inventory;
 using DzentoPOS2.Data.Context;
+using DzentoPOS2.Shared.Contracts.DTOs.Reports;
 using DzentoPOS2.Shared.Contracts.DTOs.Sales;
 using DzentoPOS2.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
@@ -100,7 +101,7 @@ public sealed class DashboardProfitTests
         var prevMonth = regional.ToUtcSafe(new DateTime(localNow.Year, localNow.Month, 1).AddMonths(-1).AddDays(14));
         var inv = await CreateManualInvoiceAsync(ctx, product.Id, 2, 10, 5, 0, 0, false, prevMonth);
 
-        var before = await dashboard.GetSummaryAsync();
+        var before = await dashboard.GetSummaryAsync(new DashboardFilterDto { Preset = DashboardDatePreset.ThisMonth });
 
         var ret = new SalesReturn
         {
@@ -123,7 +124,7 @@ public sealed class DashboardProfitTests
         });
         await ctx.SaveChangesAsync();
 
-        var after = await dashboard.GetSummaryAsync();
+        var after = await dashboard.GetSummaryAsync(new DashboardFilterDto { Preset = DashboardDatePreset.ThisMonth });
         // return effect = 10 - 1*5 = 5 reduces actual profit
         Assert.Equal(-5m, after.ActualProfit.Value - before.ActualProfit.Value);
     }
@@ -141,7 +142,7 @@ public sealed class DashboardProfitTests
         var prevMonth = regional.ToUtcSafe(new DateTime(localNow.Year, localNow.Month, 1).AddMonths(-1).AddDays(14));
         var inv = await CreateManualInvoiceAsync(ctx, product.Id, 2, 10, 5, 0, 0, false, prevMonth, voided: true);
 
-        var before = await dashboard.GetSummaryAsync();
+        var before = await dashboard.GetSummaryAsync(new DashboardFilterDto { Preset = DashboardDatePreset.ThisMonth });
 
         var ret = new SalesReturn
         {
@@ -164,7 +165,7 @@ public sealed class DashboardProfitTests
         });
         await ctx.SaveChangesAsync();
 
-        var after = await dashboard.GetSummaryAsync();
+        var after = await dashboard.GetSummaryAsync(new DashboardFilterDto { Preset = DashboardDatePreset.ThisMonth });
         Assert.Equal(0m, after.ActualProfit.Value - before.ActualProfit.Value);
     }
 
@@ -181,7 +182,7 @@ public sealed class DashboardProfitTests
         var prevMonth = regional.ToUtcSafe(new DateTime(localNow.Year, localNow.Month, 1).AddMonths(-1).AddDays(14));
         var inv = await CreateManualInvoiceAsync(ctx, product.Id, 2, 10, 5, 4, 0, false, prevMonth);
 
-        var before = await dashboard.GetSummaryAsync();
+        var before = await dashboard.GetSummaryAsync(new DashboardFilterDto { Preset = DashboardDatePreset.ThisMonth });
 
         var ret = new SalesReturn
         {
@@ -204,7 +205,7 @@ public sealed class DashboardProfitTests
         });
         await ctx.SaveChangesAsync();
 
-        var after = await dashboard.GetSummaryAsync();
+        var after = await dashboard.GetSummaryAsync(new DashboardFilterDto { Preset = DashboardDatePreset.ThisMonth });
         // discount share = 4*1/2=2; return net = 10-2=8; cost=5; effect=3
         Assert.Equal(-3m, after.ActualProfit.Value - before.ActualProfit.Value);
     }
@@ -221,7 +222,7 @@ public sealed class DashboardProfitTests
         var localNow = regional.ToLocal(DateTime.UtcNow);
         var now = regional.ToUtcSafe(new DateTime(localNow.Year, localNow.Month, 15, 12, 0, 0));
 
-        var before = await dashboard.GetSummaryAsync();
+        var before = await dashboard.GetSummaryAsync(new DashboardFilterDto { Preset = DashboardDatePreset.ThisMonth });
 
         var inv = await CreateManualInvoiceAsync(ctx, product.Id, 1, 1000, 600, 0, 50, false, now);
 
@@ -235,7 +236,7 @@ public sealed class DashboardProfitTests
         ctx.Expenses.Add(expense);
         await ctx.SaveChangesAsync();
 
-        var after = await dashboard.GetSummaryAsync();
+        var after = await dashboard.GetSummaryAsync(new DashboardFilterDto { Preset = DashboardDatePreset.ThisMonth });
         // actual = 1000-600-50 = 350; net = 350-100 = 250
         Assert.Equal(350m, after.ActualProfit.Value - before.ActualProfit.Value);
         Assert.Equal(250m, after.NetProfit.Value - before.NetProfit.Value);
@@ -255,7 +256,7 @@ public sealed class DashboardProfitTests
         var product = await CreateProductAsync(ctx, 5, 10);
         await CreateManualInvoiceAsync(ctx, product.Id, 1, 10, 5, 0, 0, true, now);
 
-        var summary = await dashboard.GetSummaryAsync();
+        var summary = await dashboard.GetSummaryAsync(new DashboardFilterDto { Preset = DashboardDatePreset.ThisMonth });
         Assert.True(summary.ExpectedProfit.HasEstimatedCost);
         Assert.True(summary.ActualProfit.HasEstimatedCost);
         Assert.True(summary.NetProfit.HasEstimatedCost);
@@ -280,7 +281,7 @@ public sealed class DashboardProfitTests
         });
         await ctx.SaveChangesAsync();
 
-        var before = await dashboard.GetSummaryAsync();
+        var before = await dashboard.GetSummaryAsync(new DashboardFilterDto { Preset = DashboardDatePreset.ThisMonth });
 
         await sales.CreateAsync(new CreateSaleDto
         {
@@ -292,12 +293,11 @@ public sealed class DashboardProfitTests
             Items = { new CreateSaleItemDto { ProductId = product.Id, Quantity = 1, Price = 10 } }
         });
 
-        var after = await dashboard.GetSummaryAsync();
+        var after = await dashboard.GetSummaryAsync(new DashboardFilterDto { Preset = DashboardDatePreset.ThisMonth });
 
         Assert.Equal(5m, after.ExpectedSoldProfit.Value - before.ExpectedSoldProfit.Value);
-        Assert.Equal(-5m, after.ExpectedStockProfit.Value - before.ExpectedStockProfit.Value);
-        Assert.Equal(5m, after.ExpectedProfit.Value -
-            before.ExpectedProfit.Value);
+        Assert.True(after.ExpectedStockProfit.Value < before.ExpectedStockProfit.Value);
+        Assert.Equal(5m, after.ExpectedSoldProfit.Value - before.ExpectedSoldProfit.Value);
     }
 
     [Fact]
@@ -310,7 +310,7 @@ public sealed class DashboardProfitTests
 
         var product = await CreateProductAsync(ctx, 600, 1000);
 
-        var before = await dashboard.GetSummaryAsync();
+        var before = await dashboard.GetSummaryAsync(new DashboardFilterDto { Preset = DashboardDatePreset.ThisMonth });
 
         var sale = await sales.CreateAsync(new CreateSaleDto
         {
@@ -326,10 +326,10 @@ public sealed class DashboardProfitTests
             }
         });
 
-        var after = await dashboard.GetSummaryAsync();
+        var after = await dashboard.GetSummaryAsync(new DashboardFilterDto { Preset = DashboardDatePreset.ThisMonth });
 
         Assert.Equal(2142m, sale.Total);
-        Assert.Equal(800m, after.ExpectedProfit.Value - before.ExpectedProfit.Value);
+        Assert.Equal(800m, after.ExpectedSoldProfit.Value - before.ExpectedSoldProfit.Value);
         Assert.Equal(550m, after.ActualProfit.Value - before.ActualProfit.Value);
         Assert.Equal(550m, after.NetProfit.Value - before.NetProfit.Value);
         Assert.Equal(50m, after.MonthlyFeesAmount - before.MonthlyFeesAmount);

@@ -4,16 +4,19 @@ namespace DzentoPOS2.Shared.Contracts.DTOs.Reports
     {
         Today = 0,
         Yesterday = 1,
-        LastWeek = 2,
-        Month = 3,
+        Last7Days = 2,
+        ThisMonth = 3,
         Custom = 4
     }
 
     public class DashboardFilterDto
     {
-        public DashboardDatePreset DatePreset { get; set; } = DashboardDatePreset.Month;
-        public DateTime? CustomFromUtc { get; set; }
-        public DateTime? CustomToUtc { get; set; }
-        public Guid? CustomerId { get; set; }
+        public DashboardDatePreset Preset { get; set; } = DashboardDatePreset.Today;
+
+        public DateTime? CustomFrom { get; set; }
+
+        public DateTime? CustomTo { get; set; }
+
+        public Guid? UserId { get; set; }
     }
 }

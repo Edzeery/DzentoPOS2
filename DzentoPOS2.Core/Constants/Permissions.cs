@@ -10,6 +10,7 @@ namespace DzentoPOS2.Core.Constants
     {
         // Dashboard
         public const string DashboardView = "permissions.dashboard.view";
+        public const string DashboardViewAll = "permissions.dashboard.view_all";
 
         // Users
         public const string UsersView = "permissions.users.view";

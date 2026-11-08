@@ -28,6 +28,7 @@ namespace DzentoPOS2.App.Services.Purchases
         private readonly ICurrentUserService _currentUser;
         private readonly IAuthorizationGuard _guard;
     private readonly RegionalContext _regional;
+        private readonly IInventoryChangedNotifier _inventoryNotifier;
 
         public PurchaseService(
             IPurchaseInvoiceRepository invoiceRepo,
@@ -39,7 +40,8 @@ namespace DzentoPOS2.App.Services.Purchases
             IStockService stockService,
             ICurrentUserService currentUser,
             IAuthorizationGuard guard,
-            RegionalContext regional)
+            RegionalContext regional,
+            IInventoryChangedNotifier inventoryNotifier)
         {
             _invoiceRepo = invoiceRepo;
             _unitOfWork = unitOfWork;
@@ -51,6 +53,7 @@ namespace DzentoPOS2.App.Services.Purchases
             _currentUser = currentUser;
             _guard = guard;
             _regional = regional;
+            _inventoryNotifier = inventoryNotifier;
         }
 
         public async Task<List<PurchaseInvoiceDto>> GetAllAsync()
@@ -244,6 +247,7 @@ namespace DzentoPOS2.App.Services.Purchases
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
 
+                _inventoryNotifier.NotifyChanged();
                 return Map(invoice);
             }
             catch
@@ -282,6 +286,8 @@ namespace DzentoPOS2.App.Services.Purchases
                 _invoiceRepo.Remove(invoice);
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitTransactionAsync();
+
+                _inventoryNotifier.NotifyChanged();
             }
             catch
             {

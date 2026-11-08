@@ -12,6 +12,7 @@ using DzentoPOS2.App.Services.Reports.Interfaces;
 using DzentoPOS2.App.Services.Sales;
 using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.App.Session;
+using DzentoPOS2.Core.Services;
 using DzentoPOS2.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using FluentValidation;
@@ -45,12 +46,17 @@ namespace DzentoPOS2.App
 
             services.AddScoped<IAuthService, AuthService>();
 
-            services.AddSingleton<ICurrentUserService,
-                CurrentUserService>();
+            services.AddSingleton<CurrentUserService>();
+            services.AddSingleton<ICurrentUserService>(sp => sp.GetRequiredService<CurrentUserService>());
+            services.AddSingleton<ICurrentUserAccessor>(sp => sp.GetRequiredService<CurrentUserService>());
 
             // Singleton so every scoped service and every form of the running
             // shell share the same sale / cash-drawer notifications.
             services.AddSingleton<ISalesEventPublisher, SalesEventPublisher>();
+
+            services.AddSingleton<IInventoryChangedNotifier, InventoryChangedNotifier>();
+            services.AddScoped<IInventoryValuationService, InventoryValuationService>();
+            services.AddScoped<IInventorySnapshotService, InventorySnapshotService>();
 
             services.AddScoped<IPermissionService,
                 PermissionService>();

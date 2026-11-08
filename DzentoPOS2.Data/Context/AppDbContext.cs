@@ -68,6 +68,8 @@ namespace DzentoPOS2.Data.Context
 
         public DbSet<ProductStock> ProductStocks => Set<ProductStock>();
 
+        public DbSet<InventorySnapshot> InventorySnapshots => Set<InventorySnapshot>();
+
         public DbSet<InventoryTransaction> InventoryTransactions => Set<InventoryTransaction>();
 
         public DbSet<StockAdjustment> StockAdjustments => Set<StockAdjustment>();

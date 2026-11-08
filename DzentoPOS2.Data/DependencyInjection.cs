@@ -48,7 +48,8 @@ namespace DzentoPOS2.Data
                     ResolveSqliteConnectionString(connectionString));
 
                 options.AddInterceptors(
-                    SqliteConnectionInterceptor.Instance);
+                    SqliteConnectionInterceptor.Instance,
+                    AuditSaveChangesInterceptor.Instance);
 
 #if DEBUG
                 options.EnableSensitiveDataLogging();
@@ -66,7 +67,8 @@ namespace DzentoPOS2.Data
                     ResolveSqliteConnectionString(connectionString));
 
                 options.AddInterceptors(
-                    SqliteConnectionInterceptor.Instance);
+                    SqliteConnectionInterceptor.Instance,
+                    AuditSaveChangesInterceptor.Instance);
 
 #if DEBUG
                 options.EnableSensitiveDataLogging();

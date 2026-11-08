@@ -873,6 +873,66 @@ namespace DzentoPOS2.Data.Migrations
                     b.ToTable("AttributeValues", (string)null);
                 });
 
+            modelBuilder.Entity("DzentoPOS2.Core.Entities.Inventory.InventorySnapshot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("AtRiskProfit")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("CostValue")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("DiscountFactorAvg")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("ExpectedProfit")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("FeeFactor")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("RetailValue")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("SnapshotDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("TotalQuantity")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SnapshotDate")
+                        .IsUnique();
+
+                    b.ToTable("InventorySnapshots", (string)null);
+                });
+
             modelBuilder.Entity("DzentoPOS2.Core.Entities.Inventory.InventoryTransaction", b =>
                 {
                     b.Property<Guid>("Id")

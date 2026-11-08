@@ -100,28 +100,23 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
 
         protected override void OnInitialized() => RunSafe(RefreshSummaryAsync);
 
-        private TableLayoutPanel BuildFilterBar()
+        private FlowLayoutPanel BuildFilterBar()
         {
             var lblPeriod = new Label { Text = AppStrings.Period, AutoSize = true, ForeColor = AppColors.Ink, Margin = new Padding(0, 8, 8, 0), Height = 36 };
-            _cmbDatePreset = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 160, Height = 36 };
-            _cmbDatePreset.Items.AddRange(new object[]
+            var seg = new EZSegmentedControl();
+            seg.SetItems(AppStrings.DatePresetToday, AppStrings.DatePresetYesterday,
+                AppStrings.DatePresetLast7Days, AppStrings.DatePresetThisMonth, AppStrings.DatePresetCustom);
+            seg.SelectedIndex = _selectedPresetIndex < 5 ? _selectedPresetIndex : 3;
+            seg.SelectedIndexChanged += (_, idx) =>
             {
-                AppStrings.DatePresetToday,
-                AppStrings.DatePresetYesterday,
-                AppStrings.DatePresetLast7Days,
-                AppStrings.DatePresetThisMonth,
-                AppStrings.DatePresetCustom
-            });
-            _cmbDatePreset.SelectedIndex = _selectedPresetIndex < _cmbDatePreset.Items.Count ? _selectedPresetIndex : 3;
-            _cmbDatePreset.SelectedIndexChanged += (_, _) =>
-            {
-                _selectedPresetIndex = _cmbDatePreset.SelectedIndex;
+                _selectedPresetIndex = idx;
                 UpdateFilterVisibility();
                 ScheduleRefresh();
             };
+            _cmbDatePreset = new ComboBox { Visible = false };
 
-            _dtFrom = new DateTimePicker { Format = DateTimePickerFormat.Short, Width = 120 };
-            _dtTo = new DateTimePicker { Format = DateTimePickerFormat.Short, Width = 120 };
+            _dtFrom = new EZDatePicker { Width = 120 };
+            _dtTo = new EZDatePicker { Width = 120 };
             _dtFrom.ValueChanged += (_, _) => { ValidateDateRange(); ScheduleRefresh(); };
             _dtTo.ValueChanged += (_, _) => { ValidateDateRange(); ScheduleRefresh(); };
 
@@ -145,20 +140,20 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
 
             LoadCustomers();
 
-            var filterBar = new TableLayoutPanel
+            var filterBar = new FlowLayoutPanel
             {
                 Dock = DockStyle.Top,
                 AutoSize = true,
-                ColumnCount = 6,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = true,
                 Margin = new Padding(0, 0, 0, 8)
             };
-            filterBar.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-            filterBar.Controls.Add(lblPeriod, 0, 0);
-            filterBar.Controls.Add(_cmbDatePreset, 1, 0);
-            filterBar.Controls.Add(_dtFrom, 2, 0);
-            filterBar.Controls.Add(_dtTo, 3, 0);
-            filterBar.Controls.Add(lblCustomer, 4, 0);
-            filterBar.Controls.Add(_cmbCustomer, 5, 0);
+            filterBar.Controls.Add(lblPeriod);
+            filterBar.Controls.Add(seg);
+            filterBar.Controls.Add(_dtFrom);
+            filterBar.Controls.Add(_dtTo);
+            filterBar.Controls.Add(lblCustomer);
+            filterBar.Controls.Add(_cmbCustomer);
 
             UpdateFilterVisibility();
             return filterBar;
@@ -222,26 +217,26 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
             {
                 0 => DashboardDatePreset.Today,
                 1 => DashboardDatePreset.Yesterday,
-                2 => DashboardDatePreset.LastWeek,
+                2 => DashboardDatePreset.Last7Days,
+                3 => DashboardDatePreset.ThisMonth,
                 4 => DashboardDatePreset.Custom,
-                _ => DashboardDatePreset.Month
+                _ => DashboardDatePreset.Today
             };
-            Guid? cust = null;
-            if (_cmbCustomer.SelectedItem is CustomerOption opt && opt.Id.HasValue) cust = opt.Id;
+            Guid? userId = null;
 
             DateTime? from = null, to = null;
             if (preset == DashboardDatePreset.Custom)
             {
-                from = _regional.ToUtcSafe(_dtFrom.Value.Date);
-                to = _regional.ToUtcSafe(_dtTo.Value.Date.AddDays(1));
+                from = _dtFrom.Value.Date;
+                to = _dtTo.Value.Date;
             }
 
             return new DashboardFilterDto
             {
-                DatePreset = preset,
-                CustomFromUtc = from,
-                CustomToUtc = to,
-                CustomerId = cust
+                Preset = preset,
+                CustomFrom = from,
+                CustomTo = to,
+                UserId = userId
             };
         }
 

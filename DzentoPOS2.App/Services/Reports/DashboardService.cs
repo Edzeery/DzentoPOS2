@@ -35,50 +35,17 @@ namespace DzentoPOS2.App.Services.Reports
 
         public async Task<DashboardSummaryDto> GetSummaryAsync(DashboardFilterDto? filter = null)
         {
-            filter ??= new DashboardFilterDto { DatePreset = DashboardDatePreset.Month };
+            filter ??= new DashboardFilterDto { Preset = DashboardDatePreset.Today };
 
             var localNow = _clock.Now;
-            DateTime rangeStartUtc, rangeEndUtc, compareStartUtc, compareEndUtc;
-            DateTime chartStartUtc;
-
-            switch (filter.DatePreset)
-            {
-                case DashboardDatePreset.Today:
-                    (rangeStartUtc, rangeEndUtc) = _clock.TodayRangeUtc();
-                    compareStartUtc = _regional.StartOfLocalDayUtc(localNow.Date.AddDays(-1));
-                    compareEndUtc = rangeStartUtc;
-                    chartStartUtc = rangeStartUtc;
-                    break;
-                case DashboardDatePreset.Yesterday:
-                    var yStart = _regional.StartOfLocalDayUtc(localNow.Date.AddDays(-1));
-                    rangeStartUtc = yStart;
-                    rangeEndUtc = _regional.StartOfLocalDayUtc(localNow.Date);
-                    compareStartUtc = _regional.StartOfLocalDayUtc(localNow.Date.AddDays(-2));
-                    compareEndUtc = yStart;
-                    chartStartUtc = rangeStartUtc;
-                    break;
-                case DashboardDatePreset.LastWeek:
-                    rangeStartUtc = _regional.StartOfLocalDayUtc(localNow.Date.AddDays(-6));
-                    rangeEndUtc = _regional.StartOfLocalDayUtc(localNow.Date.AddDays(1));
-                    compareStartUtc = _regional.StartOfLocalDayUtc(localNow.Date.AddDays(-13));
-                    compareEndUtc = rangeStartUtc;
-                    chartStartUtc = rangeStartUtc;
-                    break;
-                case DashboardDatePreset.Custom when filter.CustomFromUtc.HasValue && filter.CustomToUtc.HasValue:
-                    rangeStartUtc = filter.CustomFromUtc.Value;
-                    rangeEndUtc = filter.CustomToUtc.Value;
-                    compareStartUtc = rangeStartUtc;
-                    compareEndUtc = rangeEndUtc;
-                    chartStartUtc = rangeStartUtc;
-                    break;
-                default: // Month
-                    rangeStartUtc = _regional.StartOfLocalMonthUtc();
-                    rangeEndUtc = _regional.ToUtcSafe(new DateTime(localNow.Year, localNow.Month, 1).AddMonths(1));
-                    compareStartUtc = _regional.ToUtcSafe(new DateTime(localNow.Year, localNow.Month, 1).AddMonths(-1));
-                    compareEndUtc = rangeStartUtc;
-                    chartStartUtc = _regional.StartOfLocalDayUtc(localNow.Date.AddDays(-29));
-                    break;
-            }
+            var resolved = DashboardRangeResolver.Resolve(_clock, filter);
+            var rangeStartUtc = resolved.StartUtc;
+            var rangeEndUtc = resolved.EndUtc;
+            var compareStartUtc = resolved.PreviousStartUtc;
+            var compareEndUtc = resolved.PreviousEndUtc;
+            var chartStartUtc = (filter.Preset == DashboardDatePreset.ThisMonth)
+                ? _regional.StartOfLocalDayUtc(localNow.Date.AddDays(-29))
+                : rangeStartUtc;
 
             var monthStart = rangeStartUtc;
             var nextMonthStart = rangeEndUtc;
@@ -90,8 +57,8 @@ namespace DzentoPOS2.App.Services.Reports
 
             var dto = new DashboardSummaryDto();
 
-            await ComputeKpiCards(dto, todayStart, tomorrowStart, yesterdayStart, monthStart, nextMonthStart, lastMonthStart, filter?.CustomerId);
-            await ComputeChartData(dto, thirtyDaysAgo, tomorrowStart, localNow, filter?.CustomerId);
+            await ComputeKpiCards(dto, todayStart, tomorrowStart, yesterdayStart, monthStart, nextMonthStart, lastMonthStart, filter?.UserId);
+            await ComputeChartData(dto, thirtyDaysAgo, tomorrowStart, localNow, filter?.UserId);
             await ComputeRecentTransactions(dto);
             await ComputeInsights(dto);
 

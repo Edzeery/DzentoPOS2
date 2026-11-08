@@ -1,8 +1,9 @@
-﻿using DzentoPOS2.Shared.Contracts.DTOs.Identity.Auth;
+﻿using DzentoPOS2.Core.Services;
+using DzentoPOS2.Shared.Contracts.DTOs.Identity.Auth;
 
 namespace DzentoPOS2.App.Session
 {
-    public class CurrentUserService : ICurrentUserService
+    public class CurrentUserService : ICurrentUserService, ICurrentUserAccessor
     {
         public UserSession? User { get; private set; }
 
@@ -21,11 +22,13 @@ namespace DzentoPOS2.App.Session
         public void SetUser(UserSession user)
         {
             User = user;
+            DzentoPOS2.Core.Services.CurrentUserContext.UserId = user.UserId;
         }
 
         public void Clear()
         {
             User = null;
+            DzentoPOS2.Core.Services.CurrentUserContext.UserId = null;
         }
     }
 }

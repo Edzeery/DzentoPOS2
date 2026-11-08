@@ -51,6 +51,14 @@ internal static class Program
             return;
         }
 
+        // POS screenshot generator:
+        //   DzentoPOS2.WinForms.exe --pos-screenshot [--output dir]
+        if (args.Any(a => string.Equals(a, "--pos-screenshot", StringComparison.OrdinalIgnoreCase)))
+        {
+            Environment.ExitCode = PosScreenshot.Run(args);
+            return;
+        }
+
         var services = new ServiceCollection();
 
         IConfiguration configuration =

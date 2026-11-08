@@ -108,9 +108,9 @@ isolated so it cannot break the sale.
 - **Errors.** `ExceptionFormatter` renders user-facing text (localized) and
   `ExceptionLogger` writes the full detail to a log file.
 
-## Catalog subsystem (planned — Phases 1–7)
+## Catalog subsystem (Phases 0–5 complete, 6–7 planned)
 
-### New/expanded services
+### Services (implemented Phases 0–5, 6 planned)
 
 - `IProductVariantService` / `ProductVariantService` — CRUD variants, generate
   combinations from attribute definitions, manage default variant.
@@ -119,11 +119,16 @@ isolated so it cannot break the sale.
 - `IImageService` / `ImageService` — save/resize (1024px + 256px JPEG) to app data,
   relative paths, lazy load + LRU cache + strict Dispose. System.Drawing only.
 - `IModuleService` / `ModuleService` — read/write activity module flags in AppSettings
-  (group `Modules`), first-run wizard support.
+  (group `Modules`), first-run wizard support. ✅ Phase 2
+- `IPosProductStore` / `PosProductStore` — in-memory cache of sellable variants with
+  barcode→variants index, invalidation, incremental stock update. ✅ Phase 5
+- `ICatalogChangeNotifier` / `CatalogChangeNotifier` — event-based catalog change
+  notification for cache invalidation. ✅ Phase 5
+- `IActiveBranchContext` / `ActiveBranchContext` — real active branch context (planned 6.0أ)
 - `IActivityModule` (per module: Grocery, Phones, Digital, GeneralRetail) — optional
-  extensions registered by flag. Each module is a phase with independent approval.
+  extensions registered by flag. Each module is a phase with independent approval. (Phase 6)
 
-### Data flow (target)
+### Data flow (implemented Phases 0–5)
 
 - Product (parent) → Variant → (Attribute values, Barcodes, Stock, Images).
 - Simple product ⇒ hidden default variant; all sale/stock/profit on VariantId.

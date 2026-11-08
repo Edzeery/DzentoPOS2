@@ -18,5 +18,7 @@ namespace DzentoPOS2.Shared.Contracts.DTOs.Reports
         public DateTime? CustomTo { get; set; }
 
         public Guid? UserId { get; set; }
+
+        public bool ViewAllBranches { get; set; }
     }
 }

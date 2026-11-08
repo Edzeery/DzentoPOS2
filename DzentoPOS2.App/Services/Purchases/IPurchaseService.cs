@@ -4,7 +4,7 @@ namespace DzentoPOS2.App.Services.Purchases
 {
     public interface IPurchaseService
     {
-        Task<List<PurchaseInvoiceDto>> GetAllAsync();
+        Task<List<PurchaseInvoiceDto>> GetAllAsync(Guid? branchId = null, bool viewAll = false);
         Task<PurchaseInvoiceDto?> GetByIdAsync(Guid id);
         Task<List<PurchaseInvoiceDto>> GetBySupplierAsync(Guid supplierId);
         Task<PurchaseInvoiceDto> CreateAsync(CreatePurchaseInvoiceDto dto);

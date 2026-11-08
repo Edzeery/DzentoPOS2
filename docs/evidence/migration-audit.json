@@ -1,16 +1,16 @@
 {
-  "GeneratedAt": "2026-11-08T17:03:40.9129602+01:00",
+  "GeneratedAt": "2026-11-08T19:53:26.3569103+01:00",
   "SourceDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\DzentoPOS2\\Database\\DzentoPOS.db",
-  "SourceBytes": 1183744,
+  "SourceBytes": 1196032,
   "SourceHadWal": false,
-  "WorkDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\Temp\\DzentoPOS2.MigrationAudit\\20261108-170339\\DzentoPOS.db",
+  "WorkDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\Temp\\DzentoPOS2.MigrationAudit\\20261108-195324\\DzentoPOS.db",
   "IntegrityBefore": "ok",
   "IntegrityAfter": "ok",
   "ForeignKeyViolationsBefore": 0,
   "ForeignKeyViolationsAfter": 0,
   "JournalModeBefore": "wal",
   "JournalModeAfter": "wal",
-  "TableCountBefore": 61,
+  "TableCountBefore": 62,
   "TableCountAfter": 62,
   "RowCountsBefore": {
     "ActivityLogs": 0,
@@ -18,7 +18,8 @@
     "Attachments": 0,
     "AttributeDefinitions": 0,
     "AttributeValues": 0,
-    "AuditLogs": 227,
+    "AuditLogs": 229,
+    "BranchActivities": 0,
     "Branches": 1,
     "CashRegisters": 0,
     "CashSessions": 12,
@@ -39,7 +40,7 @@
     "LicensePlans": 4,
     "Licenses": 0,
     "Notifications": 0,
-    "Permissions": 57,
+    "Permissions": 58,
     "ProductBarcodes": 2,
     "ProductCategories": 5,
     "ProductPrices": 0,
@@ -53,7 +54,7 @@
     "PurchaseReturnItems": 0,
     "PurchaseReturns": 0,
     "ReportTemplates": 0,
-    "RolePermissions": 97,
+    "RolePermissions": 98,
     "Roles": 3,
     "SalesInvoiceItems": 5,
     "SalesInvoices": 4,
@@ -72,7 +73,7 @@
     "Users": 3,
     "VariantAttributes": 0,
     "Warehouses": 1,
-    "__EFMigrationsHistory": 18,
+    "__EFMigrationsHistory": 19,
     "__EFMigrationsLock": 0
   },
   "RowCountsAfter": {
@@ -81,7 +82,7 @@
     "Attachments": 0,
     "AttributeDefinitions": 0,
     "AttributeValues": 0,
-    "AuditLogs": 227,
+    "AuditLogs": 229,
     "BranchActivities": 0,
     "Branches": 1,
     "CashRegisters": 0,
@@ -141,17 +142,14 @@
   },
   "RowsRemoved": 0,
   "RowsChanged": 0,
-  "RowsAdded": 5,
+  "RowsAdded": 2,
   "MissingTables": [],
   "MissingColumns": [],
   "RemovedRowKeys": [],
   "ChangedRowDetails": [],
   "AddedRowKeys": [
-    "Customers:str:51DDF1D6-A253-46A1-8A43-BDC2E79259EB\u0001",
-    "Customers:str:9612FC36-7261-4482-8018-6D9517E6087A\u0001",
-    "Permissions:str:F91CD83B-9A46-465E-975D-AAC6E9827FEB\u0001",
-    "RolePermissions:str:77D5D8D9-00F9-48AA-B370-E875D7B23054\u0001str:F91CD83B-9A46-465E-975D-AAC6E9827FEB\u0001",
-    "__EFMigrationsHistory:str:20261108153855_BranchActivityAndCapabilities\u0001"
+    "Customers:str:3515810B-368B-48B5-8CD5-F56C5C0B19E5\u0001",
+    "Customers:str:DA86D4FF-6FE6-4060-A3B9-970570CCC031\u0001"
   ],
   "MigrationsBefore": [
     "20260517183403_InitialCreate",
@@ -171,7 +169,8 @@
     "20261105165317_CatalogPhase1_DataModel",
     "20261106174513_VariantNameOnSalesInvoiceItem",
     "20261107124946_PhaseC_IndexesAndAudit",
-    "20261107185302_PhaseInventorySnapshot"
+    "20261107185302_PhaseInventorySnapshot",
+    "20261108153855_BranchActivityAndCapabilities"
   ],
   "MigrationsAfter": [
     "20260517183403_InitialCreate",

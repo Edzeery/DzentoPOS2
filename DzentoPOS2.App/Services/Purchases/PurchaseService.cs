@@ -29,6 +29,7 @@ namespace DzentoPOS2.App.Services.Purchases
         private readonly IAuthorizationGuard _guard;
     private readonly RegionalContext _regional;
         private readonly IInventoryChangedNotifier _inventoryNotifier;
+    private readonly IActiveBranchContext _activeBranch;
 
         public PurchaseService(
             IPurchaseInvoiceRepository invoiceRepo,
@@ -41,7 +42,8 @@ namespace DzentoPOS2.App.Services.Purchases
             ICurrentUserService currentUser,
             IAuthorizationGuard guard,
             RegionalContext regional,
-            IInventoryChangedNotifier inventoryNotifier)
+            IInventoryChangedNotifier inventoryNotifier,
+        IActiveBranchContext activeBranch)
         {
             _invoiceRepo = invoiceRepo;
             _unitOfWork = unitOfWork;
@@ -54,14 +56,23 @@ namespace DzentoPOS2.App.Services.Purchases
             _guard = guard;
             _regional = regional;
             _inventoryNotifier = inventoryNotifier;
+            _activeBranch = activeBranch;
         }
 
-        public async Task<List<PurchaseInvoiceDto>> GetAllAsync()
+        public async Task<List<PurchaseInvoiceDto>> GetAllAsync(Guid? branchId = null, bool viewAll = false)
         {
-            var invoices = await _context.PurchaseInvoices
+            var query = _context.PurchaseInvoices
                 .AsNoTracking()
                 .Include(x => x.Items)
-                .Where(x => !x.IsDeleted)
+                .Where(x => !x.IsDeleted);
+
+            if (!viewAll)
+            {
+                var activeBranchId = branchId ?? _activeBranch.ActiveBranchId;
+                query = query.Where(x => x.BranchId == activeBranchId);
+            }
+
+            var invoices = await query
                 .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync();
 

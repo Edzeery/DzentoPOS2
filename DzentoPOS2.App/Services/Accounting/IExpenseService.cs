@@ -4,7 +4,7 @@ namespace DzentoPOS2.App.Services.Accounting;
 
 public interface IExpenseService
 {
-    Task<List<ExpenseDto>> GetAllAsync();
+    Task<List<ExpenseDto>> GetAllAsync(Guid? branchId = null, bool viewAll = false);
     Task<ExpenseDto?> GetByIdAsync(Guid id);
     Task<List<ExpenseDto>> GetByDateRangeAsync(DateTime from, DateTime to);
     Task<List<ExpenseDto>> GetByCategoryAsync(Guid categoryId);

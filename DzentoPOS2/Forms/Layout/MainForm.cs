@@ -57,6 +57,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
         private readonly IDbContextFactory<AppDbContext> _contextFactory;
         private readonly DzentoPOS2.App.Authorization.IPermissionService _permissionService;
         private readonly DzentoPOS2.App.Services.Systems.IActiveBranchContext _activeBranch;
+        private readonly DzentoPOS2.App.Services.Systems.IBranchSwitchGuardRegistry _branchGuardRegistry;
 
         private readonly ILanguageService _languageService;
         private readonly IUserPreferencesService _preferences;
@@ -98,7 +99,8 @@ namespace DzentoPOS2.WinForms.Forms.Layout
              IServiceProvider services,
              IDbContextFactory<AppDbContext> contextFactory,
              DzentoPOS2.App.Authorization.IPermissionService permissionService,
-             DzentoPOS2.App.Services.Systems.IActiveBranchContext activeBranch)
+             DzentoPOS2.App.Services.Systems.IActiveBranchContext activeBranch,
+             DzentoPOS2.App.Services.Systems.IBranchSwitchGuardRegistry branchGuardRegistry)
         {
             InitializeComponent();
 
@@ -107,6 +109,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             _contextFactory = contextFactory;
             _permissionService = permissionService;
             _activeBranch = activeBranch;
+            _branchGuardRegistry = branchGuardRegistry;
             _languageService = languageService;
             _preferences = preferences;
             _currentSettings = currentSettings;
@@ -1168,12 +1171,23 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             if (e.Branch is null) return;
 
             // Check UI-level guard (cart not empty, etc.).
-            // IBranchSwitchGuard is resolved from the current page if available.
-            // For now, we attempt the switch and handle failure.
+            if (!_branchGuardRegistry.CanSwitch)
+            {
+                AppMessageBox.Warning(AppStrings.BranchSwitchCartNotEmpty);
+                return;
+            }
+
+            // Check permission.
+            if (!_activeBranch.CanSwitchBranch)
+            {
+                AppMessageBox.Warning(AppStrings.BranchSwitchNoPermission);
+                return;
+            }
+
             bool success = await _activeBranch.TrySwitchBranchAsync(e.Branch.Id);
             if (!success)
             {
-                AppMessageBox.Warning(AppStrings.BranchSwitchFailed);
+                AppMessageBox.Warning(AppStrings.BranchSwitchBranchInactive);
                 return;
             }
 

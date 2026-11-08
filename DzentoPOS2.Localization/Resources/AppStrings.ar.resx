@@ -1738,4 +1738,13 @@
   <data name="BranchSwitchFailed" xml:space="preserve">
     <value>لا يمكن تبديل الفرع (صلاحية أو سلة غير فارغة).</value>
   </data>
+  <data name="BranchSwitchBranchInactive" xml:space="preserve">
+    <value>الفرع غير نشط.</value>
+  </data>
+  <data name="BranchSwitchNoPermission" xml:space="preserve">
+    <value>لا تملك صلاحية تبديل الفرع.</value>
+  </data>
+  <data name="BranchSwitchCartNotEmpty" xml:space="preserve">
+    <value>السلة غير فارغة — أتمّ البيع أو ألغه.</value>
+  </data>
 </root>

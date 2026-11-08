@@ -78,7 +78,7 @@ public static class PosBenchmark
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var notifier = scope.ServiceProvider.GetRequiredService<ICatalogChangeNotifier>();
             var activeBranch = scope.ServiceProvider.GetRequiredService<IActiveBranchContext>();
-            var store = new PosProductStore(context, notifier, activeBranch);
+            var store = new PosProductStore(context, notifier, activeBranch, scope.ServiceProvider);
 
             // 3. Cold load.
             sw.Restart();

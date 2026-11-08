@@ -1738,4 +1738,13 @@
   <data name="BranchSwitchFailed" xml:space="preserve">
     <value>Impossible de changer de succursale (permission ou panier non vide).</value>
   </data>
+  <data name="BranchSwitchBranchInactive" xml:space="preserve">
+    <value>Branch is not active.</value>
+  </data>
+  <data name="BranchSwitchNoPermission" xml:space="preserve">
+    <value>You do not have permission to switch branches.</value>
+  </data>
+  <data name="BranchSwitchCartNotEmpty" xml:space="preserve">
+    <value>Cart is not empty.</value>
+  </data>
 </root>

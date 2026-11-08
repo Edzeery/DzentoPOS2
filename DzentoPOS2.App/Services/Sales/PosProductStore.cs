@@ -6,6 +6,7 @@ using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.Core.Entities.Inventory;
 using DzentoPOS2.Data.Context;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DzentoPOS2.App.Services.Sales;
 
@@ -23,27 +24,95 @@ public class PosProductStore : IPosProductStore, IDisposable
     private readonly AppDbContext _context;
     private readonly ICatalogChangeNotifier _notifier;
     private readonly IActiveBranchContext _activeBranch;
+    private readonly IServiceProvider _serviceProvider;
     private List<PosProductItem>? _cache;
     private Dictionary<string, List<PosProductItem>>? _barcodeIndex;
     private readonly object _lock = new();
 
-    public PosProductStore(AppDbContext context, ICatalogChangeNotifier notifier, IActiveBranchContext activeBranch)
+    public PosProductStore(AppDbContext context, ICatalogChangeNotifier notifier, IActiveBranchContext activeBranch, IServiceProvider serviceProvider)
     {
         _context = context;
         _notifier = notifier;
         _activeBranch = activeBranch;
+        _serviceProvider = serviceProvider;
         _notifier.CatalogChanged += OnCatalogChanged;
         _activeBranch.BranchChanged += OnBranchChanged;
     }
 
-    private void OnBranchChanged(object? sender, ActiveBranchChangedEventArgs e)
+    private CancellationTokenSource? _reloadCts;
+
+    private async void OnBranchChanged(object? sender, ActiveBranchChangedEventArgs e)
     {
-        // Reload stock only (not full catalog rebuild).
-        lock (_lock)
+        try
         {
-            if (_cache is null) return;
-            // Re-fetch stock for the new branch's default warehouse.
-            _ = ReloadStockAsync();
+            await ReloadStockAsync();
+        }
+        catch (Exception ex)
+        {
+            // Log but don't crash.
+            System.Diagnostics.Debug.WriteLine($"PosProductStore.ReloadStock failed: {ex.Message}");
+        }
+    }
+
+    public async Task ReloadStockAsync(CancellationToken ct = default)
+    {
+        _reloadCts?.Cancel();
+        _reloadCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        var token = _reloadCts.Token;
+
+        var branchId = _activeBranch.ActiveBranchId;
+
+        try
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            var warehouseId = await context.Warehouses
+                .AsNoTracking()
+                .Where(w => w.BranchId == branchId && w.IsActive)
+                .OrderBy(w => w.CreatedAt)
+                .ThenBy(w => w.Id)
+                .Select(w => (Guid?)w.Id)
+                .FirstOrDefaultAsync(token);
+
+            if (warehouseId is null || token.IsCancellationRequested)
+                return;
+
+            var variantIds = _cache?.Select(c => c.VariantId).ToList() ?? new();
+            var stocks = await context.ProductStocks
+                .AsNoTracking()
+                .Where(s => variantIds.Contains(s.VariantId) && s.WarehouseId == warehouseId.Value)
+                .GroupBy(s => s.VariantId)
+                .Select(g => new { VariantId = g.Key, Total = g.Sum(s => s.Quantity.Value) })
+                .ToListAsync(token);
+
+            if (token.IsCancellationRequested)
+                return;
+
+            // Stale check: if branch changed during reload, discard.
+            if (branchId != _activeBranch.ActiveBranchId)
+                return;
+
+            var stockMap = stocks.ToDictionary(s => s.VariantId, s => s.Total);
+
+            lock (_lock)
+            {
+                if (_cache is null) return;
+                for (int i = 0; i < _cache.Count; i++)
+                {
+                    var item = _cache[i];
+                    var newStock = stockMap.TryGetValue(item.VariantId, out var s) ? s : 0m;
+                    _cache[i] = item with { Stock = newStock };
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected during rapid switches.
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"PosProductStore.ReloadStock failed: {ex.Message}");
         }
     }
 
@@ -278,5 +347,6 @@ public class PosProductStore : IPosProductStore, IDisposable
     public void Dispose()
     {
         _notifier.CatalogChanged -= OnCatalogChanged;
+        _activeBranch.BranchChanged -= OnBranchChanged;
     }
 }

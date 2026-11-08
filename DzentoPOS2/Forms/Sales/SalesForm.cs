@@ -43,6 +43,7 @@ public partial class SalesForm : LocalizableFormBase
     private readonly ICashSessionService _cashSessionService;
     private readonly IBarcodeService _barcodeService;
     private readonly IBranchSwitchGuard _branchGuard;
+    private readonly IBranchSwitchGuardRegistry _branchGuardRegistry;
     private readonly IServiceProvider _services;
 
     private readonly Panel _leftPanel;
@@ -114,6 +115,7 @@ public partial class SalesForm : LocalizableFormBase
         ICashSessionService cashSessionService,
         IBarcodeService barcodeService,
         IBranchSwitchGuard branchGuard,
+        IBranchSwitchGuardRegistry branchGuardRegistry,
         IServiceProvider services,
         ILanguageService languageService)
         : base(languageService)
@@ -126,7 +128,12 @@ public partial class SalesForm : LocalizableFormBase
         _cashSessionService = cashSessionService;
         _barcodeService = barcodeService;
         _branchGuard = branchGuard;
+        _branchGuardRegistry = branchGuardRegistry;
         _services = services;
+
+        // Register guard with registry.
+        _branchGuardRegistry.Register(_branchGuard);
+        Disposed += (_, _) => _branchGuardRegistry.Unregister(_branchGuard);
 
         Size = new Size(1200, 700);
         BackColor = AppColors.Background;

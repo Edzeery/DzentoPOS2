@@ -69,6 +69,15 @@ Recorded in Phase 0. Each decision is a small ADR: context, decision, consequenc
 - **Decision:** Merge `fix/barcode-scanner` into `feature/dashboard-filters` before
   starting catalog work (done in Phase 0). Base branch: `feature/dashboard-filters`.
 
+## ADR-12 — Variant without price or cost (Phase 5 batch 5.0)
+
+- **Context:** With variant-based selling, a variant may not have an explicit sale price or cost. The system must handle this gracefully.
+- **Decision:**
+  - **Sale price missing (amount = 0):** The variant inherits the parent product's sale price.
+  - **Cost missing (amount = 0):** The invoice line is marked `IsCostEstimated = true`. Profit calculation uses 0 as cost (conservative). The line is flagged so reports can distinguish estimated-cost lines.
+  - **Both missing:** The sale proceeds (no hard block), but the line is marked estimated. A future policy may block sale of zero-cost variants.
+- **Consequences:** Existing products without variants get a default variant created on the fly (backward compat). Sales of variants with inherited prices work transparently. Estimated-cost lines are visible in reports via the `IsCostEstimated` flag.
+
 ## ADR-11 — Phased retirement of legacy inventory columns
 
 - **Context:** Phase 1 moved barcodes, cost, price and stock to the variant

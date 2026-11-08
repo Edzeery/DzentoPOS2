@@ -447,6 +447,12 @@ private static int CountControls(Control parent)
         public Task RemoveByValueAsync(Guid variantId, string barcode) => Task.CompletedTask;
 
         public string GenerateInternal() => "2000000000000";
+
+        public Task<Guid?> FindVariantIdByBarcodeAsync(string barcode) =>
+            Task.FromResult<Guid?>(null);
+
+        public Task<List<Guid>> FindVariantIdsByBarcodeAsync(string barcode) =>
+            Task.FromResult(new List<Guid>());
     }
 
     private sealed class StubUnitService : IProductUnitService

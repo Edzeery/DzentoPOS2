@@ -1,4 +1,5 @@
 using AutoMapper;
+using DzentoPOS2.App.Services.Sales;
 using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.App.Session;
 using DzentoPOS2.Core.Entities.Businesses;
@@ -30,6 +31,7 @@ public class ProductService : IProductService
     private readonly ICurrentUserService _currentUser;
     private readonly DzentoPOS2.App.Authorization.IAuthorizationGuard _authorizationGuard;
     private readonly RegionalContext _regional;
+    private readonly ICatalogChangeNotifier _catalogNotifier;
 
     public ProductService(
         IProductRepository productRepo,
@@ -44,7 +46,8 @@ public class ProductService : IProductService
         IStoreContextService storeContext,
         ICurrentUserService currentUser,
         DzentoPOS2.App.Authorization.IAuthorizationGuard authorizationGuard,
-        RegionalContext regional)
+        RegionalContext regional,
+        ICatalogChangeNotifier catalogNotifier)
     {
         _productRepo = productRepo;
         _categoryRepo = categoryRepo;
@@ -59,6 +62,7 @@ public class ProductService : IProductService
         _currentUser = currentUser;
         _authorizationGuard = authorizationGuard;
         _regional = regional;
+        _catalogNotifier = catalogNotifier;
     }
 
     public async Task<List<ProductDto>> GetAllAsync()
@@ -155,6 +159,8 @@ public class ProductService : IProductService
 
             await _unitOfWork.CommitTransactionAsync();
 
+            _catalogNotifier.NotifyProductChanged(product.Id);
+
             return MapProduct(product);
         }
         catch
@@ -201,6 +207,8 @@ public class ProductService : IProductService
         _productRepo.Update(product);
         await _unitOfWork.SaveChangesAsync();
 
+        _catalogNotifier.NotifyProductChanged(product.Id);
+
         return MapProduct(product);
     }
 
@@ -214,6 +222,8 @@ public class ProductService : IProductService
         if (product == null) return;
         _productRepo.Remove(product);
         await _unitOfWork.SaveChangesAsync();
+
+        _catalogNotifier.NotifyProductChanged(id);
     }
 
     public async Task<List<ProductCategoryDto>> GetCategoriesAsync()

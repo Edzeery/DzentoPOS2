@@ -2,6 +2,107 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] - 2026-11-06 (Phase 5 batch 5.4: benchmark and documentation)
+
+### Added
+- **`--pos-benchmark`** in-app tool: creates a temp SQLite DB with 5,000 variants,
+  measures cold load, scroll (100 frames), barcode scan and cache invalidation.
+  Outputs JSON to `docs/evidence/pos-benchmark-2026-11-06.json`.
+  Results: cold load 404 ms, scroll p95 10.7 ms, scan p95 0.0 ms, invalidate 187 ms — **PASSED**.
+- **`docs/evidence/pos-layout-drawtobitmap.md`**: visual verification guide with
+  DrawToBitmap instructions for all 12 combinations (375/768/1440 × cards/list ×
+  RTL/LTR × light/dark).
+
+### Verified
+- Build 0 errors; Unit **174/174**; Integration **70/70**.
+- Migration audit: PASSED (real DB copy).
+- HardcodedArabicLiteralTests: 0 literals.
+- LocalizationParityTests: 540 keys × 4 resx, 0 empty, 0 U+FFFD.
+
+## [Unreleased] - 2026-11-06 (Phase 5 batch 5.3: variant picker and shared barcode)
+
+### Added
+- **`VariantPickerDialog`**: ThemedDialog showing attribute groups as selectable chips,
+  image preview, price, barcode. Returns selected variant info.
+- **`SharedBarcodePickerDialog`**: ThemedDialog listing all variants sharing a barcode
+  with image, name, price, stock. User selects one.
+- **`IBarcodeService.FindVariantIdsByBarcodeAsync`**: returns all variant IDs for a barcode.
+- **7 new AppStrings keys**: AddToCart, SelectVariant, PleaseSelectVariant, SelectSharedBarcode,
+  SharedBarcodeHint, StockLabel, Select (added to all 4 resx + Designer.cs).
+
+### Changed
+- `SalesForm.ScanBarcode`: uses `FindVariantIdsByBarcodeAsync` + `SharedBarcodePickerDialog`
+  when multiple variants share a barcode. Never reads legacy `Product.Barcode`.
+- `SalesForm` product grid double-click: opens `VariantPickerDialog` for multi-variant
+  products, adds directly for single-variant products.
+
+### Verified
+- Build 0 errors; Unit **174/174**; Integration **70/70**.
+- HardcodedArabicLiteralTests: 0 literals.
+
+## [Unreleased] - 2026-11-06 (Phase 5 batch 5.2: virtualized POS list and layout)
+
+### Added
+- **`PosProductList`**: virtualized, owner-drawn control with VScrollBar, double buffering,
+  RTL/LTR, card/list modes, single animation timer, keyboard navigation, image LRU cache
+  with strict Dispose.
+- **`PosCardLayoutCalculator`**: pure layout calculator (columns, item size, sub-rectangles)
+  for 375/768/1440 in card and list modes, RTL-aware. 10 unit tests.
+- **`PosCardRects`**: record with Image, Name, Sku, Price, Badge, AddButton rectangles.
+
+### Verified
+- Build 0 errors; Unit **174/174** (was 146, +28 new); Integration **70/70**.
+- Layout calculator validates all sub-rects fit within card bounds at all widths.
+
+## [Unreleased] - 2026-11-06 (Phase 5 batch 5.1: POS cache and catalog notifier)
+
+### Added
+- **`PosProductStore`** (`IPosProductStore`): in-memory cache of sellable variants with a
+  barcode → variants index. Loads once via a single projection query; `FindByBarcodeAsync`
+  uses the index (no DB query per scan). `UpdateStock` applies incremental deltas.
+- **`ICatalogChangeNotifier` / `CatalogChangeNotifier`**: event-based notifier. `ProductService`
+  and `BarcodeService` raise change events; `PosProductStore` subscribes and invalidates
+  (full) or updates stock (incremental).
+- **`PosProductItem`**: lightweight record (VariantId, ProductId, Name, SKU, SalePrice,
+  Stock, IsActive, HasVariants, UnitId, UnitName, CategoryId, ImagePath, ThumbnailPath,
+  PrimaryBarcode).
+
+### Changed
+- `SaleService` now calls `_posProductStore.UpdateStock` after commit (sale) and after void
+  (restore) instead of triggering a full reload.
+- `SalesForm.ScanBarcode` uses `_posProductStore.FindByBarcodeAsync` (in-memory index).
+
+### Verified
+- Build 0 errors; Unit **146/146**; Integration **70/70**.
+- Migration audit: PASSED (real DB copy).
+
+## [Unreleased] - 2026-11-06 (Phase 5 batch 5.0: variant-based selling)
+
+### Added
+- **Variant-based selling in POS.** `CreateSaleItemDto` now carries `VariantId` and `VariantName`.
+  `SaleService.CreateAsync` resolves each line's variant (explicit or default, created on the
+  fly for products without one), takes `SalePrice` and `UnitCost` from the variant, and stores
+  `VariantName` on `SalesInvoiceItem`. Cart is keyed by `VariantId`.
+- **New migration** `20261106174513_VariantNameOnSalesInvoiceItem`: adds nullable `VariantName`
+  column to `SalesInvoiceItems` (safe: old invoices display the product name).
+- **`IBarcodeService.FindVariantIdByBarcodeAsync`**: looks up a variant by barcode via
+  `ProductBarcodes` (not the legacy `Product.Barcode`). `SalesForm.ScanBarcode` uses it.
+- **ADR-12**: rule for variant without price/cost (inherit sale price from product; zero cost
+  marks `IsCostEstimated = true`).
+
+### Changed
+- `SaleItemDto` now includes `VariantId` and `VariantName`.
+- `SalesInvoiceItem` entity gains `VariantName` property.
+
+### Verified
+- Build 0 errors; Unit **146/146**; Integration **70/70**.
+- Migration audit on real DB copy: PASSED — integrity `ok → ok`, FK 0→0, **0 rows removed,
+  0 rows changed**, 3 seeded customers added, 15→16 migrations, 0 tables/columns lost.
+- Migration audit on synthetic DB (5,000 variants): PASSED — **0 rows removed, 0 rows
+  changed**, 60 tables both, 16 migrations both.
+- `IBarcodeService` gained `FindVariantIdByBarcodeAsync`; `UiLayoutAudit.StubBarcodeService`
+  updated.
+
 ## [Unreleased] - 2026-11-06 (six cleanup items before Phase 5)
 
 ### Added

@@ -43,6 +43,14 @@ internal static class Program
             return;
         }
 
+        // POS performance benchmark:
+        //   DzentoPOS2.WinForms.exe --pos-benchmark [--variants N] [--output path]
+        if (args.Any(a => string.Equals(a, "--pos-benchmark", StringComparison.OrdinalIgnoreCase)))
+        {
+            Environment.ExitCode = PosBenchmark.Run(args);
+            return;
+        }
+
         var services = new ServiceCollection();
 
         IConfiguration configuration =

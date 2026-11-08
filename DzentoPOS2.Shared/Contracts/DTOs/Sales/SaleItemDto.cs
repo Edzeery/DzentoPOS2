@@ -4,6 +4,12 @@ namespace DzentoPOS2.Shared.Contracts.DTOs.Sales
     {
         public Guid Id { get; set; }
         public Guid ProductId { get; set; }
+
+        /// <summary>Variant sold. Empty for legacy invoices created before variants.</summary>
+        public Guid VariantId { get; set; }
+
+        /// <summary>Variant name at sale time. Product name for legacy invoices.</summary>
+        public string VariantName { get; set; } = string.Empty;
         public string ProductName { get; set; } = string.Empty;
         public string SKU { get; set; } = string.Empty;
         public decimal Quantity { get; set; }

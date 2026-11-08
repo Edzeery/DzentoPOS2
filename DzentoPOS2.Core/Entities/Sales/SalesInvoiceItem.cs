@@ -33,6 +33,10 @@ namespace DzentoPOS2.Core.Entities.Sales
         /// <summary>True when UnitCost/ListPrice were backfilled from current data (legacy invoices).</summary>
         public bool IsCostEstimated { get; set; }
 
+        /// <summary>Variant name frozen at sale time. Null/empty for legacy invoices
+        /// (they display the product name instead).</summary>
+        public string? VariantName { get; set; }
+
         /// <summary>Free text of the line (empty for regular product lines).</summary>
         public string Description { get; set; } = string.Empty;
     }

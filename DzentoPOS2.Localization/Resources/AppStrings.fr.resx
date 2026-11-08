@@ -1714,4 +1714,25 @@
   <data name="BackupLocationInvalid" xml:space="preserve">
     <value>Le dossier sélectionné est invalide ou non accessible en écriture.</value>
   </data>
+  <data name="SharedBarcodeHint" xml:space="preserve">
+    <value>Ce code-barres est lié à plusieurs produits. Choisissez-en un :</value>
+  </data>
+  <data name="SelectVariant" xml:space="preserve">
+    <value>Sélectionner une variante</value>
+  </data>
+  <data name="PleaseSelectVariant" xml:space="preserve">
+    <value>Veuillez sélectionner une variante</value>
+  </data>
+  <data name="SelectSharedBarcode" xml:space="preserve">
+    <value>Sélectionner un code-barres partagé</value>
+  </data>
+  <data name="StockLabel" xml:space="preserve">
+    <value>Stock</value>
+  </data>
+  <data name="Select" xml:space="preserve">
+    <value>Sélectionner</value>
+  </data>
+  <data name="AddToCart" xml:space="preserve">
+    <value>Ajouter au panier</value>
+  </data>
 </root>

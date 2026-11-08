@@ -1,3 +1,4 @@
+using DzentoPOS2.App.Services.Sales;
 using DzentoPOS2.Core.Entities.Inventory;
 using DzentoPOS2.Data.Context;
 using Microsoft.EntityFrameworkCore;
@@ -7,11 +8,13 @@ namespace DzentoPOS2.App.Services.Inventory;
 public class BarcodeService : IBarcodeService
 {
     private readonly AppDbContext _context;
+    private readonly ICatalogChangeNotifier _notifier;
     private static int _counter = 1000;
 
-    public BarcodeService(AppDbContext context)
+    public BarcodeService(AppDbContext context, ICatalogChangeNotifier notifier)
     {
         _context = context;
+        _notifier = notifier;
     }
 
     public async Task<Guid> GetDefaultVariantIdAsync(Guid productId)
@@ -73,6 +76,8 @@ public class BarcodeService : IBarcodeService
             IsPrimary = isPrimary
         });
         await _context.SaveChangesAsync();
+
+        _notifier.NotifyBarcodeChanged(barcode.Trim());
     }
 
     public async Task RemoveByValueAsync(Guid variantId, string barcode)
@@ -82,6 +87,8 @@ public class BarcodeService : IBarcodeService
         {
             _context.ProductBarcodes.Remove(b);
             await _context.SaveChangesAsync();
+
+            _notifier.NotifyBarcodeChanged(barcode.Trim());
         }
     }
 
@@ -92,11 +99,36 @@ public class BarcodeService : IBarcodeService
         {
             _context.ProductBarcodes.Remove(b);
             await _context.SaveChangesAsync();
+
+            _notifier.NotifyBarcodeChanged(b.Barcode);
         }
     }
 
     public string GenerateInternal()
     {
         return "INT-" + Interlocked.Increment(ref _counter).ToString("D6");
+    }
+
+    public async Task<Guid?> FindVariantIdByBarcodeAsync(string barcode)
+    {
+        if (string.IsNullOrWhiteSpace(barcode)) return null;
+        var b = await _context.ProductBarcodes
+            .AsNoTracking()
+            .Where(x => x.Barcode == barcode.Trim())
+            .OrderByDescending(x => x.IsPrimary)
+            .Select(x => x.VariantId)
+            .FirstOrDefaultAsync();
+        return b == Guid.Empty ? null : b;
+    }
+
+    public async Task<List<Guid>> FindVariantIdsByBarcodeAsync(string barcode)
+    {
+        if (string.IsNullOrWhiteSpace(barcode)) return new List<Guid>();
+        return await _context.ProductBarcodes
+            .AsNoTracking()
+            .Where(x => x.Barcode == barcode.Trim())
+            .Select(x => x.VariantId)
+            .Distinct()
+            .ToListAsync();
     }
 }

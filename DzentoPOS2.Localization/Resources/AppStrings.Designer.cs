@@ -151,6 +151,15 @@ namespace DzentoPOS2.Localization.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Add to Cart.
+        /// </summary>
+        public static string AddToCart {
+            get {
+                return ResourceManager.GetString("AddToCart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Add Category.
         /// </summary>
         public static string AddCategory {
@@ -2270,6 +2279,15 @@ namespace DzentoPOS2.Localization.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Too many failed attempts. Try again in 15 minutes..
         /// </summary>
+        /// <summary>
+        ///   Looks up a localized string similar to Please select a variant.
+        /// </summary>
+        public static string PleaseSelectVariant {
+            get {
+                return ResourceManager.GetString("PleaseSelectVariant", resourceCulture);
+            }
+        }
+        
         public static string RecoveryKeyLockedOut {
             get {
                 return ResourceManager.GetString("RecoveryKeyLockedOut", resourceCulture);
@@ -2783,6 +2801,15 @@ namespace DzentoPOS2.Localization.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Select Branch....
         /// </summary>
+        /// <summary>
+        ///   Looks up a localized string similar to Select.
+        /// </summary>
+        public static string Select {
+            get {
+                return ResourceManager.GetString("Select", resourceCulture);
+            }
+        }
+        
         public static string SelectBranch {
             get {
                 return ResourceManager.GetString("SelectBranch", resourceCulture);
@@ -2864,6 +2891,24 @@ namespace DzentoPOS2.Localization.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Sale.
         /// </summary>
+        /// <summary>
+        ///   Looks up a localized string similar to Select Shared Barcode.
+        /// </summary>
+        public static string SelectSharedBarcode {
+            get {
+                return ResourceManager.GetString("SelectSharedBarcode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select Variant.
+        /// </summary>
+        public static string SelectVariant {
+            get {
+                return ResourceManager.GetString("SelectVariant", resourceCulture);
+            }
+        }
+        
         public static string Sell {
             get {
                 return ResourceManager.GetString("Sell", resourceCulture);
@@ -2963,6 +3008,15 @@ namespace DzentoPOS2.Localization.Resources {
         /// <summary>
         ///   Looks up a localized string similar to SKU.
         /// </summary>
+        /// <summary>
+        ///   Looks up a localized string similar to Shared Barcode Hint.
+        /// </summary>
+        public static string SharedBarcodeHint {
+            get {
+                return ResourceManager.GetString("SharedBarcodeHint", resourceCulture);
+            }
+        }
+        
         public static string SKU {
             get {
                 return ResourceManager.GetString("SKU", resourceCulture);
@@ -2999,6 +3053,15 @@ namespace DzentoPOS2.Localization.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Stock.
         /// </summary>
+        /// <summary>
+        ///   Looks up a localized string similar to Stock.
+        /// </summary>
+        public static string StockLabel {
+            get {
+                return ResourceManager.GetString("StockLabel", resourceCulture);
+            }
+        }
+        
         public static string StockTab {
             get {
                 return ResourceManager.GetString("StockTab", resourceCulture);

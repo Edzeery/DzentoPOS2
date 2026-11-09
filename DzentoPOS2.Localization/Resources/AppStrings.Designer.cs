@@ -455,13 +455,40 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("Branch", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized string similar to Branch is not active..
+        /// </summary>
+        public static string BranchSwitchBranchInactive {
+            get {
+                return ResourceManager.GetString("BranchSwitchBranchInactive", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Cart is not empty..
+        /// </summary>
+        public static string BranchSwitchCartNotEmpty {
+            get {
+                return ResourceManager.GetString("BranchSwitchCartNotEmpty", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Cannot switch branch (permission or non-empty cart)..
         /// </summary>
         public static string BranchSwitchFailed {
             get {
                 return ResourceManager.GetString("BranchSwitchFailed", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to You do not have permission to switch branches..
+        /// </summary>
+        public static string BranchSwitchNoPermission {
+            get {
+                return ResourceManager.GetString("BranchSwitchNoPermission", resourceCulture);
             }
         }
         
@@ -2473,6 +2500,15 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("ProductActive", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Product Kind.
+        /// </summary>
+        public static string ProductKindLabel {
+            get {
+                return ResourceManager.GetString("ProductKindLabel", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Product.
@@ -4246,6 +4282,15 @@ namespace DzentoPOS2.Localization.Resources {
         public static string Barcodes {
             get {
                 return ResourceManager.GetString("Barcodes", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Brand.
+        /// </summary>
+        public static string BrandLabel {
+            get {
+                return ResourceManager.GetString("BrandLabel", resourceCulture);
             }
         }
         public static string CurrencyUsDollar {

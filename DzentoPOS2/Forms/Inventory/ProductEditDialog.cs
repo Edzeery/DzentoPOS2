@@ -48,11 +48,12 @@ public class ProductEditDialog : ThemedDialog
     private readonly DzentoPOS2.WinForms.Services.Images.IImageService? _imageService;
     private readonly IBarcodeService? _barcodeService;
     private readonly Microsoft.EntityFrameworkCore.IDbContextFactory<DzentoPOS2.Data.Context.AppDbContext>? _contextFactory;
+    private readonly DzentoPOS2.App.Services.Systems.ICapabilityService? _capabilityService;
     private string? _imagePath;
     private string? _thumbnailPath;
     private readonly PictureBox _picImage = new() { Size = new Size(96, 96), SizeMode = PictureBoxSizeMode.Zoom, BorderStyle = BorderStyle.FixedSingle };
 
-    public ProductEditDialog(IProductService productService, ILanguageService languageService, ProductDto? existing = null, IBarcodeScanService? scanService = null, DzentoPOS2.WinForms.Services.Images.IImageService? imageService = null, IBarcodeService? barcodeService = null, Microsoft.EntityFrameworkCore.IDbContextFactory<DzentoPOS2.Data.Context.AppDbContext>? contextFactory = null)
+    public ProductEditDialog(IProductService productService, ILanguageService languageService, ProductDto? existing = null, IBarcodeScanService? scanService = null, DzentoPOS2.WinForms.Services.Images.IImageService? imageService = null, IBarcodeService? barcodeService = null, Microsoft.EntityFrameworkCore.IDbContextFactory<DzentoPOS2.Data.Context.AppDbContext>? contextFactory = null, DzentoPOS2.App.Services.Systems.ICapabilityService? capabilityService = null)
     {
         _productService = productService;
         _languageService = languageService;
@@ -61,6 +62,7 @@ public class ProductEditDialog : ThemedDialog
         _imageService = imageService;
         _barcodeService = barcodeService;
         _contextFactory = contextFactory;
+        _capabilityService = capabilityService;
         _imagePath = existing?.ImagePath;
         _thumbnailPath = existing?.ThumbnailPath;
 
@@ -81,7 +83,7 @@ public class ProductEditDialog : ThemedDialog
         };
 
         _lblName = lbl(AppStrings.ProductLabel + ":", 20);
-        _lblSKU = lbl("SKU:", 58);
+        _lblSKU = lbl(AppStrings.SKU, 58);
         _lblBarcode = lbl(AppStrings.BarcodeField + ":", 96);
         _lblCategory = lbl(AppStrings.CategoryFilter + ":", 134);
         _lblUnit = lbl(AppStrings.Unit + ":", 172);
@@ -89,8 +91,8 @@ public class ProductEditDialog : ThemedDialog
         _lblSale = lbl(AppStrings.SalePrice + ":", 248);
         _lblMinStock = lbl(AppStrings.MinimumStock + ":", 286);
         _lblOpeningStock = lbl(AppStrings.OpeningStock + ":", 324);
-        _lblBrand = lbl("Brand:", 362);
-        _lblProductKind = lbl("Kind:", 400);
+        _lblBrand = lbl(AppStrings.BrandLabel, 362);
+        _lblProductKind = lbl(AppStrings.ProductKindLabel, 400);
 
         _txtName = new TextBox { Location = new Point(150, 20), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F) };
         _txtSKU = new TextBox { Location = new Point(150, 58), Size = new Size(330, 28), Font = new Font("Segoe UI", 10F) };
@@ -247,9 +249,27 @@ public class ProductEditDialog : ThemedDialog
         _cmbUnit.SelectedIndex = 0;
 
         _cmbProductKind.Items.Clear();
+        // Filter product kinds based on branch capabilities.
+        var caps = _capabilityService != null
+            ? await _capabilityService.GetCapabilitiesAsync()
+            : (DzentoPOS2.Core.Enums.BranchCapability)unchecked((int)0xFFFFFFFF); // all if no service
+
         foreach (DzentoPOS2.Core.Enums.ProductKind k in Enum.GetValues(typeof(DzentoPOS2.Core.Enums.ProductKind)))
-            _cmbProductKind.Items.Add(k);
-        _cmbProductKind.SelectedIndex = 0;
+        {
+            bool allowed = k switch
+            {
+                DzentoPOS2.Core.Enums.ProductKind.Standard => true,
+                DzentoPOS2.Core.Enums.ProductKind.Weighed => (caps & DzentoPOS2.Core.Enums.BranchCapability.WeightUnit) != 0,
+                DzentoPOS2.Core.Enums.ProductKind.Serialized => (caps & DzentoPOS2.Core.Enums.BranchCapability.SerialNumber) != 0,
+                DzentoPOS2.Core.Enums.ProductKind.Service => (caps & DzentoPOS2.Core.Enums.BranchCapability.NoStock) != 0,
+                DzentoPOS2.Core.Enums.ProductKind.DigitalCode => (caps & DzentoPOS2.Core.Enums.BranchCapability.DigitalCode) != 0,
+                _ => true
+            };
+            if (allowed)
+                _cmbProductKind.Items.Add(k);
+        }
+        if (_cmbProductKind.Items.Count > 0)
+            _cmbProductKind.SelectedIndex = 0;
     }
 
     private static void SelectCombo(ComboBox cmb, Guid id)

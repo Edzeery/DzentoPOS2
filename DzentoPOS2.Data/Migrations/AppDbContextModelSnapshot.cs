@@ -479,6 +479,46 @@ namespace DzentoPOS2.Data.Migrations
                     b.ToTable("Branches", (string)null);
                 });
 
+            modelBuilder.Entity("DzentoPOS2.Core.Entities.Businesses.BranchActivity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ActivityType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("BranchId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BranchId", "ActivityType")
+                        .IsUnique();
+
+                    b.ToTable("BranchActivities", (string)null);
+                });
+
             modelBuilder.Entity("DzentoPOS2.Core.Entities.Businesses.CashRegister", b =>
                 {
                     b.Property<Guid>("Id")
@@ -3092,6 +3132,17 @@ namespace DzentoPOS2.Data.Migrations
                     b.Navigation("Address");
 
                     b.Navigation("PhoneNumber");
+                });
+
+            modelBuilder.Entity("DzentoPOS2.Core.Entities.Businesses.BranchActivity", b =>
+                {
+                    b.HasOne("DzentoPOS2.Core.Entities.Businesses.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Branch");
                 });
 
             modelBuilder.Entity("DzentoPOS2.Core.Entities.Businesses.CashRegister", b =>

@@ -27,6 +27,19 @@ public class ActiveBranchContext : IActiveBranchContext
     public ActiveBranchContext(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
+        // Subscribe to user changes for reset.
+        var currentUser = serviceProvider.GetRequiredService<ICurrentUserService>();
+        currentUser.UserChanged += (_, _) => Reset();
+    }
+
+    private void Reset()
+    {
+        lock (_gate)
+        {
+            _activeBranchId = Guid.Empty;
+            _activeBranchName = string.Empty;
+            _initialized = false;
+        }
     }
 
     public Guid ActiveBranchId
@@ -47,7 +60,22 @@ public class ActiveBranchContext : IActiveBranchContext
         }
     }
 
-    public bool CanSwitchBranch => true;
+    public bool CanSwitchBranch
+    {
+        get
+        {
+            try
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var permissionService = scope.ServiceProvider.GetRequiredService<IPermissionService>();
+                return permissionService.HasPermissionAsync(Permissions.BranchesSwitch).GetAwaiter().GetResult();
+            }
+            catch
+            {
+                return false;
+            }
+        }
+    }
 
     public event EventHandler<ActiveBranchChangedEventArgs>? BranchChanged;
 
@@ -60,8 +88,11 @@ public class ActiveBranchContext : IActiveBranchContext
             using var scope = _serviceProvider.CreateScope();
             var currentUser = scope.ServiceProvider.GetRequiredService<ICurrentUserService>();
             var user = currentUser.User;
-            _activeBranchId = user?.BranchId ?? Guid.Empty;
-            _activeBranchName = user?.BranchName ?? string.Empty;
+            if (user is null)
+                return; // Do not initialize if no user.
+
+            _activeBranchId = user.BranchId ?? Guid.Empty;
+            _activeBranchName = user.BranchName ?? string.Empty;
             _initialized = true;
         }
     }

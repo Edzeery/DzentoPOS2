@@ -37,7 +37,7 @@ public sealed class StoreContextService : IStoreContextService
         _context = context;
         _currentUser = currentUser;
         _activeBranch = activeBranch;
-        _activeBranch.BranchChanged += (_, _) => Invalidate();
+        // No subscription needed: cache is indexed by branch ID.
     }
 
     public void Invalidate()

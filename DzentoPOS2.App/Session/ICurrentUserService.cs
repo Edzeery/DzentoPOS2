@@ -24,5 +24,8 @@ namespace DzentoPOS2.App.Session
         void SetUser(UserSession user);
 
         void Clear();
+
+        /// <summary>Raised when the signed-in user changes (login or logout).</summary>
+        event EventHandler? UserChanged;
     }
 }

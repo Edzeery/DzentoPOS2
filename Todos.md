@@ -234,3 +234,11 @@
 | # | Task | Status | Evidence |
 |---|---|---|---|
 | N.6.0a | IActiveBranchContext (Singleton) + StoreContextService + PosProductStore stock filter + MainForm selector + SalesForm guard | Done | build 0 errors; unit 174/174; integration 70/70; migration audit PASSED; layout audit 0 violations |
+
+### Hotfix (6.0a hardening) — commit 6ee4171
+- Reset ActiveBranchContext on login/logout (UserChanged event)
+- Guard enforcement: IBranchSwitchGuardRegistry (list-based), CanSwitchBranch from permission, distinct AppStrings messages, revert selector on failure
+- Subscription cleanup: removed StoreContextService subscription, PosProductStore unsubscribes in Dispose
+- ReloadStockAsync: awaitable, cancellation, logging, stale-result protection
+- AppStrings: BranchSwitchNoPermission, BranchSwitchCartNotEmpty, BranchSwitchBranchInactive
+- Build 0 errors; unit 174/174; integration 70/70; migration audit PASSED; layout audit 0 violations

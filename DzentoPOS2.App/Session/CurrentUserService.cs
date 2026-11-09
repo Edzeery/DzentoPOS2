@@ -23,12 +23,16 @@ namespace DzentoPOS2.App.Session
         {
             User = user;
             DzentoPOS2.Core.Services.CurrentUserContext.UserId = user.UserId;
+            UserChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void Clear()
         {
             User = null;
             DzentoPOS2.Core.Services.CurrentUserContext.UserId = null;
+            UserChanged?.Invoke(this, EventArgs.Empty);
         }
+
+        public event EventHandler? UserChanged;
     }
 }

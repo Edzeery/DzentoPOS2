@@ -3,8 +3,7 @@ using System;
 namespace DzentoPOS2.App.Services.Systems;
 
 /// <summary>
-/// Singleton guard that tracks whether the current UI allows a branch switch.
-/// Pages with a non-empty cart set CanSwitchBranch = false.
+/// Default page-level guard. Pages set CanSwitchBranch based on their state.
 /// </summary>
 public class BranchSwitchGuard : IBranchSwitchGuard
 {

@@ -22,6 +22,7 @@ namespace DzentoPOS2.App.Services.Accounting;
         private readonly AppDbContext _context;
         private readonly DzentoPOS2.App.Services.Systems.IStoreContextService _storeContext;
         private readonly IAuthorizationGuard _guard;
+    private readonly DzentoPOS2.App.Services.Systems.IActiveBranchContext _activeBranch;
 
     public ExpenseService(
         IExpenseRepository expenseRepo,
@@ -31,7 +32,8 @@ namespace DzentoPOS2.App.Services.Accounting;
         ICurrentUserService currentUser,
         AppDbContext context,
         DzentoPOS2.App.Services.Systems.IStoreContextService storeContext,
-        IAuthorizationGuard guard)
+        IAuthorizationGuard guard,
+        DzentoPOS2.App.Services.Systems.IActiveBranchContext activeBranch)
     {
         _expenseRepo = expenseRepo;
         _categoryRepo = categoryRepo;
@@ -41,11 +43,17 @@ namespace DzentoPOS2.App.Services.Accounting;
         _context = context;
         _storeContext = storeContext;
         _guard = guard;
+        _activeBranch = activeBranch;
     }
 
-    public async Task<List<ExpenseDto>> GetAllAsync()
+    public async Task<List<ExpenseDto>> GetAllAsync(Guid? branchId = null, bool viewAll = false)
     {
         var expenses = await _expenseRepo.GetAllAsync();
+        if (!viewAll)
+        {
+            var activeBranchId = branchId ?? _activeBranch.ActiveBranchId;
+            expenses = expenses.Where(e => e.BranchId == activeBranchId).ToList();
+        }
         return await MapWithCategory(expenses);
     }
 

@@ -4,7 +4,7 @@ namespace DzentoPOS2.App.Services.Sales
 {
     public interface ISaleService
     {
-        Task<List<SaleDto>> GetAllAsync();
+        Task<List<SaleDto>> GetAllAsync(Guid? branchId = null, bool viewAll = false);
         Task<SaleDto?> GetByIdAsync(Guid id);
         Task<List<SaleDto>> GetByCustomerAsync(Guid customerId);
         Task<SaleDto> CreateAsync(CreateSaleDto dto);

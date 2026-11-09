@@ -33,6 +33,7 @@ namespace DzentoPOS2.App.Services.Sales
         private readonly DzentoPOS2.App.Authorization.IAuthorizationGuard _authorizationGuard;
         private readonly IPermissionService _permissionService;
     private readonly IPosProductStore _posProductStore;
+    private readonly IActiveBranchContext _activeBranch;
 
         public SaleService(
             ISalesInvoiceRepository invoiceRepo,
@@ -48,7 +49,8 @@ namespace DzentoPOS2.App.Services.Sales
             ISalesEventPublisher events,
             DzentoPOS2.App.Authorization.IAuthorizationGuard authorizationGuard,
             IPermissionService permissionService,
-            IPosProductStore posProductStore)
+            IPosProductStore posProductStore,
+        IActiveBranchContext activeBranch)
         {
             _invoiceRepo = invoiceRepo;
             _unitOfWork = unitOfWork;
@@ -64,14 +66,23 @@ namespace DzentoPOS2.App.Services.Sales
             _authorizationGuard = authorizationGuard;
             _permissionService = permissionService;
             _posProductStore = posProductStore;
+            _activeBranch = activeBranch;
         }
 
-        public async Task<List<SaleDto>> GetAllAsync()
+        public async Task<List<SaleDto>> GetAllAsync(Guid? branchId = null, bool viewAll = false)
         {
-            var invoices = await _context.SalesInvoices
+            var query = _context.SalesInvoices
                 .AsNoTracking()
                 .Include(x => x.Items)
-                .Where(x => !x.IsDeleted)
+                .Where(x => !x.IsDeleted);
+
+            if (!viewAll)
+            {
+                var activeBranchId = branchId ?? _activeBranch.ActiveBranchId;
+                query = query.Where(x => x.BranchId == activeBranchId);
+            }
+
+            var invoices = await query
                 .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync();
 

@@ -28,6 +28,9 @@ namespace DzentoPOS2.Core.Entities.Inventory
 
         public bool IsDefault { get; set; } = false;
 
+        /// <summary>Warranty period in months (null = no warranty).</summary>
+        public int? WarrantyMonths { get; set; }
+
         public string? ImagePath { get; set; }
 
         public string? ThumbnailPath { get; set; }

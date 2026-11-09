@@ -37,6 +37,14 @@ namespace DzentoPOS2.Data.Configurations.Sales
             builder.Property(x => x.VariantName)
                 .HasMaxLength(200);
 
+            builder.Property(x => x.SerialNumber)
+                .HasMaxLength(100);
+
+            builder.Property(x => x.IMEI)
+                .HasMaxLength(20);
+
+            builder.Property(x => x.WarrantyExpiry);
+
             builder.Property(x => x.Description)
                 .IsRequired()
                 .HasMaxLength(1000)

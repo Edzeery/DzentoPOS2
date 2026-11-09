@@ -1,9 +1,9 @@
 {
-  "GeneratedAt": "2026-11-09T15:48:56.622542+01:00",
+  "GeneratedAt": "2026-11-09T18:42:46.8729027+01:00",
   "SourceDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\DzentoPOS2\\Database\\DzentoPOS.db",
   "SourceBytes": 1200128,
   "SourceHadWal": false,
-  "WorkDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\Temp\\DzentoPOS2.MigrationAudit\\20261109-154855\\DzentoPOS.db",
+  "WorkDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\Temp\\DzentoPOS2.MigrationAudit\\20261109-184245\\DzentoPOS.db",
   "IntegrityBefore": "ok",
   "IntegrityAfter": "ok",
   "ForeignKeyViolationsBefore": 0,
@@ -11,7 +11,7 @@
   "JournalModeBefore": "wal",
   "JournalModeAfter": "wal",
   "TableCountBefore": 62,
-  "TableCountAfter": 62,
+  "TableCountAfter": 64,
   "RowCountsBefore": {
     "ActivityLogs": 0,
     "AppSettings": 19,
@@ -120,6 +120,7 @@
     "ReportTemplates": 0,
     "RolePermissions": 98,
     "Roles": 3,
+    "SalesInvoiceItemUnits": 0,
     "SalesInvoiceItems": 5,
     "SalesInvoices": 4,
     "SalesPayments": 4,
@@ -127,6 +128,7 @@
     "SalesReturnItems": 0,
     "SalesReturns": 0,
     "Sequences": 0,
+    "SerialUnits": 0,
     "StockAdjustments": 0,
     "StockTransferItems": 0,
     "StockTransfers": 0,
@@ -137,23 +139,24 @@
     "Users": 3,
     "VariantAttributes": 0,
     "Warehouses": 1,
-    "__EFMigrationsHistory": 20,
+    "__EFMigrationsHistory": 21,
     "__EFMigrationsLock": 0
   },
   "RowsRemoved": 0,
   "RowsChanged": 0,
-  "RowsAdded": 6,
+  "RowsAdded": 7,
   "MissingTables": [],
   "MissingColumns": [],
   "RemovedRowKeys": [],
   "ChangedRowDetails": [],
   "AddedRowKeys": [
-    "AppSettings:str:A19C240E-292C-47FE-BBC2-F4DEDBE3DAD8\u0001",
-    "BranchActivities:str:19372166-1217-4DD7-9344-1A5CDC152AB6\u0001",
-    "BranchActivities:str:87E6B897-7156-48EE-B8FB-E4FFD49493A2\u0001",
-    "BranchActivities:str:925B8DB8-BE13-48C9-B9C9-7AC75AE8286E\u0001",
-    "Customers:str:590AB7FF-B0CC-4C8D-85CE-F49A3A15C71D\u0001",
-    "Customers:str:F9834460-4415-4313-BF32-355881BFD127\u0001"
+    "AppSettings:str:3BA40176-42DE-4931-8CFA-449BBEB768CD\u0001",
+    "BranchActivities:str:48DE5CF4-693B-4B6B-B6BE-8B0CDAF6FBB0\u0001",
+    "BranchActivities:str:682A531A-F216-4557-BB13-B63D785E5CCA\u0001",
+    "BranchActivities:str:D06B22AC-EEC9-44A1-A02D-0BFD0EE2640A\u0001",
+    "Customers:str:11FE80DC-157C-4A23-8109-551D3BBCA27F\u0001",
+    "Customers:str:96788CB2-A00A-4011-99B1-4C3ED45721F9\u0001",
+    "__EFMigrationsHistory:str:20261109173010_SerialUnitAndWarranty\u0001"
   ],
   "MigrationsBefore": [
     "20260517183403_InitialCreate",
@@ -197,7 +200,8 @@
     "20261107124946_PhaseC_IndexesAndAudit",
     "20261107185302_PhaseInventorySnapshot",
     "20261108153855_BranchActivityAndCapabilities",
-    "20261109120211_InventorySnapshotBranchId"
+    "20261109120211_InventorySnapshotBranchId",
+    "20261109173010_SerialUnitAndWarranty"
   ],
   "MigrationsRemoved": [],
   "LegacyColumnUsage": {

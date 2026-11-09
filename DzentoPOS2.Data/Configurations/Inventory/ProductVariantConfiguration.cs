@@ -55,6 +55,8 @@ namespace DzentoPOS2.Data.Configurations.Inventory
                     .HasPrecision(18, 2);
             });
 
+            builder.Property(x => x.WarrantyMonths);
+
             builder.Property(x => x.ImagePath)
                 .HasMaxLength(500);
 

@@ -101,6 +101,8 @@ public class ActiveBranchContext : IActiveBranchContext
         Guid branchId,
         CancellationToken cancellationToken = default)
     {
+        EnsureInitialized();
+
         // Permission check (resolve scoped service).
         using var scope = _serviceProvider.CreateScope();
         var permissionService = scope.ServiceProvider.GetRequiredService<IPermissionService>();

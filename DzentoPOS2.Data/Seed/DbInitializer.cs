@@ -44,6 +44,7 @@ namespace DzentoPOS2.Data.Seed
             await context.Database.MigrateAsync();
 
             await PermissionSeeder.SeedAsync(context);
+            await BranchPermissionSeeder.SeedAsync(context);
 
             await RoleSeeder.SeedAsync(context);
 

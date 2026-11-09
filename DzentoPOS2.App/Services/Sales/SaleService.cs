@@ -321,8 +321,31 @@ namespace DzentoPOS2.App.Services.Sales
                         var salePrice = variant.SalePrice.Amount > 0
                             ? variant.SalePrice.Amount
                             : product.SalePrice?.Amount ?? 0m;
-                        var costAmount = variant.CostPrice.Amount;
-                        var isCostEstimated = costAmount == 0;
+
+                        // For serialized items, use the serial unit's actual cost.
+                        decimal costAmount = variant.CostPrice.Amount;
+                        bool isCostEstimated = costAmount == 0;
+                        string? serialNumber = null;
+                        string? imei = null;
+                        DateTime? warrantyExpiry = null;
+
+                        if (item.SerialUnitId != Guid.Empty)
+                        {
+                            var serialUnit = await _context.SerialUnits
+                                .AsNoTracking()
+                                .FirstOrDefaultAsync(su => su.Id == item.SerialUnitId && su.Status == Core.Enums.SerialUnitStatus.Available);
+                            if (serialUnit != null)
+                            {
+                                costAmount = serialUnit.UnitCost;
+                                isCostEstimated = false;
+                                serialNumber = serialUnit.SerialNumber;
+                                imei = serialUnit.Imei1;
+                                if (variant.WarrantyMonths.HasValue && variant.WarrantyMonths.Value > 0)
+                                {
+                                    warrantyExpiry = _clock.UtcNow.AddMonths(variant.WarrantyMonths.Value);
+                                }
+                            }
+                        }
 
                         var line = new SalesInvoiceItem
                         {
@@ -336,6 +359,9 @@ namespace DzentoPOS2.App.Services.Sales
                             ListPrice = product.SalePrice?.Amount ?? 0m,
                             DiscountAmount = shares[itemIndex],
                             IsCostEstimated = isCostEstimated,
+                            SerialNumber = serialNumber,
+                            IMEI = imei,
+                            WarrantyExpiry = warrantyExpiry,
                             Description = string.IsNullOrWhiteSpace(item.Description) ? string.Empty : item.Description.Trim()
                         };
                         invoice.Items.Add(line);
@@ -387,6 +413,36 @@ namespace DzentoPOS2.App.Services.Sales
                                 i.Quantity))
                             .ToList(),
                         _currentUser.UserId);
+
+                    // Mark serial units as sold and create links.
+                    var saleDate = _clock.UtcNow;
+                    foreach (var item in dto.Items)
+                    {
+                        if (item.SerialUnitId != Guid.Empty)
+                        {
+                            var serialUnit = await _context.SerialUnits
+                                .FirstOrDefaultAsync(su => su.Id == item.SerialUnitId);
+                            if (serialUnit != null)
+                            {
+                                serialUnit.Status = Core.Enums.SerialUnitStatus.Sold;
+                                serialUnit.SalesInvoiceItemId = invoice.Items
+                                    .FirstOrDefault(l => l.ProductId == item.ProductId)?.Id;
+                                serialUnit.SoldAt = saleDate;
+                                serialUnit.WarrantyStartsAt = saleDate;
+                                if (serialUnit.Variant != null && serialUnit.Variant.WarrantyMonths.HasValue && serialUnit.Variant.WarrantyMonths.Value > 0)
+                                {
+                                    serialUnit.WarrantyExpiresAt = saleDate.AddMonths(serialUnit.Variant.WarrantyMonths.Value);
+                                }
+
+                                // Create link
+                                _context.SalesInvoiceItemUnits.Add(new SalesInvoiceItemUnit
+                                {
+                                    SalesInvoiceItemId = serialUnit.SalesInvoiceItemId ?? Guid.Empty,
+                                    SerialUnitId = serialUnit.Id
+                                });
+                            }
+                        }
+                    }
 
                     await _unitOfWork.SaveChangesAsync();
                     await _unitOfWork.CommitTransactionAsync();
@@ -622,6 +678,9 @@ namespace DzentoPOS2.App.Services.Sales
                     ProductId = i.ProductId,
                     VariantId = i.VariantId,
                     VariantName = i.VariantName ?? string.Empty,
+                    SerialNumber = i.SerialNumber,
+                    IMEI = i.IMEI,
+                    WarrantyExpiry = i.WarrantyExpiry,
                     Quantity = i.Quantity,
                     Price = i.Price,
                     Total = i.Total,

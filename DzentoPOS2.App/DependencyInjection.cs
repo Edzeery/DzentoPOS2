@@ -87,6 +87,7 @@ namespace DzentoPOS2.App
 
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IBarcodeService, BarcodeService>();
+            services.AddScoped<ISerialUnitService, SerialUnitService>();
             services.AddScoped<IPosProductStore, PosProductStore>();
             services.AddSingleton<ICatalogChangeNotifier, CatalogChangeNotifier>();
             services.AddScoped<IStockService, StockService>();

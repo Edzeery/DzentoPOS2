@@ -32,6 +32,7 @@ public class ProductService : IProductService
     private readonly DzentoPOS2.App.Authorization.IAuthorizationGuard _authorizationGuard;
     private readonly RegionalContext _regional;
     private readonly ICatalogChangeNotifier _catalogNotifier;
+    private readonly IActiveBranchContext _activeBranch;
 
     public ProductService(
         IProductRepository productRepo,
@@ -47,7 +48,8 @@ public class ProductService : IProductService
         ICurrentUserService currentUser,
         DzentoPOS2.App.Authorization.IAuthorizationGuard authorizationGuard,
         RegionalContext regional,
-        ICatalogChangeNotifier catalogNotifier)
+        ICatalogChangeNotifier catalogNotifier,
+        IActiveBranchContext activeBranch)
     {
         _productRepo = productRepo;
         _categoryRepo = categoryRepo;
@@ -63,6 +65,7 @@ public class ProductService : IProductService
         _authorizationGuard = authorizationGuard;
         _regional = regional;
         _catalogNotifier = catalogNotifier;
+        _activeBranch = activeBranch;
     }
 
     public async Task<List<ProductDto>> GetAllAsync()
@@ -316,12 +319,24 @@ public class ProductService : IProductService
         }
     }
 
-    public async Task<List<ProductStockDto>> GetProductStocksAsync(Guid productId)
+    public async Task<List<ProductStockDto>> GetProductStocksAsync(Guid productId, bool viewAll = false)
     {
-        var stocks = await _context.ProductStocks
+        var query = _context.ProductStocks
             .Where(s => s.ProductId == productId)
-            .Include(s => s.Warehouse)
-            .ToListAsync();
+            .Include(s => s.Warehouse);
+
+        List<ProductStock> stocks;
+        if (viewAll)
+        {
+            stocks = await query.ToListAsync();
+        }
+        else
+        {
+            var branchId = _activeBranch.ActiveBranchId;
+            stocks = await query
+                .Where(s => s.Warehouse != null && s.Warehouse.BranchId == branchId)
+                .ToListAsync();
+        }
 
         return stocks
             .GroupBy(s => new { s.WarehouseId, WarehouseName = s.Warehouse?.Name ?? "" })

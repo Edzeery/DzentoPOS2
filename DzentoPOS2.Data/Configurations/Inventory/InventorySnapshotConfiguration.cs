@@ -13,7 +13,14 @@ namespace DzentoPOS2.Data.Configurations.Inventory
             builder.HasKey(x => x.Id);
 
             builder.Property(x => x.SnapshotDate).IsRequired();
-            builder.HasIndex(x => x.SnapshotDate).IsUnique();
+            // Legacy aggregate (BranchId IS NULL): unique on SnapshotDate
+            builder.HasIndex(x => x.SnapshotDate)
+                .HasFilter("[BranchId] IS NULL")
+                .IsUnique();
+            // Per-branch: unique on (BranchId, SnapshotDate)
+            builder.HasIndex(x => new { x.BranchId, x.SnapshotDate })
+                .HasFilter("[BranchId] IS NOT NULL")
+                .IsUnique();
 
             builder.Property(x => x.TotalQuantity).HasPrecision(18, 2);
             builder.Property(x => x.CostValue).HasPrecision(18, 2);

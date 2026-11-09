@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using DzentoPOS2.App.Authorization;
@@ -130,8 +130,8 @@ public class ActiveBranchContext : IActiveBranchContext
 
             _activeBranchId = branch.Id;
             _activeBranchName = branch.Name;
+            System.Diagnostics.Debug.WriteLine($"Switched to branch: {branch.Id} (was {_activeBranchId})");
         }
-
         BranchChanged?.Invoke(this, new ActiveBranchChangedEventArgs
         {
             BranchId = branch.Id,

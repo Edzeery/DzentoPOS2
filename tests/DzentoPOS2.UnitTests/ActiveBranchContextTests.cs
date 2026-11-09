@@ -77,6 +77,22 @@ public class ActiveBranchContextTests
     }
 
     [Fact]
+    public void TrySwitch_InactiveBranch_ReturnsFalse()
+    {
+        var (ctx, user, perm, db) = Create();
+        perm.HasPermission = true;
+        var branchId = Guid.NewGuid();
+        var inactiveBranchId = Guid.NewGuid();
+        db.Branches.Add(new DzentoPOS2.Core.Entities.Businesses.Branch { Id = branchId, Name = "A", IsActive = true, IsMainBranch = true });
+        db.Branches.Add(new DzentoPOS2.Core.Entities.Businesses.Branch { Id = inactiveBranchId, Name = "Inactive", IsActive = false, IsMainBranch = false });
+        db.SaveChanges();
+        user.SetUser(new UserSession { BranchId = branchId, BranchName = "A" });
+
+        var result = ctx.TrySwitchBranchAsync(inactiveBranchId).GetAwaiter().GetResult();
+        Assert.False(result);
+    }
+
+    [Fact]
     public void TrySwitch_SameBranch_ReturnsTrue_NoEvent()
     {
         var (ctx, user, perm, db) = Create();

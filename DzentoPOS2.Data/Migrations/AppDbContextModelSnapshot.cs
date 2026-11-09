@@ -923,6 +923,9 @@ namespace DzentoPOS2.Data.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("BranchId")
+                        .HasColumnType("TEXT");
+
                     b.Property<decimal>("CostValue")
                         .HasPrecision(18, 2)
                         .HasColumnType("TEXT");
@@ -968,7 +971,12 @@ namespace DzentoPOS2.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("SnapshotDate")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[BranchId] IS NULL");
+
+                    b.HasIndex("BranchId", "SnapshotDate")
+                        .IsUnique()
+                        .HasFilter("[BranchId] IS NOT NULL");
 
                     b.ToTable("InventorySnapshots", (string)null);
                 });

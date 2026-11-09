@@ -841,7 +841,7 @@
     <value>Store Logo</value>
   </data>
   <data name="StoreBranding" xml:space="preserve">
-    <value>Store &amp; Branding</value>
+    <value>Store &amp;amp; Branding</value>
   </data>
   <data name="ChooseImage" xml:space="preserve">
     <value>Choose image…</value>
@@ -1752,5 +1752,29 @@
   </data>
   <data name="ProductKindLabel" xml:space="preserve">
     <value>Product Kind</value>
+  </data>
+  <data name="ActivityGrocery" xml:space="preserve">
+    <value>Grocery</value>
+  </data>
+  <data name="ActivityProduce" xml:space="preserve">
+    <value>Produce</value>
+  </data>
+  <data name="ActivityPhones" xml:space="preserve">
+    <value>Phones and Electronics</value>
+  </data>
+  <data name="ActivityAppliances" xml:space="preserve">
+    <value>Appliances</value>
+  </data>
+  <data name="ActivityIT" xml:space="preserve">
+    <value>IT &amp; Automation</value>
+  </data>
+  <data name="ActivityRepair" xml:space="preserve">
+    <value>Repair &amp; Maintenance</value>
+  </data>
+  <data name="ActivityDigital" xml:space="preserve">
+    <value>Digital Products</value>
+  </data>
+  <data name="ActivityMultiService" xml:space="preserve">
+    <value>Multi-Service</value>
   </data>
 </root>

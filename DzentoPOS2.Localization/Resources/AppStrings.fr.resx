@@ -1753,4 +1753,28 @@
   <data name="ProductKindLabel" xml:space="preserve">
     <value>Type de produit</value>
   </data>
+  <data name="ActivityGrocery" xml:space="preserve">
+    <value>Epicerie</value>
+  </data>
+  <data name="ActivityProduce" xml:space="preserve">
+    <value>Fruits et legumes</value>
+  </data>
+  <data name="ActivityPhones" xml:space="preserve">
+    <value>Telephones et electronique</value>
+  </data>
+  <data name="ActivityAppliances" xml:space="preserve">
+    <value>Electromenager</value>
+  </data>
+  <data name="ActivityIT" xml:space="preserve">
+    <value>Informatique</value>
+  </data>
+  <data name="ActivityRepair" xml:space="preserve">
+    <value>Reparation</value>
+  </data>
+  <data name="ActivityDigital" xml:space="preserve">
+    <value>Produits numeriques</value>
+  </data>
+  <data name="ActivityMultiService" xml:space="preserve">
+    <value>Multi-service</value>
+  </data>
 </root>

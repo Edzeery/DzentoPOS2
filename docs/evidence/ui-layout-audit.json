@@ -1,5 +1,5 @@
 {
-  "GeneratedAt": "2026-11-09T11:26:58.0744423+01:00",
+  "GeneratedAt": "2026-11-09T15:49:01.3018729+01:00",
   "ScenarioCount": 72,
   "ViolationCount": 0,
   "Scenarios": [
@@ -45,7 +45,7 @@
       "Direction": "RTL",
       "Width": 375,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {
@@ -99,7 +99,7 @@
       "Direction": "RTL",
       "Width": 768,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {
@@ -153,7 +153,7 @@
       "Direction": "RTL",
       "Width": 1440,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {
@@ -207,7 +207,7 @@
       "Direction": "LTR",
       "Width": 375,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {
@@ -261,7 +261,7 @@
       "Direction": "LTR",
       "Width": 768,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {
@@ -315,7 +315,7 @@
       "Direction": "LTR",
       "Width": 1440,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {
@@ -369,7 +369,7 @@
       "Direction": "RTL",
       "Width": 375,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {
@@ -423,7 +423,7 @@
       "Direction": "RTL",
       "Width": 768,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {
@@ -477,7 +477,7 @@
       "Direction": "RTL",
       "Width": 1440,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {
@@ -531,7 +531,7 @@
       "Direction": "LTR",
       "Width": 375,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {
@@ -585,7 +585,7 @@
       "Direction": "LTR",
       "Width": 768,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {
@@ -639,7 +639,7 @@
       "Direction": "LTR",
       "Width": 1440,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {

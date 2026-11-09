@@ -95,6 +95,31 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("Active", resourceCulture);
             }
         }
+
+        public static string ActivityAppliances {
+            get { return ResourceManager.GetString("ActivityAppliances", resourceCulture); }
+        }
+        public static string ActivityDigital {
+            get { return ResourceManager.GetString("ActivityDigital", resourceCulture); }
+        }
+        public static string ActivityGrocery {
+            get { return ResourceManager.GetString("ActivityGrocery", resourceCulture); }
+        }
+        public static string ActivityIT {
+            get { return ResourceManager.GetString("ActivityIT", resourceCulture); }
+        }
+        public static string ActivityMultiService {
+            get { return ResourceManager.GetString("ActivityMultiService", resourceCulture); }
+        }
+        public static string ActivityPhones {
+            get { return ResourceManager.GetString("ActivityPhones", resourceCulture); }
+        }
+        public static string ActivityProduce {
+            get { return ResourceManager.GetString("ActivityProduce", resourceCulture); }
+        }
+        public static string ActivityRepair {
+            get { return ResourceManager.GetString("ActivityRepair", resourceCulture); }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Active Customers.

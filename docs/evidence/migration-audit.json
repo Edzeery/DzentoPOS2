@@ -1,9 +1,9 @@
 {
-  "GeneratedAt": "2026-11-09T13:05:39.9399121+01:00",
+  "GeneratedAt": "2026-11-09T15:48:56.622542+01:00",
   "SourceDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\DzentoPOS2\\Database\\DzentoPOS.db",
-  "SourceBytes": 1196032,
+  "SourceBytes": 1200128,
   "SourceHadWal": false,
-  "WorkDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\Temp\\DzentoPOS2.MigrationAudit\\20261109-130538\\DzentoPOS.db",
+  "WorkDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\Temp\\DzentoPOS2.MigrationAudit\\20261109-154855\\DzentoPOS.db",
   "IntegrityBefore": "ok",
   "IntegrityAfter": "ok",
   "ForeignKeyViolationsBefore": 0,
@@ -18,7 +18,7 @@
     "Attachments": 0,
     "AttributeDefinitions": 0,
     "AttributeValues": 0,
-    "AuditLogs": 235,
+    "AuditLogs": 237,
     "BranchActivities": 0,
     "Branches": 1,
     "CashRegisters": 0,
@@ -73,17 +73,17 @@
     "Users": 3,
     "VariantAttributes": 0,
     "Warehouses": 1,
-    "__EFMigrationsHistory": 19,
+    "__EFMigrationsHistory": 20,
     "__EFMigrationsLock": 0
   },
   "RowCountsAfter": {
     "ActivityLogs": 0,
-    "AppSettings": 19,
+    "AppSettings": 20,
     "Attachments": 0,
     "AttributeDefinitions": 0,
     "AttributeValues": 0,
-    "AuditLogs": 235,
-    "BranchActivities": 0,
+    "AuditLogs": 237,
+    "BranchActivities": 3,
     "Branches": 1,
     "CashRegisters": 0,
     "CashSessions": 12,
@@ -142,15 +142,18 @@
   },
   "RowsRemoved": 0,
   "RowsChanged": 0,
-  "RowsAdded": 3,
+  "RowsAdded": 6,
   "MissingTables": [],
   "MissingColumns": [],
   "RemovedRowKeys": [],
   "ChangedRowDetails": [],
   "AddedRowKeys": [
-    "Customers:str:88C3C68C-EF1D-4BF4-B063-7F420AB6D1F5\u0001",
-    "Customers:str:F2AE8C86-6427-4862-BDDC-F9CEB2412ECD\u0001",
-    "__EFMigrationsHistory:str:20261109120211_InventorySnapshotBranchId\u0001"
+    "AppSettings:str:A19C240E-292C-47FE-BBC2-F4DEDBE3DAD8\u0001",
+    "BranchActivities:str:19372166-1217-4DD7-9344-1A5CDC152AB6\u0001",
+    "BranchActivities:str:87E6B897-7156-48EE-B8FB-E4FFD49493A2\u0001",
+    "BranchActivities:str:925B8DB8-BE13-48C9-B9C9-7AC75AE8286E\u0001",
+    "Customers:str:590AB7FF-B0CC-4C8D-85CE-F49A3A15C71D\u0001",
+    "Customers:str:F9834460-4415-4313-BF32-355881BFD127\u0001"
   ],
   "MigrationsBefore": [
     "20260517183403_InitialCreate",
@@ -171,7 +174,8 @@
     "20261106174513_VariantNameOnSalesInvoiceItem",
     "20261107124946_PhaseC_IndexesAndAudit",
     "20261107185302_PhaseInventorySnapshot",
-    "20261108153855_BranchActivityAndCapabilities"
+    "20261108153855_BranchActivityAndCapabilities",
+    "20261109120211_InventorySnapshotBranchId"
   ],
   "MigrationsAfter": [
     "20260517183403_InitialCreate",

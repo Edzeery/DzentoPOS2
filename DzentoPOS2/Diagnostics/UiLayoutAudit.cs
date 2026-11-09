@@ -3,6 +3,7 @@ using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.App.Services.Systems;
 using EZControls.Core.Base;
 using DzentoPOS2.Core.Configuration;
+using DzentoPOS2.Core.Enums;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
@@ -114,7 +115,7 @@ public static class UiLayoutAudit
         new ProductBarcodesDialog(new StubBarcodeService(), Guid.NewGuid()),
         new ProductUnitEditDialog(new StubUnitService(), new StubLanguageService()),
         new ProductUnitsForm(new StubUnitService(), new StubLanguageService()),
-        new FirstRunModulesDialog(new StubModuleService(), new StubBackupService()),
+        new FirstRunModulesDialog(new StubCapabilityService(), new StubBackupService(), new StubActiveBranchContext()),
         new SettingsForm(
             new StubCurrentSettingsService(),
             new StubLanguageService(),
@@ -512,6 +513,26 @@ private static int CountControls(Control parent)
 
         public Task<Dictionary<ActivityModule, bool>> GetAllAsync() =>
             Task.FromResult(new Dictionary<ActivityModule, bool>());
+    }
+
+    private sealed class StubCapabilityService : ICapabilityService
+    {
+        public Task<bool> HasCapabilityAsync(BranchCapability capability, CancellationToken cancellationToken = default) =>
+            Task.FromResult(true);
+        public Task<BranchCapability> GetCapabilitiesAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult(BranchCapability.None);
+        public Task SetCapabilitiesAsync(Guid branchId, BranchCapability capabilities, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+    }
+
+    private sealed class StubActiveBranchContext : IActiveBranchContext
+    {
+        public Guid ActiveBranchId => Guid.Empty;
+        public string ActiveBranchName => "Stub";
+        public bool CanSwitchBranch => true;
+        public event EventHandler<ActiveBranchChangedEventArgs>? BranchChanged;
+        public Task<bool> TrySwitchBranchAsync(Guid branchId, CancellationToken cancellationToken = default) =>
+            Task.FromResult(true);
     }
 
     private sealed class StubCurrentSettingsService : ICurrentSettingsService

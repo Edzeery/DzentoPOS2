@@ -4,6 +4,7 @@ using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.App.Session;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Localization.Constants;
+using DzentoPOS2.Core.Enums;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services;
 using DzentoPOS2.Localization.Services.Interfaces;
@@ -1079,12 +1080,17 @@ namespace DzentoPOS2.WinForms.Forms.Layout
 
             _statusTimer.Start();
 
-            // First-run module selection wizard.
-            var moduleService = _services.GetService<DzentoPOS2.App.Services.Systems.IModuleService>();
-            if (moduleService != null && !(await moduleService.IsConfiguredAsync()))
+            // First-run branch activity selection wizard.
+            var capabilityService = _services.GetService<DzentoPOS2.App.Services.Systems.ICapabilityService>();
+            if (capabilityService != null)
             {
-                using var dlg = _services.GetRequiredService<FirstRunModulesDialog>();
-                dlg.ShowDialog(this);
+                // Check if branch activities are configured (at least one activity exists).
+                var activities = await capabilityService.GetCapabilitiesAsync();
+                if (activities == BranchCapability.None)
+                {
+                    using var dlg = _services.GetRequiredService<FirstRunModulesDialog>();
+                    dlg.ShowDialog(this);
+                }
             }
 
             // The sales screen (point of sale) is the working screen of the

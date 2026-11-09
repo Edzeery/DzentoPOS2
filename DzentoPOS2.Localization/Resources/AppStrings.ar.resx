@@ -1753,4 +1753,28 @@
   <data name="ProductKindLabel" xml:space="preserve">
     <value>نوع المنتج</value>
   </data>
+  <data name="ActivityGrocery" xml:space="preserve">
+    <value>مواد غذائية</value>
+  </data>
+  <data name="ActivityProduce" xml:space="preserve">
+    <value>خضر وفواكه</value>
+  </data>
+  <data name="ActivityPhones" xml:space="preserve">
+    <value>هواتف وإلكترونيات</value>
+  </data>
+  <data name="ActivityAppliances" xml:space="preserve">
+    <value>أجهزة كهرومنزلية</value>
+  </data>
+  <data name="ActivityIT" xml:space="preserve">
+    <value>إعلام آلي</value>
+  </data>
+  <data name="ActivityRepair" xml:space="preserve">
+    <value>صيانة وتصليح</value>
+  </data>
+  <data name="ActivityDigital" xml:space="preserve">
+    <value>منتجات رقمية</value>
+  </data>
+  <data name="ActivityMultiService" xml:space="preserve">
+    <value>متعدد الخدمات</value>
+  </data>
 </root>

@@ -1,9 +1,9 @@
 {
-  "GeneratedAt": "2026-11-09T19:56:12.871261+01:00",
+  "GeneratedAt": "2026-11-09T20:17:26.9212889+01:00",
   "SourceDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\DzentoPOS2\\Database\\DzentoPOS.db",
   "SourceBytes": 1249280,
   "SourceHadWal": false,
-  "WorkDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\Temp\\DzentoPOS2.MigrationAudit\\20261109-195611\\DzentoPOS.db",
+  "WorkDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\Temp\\DzentoPOS2.MigrationAudit\\20261109-201725\\DzentoPOS.db",
   "IntegrityBefore": "ok",
   "IntegrityAfter": "ok",
   "ForeignKeyViolationsBefore": 0,
@@ -152,8 +152,8 @@
   "RemovedRowKeys": [],
   "ChangedRowDetails": [],
   "AddedRowKeys": [
-    "Customers:str:0618F6EF-1DB1-4BBB-B650-37A8F1863D3C\u0001",
-    "Customers:str:17DBB29D-BDFA-4EA7-9A63-A11C52F0A8DF\u0001"
+    "Customers:str:68D7AB7A-5A4C-42F5-B8F6-8259F673818D\u0001",
+    "Customers:str:BBA1A7FE-C2B2-4E4A-B7AF-D2A1E04FDEC7\u0001"
   ],
   "MigrationsBefore": [
     "20260517183403_InitialCreate",

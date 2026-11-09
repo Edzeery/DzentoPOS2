@@ -2964,6 +2964,15 @@ namespace DzentoPOS2.Localization.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Select Shared Barcode.
         /// </summary>
+        /// <summary>
+        ///   Looks up a localized string similar to Select Serial Unit.
+        /// </summary>
+        public static string SelectSerialUnit {
+            get {
+                return ResourceManager.GetString("SelectSerialUnit", resourceCulture);
+            }
+        }
+
         public static string SelectSharedBarcode {
             get {
                 return ResourceManager.GetString("SelectSharedBarcode", resourceCulture);
@@ -3703,6 +3712,15 @@ namespace DzentoPOS2.Localization.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Warning.
         /// </summary>
+        /// <summary>
+        ///   Looks up a localized string similar to Warranty Query.
+        /// </summary>
+        public static string WarrantyQuery {
+            get {
+                return ResourceManager.GetString("WarrantyQuery", resourceCulture);
+            }
+        }
+
         public static string Warning {
             get {
                 return ResourceManager.GetString("Warning", resourceCulture);

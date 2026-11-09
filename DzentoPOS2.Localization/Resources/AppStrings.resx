@@ -1778,4 +1778,10 @@
   <data name="ActivityMultiService" xml:space="preserve">
     <value>Multi-Service</value>
   </data>
+  <data name="SelectSerialUnit" xml:space="preserve">
+    <value>Select Serial Unit</value>
+  </data>
+  <data name="WarrantyQuery" xml:space="preserve">
+    <value>Warranty Query</value>
+  </data>
 </root>

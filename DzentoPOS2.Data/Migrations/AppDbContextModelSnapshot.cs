@@ -913,6 +913,63 @@ namespace DzentoPOS2.Data.Migrations
                     b.ToTable("AttributeValues", (string)null);
                 });
 
+            modelBuilder.Entity("DzentoPOS2.Core.Entities.Inventory.Batch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("BatchNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("ExpiryDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ReceivedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("VariantId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("WarehouseId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpiryDate");
+
+                    b.HasIndex("VariantId");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("Batches", (string)null);
+                });
+
             modelBuilder.Entity("DzentoPOS2.Core.Entities.Inventory.InventorySnapshot", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1390,6 +1447,11 @@ namespace DzentoPOS2.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsWeighed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -1406,6 +1468,16 @@ namespace DzentoPOS2.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("TrackBatch")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("TrackExpiry")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false);
+
                     b.Property<bool>("TrackStock")
                         .HasColumnType("INTEGER");
 
@@ -1417,6 +1489,9 @@ namespace DzentoPOS2.Data.Migrations
 
                     b.Property<int?>("WarrantyMonths")
                         .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("WeightUnitId")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -1432,6 +1507,9 @@ namespace DzentoPOS2.Data.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("BatchId")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
@@ -1493,6 +1571,8 @@ namespace DzentoPOS2.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BatchId");
 
                     b.HasIndex("Imei1")
                         .IsUnique()
@@ -3415,6 +3495,25 @@ namespace DzentoPOS2.Data.Migrations
                     b.Navigation("Definition");
                 });
 
+            modelBuilder.Entity("DzentoPOS2.Core.Entities.Inventory.Batch", b =>
+                {
+                    b.HasOne("DzentoPOS2.Core.Entities.Inventory.ProductVariant", "Variant")
+                        .WithMany()
+                        .HasForeignKey("VariantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DzentoPOS2.Core.Entities.Businesses.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Variant");
+
+                    b.Navigation("Warehouse");
+                });
+
             modelBuilder.Entity("DzentoPOS2.Core.Entities.Inventory.InventoryTransaction", b =>
                 {
                     b.HasOne("DzentoPOS2.Core.Entities.Inventory.Product", "Product")
@@ -3764,6 +3863,11 @@ namespace DzentoPOS2.Data.Migrations
 
             modelBuilder.Entity("DzentoPOS2.Core.Entities.Inventory.SerialUnit", b =>
                 {
+                    b.HasOne("DzentoPOS2.Core.Entities.Inventory.Batch", "Batch")
+                        .WithMany()
+                        .HasForeignKey("BatchId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("DzentoPOS2.Core.Entities.Inventory.ProductVariant", "Variant")
                         .WithMany()
                         .HasForeignKey("VariantId")
@@ -3775,6 +3879,8 @@ namespace DzentoPOS2.Data.Migrations
                         .HasForeignKey("WarehouseId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Batch");
 
                     b.Navigation("Variant");
 

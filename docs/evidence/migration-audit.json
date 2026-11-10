@@ -1,9 +1,9 @@
 {
-  "GeneratedAt": "2026-11-09T20:17:26.9212889+01:00",
+  "GeneratedAt": "2026-11-10T09:23:46.9082453+01:00",
   "SourceDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\DzentoPOS2\\Database\\DzentoPOS.db",
   "SourceBytes": 1249280,
-  "SourceHadWal": false,
-  "WorkDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\Temp\\DzentoPOS2.MigrationAudit\\20261109-201725\\DzentoPOS.db",
+  "SourceHadWal": true,
+  "WorkDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\Temp\\DzentoPOS2.MigrationAudit\\20261110-092345\\DzentoPOS.db",
   "IntegrityBefore": "ok",
   "IntegrityAfter": "ok",
   "ForeignKeyViolationsBefore": 0,
@@ -11,14 +11,14 @@
   "JournalModeBefore": "wal",
   "JournalModeAfter": "wal",
   "TableCountBefore": 64,
-  "TableCountAfter": 64,
+  "TableCountAfter": 65,
   "RowCountsBefore": {
     "ActivityLogs": 0,
     "AppSettings": 20,
     "Attachments": 0,
     "AttributeDefinitions": 0,
     "AttributeValues": 0,
-    "AuditLogs": 241,
+    "AuditLogs": 243,
     "BranchActivities": 3,
     "Branches": 1,
     "CashRegisters": 0,
@@ -84,7 +84,8 @@
     "Attachments": 0,
     "AttributeDefinitions": 0,
     "AttributeValues": 0,
-    "AuditLogs": 241,
+    "AuditLogs": 243,
+    "Batches": 0,
     "BranchActivities": 3,
     "Branches": 1,
     "CashRegisters": 0,
@@ -141,19 +142,21 @@
     "Users": 3,
     "VariantAttributes": 0,
     "Warehouses": 1,
-    "__EFMigrationsHistory": 21,
+    "__EFMigrationsHistory": 23,
     "__EFMigrationsLock": 0
   },
   "RowsRemoved": 0,
   "RowsChanged": 0,
-  "RowsAdded": 2,
+  "RowsAdded": 4,
   "MissingTables": [],
   "MissingColumns": [],
   "RemovedRowKeys": [],
   "ChangedRowDetails": [],
   "AddedRowKeys": [
-    "Customers:str:68D7AB7A-5A4C-42F5-B8F6-8259F673818D\u0001",
-    "Customers:str:BBA1A7FE-C2B2-4E4A-B7AF-D2A1E04FDEC7\u0001"
+    "Customers:str:8B215F9C-3225-433F-B227-E9DC4641D390\u0001",
+    "Customers:str:FBD068B7-AA0B-444B-9630-5A9A4FA784EB\u0001",
+    "__EFMigrationsHistory:str:20261109221327_BatchAndWeightTracking\u0001",
+    "__EFMigrationsHistory:str:20261109221657_WeightBatchExpiry\u0001"
   ],
   "MigrationsBefore": [
     "20260517183403_InitialCreate",
@@ -199,7 +202,9 @@
     "20261107185302_PhaseInventorySnapshot",
     "20261108153855_BranchActivityAndCapabilities",
     "20261109120211_InventorySnapshotBranchId",
-    "20261109173010_SerialUnitAndWarranty"
+    "20261109173010_SerialUnitAndWarranty",
+    "20261109221327_BatchAndWeightTracking",
+    "20261109221657_WeightBatchExpiry"
   ],
   "MigrationsRemoved": [],
   "LegacyColumnUsage": {

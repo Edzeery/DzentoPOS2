@@ -30,6 +30,12 @@ namespace DzentoPOS2.Data.Configurations.Inventory
 
             builder.HasIndex(x => x.Status);
             builder.HasIndex(x => x.WarehouseId);
+            builder.HasIndex(x => x.BatchId);
+
+            builder.HasOne(x => x.Batch)
+                .WithMany()
+                .HasForeignKey(x => x.BatchId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasOne(x => x.Variant)
                 .WithMany()

@@ -19,6 +19,9 @@ namespace DzentoPOS2.Core.Entities.Inventory
         public Guid? PurchaseInvoiceItemId { get; set; }
         public Guid? SalesInvoiceItemId { get; set; }
 
+        /// <summary>Optional batch link.</summary>
+        public Guid? BatchId { get; set; }
+
         public decimal UnitCost { get; set; }
 
         public DateTime ReceivedAt { get; set; } = DateTime.UtcNow;
@@ -28,5 +31,6 @@ namespace DzentoPOS2.Core.Entities.Inventory
 
         public virtual ProductVariant Variant { get; set; } = null!;
         public virtual Warehouse Warehouse { get; set; } = null!;
+        public virtual Batch? Batch { get; set; }
     }
 }

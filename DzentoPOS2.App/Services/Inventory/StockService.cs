@@ -30,13 +30,16 @@ public sealed class StockService : IStockService
     {
     }
 
-    public StockService(AppDbContext context, IBusinessClock clock, IAuthorizationGuard? guard, ILogger<StockService>? logger)
+    public StockService(AppDbContext context, IBusinessClock clock, IAuthorizationGuard? guard, ILogger<StockService>? logger, IBatchService? batchService = null)
     {
         _context = context;
         _clock = clock;
         _guard = guard;
         _logger = logger;
+        _batchService = batchService;
     }
+
+    private readonly IBatchService? _batchService;
 
     public Task ApplySaleAsync(
         Guid invoiceId,
@@ -287,6 +290,58 @@ public sealed class StockService : IStockService
                 referenceNumber,
                 userId,
                 cancellationToken);
+
+            // Track batches for variant with batch tracking enabled
+            var productVariant = await _context.ProductVariants
+                .AsNoTracking()
+                .FirstOrDefaultAsync(v => v.Id == variantId, cancellationToken);
+            if (productVariant?.TrackBatch == true && _batchService is not null)
+            {
+                if (direction > 0)
+                {
+                    // Purchase/return: increase batch quantity
+                    var batchNumber = referenceNumber;
+                    var existingBatch = await _context.Batches
+                        .FirstOrDefaultAsync(b => b.VariantId == variantId && b.BatchNumber == batchNumber, cancellationToken);
+                    if (existingBatch != null)
+                    {
+                        existingBatch.Quantity += quantity;
+                    }
+                    else
+                    {
+                        await _context.Batches.AddAsync(new Batch
+                        {
+                            VariantId = variantId,
+                            WarehouseId = warehouseId,
+                            BatchNumber = batchNumber,
+                            Quantity = quantity,
+                            UnitCost = 0,
+                            ReceivedAt = _clock.UtcNow
+                        }, cancellationToken);
+                    }
+                }
+                else
+                {
+                    // Sale/adjustment: allocate from batches (FEFO)
+                    var remainingQuantity = quantity;
+                    var batches = await _context.Batches
+                        .AsNoTracking()
+                        .Where(b => b.VariantId == variantId && b.WarehouseId == warehouseId && b.Quantity > 0)
+                        .OrderBy(b => b.ExpiryDate ?? DateTime.MaxValue)
+                        .ThenBy(b => b.ReceivedAt)
+                        .ToListAsync(cancellationToken);
+
+                    foreach (var batch in batches)
+                    {
+                        if (remainingQuantity <= 0) break;
+                        var take = Math.Min(remainingQuantity, batch.Quantity);
+                        batch.Quantity -= take;
+                        remainingQuantity -= take;
+                    }
+
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+            }
         }
     }
 

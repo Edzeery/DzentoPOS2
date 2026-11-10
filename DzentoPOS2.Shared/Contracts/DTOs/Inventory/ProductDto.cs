@@ -21,6 +21,10 @@ public class ProductDto
     public bool TrackStock { get; set; } = true;
     public bool IsActive { get; set; } = true;
     public string? Currency { get; set; }
+    public bool IsWeighed { get; set; }
+    public Guid? WeightUnitId { get; set; }
+    public bool TrackBatch { get; set; }
+    public bool TrackExpiry { get; set; }
 }
 
 public class CreateProductDto
@@ -41,6 +45,10 @@ public class CreateProductDto
     public bool IsActive { get; set; } = true;
     public string? ImagePath { get; set; }
     public string? ThumbnailPath { get; set; }
+    public bool IsWeighed { get; set; }
+    public Guid? WeightUnitId { get; set; }
+    public bool TrackBatch { get; set; }
+    public bool TrackExpiry { get; set; }
 }
 
 public class UpdateProductDto
@@ -61,4 +69,8 @@ public class UpdateProductDto
     public bool IsActive { get; set; } = true;
     public string? ImagePath { get; set; }
     public string? ThumbnailPath { get; set; }
+    public bool IsWeighed { get; set; }
+    public Guid? WeightUnitId { get; set; }
+    public bool TrackBatch { get; set; }
+    public bool TrackExpiry { get; set; }
 }

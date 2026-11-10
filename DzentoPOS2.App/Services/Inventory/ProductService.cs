@@ -138,7 +138,11 @@ public class ProductService : IProductService
                 MinimumStock = new Quantity(dto.MinimumStock),
                 TrackStock = dto.TrackStock,
                 IsActive = dto.IsActive,
-                IsDefault = true
+                IsDefault = true,
+                IsWeighed = dto.IsWeighed,
+                WeightUnitId = dto.WeightUnitId,
+                TrackBatch = dto.TrackBatch,
+                TrackExpiry = dto.TrackExpiry
             };
             _context.ProductVariants.Add(defaultVariant);
             await _unitOfWork.SaveChangesAsync();
@@ -377,6 +381,6 @@ public class ProductService : IProductService
         MinimumStock = product.MinimumStock?.Value ?? 0,
         TrackStock = product.TrackStock,
         IsActive = product.IsActive,
-        Currency = product.CostPrice?.Currency ?? _regional.CurrencyCode
+            Currency = product.CostPrice?.Currency ?? _regional.CurrencyCode
     };
 }

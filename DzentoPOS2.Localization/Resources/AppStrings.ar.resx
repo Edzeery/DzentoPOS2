@@ -1783,4 +1783,50 @@
   <data name="WarrantyQuery" xml:space="preserve">
     <value>استعلام ضمان</value>
   </data>
+  <data name="WeightUnit" xml:space="preserve">
+    <value>Weight Unit</value>
+  </data>
+  <data name="BatchNumber" xml:space="preserve">
+    <value>ط±ظ‚ظ… ط§ظ„ط¯ظپط¹ط©</value>
+  </data>
+  <data name="ExpiryDate" xml:space="preserve">
+    <value>طھط§ط±ظٹط® ط§ظ†طھظ‡ط§ط، ط§ظ„طµظ„ط§ط­ظٹط©</value>
+  </data>
+  <data name="IsWeighed" xml:space="preserve">
+    <value>ظ…ظ†طھط¬ ظ…ظˆط²ظˆظ†</value>
+  </data>
+  <data name="TrackBatch" xml:space="preserve">
+    <value>طھطھط¨ط¹ ط§ظ„ط¯ظپط¹ط©</value>
+  </data>
+  <data name="TrackExpiry" xml:space="preserve">
+    <value>طھطھط¨ط¹ ط§ظ†طھظ‡ط§ط، ط§ظ„طµظ„ط§ط­ظٹط©</value>
+  </data>
+  <data name="WeightPerUnit" xml:space="preserve">
+    <value>ط§ظ„ظˆط²ظ† ظ„ظ„ظˆط­ط¯ط©</value>
+  </data>
+  <data name="KG" xml:space="preserve">
+    <value>ظƒط¬ظ…</value>
+  </data>
+  <data name="LB" xml:space="preserve">
+    <value>ط±ط·ظ„</value>
+  </data>
+  <data name="G" xml:space="preserve">
+    <value>ط¬ظ…</value>
+  </data>
+  <data name="InsufficientBatchStock" xml:space="preserve">
+    <value>ظ…ط®ط²ظˆظ† ط§ظ„ط¯ظپط¹ط© ط؛ظٹط± ظƒط§ظپظچ</value>
+  </data>
+  <data name="BatchNotFound" xml:space="preserve">
+    <value>ط§ظ„ط¯ظپط¹ط© ط؛ظٹط± ظ…ظˆط¬ظˆط¯ط©</value>
+  </data>
+  <data name="ExpiringSoon" xml:space="preserve">
+    <value>طھظ†طھظ‡ظٹ طµظ„ط§ط­ظٹطھظ‡ط§ ظ‚ط±ظٹط¨ط§ظ‹</value>
+  </data>
+  <data name="Expired" xml:space="preserve">
+    <value>ظ…ظ†طھظ‡ظٹط© ط§ظ„طµظ„ط§ط­ظٹط©</value>
+  </data>
+  <data name="FEFO" xml:space="preserve">
+    <value>ط£ظˆظ„ ط§ظ„ظ…ظ†طھظ‡ظٹ طµظ„ط§ط­ظٹطھظ‡ ط£ظˆظ„ ط®ط±ظˆط¬</value>
+  </data>
 </root>
+

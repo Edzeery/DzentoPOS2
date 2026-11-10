@@ -1,0 +1,45 @@
+  <data name="WeightUnit" xml:space="preserve">
+    <value>وحدة الوزن</value>
+  </data>
+  <data name="BatchNumber" xml:space="preserve">
+    <value>رقم الدفعة</value>
+  </data>
+  <data name="ExpiryDate" xml:space="preserve">
+    <value>تاريخ انتهاء الصلاحية</value>
+  </data>
+  <data name="IsWeighed" xml:space="preserve">
+    <value>منتج موزون</value>
+  </data>
+  <data name="TrackBatch" xml:space="preserve">
+    <value>تتبع الدفعة</value>
+  </data>
+  <data name="TrackExpiry" xml:space="preserve">
+    <value>تتبع انتهاء الصلاحية</value>
+  </data>
+  <data name="WeightPerUnit" xml:space="preserve">
+    <value>الوزن للوحدة</value>
+  </data>
+  <data name="KG" xml:space="preserve">
+    <value>كجم</value>
+  </data>
+  <data name="LB" xml:space="preserve">
+    <value>رطل</value>
+  </data>
+  <data name="G" xml:space="preserve">
+    <value>جم</value>
+  </data>
+  <data name="InsufficientBatchStock" xml:space="preserve">
+    <value>مخزون الدفعة غير كافٍ</value>
+  </data>
+  <data name="BatchNotFound" xml:space="preserve">
+    <value>الدفعة غير موجودة</value>
+  </data>
+  <data name="ExpiringSoon" xml:space="preserve">
+    <value>تنتهي صلاحيتها قريباً</value>
+  </data>
+  <data name="Expired" xml:space="preserve">
+    <value>منتهية الصلاحية</value>
+  </data>
+  <data name="FEFO" xml:space="preserve">
+    <value>أول المنتهي صلاحيته أول خروج</value>
+  </data>

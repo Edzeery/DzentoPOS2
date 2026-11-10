@@ -1,0 +1,26 @@
+        private ProductDto MapProduct(Product product) => new()
+        {
+            Id = product.Id,
+            Name = product.Name,
+            SKU = product.SKU,
+            Barcode = product.Barcode,
+            Brand = product.Brand,
+            ProductKind = product.ProductKind,
+            ImagePath = product.ImagePath,
+            ThumbnailPath = product.ThumbnailPath,
+            Description = product.Description,
+            CategoryId = product.CategoryId,
+            CategoryName = product.Category?.Name ?? "",
+            UnitId = product.UnitId,
+            UnitName = product.Unit?.Name ?? "",
+            CostPrice = product.CostPrice?.Amount ?? 0,
+            SalePrice = product.SalePrice?.Amount ?? 0,
+            MinimumStock = product.MinimumStock?.Value ?? 0,
+            TrackStock = product.TrackStock,
+            IsActive = product.IsActive,
+            Currency = product.CostPrice?.Currency ?? _regional.CurrencyCode,
+            IsWeighed = product.IsWeighed,
+            WeightUnitId = product.WeightUnitId,
+            TrackBatch = product.TrackBatch,
+            TrackExpiry = product.TrackExpiry
+        };

@@ -1,16 +1,16 @@
 {
-  "GeneratedAt": "2026-11-10T09:23:46.9082453+01:00",
+  "GeneratedAt": "2026-11-10T19:16:55.9473064+01:00",
   "SourceDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\DzentoPOS2\\Database\\DzentoPOS.db",
-  "SourceBytes": 1249280,
-  "SourceHadWal": true,
-  "WorkDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\Temp\\DzentoPOS2.MigrationAudit\\20261110-092345\\DzentoPOS.db",
+  "SourceBytes": 1286144,
+  "SourceHadWal": false,
+  "WorkDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\Temp\\DzentoPOS2.MigrationAudit\\20261110-191654\\DzentoPOS.db",
   "IntegrityBefore": "ok",
   "IntegrityAfter": "ok",
   "ForeignKeyViolationsBefore": 0,
   "ForeignKeyViolationsAfter": 0,
   "JournalModeBefore": "wal",
   "JournalModeAfter": "wal",
-  "TableCountBefore": 64,
+  "TableCountBefore": 65,
   "TableCountAfter": 65,
   "RowCountsBefore": {
     "ActivityLogs": 0,
@@ -18,7 +18,8 @@
     "Attachments": 0,
     "AttributeDefinitions": 0,
     "AttributeValues": 0,
-    "AuditLogs": 243,
+    "AuditLogs": 245,
+    "Batches": 0,
     "BranchActivities": 3,
     "Branches": 1,
     "CashRegisters": 0,
@@ -35,7 +36,7 @@
     "ExpenseCategories": 7,
     "Expenses": 0,
     "FinancialPeriods": 0,
-    "InventorySnapshots": 3,
+    "InventorySnapshots": 4,
     "InventoryTransactions": 17,
     "LicensePlans": 4,
     "Licenses": 0,
@@ -75,7 +76,7 @@
     "Users": 3,
     "VariantAttributes": 0,
     "Warehouses": 1,
-    "__EFMigrationsHistory": 21,
+    "__EFMigrationsHistory": 23,
     "__EFMigrationsLock": 0
   },
   "RowCountsAfter": {
@@ -84,7 +85,7 @@
     "Attachments": 0,
     "AttributeDefinitions": 0,
     "AttributeValues": 0,
-    "AuditLogs": 243,
+    "AuditLogs": 245,
     "Batches": 0,
     "BranchActivities": 3,
     "Branches": 1,
@@ -102,7 +103,7 @@
     "ExpenseCategories": 7,
     "Expenses": 0,
     "FinancialPeriods": 0,
-    "InventorySnapshots": 3,
+    "InventorySnapshots": 4,
     "InventoryTransactions": 17,
     "LicensePlans": 4,
     "Licenses": 0,
@@ -147,16 +148,14 @@
   },
   "RowsRemoved": 0,
   "RowsChanged": 0,
-  "RowsAdded": 4,
+  "RowsAdded": 2,
   "MissingTables": [],
   "MissingColumns": [],
   "RemovedRowKeys": [],
   "ChangedRowDetails": [],
   "AddedRowKeys": [
-    "Customers:str:8B215F9C-3225-433F-B227-E9DC4641D390\u0001",
-    "Customers:str:FBD068B7-AA0B-444B-9630-5A9A4FA784EB\u0001",
-    "__EFMigrationsHistory:str:20261109221327_BatchAndWeightTracking\u0001",
-    "__EFMigrationsHistory:str:20261109221657_WeightBatchExpiry\u0001"
+    "Customers:str:3EAA06BC-AADA-482F-BB2F-D25919C9F89B\u0001",
+    "Customers:str:86AD2169-5161-429F-B14A-C77E8F613742\u0001"
   ],
   "MigrationsBefore": [
     "20260517183403_InitialCreate",
@@ -179,7 +178,9 @@
     "20261107185302_PhaseInventorySnapshot",
     "20261108153855_BranchActivityAndCapabilities",
     "20261109120211_InventorySnapshotBranchId",
-    "20261109173010_SerialUnitAndWarranty"
+    "20261109173010_SerialUnitAndWarranty",
+    "20261109221327_BatchAndWeightTracking",
+    "20261109221657_WeightBatchExpiry"
   ],
   "MigrationsAfter": [
     "20260517183403_InitialCreate",

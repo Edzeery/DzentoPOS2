@@ -1783,4 +1783,50 @@
   <data name="WarrantyQuery" xml:space="preserve">
     <value>Requete garantie</value>
   </data>
+  <data name="WeightUnit" xml:space="preserve">
+    <value>Weight Unit</value>
+  </data>
+  <data name="BatchNumber" xml:space="preserve">
+    <value>Numأ©ro de lot</value>
+  </data>
+  <data name="ExpiryDate" xml:space="preserve">
+    <value>Date d'expiration</value>
+  </data>
+  <data name="IsWeighed" xml:space="preserve">
+    <value>Produit pesأ©</value>
+  </data>
+  <data name="TrackBatch" xml:space="preserve">
+    <value>Suivre le lot</value>
+  </data>
+  <data name="TrackExpiry" xml:space="preserve">
+    <value>Suivre l'expiration</value>
+  </data>
+  <data name="WeightPerUnit" xml:space="preserve">
+    <value>Poids par unitأ©</value>
+  </data>
+  <data name="KG" xml:space="preserve">
+    <value>kg</value>
+  </data>
+  <data name="LB" xml:space="preserve">
+    <value>lb</value>
+  </data>
+  <data name="G" xml:space="preserve">
+    <value>g</value>
+  </data>
+  <data name="InsufficientBatchStock" xml:space="preserve">
+    <value>Stock de lot insuffisant</value>
+  </data>
+  <data name="BatchNotFound" xml:space="preserve">
+    <value>Lot non trouvأ©</value>
+  </data>
+  <data name="ExpiringSoon" xml:space="preserve">
+    <value>Expirant bientأ´t</value>
+  </data>
+  <data name="Expired" xml:space="preserve">
+    <value>Expirأ©</value>
+  </data>
+  <data name="FEFO" xml:space="preserve">
+    <value>Premier expirأ© premier sorti</value>
+  </data>
 </root>
+

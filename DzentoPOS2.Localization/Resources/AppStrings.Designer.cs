@@ -4436,6 +4436,81 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("CurrencyUaeDirham", resourceCulture);
             }
         }
+        public static string WeightUnit {
+            get {
+                return ResourceManager.GetString("WeightUnit", resourceCulture);
+            }
+        }
+        public static string BatchNumber {
+            get {
+                return ResourceManager.GetString("BatchNumber", resourceCulture);
+            }
+        }
+        public static string ExpiryDate {
+            get {
+                return ResourceManager.GetString("ExpiryDate", resourceCulture);
+            }
+        }
+        public static string IsWeighed {
+            get {
+                return ResourceManager.GetString("IsWeighed", resourceCulture);
+            }
+        }
+        public static string TrackBatch {
+            get {
+                return ResourceManager.GetString("TrackBatch", resourceCulture);
+            }
+        }
+        public static string TrackExpiry {
+            get {
+                return ResourceManager.GetString("TrackExpiry", resourceCulture);
+            }
+        }
+        public static string WeightPerUnit {
+            get {
+                return ResourceManager.GetString("WeightPerUnit", resourceCulture);
+            }
+        }
+        public static string KG {
+            get {
+                return ResourceManager.GetString("KG", resourceCulture);
+            }
+        }
+        public static string LB {
+            get {
+                return ResourceManager.GetString("LB", resourceCulture);
+            }
+        }
+        public static string G {
+            get {
+                return ResourceManager.GetString("G", resourceCulture);
+            }
+        }
+        public static string InsufficientBatchStock {
+            get {
+                return ResourceManager.GetString("InsufficientBatchStock", resourceCulture);
+            }
+        }
+        public static string BatchNotFound {
+            get {
+                return ResourceManager.GetString("BatchNotFound", resourceCulture);
+            }
+        }
+        public static string ExpiringSoon {
+            get {
+                return ResourceManager.GetString("ExpiringSoon", resourceCulture);
+            }
+        }
+        public static string Expired {
+            get {
+                return ResourceManager.GetString("Expired", resourceCulture);
+            }
+        }
+        public static string FEFO {
+            get {
+                return ResourceManager.GetString("FEFO", resourceCulture);
+            }
+        }
 
     }
 }

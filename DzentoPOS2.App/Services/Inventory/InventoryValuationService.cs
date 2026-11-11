@@ -42,6 +42,7 @@ namespace DzentoPOS2.App.Services.Inventory
             _salesEvents.SaleCompleted += (_, _) => InvalidateCache();
             _salesEvents.SaleVoided += (_, _) => InvalidateCache();
             _notifier.Changed += (_, _) => InvalidateCache();
+            _activeBranch.BranchChanged += (_, _) => InvalidateCache();
         }
 
         public void InvalidateCache()

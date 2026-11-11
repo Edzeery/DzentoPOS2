@@ -196,13 +196,13 @@
 
 | # | المهمة | الحالة | دليل الإنجاز |
 |---|---|---|---|
-| M.1 | مراجعة شاملة: ExpectedProfit (KPI) > Potential (ProfitSummary) — تناقض scopes | 🟨 | تقرير 2026-11-11: KPI Expected = Sold + InventoryExpected(realistic) vs Potential = InventoryPotential (stock only) |
-| M.2 | معاينة الشراء (PurchaseEditDialog) تستخدم potential (qty*(sale-cost)) بدل NRV-realistic | 🟨 | PurchaseEditDialog.RefreshItemsGrid: expected += qty*(SalePrice-CostPrice) |
-| M.3 | AtRiskProfit/RealizationRate/ForecastBias محسوبة but غير معروضة | 🟨 | InventoryProfitResult.AtRiskProfit, ProfitCalculator.CalculateRealizationRate/ForecastBias |
-| M.4 | ExpectedStockProfit KPI card غير معروض (ليس في KpiCardsModule.Keys) | 🟨 | KpiCardsModule.Keys لا يحتوي ExpectedStockProfit |
-| M.5 | تصحيح تسميات/نطاقات (tooltip formula) | ⬜ | pending plan approval |
+| M.1 | مراجعة شاملة: ExpectedProfit (KPI) > Potential (ProfitSummary) — تناقض scopes | ✅ | Fixed: KPI Expected = InventoryExpected(realistic) only (was Sold + InventoryExpected). Potential = InventoryPotential (stock only). Tooltip updated. |
+| M.2 | معاينة الشراء (PurchaseEditDialog) تستخدم potential (qty*(sale-cost)) بدل NRV-realistic | ✅ | PurchaseEditDialog uses PurchasePreviewCalculator (NRV-realistic) + real-time refresh |
+| M.3 | AtRiskProfit/RealizationRate/ForecastBias محسوبة but غير معروضة | ✅ | Displayed in ProfitSummaryModule: InvAtRisk, RealizationRate, ForecastBias rows |
+| M.4 | ExpectedStockProfit KPI card غير معروض (ليس في KpiCardsModule.Keys) | 🟨 | Still not in KpiCardsModule.Keys (deferred — shown in ProfitSummary instead) |
+| M.5 | تصحيح تسميات/نطاقات (tooltip formula) | ✅ | Tooltip: "ExpectedProfit (ExpectedStock, NRV) ≤ PotentialProfit" |
 
-"## H5 - Deferred Designer migration
+## H5 - Deferred Designer migration
 | H.5 | Move Fees/Discount inputs to SalesForm.Designer.cs within general designer migration task | ? | Documented only |
 
 ## K — نظام الكتالوج المتعدد الأنشطة (متغيرات + أنشطة + صور + POS)

@@ -82,6 +82,9 @@ namespace DzentoPOS2.Data.Seed
                     .GetService<ILoggerFactory>()
                     ?.CreateLogger("DzentoPOS2.Data.Seed.UserBranchBackfill"));
 
+            // Backfill empty BranchId on invoices/expenses (idempotent).
+            await InvoiceBranchBackfill.SeedAsync(context);
+
             await CashierSeeder.SeedAsync(context);
             await CustomerAccountSeeder.SeedAsync(context);
         }

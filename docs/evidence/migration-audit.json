@@ -1,9 +1,9 @@
 {
-  "GeneratedAt": "2026-11-11T16:37:23.9883327+01:00",
+  "GeneratedAt": "2026-11-11T16:57:45.6402498+01:00",
   "SourceDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\DzentoPOS2\\Database\\DzentoPOS.db",
   "SourceBytes": 1286144,
   "SourceHadWal": false,
-  "WorkDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\Temp\\DzentoPOS2.MigrationAudit\\20261111-163722\\DzentoPOS.db",
+  "WorkDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\Temp\\DzentoPOS2.MigrationAudit\\20261111-165744\\DzentoPOS.db",
   "IntegrityBefore": "ok",
   "IntegrityAfter": "ok",
   "ForeignKeyViolationsBefore": 0,
@@ -18,7 +18,7 @@
     "Attachments": 0,
     "AttributeDefinitions": 0,
     "AttributeValues": 0,
-    "AuditLogs": 257,
+    "AuditLogs": 259,
     "Batches": 0,
     "BranchActivities": 3,
     "Branches": 1,
@@ -85,7 +85,7 @@
     "Attachments": 0,
     "AttributeDefinitions": 0,
     "AttributeValues": 0,
-    "AuditLogs": 257,
+    "AuditLogs": 259,
     "Batches": 0,
     "BranchActivities": 3,
     "Branches": 1,
@@ -154,8 +154,8 @@
   "RemovedRowKeys": [],
   "ChangedRowDetails": [],
   "AddedRowKeys": [
-    "Customers:str:ABB9DBC0-D37B-4316-A505-FAD205B6DAC3\u0001",
-    "Customers:str:ECA4053A-4EC3-4863-9124-8DCD80A7D51D\u0001"
+    "Customers:str:7CCAAD2D-E876-40AE-B7D4-96185830AA6A\u0001",
+    "Customers:str:ED4BD121-DEC8-4990-992E-8D758BA7C7B2\u0001"
   ],
   "MigrationsBefore": [
     "20260517183403_InitialCreate",

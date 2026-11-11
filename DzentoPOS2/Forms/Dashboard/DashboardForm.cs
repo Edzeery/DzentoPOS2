@@ -213,7 +213,7 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
 
         private DashboardFilterDto GetFilter()
         {
-            var preset = _cmbDatePreset.SelectedIndex switch
+            var preset = _selectedPresetIndex switch
             {
                 0 => DashboardDatePreset.Today,
                 1 => DashboardDatePreset.Yesterday,

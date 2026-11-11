@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using DzentoPOS2.App.Session;
 
 namespace DzentoPOS2.App.Services.Systems;
 
@@ -17,6 +18,8 @@ public interface IActiveBranchContext
     event EventHandler<ActiveBranchChangedEventArgs>? BranchChanged;
 
     Task<bool> TrySwitchBranchAsync(Guid branchId, CancellationToken cancellationToken = default);
+
+    Task InitializeAsync(ICurrentUserService currentUser, CancellationToken cancellationToken = default);
 }
 
 public class ActiveBranchChangedEventArgs : EventArgs

@@ -1,4 +1,5 @@
-﻿using DzentoPOS2.App.Session;
+﻿using DzentoPOS2.App.Services.Systems;
+using DzentoPOS2.App.Session;
 using DzentoPOS2.WinForms.Forms.Auth;
 using DzentoPOS2.WinForms.Forms.Layout;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,15 +16,18 @@ public class AppApplicationContext : ApplicationContext
     // alive for the whole application lifetime.
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ICurrentUserService _currentUser;
+    private readonly IActiveBranchContext _activeBranch;
     private IServiceScope? _currentScope;
     private bool _loginSucceeded;
 
     public AppApplicationContext(
         IServiceScopeFactory scopeFactory,
-        ICurrentUserService currentUser)
+        ICurrentUserService currentUser,
+        IActiveBranchContext activeBranch)
     {
         _scopeFactory = scopeFactory;
         _currentUser = currentUser;
+        _activeBranch = activeBranch;
 
         ShowSplash();
     }
@@ -69,6 +73,9 @@ public class AppApplicationContext : ApplicationContext
         _loginSucceeded = true;
 
         _currentUser.SetUser(session);
+
+        // Initialize active branch context before showing MainForm.
+        _activeBranch.InitializeAsync(_currentUser).GetAwaiter().GetResult();
 
         var loginForm = _currentForm;
         var loginScope = _currentScope;

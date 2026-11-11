@@ -37,6 +37,7 @@ namespace DzentoPOS2.App
             services.AddSingleton<Shared.Helpers.RegionalContext>();
             services.AddSingleton<IBusinessClock, BusinessClock>();
             services.AddScoped<IStoreContextService, StoreContextService>();
+            services.AddSingleton<IBranchResolver, BranchResolver>();
             services.AddSingleton<IActiveBranchContext, ActiveBranchContext>();
             services.AddSingleton<IBranchSwitchGuardRegistry, BranchSwitchGuardRegistry>();
             services.AddTransient<IBranchSwitchGuard, BranchSwitchGuard>();

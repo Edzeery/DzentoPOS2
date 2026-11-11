@@ -19,6 +19,7 @@ public sealed class StoreContextService : IStoreContextService
     private readonly AppDbContext _context;
     private readonly ICurrentUserService _currentUser;
     private readonly IActiveBranchContext _activeBranch;
+    private readonly IBranchResolver _branchResolver;
 
     private readonly object _gate = new();
 
@@ -32,11 +33,13 @@ public sealed class StoreContextService : IStoreContextService
     public StoreContextService(
         AppDbContext context,
         ICurrentUserService currentUser,
-        IActiveBranchContext activeBranch)
+        IActiveBranchContext activeBranch,
+        IBranchResolver branchResolver)
     {
         _context = context;
         _currentUser = currentUser;
         _activeBranch = activeBranch;
+        _branchResolver = branchResolver;
         // No subscription needed: cache is indexed by branch ID.
     }
 
@@ -72,7 +75,13 @@ public sealed class StoreContextService : IStoreContextService
                 return _branchCache;
         }
 
-        var branch = await ResolveBranchAsync(preferred, cancellationToken);
+        var resolved = await _branchResolver.ResolveAsync(preferred, cancellationToken);
+
+        StoreBranchInfo? branch = null;
+        if (resolved is not null)
+        {
+            branch = new StoreBranchInfo(resolved.Id, resolved.Name, resolved.IsMainBranch);
+        }
 
         lock (_gate)
         {

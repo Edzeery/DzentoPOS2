@@ -95,7 +95,7 @@ namespace DzentoPOS2.App.Services.Accounting;
 
     private async Task<ExpenseDto> CreateInternalAsync(CreateExpenseDto dto)
     {
-        var branchId = _currentUser.User?.BranchId ?? Guid.Empty;
+        var branchId = _activeBranch.ActiveBranchId;
         if (branchId == Guid.Empty)
             branchId = await _storeContext.GetDefaultBranchIdAsync();
 

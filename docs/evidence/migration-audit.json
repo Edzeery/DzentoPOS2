@@ -1,9 +1,9 @@
 {
-  "GeneratedAt": "2026-11-10T19:16:55.9473064+01:00",
+  "GeneratedAt": "2026-11-11T14:51:56.9730069+01:00",
   "SourceDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\DzentoPOS2\\Database\\DzentoPOS.db",
   "SourceBytes": 1286144,
   "SourceHadWal": false,
-  "WorkDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\Temp\\DzentoPOS2.MigrationAudit\\20261110-191654\\DzentoPOS.db",
+  "WorkDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\Temp\\DzentoPOS2.MigrationAudit\\20261111-145155\\DzentoPOS.db",
   "IntegrityBefore": "ok",
   "IntegrityAfter": "ok",
   "ForeignKeyViolationsBefore": 0,
@@ -18,7 +18,7 @@
     "Attachments": 0,
     "AttributeDefinitions": 0,
     "AttributeValues": 0,
-    "AuditLogs": 245,
+    "AuditLogs": 249,
     "Batches": 0,
     "BranchActivities": 3,
     "Branches": 1,
@@ -31,13 +31,13 @@
     "Customers": 4,
     "DashboardWidgets": 0,
     "DeviceActivations": 0,
-    "DocumentSequences": 7,
+    "DocumentSequences": 8,
     "ErrorLogs": 0,
     "ExpenseCategories": 7,
     "Expenses": 0,
     "FinancialPeriods": 0,
-    "InventorySnapshots": 4,
-    "InventoryTransactions": 17,
+    "InventorySnapshots": 5,
+    "InventoryTransactions": 18,
     "LicensePlans": 4,
     "Licenses": 0,
     "Notifications": 0,
@@ -49,9 +49,9 @@
     "ProductUnits": 6,
     "ProductVariants": 5,
     "Products": 4,
-    "PurchaseInvoiceItems": 4,
-    "PurchaseInvoices": 4,
-    "PurchasePayments": 3,
+    "PurchaseInvoiceItems": 5,
+    "PurchaseInvoices": 5,
+    "PurchasePayments": 4,
     "PurchaseReturnItems": 0,
     "PurchaseReturns": 0,
     "ReportTemplates": 0,
@@ -85,7 +85,7 @@
     "Attachments": 0,
     "AttributeDefinitions": 0,
     "AttributeValues": 0,
-    "AuditLogs": 245,
+    "AuditLogs": 249,
     "Batches": 0,
     "BranchActivities": 3,
     "Branches": 1,
@@ -98,13 +98,13 @@
     "Customers": 6,
     "DashboardWidgets": 0,
     "DeviceActivations": 0,
-    "DocumentSequences": 7,
+    "DocumentSequences": 8,
     "ErrorLogs": 0,
     "ExpenseCategories": 7,
     "Expenses": 0,
     "FinancialPeriods": 0,
-    "InventorySnapshots": 4,
-    "InventoryTransactions": 17,
+    "InventorySnapshots": 5,
+    "InventoryTransactions": 18,
     "LicensePlans": 4,
     "Licenses": 0,
     "Notifications": 0,
@@ -116,9 +116,9 @@
     "ProductUnits": 6,
     "ProductVariants": 5,
     "Products": 4,
-    "PurchaseInvoiceItems": 4,
-    "PurchaseInvoices": 4,
-    "PurchasePayments": 3,
+    "PurchaseInvoiceItems": 5,
+    "PurchaseInvoices": 5,
+    "PurchasePayments": 4,
     "PurchaseReturnItems": 0,
     "PurchaseReturns": 0,
     "ReportTemplates": 0,
@@ -147,15 +147,37 @@
     "__EFMigrationsLock": 0
   },
   "RowsRemoved": 0,
-  "RowsChanged": 0,
+  "RowsChanged": 3,
   "RowsAdded": 2,
   "MissingTables": [],
   "MissingColumns": [],
   "RemovedRowKeys": [],
-  "ChangedRowDetails": [],
+  "ChangedRowDetails": [
+    {
+      "Table": "Users",
+      "Key": "str:E8C17EBA-F38A-4695-8CEE-DBFF387C711A\u0001",
+      "ChangedColumns": [
+        "BranchId"
+      ]
+    },
+    {
+      "Table": "Users",
+      "Key": "str:AF9CFB9C-E6B3-42EC-A895-CBDEACCED327\u0001",
+      "ChangedColumns": [
+        "BranchId"
+      ]
+    },
+    {
+      "Table": "Users",
+      "Key": "str:1593BF70-425A-4C9A-AD62-1820C0667529\u0001",
+      "ChangedColumns": [
+        "BranchId"
+      ]
+    }
+  ],
   "AddedRowKeys": [
-    "Customers:str:3EAA06BC-AADA-482F-BB2F-D25919C9F89B\u0001",
-    "Customers:str:86AD2169-5161-429F-B14A-C77E8F613742\u0001"
+    "Customers:str:034217F8-1EA1-4A84-9B67-12CC9FEADC85\u0001",
+    "Customers:str:52E98A60-A1B7-4868-A47E-4BA9FCB82980\u0001"
   ],
   "MigrationsBefore": [
     "20260517183403_InitialCreate",

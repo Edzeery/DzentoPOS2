@@ -37,6 +37,20 @@ namespace DzentoPOS2.Data.Seed
                     await context.SaveChangesAsync();
                 }
 
+                // Ensure admin has a branch (fallback to main branch).
+                if (adminUser.BranchId == null || adminUser.BranchId == Guid.Empty)
+                {
+                    var mainBranch = await context.Branches
+                        .Where(b => b.IsMainBranch && b.IsActive && !b.IsDeleted)
+                        .OrderBy(b => b.CreatedAt)
+                        .FirstOrDefaultAsync();
+                    if (mainBranch != null)
+                    {
+                        adminUser.BranchId = mainBranch.Id;
+                        await context.SaveChangesAsync();
+                    }
+                }
+
                 return;
             }
 
@@ -46,6 +60,12 @@ namespace DzentoPOS2.Data.Seed
 
             if (superAdminRole == null)
                 return;
+
+            // Get main branch for admin
+            var mainBranchForAdmin = await context.Branches
+                .Where(b => b.IsMainBranch && b.IsActive && !b.IsDeleted)
+                .OrderBy(b => b.CreatedAt)
+                .FirstOrDefaultAsync();
 
             adminUser = new User
             {
@@ -59,6 +79,8 @@ namespace DzentoPOS2.Data.Seed
                 PasswordHash = PasswordHelper.Hash(DefaultPassword),
 
                 IsActive = true,
+
+                BranchId = mainBranchForAdmin?.Id,
 
                 // The seeded password is well known: the first sign-in must set
                 // a real one before the shell opens.

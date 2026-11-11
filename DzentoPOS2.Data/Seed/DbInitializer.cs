@@ -75,6 +75,13 @@ namespace DzentoPOS2.Data.Seed
                     $"[StoreBootstrapper] {bootstrap}");
             }
 
+            // Backfill empty BranchId for all users (idempotent).
+            await UserBranchBackfill.SeedAsync(
+                context,
+                scope.ServiceProvider
+                    .GetService<ILoggerFactory>()
+                    ?.CreateLogger("DzentoPOS2.Data.Seed.UserBranchBackfill"));
+
             await CashierSeeder.SeedAsync(context);
             await CustomerAccountSeeder.SeedAsync(context);
         }

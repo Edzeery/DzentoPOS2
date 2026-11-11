@@ -1,5 +1,6 @@
 using DzentoPOS2.App.Services.Sales;
 using DzentoPOS2.App.Services.Systems;
+using DzentoPOS2.App.Session;
 using DzentoPOS2.Core.Configuration;
 using DzentoPOS2.Data.Context;
 using Microsoft.EntityFrameworkCore;
@@ -50,5 +51,6 @@ public class SubscriptionLeakTests
         public bool CanSwitchBranch => true;
         public event EventHandler<ActiveBranchChangedEventArgs>? BranchChanged;
         public Task<bool> TrySwitchBranchAsync(Guid branchId, System.Threading.CancellationToken cancellationToken = default) => Task.FromResult(true);
+        public Task InitializeAsync(ICurrentUserService currentUser, System.Threading.CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 }

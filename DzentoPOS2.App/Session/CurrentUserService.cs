@@ -15,6 +15,7 @@ namespace DzentoPOS2.App.Session
 
         public string? RoleName => User?.RoleName;
 
+        [Obsolete("Use IActiveBranchContext.ActiveBranchId instead.")]
         public Guid? BranchId => User?.BranchId;
 
         public bool IsAdmin => User?.IsAdmin ?? false;

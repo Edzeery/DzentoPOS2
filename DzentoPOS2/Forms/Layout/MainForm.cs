@@ -913,11 +913,11 @@ namespace DzentoPOS2.WinForms.Forms.Layout
                 })
                 .ToList();
 
-            _mainHeaderBar.SetBranches(branchViewModels, _currentUser.User?.BranchId);
+            _mainHeaderBar.SetBranches(branchViewModels, _activeBranch.ActiveBranchId);
 
             // Show the real branch under the user name (never the designer
             // placeholder); hide the line when there is no branch.
-            var selectedBranch = branchViewModels.FirstOrDefault(b => b.Id == _currentUser.User?.BranchId)
+            var selectedBranch = branchViewModels.FirstOrDefault(b => b.Id == _activeBranch.ActiveBranchId)
                 ?? branchViewModels.FirstOrDefault(b => b.IsMainBranch)
                 ?? branchViewModels.FirstOrDefault();
 

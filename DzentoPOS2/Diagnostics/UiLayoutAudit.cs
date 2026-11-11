@@ -1,6 +1,7 @@
 using System.Text.Json;
 using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.App.Services.Systems;
+using DzentoPOS2.App.Session;
 using EZControls.Core.Base;
 using DzentoPOS2.Core.Configuration;
 using DzentoPOS2.Core.Enums;
@@ -533,6 +534,8 @@ private static int CountControls(Control parent)
         public event EventHandler<ActiveBranchChangedEventArgs>? BranchChanged;
         public Task<bool> TrySwitchBranchAsync(Guid branchId, CancellationToken cancellationToken = default) =>
             Task.FromResult(true);
+        public Task InitializeAsync(ICurrentUserService currentUser, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
     }
 
     private sealed class StubCurrentSettingsService : ICurrentSettingsService

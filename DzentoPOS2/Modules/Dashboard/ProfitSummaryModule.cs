@@ -39,7 +39,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             {
                 Dock = DockStyle.Top,
                 AutoSize = true,
-                MaximumSize = new Size(0, 0),
+                MaximumSize = new Size(520, 0),
                 ColumnCount = 2,
                 RowCount = 0,
                 Margin = new Padding(0, 8, 0, 0),
@@ -47,7 +47,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
                 BackColor = AppColors.Surface
             };
             _grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            _grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 140F));
+            _grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
 
             BuildRows();
         }
@@ -65,8 +65,11 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             AddRow("Net", AppStrings.NetProfit);
             AddRow("Expected", AppStrings.ExpectedProfit);
             AddRow("ExpectedSold", AppStrings.ExpectedSold);
-            AddRow("ExpectedStock", AppStrings.ExpectedStock);
-            AddRow("Potential", AppStrings.PotentialProfit);
+            AddRow("InvCost", "Inventory Cost"); // TODO: localize
+            AddRow("InvRetail", "Inventory Retail"); // TODO: localize
+            AddRow("InvPotential", AppStrings.PotentialProfit);
+            AddRow("InvAtRisk", "At Risk"); // TODO: localize
+            AddRow("InvWarnings", "Warnings"); // TODO: localize
         }
 
         private void AddRow(string key, string label)
@@ -136,8 +139,11 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             Set("Net", data.NetProfit.Value, currencyDigits, culture);
             Set("Expected", data.ExpectedProfit.Value, currencyDigits, culture);
             Set("ExpectedSold", data.ExpectedSoldProfit.Value, currencyDigits, culture);
-            Set("ExpectedStock", data.ExpectedStockProfit.Value, currencyDigits, culture);
-            Set("Potential", data.InventoryPotentialProfit, currencyDigits, culture);
+            Set("InvCost", data.InventoryCostValue, currencyDigits, culture);
+            Set("InvRetail", data.InventoryRetailValue, currencyDigits, culture);
+            Set("InvPotential", data.InventoryPotentialProfit, currencyDigits, culture);
+            Set("InvAtRisk", data.InventoryAtRiskProfit, currencyDigits, culture);
+            Set("InvWarnings", data.InventoryWarningNoSalePrice + data.InventoryWarningNegativeMargin + data.InventoryWarningZeroCost, 0, culture);
         }
 
         private void Set(string key, decimal value, int digits, CultureInfo culture)

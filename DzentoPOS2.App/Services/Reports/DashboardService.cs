@@ -190,6 +190,9 @@ namespace DzentoPOS2.App.Services.Reports
             dto.InventoryPotentialProfit = valuation.PotentialProfit;
             dto.InventoryExpectedProfit = valuation.ExpectedProfit;
             dto.InventoryAtRiskProfit = valuation.AtRiskProfit;
+            dto.InventoryWarningNoSalePrice = valuation.WarningNoSalePrice;
+            dto.InventoryWarningNegativeMargin = valuation.WarningNegativeMargin;
+            dto.InventoryWarningZeroCost = valuation.WarningZeroCost;
 
             // Daily snapshot (upsert, once per local day).
             await _snapshots.UpsertTodayAsync(valuation);
@@ -310,7 +313,7 @@ namespace DzentoPOS2.App.Services.Reports
             var actualMargin = ProfitCalculator.CalculateMargin(actualProfit, revenue, 1);
             var netMargin = ProfitCalculator.CalculateMargin(netProfit, revenue, 1);
 
-            SetCardData(dto.ExpectedProfit, expected + valuation.ExpectedProfit, 0, KpiValueKind.Money);
+            SetCardData(dto.ExpectedProfit, valuation.ExpectedProfit, 0, KpiValueKind.Money);
             SetCardData(dto.ExpectedSoldProfit, expected, 0, KpiValueKind.Money);
             SetCardData(dto.ExpectedStockProfit, expectedStock, 0, KpiValueKind.Money);
             SetCardData(dto.ActualProfit, actualProfit, 0, KpiValueKind.Money);

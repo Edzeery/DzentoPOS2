@@ -1,4 +1,5 @@
 using DzentoPOS2.App.Services.Inventory;
+using DzentoPOS2.Core.Services.Inventory;
 using DzentoPOS2.App.Services.Partners;
 using DzentoPOS2.App.Services.Purchases;
 using DzentoPOS2.Localization.Resources;
@@ -18,6 +19,7 @@ public class PurchaseEditDialog : ThemedDialog
     private readonly IProductService _productService;
     private readonly ISupplierService _supplierService;
     private readonly ILanguageService _languageService;
+    private readonly IInventoryValuationService _valuationService;
     private bool _languageSubscribed;
 
     private readonly Label _lblSupplier;
@@ -34,6 +36,8 @@ public class PurchaseEditDialog : ThemedDialog
     private readonly DataGridView _itemsGrid;
     private readonly Label _lblTotal;
     private readonly Label _lblTotalValue;
+    private readonly Label _lblExpectedProfit;
+    private readonly Label _lblExpectedProfitValue;
     private readonly Button _btnSave;
     private readonly Button _btnCancel;
 
@@ -47,6 +51,7 @@ public class PurchaseEditDialog : ThemedDialog
         public string ProductName { get; set; } = "";
         public decimal Quantity { get; set; }
         public decimal CostPrice { get; set; }
+        public decimal CurrentStockQty { get; set; }
         public decimal Total => Quantity * CostPrice;
     }
 
@@ -54,12 +59,14 @@ public class PurchaseEditDialog : ThemedDialog
         IPurchaseService purchaseService,
         IProductService productService,
         ISupplierService supplierService,
-        ILanguageService languageService)
+        ILanguageService languageService,
+        IInventoryValuationService valuationService)
     {
         _purchaseService = purchaseService;
         _productService = productService;
         _supplierService = supplierService;
         _languageService = languageService;
+        _valuationService = valuationService;
 
         Size = new Size(600, 520);
         StartPosition = FormStartPosition.CenterParent;
@@ -109,6 +116,17 @@ public class PurchaseEditDialog : ThemedDialog
             TextAlign = ContentAlignment.MiddleRight
         };
 
+        _lblExpectedProfit = MakeLabel("Expected profit:", 20, 385);
+        _lblExpectedProfitValue = new Label
+        {
+            Text = "0.00",
+            Location = new Point(460, 385),
+            Size = new Size(100, 20),
+            Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+            ForeColor = AppColors.Success,
+            TextAlign = ContentAlignment.MiddleRight
+        };
+
         _btnSave = ButtonFactory.Primary(AppStrings.CompletePurchase);
         _btnSave.Location = new Point(360, 400);
         _btnSave.Size = new Size(200, 40);
@@ -129,6 +147,7 @@ public class PurchaseEditDialog : ThemedDialog
             _btnAddItem,
             _itemsGrid,
             _lblTotal, _lblTotalValue,
+            _lblExpectedProfit, _lblExpectedProfitValue,
             _btnSave, _btnCancel
         });
 
@@ -203,6 +222,15 @@ public class PurchaseEditDialog : ThemedDialog
         if (_cmbProduct.SelectedItem is not ProductDto product || product.Id == Guid.Empty)
             return;
 
+        // Fetch current stock for this product (single query, not per keystroke).
+        decimal currentStock = 0m;
+        try
+        {
+            var stocks = _productService.GetProductStocksAsync(product.Id).GetAwaiter().GetResult();
+            currentStock = stocks.Sum(s => s.Quantity);
+        }
+        catch (Exception) { /* ignore stock fetch failure */ }
+
         var existing = _items.FirstOrDefault(i => i.ProductId == product.Id);
         if (existing != null)
         {
@@ -215,11 +243,13 @@ public class PurchaseEditDialog : ThemedDialog
                 ProductId = product.Id,
                 ProductName = product.Name,
                 Quantity = _numQty.Value,
-                CostPrice = _numCost.Value
+                CostPrice = _numCost.Value,
+                CurrentStockQty = currentStock
             });
         }
 
         _numQty.Value = 1;
+        _numCost.Value = 0;
         RefreshItemsGrid();
     }
 
@@ -238,6 +268,38 @@ public class PurchaseEditDialog : ThemedDialog
         _itemsGrid.DataSource = _items.ToList();
 
         _lblTotalValue.Text = _items.Sum(i => i.Total).ToString("N2");
+
+        decimal expected = 0m;
+        try
+        {
+            var valuation = _valuationService.GetValuationAsync().GetAwaiter().GetResult();
+            var inputs = _items.Select(i =>
+            {
+                var product = _products.FirstOrDefault(p => p.Id == i.ProductId);
+                return new PurchasePreviewLineInput(
+                    i.ProductId,
+                    i.CurrentStockQty,
+                    product?.CostPrice ?? i.CostPrice,
+                    i.Quantity,
+                    i.CostPrice,
+                    product?.SalePrice ?? 0m);
+            }).ToList();
+            var preview = PurchasePreviewCalculator.Calculate(
+                inputs,
+                v => valuation.DiscountFactorAvg,
+                valuation.FeeFactor);
+            expected = preview.ExpectedProfit;
+        }
+        catch
+        {
+            foreach (var item in _items)
+            {
+                var product = _products.FirstOrDefault(p => p.Id == item.ProductId);
+                if (product is null) continue;
+                expected += item.Quantity * (product.SalePrice - item.CostPrice);
+            }
+        }
+        _lblExpectedProfitValue.Text = expected.ToString("N2");
     }
 
     private async Task SaveAsync()

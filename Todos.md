@@ -1,4 +1,4 @@
-# قائمة المهام — DzentoPOS2
+﻿# قائمة المهام — DzentoPOS2
 
 **آخر تحديث:** 2026-10-31
 **المرجع البصري:** [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md) — [`docs/design-system-plan.md`](docs/design-system-plan.md)
@@ -192,7 +192,17 @@
 | G1.5 | إعادة تعيين كلمة مرور SuperAdmin (طوارئ) | ✅ | AdminSeeder يدعم إعادة التعيين через ADMIN_EMERGENCY_RESET=true (متغير بيئة) أو Admin:EmergencyReset=true (appsettings.json). при التفعيل: إعادة تعيين كلمة المرور إلى admin وتعيين MustChangePassword=true، وإجبار تغيير كلمة المرور при следующем входе. documented suggested future methods: email-based reset، security questions، recovery code، super-admin reset. دليل: بناء 0 أخطاء / 21 تحذير NU1701، الوحدة 84/84، التكامل 51/51.
 
 
-## H5 - Deferred Designer migration
+## INV - ربح المخزون (NRV / IAS 2): مراجعة تناقضات
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| M.1 | مراجعة شاملة: ExpectedProfit (KPI) > Potential (ProfitSummary) — تناقض scopes | 🟨 | تقرير 2026-11-11: KPI Expected = Sold + InventoryExpected(realistic) vs Potential = InventoryPotential (stock only) |
+| M.2 | معاينة الشراء (PurchaseEditDialog) تستخدم potential (qty*(sale-cost)) بدل NRV-realistic | 🟨 | PurchaseEditDialog.RefreshItemsGrid: expected += qty*(SalePrice-CostPrice) |
+| M.3 | AtRiskProfit/RealizationRate/ForecastBias محسوبة but غير معروضة | 🟨 | InventoryProfitResult.AtRiskProfit, ProfitCalculator.CalculateRealizationRate/ForecastBias |
+| M.4 | ExpectedStockProfit KPI card غير معروض (ليس في KpiCardsModule.Keys) | 🟨 | KpiCardsModule.Keys لا يحتوي ExpectedStockProfit |
+| M.5 | تصحيح تسميات/نطاقات (tooltip formula) | ⬜ | pending plan approval |
+
+"## H5 - Deferred Designer migration
 | H.5 | Move Fees/Discount inputs to SalesForm.Designer.cs within general designer migration task | ? | Documented only |
 
 ## K — نظام الكتالوج المتعدد الأنشطة (متغيرات + أنشطة + صور + POS)

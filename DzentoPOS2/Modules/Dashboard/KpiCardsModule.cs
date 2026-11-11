@@ -100,7 +100,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
 
             var digits = KpiCard.CurrencyDigits;
             var culture = System.Globalization.CultureInfo.CurrentCulture;
-            var expectedFormula = $"{AppStrings.ExpectedProfit} = {AppStrings.ExpectedSold} + {AppStrings.ExpectedStock}";
+            var expectedFormula = $"{AppStrings.ExpectedProfit} ({AppStrings.ExpectedStock}, NRV) \u2264 {AppStrings.PotentialProfit}";
 
             foreach (var card in _cards)
             {

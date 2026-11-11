@@ -21,6 +21,7 @@ public partial class PurchasesForm : LocalizableFormBase
     private readonly IAuthorizationGuard _guard;
     private readonly IProductService _productService;
     private readonly ISupplierService _supplierService;
+    private readonly IInventoryValuationService _valuationService;
 
     private readonly Panel _topPanel;
     private readonly IconButton _btnNewPurchase;
@@ -38,13 +39,15 @@ public partial class PurchasesForm : LocalizableFormBase
         IProductService productService,
         ISupplierService supplierService,
         ILanguageService languageService,
-        IAuthorizationGuard guard)
+        IAuthorizationGuard guard,
+        IInventoryValuationService valuationService)
         : base(languageService)
     {
         _purchaseService = purchaseService;
         _productService = productService;
         _supplierService = supplierService;
         _guard = guard;
+        _valuationService = valuationService;
 
         Size = new Size(1100, 650);
         BackColor = AppColors.Background;
@@ -189,7 +192,7 @@ public partial class PurchasesForm : LocalizableFormBase
 
     private async Task AddPurchase()
     {
-        using var dialog = new PurchaseEditDialog(_purchaseService, _productService, _supplierService, _languageService);
+        using var dialog = new PurchaseEditDialog(_purchaseService, _productService, _supplierService, _languageService, _valuationService);
         if (dialog.ShowDialog() == DialogResult.OK)
             await LoadDataAsync();
     }

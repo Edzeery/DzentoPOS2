@@ -242,3 +242,14 @@
 - ReloadStockAsync: awaitable, cancellation, logging, stale-result protection
 - AppStrings: BranchSwitchNoPermission, BranchSwitchCartNotEmpty, BranchSwitchBranchInactive
 - Build 0 errors; unit 174/174; integration 70/70; migration audit PASSED; layout audit 0 violations
+
+## N — Phase 6: Active Branch Context (6.0)
+
+| # | Task | Status | Evidence |
+|---|---|---|---|
+| N.6.0a | IActiveBranchContext (Singleton) + StoreContextService + PosProductStore stock filter + MainForm selector + SalesForm guard | Done | build 0 errors; unit 185/185; integration 80/80; migration audit PASSED; layout audit 0 violations |
+| N.6.0b | BranchActivity + 8 templates + ICapabilityService + ProductEditDialog capability filtering | Done | build 0 errors; unit 185/185; integration 80/80 |
+| N.6.0c | Read isolation: Dashboard, Sale/Purchase/Expense, InventoryValuation, InventorySnapshot, CashSession | Done | build 0 errors; unit 185/185; integration 80/80; migration audit PASSED |
+| N.6.0d-1 | Tests: ActiveBranchContext, CapabilityService, BranchIsolation, SubscriptionLeak, guard registry | Done | 11 tests; BranchPermissionSeeder; IBranchResolver; UserBranchBackfill; build 0 errors; unit 185/185; integration 80/80 |
+| N.6.0d-2 | Read isolation reality: InventorySnapshot migration, CashSessionService, BranchScope, IBranchAware, DashboardService ViewAll | Done | build 0 errors; unit 185/185; integration 80/80; migration audit PASSED |
+| N.6.0d-3 | UI: FirstRunModulesDialog 8 activities, BranchActivitySeeder, ProductEditDialog AppStrings, PNG screenshots | Done | build 0 errors; unit 185/185; integration 80/80; migration audit PASSED; layout audit 72 scenarios 0 violations |

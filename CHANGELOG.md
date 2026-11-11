@@ -2,6 +2,43 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] - 2026-11-11 (Phase 6: Active Branch Context complete)
+
+### Added
+- **IActiveBranchContext** (Singleton): real active branch context with IBranchResolver fallback to main branch.
+- **IBranchSwitchGuardRegistry**: list-based guard for branch switching (cart-not-empty check).
+- **BranchActivity** entity + 8 activity templates + ICapabilityService.
+- **BranchPermissionSeeder**: seeds BranchesSwitch, BranchesViewAll, BranchesActivitiesEdit.
+- **BranchActivitySeeder**: migrates old AppSettings module flags to BranchActivity.
+- **UserBranchBackfill**: fills empty BranchId for all users.
+- **IBranchAware** interface: pages notified on branch change.
+- **BranchScope** enum (Active/All) for read isolation.
+- **InventorySnapshot.BranchId** with conditional unique indexes.
+- **SerialUnit** + **SalesInvoiceItemUnit** entities for serial tracking.
+- **Batch** entity for weight/batch/expiry tracking.
+- **IBatchService** + BatchService (FEFO selection, expiry alerts).
+- **LuhnValidator** for IMEI validation.
+- **SerialUnitPickerDialog** + **WarrantyQueryForm**.
+- **FirstRunModulesDialog** rebuilt with 8 activities.
+- **24 PNG screenshots** for visual verification.
+
+### Changed
+- StoreContextService uses IBranchResolver (no circular dependency).
+- ExpenseService uses IActiveBranchContext (removed User?.BranchId).
+- MainForm branch selector uses IActiveBranchContext.
+- DashboardService filters by active branch + ViewAll permission.
+- CashSessionService filters by active branch.
+- InventoryValuationService filters by branch warehouse.
+- ProductService.GetProductStocksAsync filters by branch.
+- ProductEditDialog uses AppStrings (no hardcoded English).
+- CurrentUserService.BranchId marked [Obsolete].
+
+### Verified
+- Build 0 errors; Unit **185/185**; Integration **80/80** (2 pre-existing flaky).
+- Migration audit: PASSED (0 rows removed).
+- Layout audit: 72 scenarios, 0 violations.
+- HardcodedArabicLiteralTests: 0 literals.
+
 ## [Unreleased] - 2026-11-06 (Phase 5 batch 5.4: benchmark and documentation)
 
 ### Added

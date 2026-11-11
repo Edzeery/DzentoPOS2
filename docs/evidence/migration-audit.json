@@ -1,9 +1,9 @@
 {
-  "GeneratedAt": "2026-11-11T15:45:17.455522+01:00",
+  "GeneratedAt": "2026-11-11T16:12:07.932156+01:00",
   "SourceDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\DzentoPOS2\\Database\\DzentoPOS.db",
   "SourceBytes": 1286144,
   "SourceHadWal": false,
-  "WorkDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\Temp\\DzentoPOS2.MigrationAudit\\20261111-154515\\DzentoPOS.db",
+  "WorkDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\Temp\\DzentoPOS2.MigrationAudit\\20261111-161206\\DzentoPOS.db",
   "IntegrityBefore": "ok",
   "IntegrityAfter": "ok",
   "ForeignKeyViolationsBefore": 0,
@@ -18,7 +18,7 @@
     "Attachments": 0,
     "AttributeDefinitions": 0,
     "AttributeValues": 0,
-    "AuditLogs": 255,
+    "AuditLogs": 257,
     "Batches": 0,
     "BranchActivities": 3,
     "Branches": 1,
@@ -36,7 +36,7 @@
     "ExpenseCategories": 7,
     "Expenses": 0,
     "FinancialPeriods": 0,
-    "InventorySnapshots": 5,
+    "InventorySnapshots": 6,
     "InventoryTransactions": 18,
     "LicensePlans": 4,
     "Licenses": 0,
@@ -85,7 +85,7 @@
     "Attachments": 0,
     "AttributeDefinitions": 0,
     "AttributeValues": 0,
-    "AuditLogs": 255,
+    "AuditLogs": 257,
     "Batches": 0,
     "BranchActivities": 3,
     "Branches": 1,
@@ -103,7 +103,7 @@
     "ExpenseCategories": 7,
     "Expenses": 0,
     "FinancialPeriods": 0,
-    "InventorySnapshots": 5,
+    "InventorySnapshots": 6,
     "InventoryTransactions": 18,
     "LicensePlans": 4,
     "Licenses": 0,
@@ -154,8 +154,8 @@
   "RemovedRowKeys": [],
   "ChangedRowDetails": [],
   "AddedRowKeys": [
-    "Customers:str:1D508632-8A2A-4C88-9ADD-6E5C85F43362\u0001",
-    "Customers:str:C419CA6B-E222-49C7-ACFE-2F424D114CE1\u0001"
+    "Customers:str:8C23A640-81BC-46C3-8B33-B66FCF25335D\u0001",
+    "Customers:str:C16E117F-5B21-49A6-BAC1-10635222AFF4\u0001"
   ],
   "MigrationsBefore": [
     "20260517183403_InitialCreate",

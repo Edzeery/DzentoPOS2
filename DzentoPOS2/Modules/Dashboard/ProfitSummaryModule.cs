@@ -1,3 +1,4 @@
+using DzentoPOS2.Core.Services.Sales;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Shared.Contracts.DTOs.Reports;
 using DzentoPOS2.Shared.Helpers;
@@ -65,11 +66,13 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             AddRow("Net", AppStrings.NetProfit);
             AddRow("Expected", AppStrings.ExpectedProfit);
             AddRow("ExpectedSold", AppStrings.ExpectedSold);
-            AddRow("InvCost", "Inventory Cost"); // TODO: localize
-            AddRow("InvRetail", "Inventory Retail"); // TODO: localize
+            AddRow("InvCost", AppStrings.InventoryCostValue);
+            AddRow("InvRetail", AppStrings.InventoryRetailValue);
             AddRow("InvPotential", AppStrings.PotentialProfit);
-            AddRow("InvAtRisk", "At Risk"); // TODO: localize
-            AddRow("InvWarnings", "Warnings"); // TODO: localize
+            AddRow("InvAtRisk", AppStrings.InventoryAtRiskProfit);
+            AddRow("InvWarnings", AppStrings.InventoryWarnings);
+            AddRow("RealizationRate", AppStrings.RealizationRate);
+            AddRow("ForecastBias", AppStrings.ForecastBias);
         }
 
         private void AddRow(string key, string label)
@@ -144,6 +147,10 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             Set("InvPotential", data.InventoryPotentialProfit, currencyDigits, culture);
             Set("InvAtRisk", data.InventoryAtRiskProfit, currencyDigits, culture);
             Set("InvWarnings", data.InventoryWarningNoSalePrice + data.InventoryWarningNegativeMargin + data.InventoryWarningZeroCost, 0, culture);
+            var realizationRate = ProfitCalculator.CalculateRealizationRate(data.ActualProfit.Value, data.ExpectedSoldProfit.Value);
+            var forecastBias = ProfitCalculator.CalculateForecastBias(data.ActualProfit.Value, data.ExpectedSoldProfit.Value);
+            Set("RealizationRate", realizationRate, 2, culture);
+            Set("ForecastBias", forecastBias, 2, culture);
         }
 
         private void Set(string key, decimal value, int digits, CultureInfo culture)

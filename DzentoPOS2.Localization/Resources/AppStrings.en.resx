@@ -1831,4 +1831,25 @@
   <data name="PotentialProfit" xml:space="preserve">
     <value>Potential Profit</value>
   </data>
+  <data name="InventoryCostValue" xml:space="preserve">
+    <value>Inventory Cost Value</value>
+  </data>
+  <data name="InventoryRetailValue" xml:space="preserve">
+    <value>Inventory Retail Value</value>
+  </data>
+  <data name="InventoryAtRiskProfit" xml:space="preserve">
+    <value>At Risk Profit</value>
+  </data>
+  <data name="InventoryWarnings" xml:space="preserve">
+    <value>Warnings</value>
+  </data>
+  <data name="RealizationRate" xml:space="preserve">
+    <value>Realization Rate</value>
+  </data>
+  <data name="ForecastBias" xml:space="preserve">
+    <value>Forecast Bias</value>
+  </data>
+  <data name="TotalExpected" xml:space="preserve">
+    <value>Total Expected Profit</value>
+  </data>
 </root>

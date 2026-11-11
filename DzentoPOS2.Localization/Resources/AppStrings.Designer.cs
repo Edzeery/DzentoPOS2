@@ -3288,6 +3288,27 @@ namespace DzentoPOS2.Localization.Resources {
         public static string PotentialProfit {
             get { return ResourceManager.GetString("PotentialProfit", resourceCulture); }
         }
+        public static string InventoryCostValue {
+            get { return ResourceManager.GetString("InventoryCostValue", resourceCulture); }
+        }
+        public static string InventoryRetailValue {
+            get { return ResourceManager.GetString("InventoryRetailValue", resourceCulture); }
+        }
+        public static string InventoryAtRiskProfit {
+            get { return ResourceManager.GetString("InventoryAtRiskProfit", resourceCulture); }
+        }
+        public static string InventoryWarnings {
+            get { return ResourceManager.GetString("InventoryWarnings", resourceCulture); }
+        }
+        public static string RealizationRate {
+            get { return ResourceManager.GetString("RealizationRate", resourceCulture); }
+        }
+        public static string ForecastBias {
+            get { return ResourceManager.GetString("ForecastBias", resourceCulture); }
+        }
+        public static string TotalExpected {
+            get { return ResourceManager.GetString("TotalExpected", resourceCulture); }
+        }
         public static string NetRevenue {
             get { return ResourceManager.GetString("NetRevenue", resourceCulture); }
         }

@@ -1831,5 +1831,26 @@
   <data name="PotentialProfit" xml:space="preserve">
     <value>الربح المحتمل</value>
   </data>
+  <data name="InventoryCostValue" xml:space="preserve">
+    <value>قيمة المخزون (التكلفة)</value>
+  </data>
+  <data name="InventoryRetailValue" xml:space="preserve">
+    <value>قيمة المخزون (التجزئة)</value>
+  </data>
+  <data name="InventoryAtRiskProfit" xml:space="preserve">
+    <value>ربح معرّض للخسارة</value>
+  </data>
+  <data name="InventoryWarnings" xml:space="preserve">
+    <value>تحذيرات</value>
+  </data>
+  <data name="RealizationRate" xml:space="preserve">
+    <value>نسبة التحقق</value>
+  </data>
+  <data name="ForecastBias" xml:space="preserve">
+    <value>انحياز التنبؤ</value>
+  </data>
+  <data name="TotalExpected" xml:space="preserve">
+    <value>الربح المتوقع (إجمالي)</value>
+  </data>
 </root>
 

@@ -11,7 +11,7 @@ public sealed class DashboardKpiCardMapTests
     {
         var data = new DashboardSummaryDto();
         var map = DashboardKpiCardMap.Build(data);
-        Assert.Equal(12, map.Count);
+        Assert.Equal(13, map.Count);
         Assert.DoesNotContain(map.Keys, k => k == "NetProfit");
     }
 

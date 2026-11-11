@@ -1852,5 +1852,29 @@
   <data name="TotalExpected" xml:space="preserve">
     <value>الربح المتوقع (إجمالي)</value>
   </data>
+  <data name="WeightEntry" xml:space="preserve">
+    <value>إدخال الوزن</value>
+  </data>
+  <data name="ExpiryAlerts" xml:space="preserve">
+    <value>تنبيهات انتهاء الصلاحية</value>
+  </data>
+  <data name="ExpiringInDays" xml:space="preserve">
+    <value>تنتهي خلال {0} يوم</value>
+  </data>
+  <data name="BatchSelectionTitle" xml:space="preserve">
+    <value>اختيار الدفعة</value>
+  </data>
+  <data name="WeightEntryTitle" xml:space="preserve">
+    <value>إدخال الوزن</value>
+  </data>
+  <data name="WeightLabel" xml:space="preserve">
+    <value>الوزن</value>
+  </data>
+  <data name="CalculatedPrice" xml:space="preserve">
+    <value>السعر المحسوب</value>
+  </data>
+  <data name="SelectBatch" xml:space="preserve">
+    <value>اختيار الدفعة</value>
+  </data>
 </root>
 

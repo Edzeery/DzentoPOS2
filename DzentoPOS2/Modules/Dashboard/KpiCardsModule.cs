@@ -28,7 +28,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
         private static readonly string[] Keys =
         [
             "SalesToday","PurchasesToday","SalesCount","PurchasesCount",
-            "MonthlySales","MonthlyPurchases","ExpectedProfit","ActualProfit",
+            "MonthlySales","MonthlyPurchases","ExpectedProfit","ExpectedStockProfit","ActualProfit",
             "ActiveProducts","LowStock","ActiveCustomers","ActiveSuppliers"
         ];
 
@@ -67,7 +67,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
         private static string[] GetTitles() =>
         [
             AppStrings.TodaySales,AppStrings.TodayPurchases,AppStrings.SalesInvoicesCount,AppStrings.PurchaseInvoicesCount,
-            AppStrings.MonthlySales,AppStrings.MonthlyPurchases,AppStrings.ExpectedProfit,AppStrings.ActualProfit,
+            AppStrings.MonthlySales,AppStrings.MonthlyPurchases,AppStrings.ExpectedProfit,AppStrings.ExpectedStock,AppStrings.ActualProfit,
             AppStrings.ActiveProductsKPI,AppStrings.LowStockKPI,AppStrings.ActiveCustomers,AppStrings.ActiveSuppliers
         ];
 

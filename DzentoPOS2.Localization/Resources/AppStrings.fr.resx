@@ -1852,5 +1852,29 @@
   <data name="TotalExpected" xml:space="preserve">
     <value>Profit attendu (total)</value>
   </data>
+  <data name="WeightEntry" xml:space="preserve">
+    <value>Saisie poids</value>
+  </data>
+  <data name="ExpiryAlerts" xml:space="preserve">
+    <value>Alertes expiration</value>
+  </data>
+  <data name="ExpiringInDays" xml:space="preserve">
+    <value>Expire dans {0} jours</value>
+  </data>
+  <data name="BatchSelectionTitle" xml:space="preserve">
+    <value>Selection lot</value>
+  </data>
+  <data name="WeightEntryTitle" xml:space="preserve">
+    <value>Saisie poids</value>
+  </data>
+  <data name="WeightLabel" xml:space="preserve">
+    <value>Poids</value>
+  </data>
+  <data name="CalculatedPrice" xml:space="preserve">
+    <value>Prix calcule</value>
+  </data>
+  <data name="SelectBatch" xml:space="preserve">
+    <value>Selection lot</value>
+  </data>
 </root>
 

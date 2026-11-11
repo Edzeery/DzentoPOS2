@@ -2879,6 +2879,18 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("Select", resourceCulture);
             }
         }
+        public static string SelectBatch {
+            get { return ResourceManager.GetString("SelectBatch", resourceCulture); }
+        }
+        public static string WeightEntryTitle {
+            get { return ResourceManager.GetString("WeightEntryTitle", resourceCulture); }
+        }
+        public static string WeightLabel {
+            get { return ResourceManager.GetString("WeightLabel", resourceCulture); }
+        }
+        public static string CalculatedPrice {
+            get { return ResourceManager.GetString("CalculatedPrice", resourceCulture); }
+        }
         
         public static string SelectBranch {
             get {

@@ -3285,6 +3285,9 @@ namespace DzentoPOS2.Localization.Resources {
         public static string ProfitSummaryTitle {
             get { return ResourceManager.GetString("ProfitSummaryTitle", resourceCulture); }
         }
+        public static string PotentialProfit {
+            get { return ResourceManager.GetString("PotentialProfit", resourceCulture); }
+        }
         public static string NetRevenue {
             get { return ResourceManager.GetString("NetRevenue", resourceCulture); }
         }

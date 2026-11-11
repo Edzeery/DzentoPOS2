@@ -1828,4 +1828,7 @@
   <data name="FEFO" xml:space="preserve">
     <value>First Expired First Out</value>
   </data>
+  <data name="PotentialProfit" xml:space="preserve">
+    <value>Potential Profit</value>
+  </data>
 </root>

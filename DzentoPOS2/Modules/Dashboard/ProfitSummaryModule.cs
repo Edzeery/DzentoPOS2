@@ -39,7 +39,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             {
                 Dock = DockStyle.Top,
                 AutoSize = true,
-                MaximumSize = new Size(560, 0),
+                MaximumSize = new Size(0, 0),
                 ColumnCount = 2,
                 RowCount = 0,
                 Margin = new Padding(0, 8, 0, 0),
@@ -66,6 +66,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             AddRow("Expected", AppStrings.ExpectedProfit);
             AddRow("ExpectedSold", AppStrings.ExpectedSold);
             AddRow("ExpectedStock", AppStrings.ExpectedStock);
+            AddRow("Potential", AppStrings.PotentialProfit);
         }
 
         private void AddRow(string key, string label)
@@ -136,6 +137,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             Set("Expected", data.ExpectedProfit.Value, currencyDigits, culture);
             Set("ExpectedSold", data.ExpectedSoldProfit.Value, currencyDigits, culture);
             Set("ExpectedStock", data.ExpectedStockProfit.Value, currencyDigits, culture);
+            Set("Potential", data.InventoryPotentialProfit, currencyDigits, culture);
         }
 
         private void Set(string key, decimal value, int digits, CultureInfo culture)

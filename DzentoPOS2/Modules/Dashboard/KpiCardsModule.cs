@@ -74,7 +74,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
         private void Reflow(TableLayoutPanel grid)
         {
             if (_cards.Count == 0) return;
-            int cols = grid.Width < 520 ? 1 : grid.Width < 900 ? 2 : 4;
+            int cols = grid.Width < 480 ? 1 : grid.Width < 768 ? 2 : grid.Width < 1200 ? 3 : 4;
             if (cols == grid.ColumnCount && grid.Controls.Count == _cards.Count) return;
 
             grid.SuspendLayout();

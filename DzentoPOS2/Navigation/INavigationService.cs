@@ -12,5 +12,6 @@ namespace DzentoPOS2.WinForms.Navigation
         void SetHost(Panel container, Label titleLabel);
         void Navigate<TForm>() where TForm : Form;
         void SetActiveButton(IconButton button);
+        Form? CurrentPage { get; }
     }
 }

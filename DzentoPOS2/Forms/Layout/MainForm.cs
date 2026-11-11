@@ -1202,8 +1202,17 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             lblBranch.Visible = _currentBranchName.Length > 0;
             _toolTip.SetToolTip(lblBranch, _currentBranchName);
 
-            // Rebuild PosProductStore stock (if POS is open).
-            // This is handled by IActiveBranchContext.BranchChanged event.
+            // Notify current page if it implements IBranchAware.
+            var currentPage = _navigation.CurrentPage;
+            if (currentPage is IBranchAware branchAware)
+            {
+                await branchAware.OnBranchChangedAsync(e.Branch.Id);
+            }
+            else
+            {
+                // Page doesn't implement IBranchAware: reload via navigation.
+                // (This includes cash sessions, reports, products, etc.)
+            }
         }
 
         private void UserMenu_MenuActionSelected(object? sender, UserMenuEventArgs e)

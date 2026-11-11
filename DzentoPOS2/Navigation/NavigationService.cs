@@ -16,6 +16,8 @@ namespace DzentoPOS2.WinForms.Navigation
         private Label? _titleLabel;
         private Form? _activeForm;
         private IServiceScope? _activeScope;
+
+        public Form? CurrentPage => _activeForm;
         private IconButton? _activeButton;
 
         // Colors — sourced from the central design tokens.

@@ -36,6 +36,7 @@ namespace DzentoPOS2.App.Services.Sales
     private readonly IPosProductStore _posProductStore;
     private readonly IActiveBranchContext _activeBranch;
     private readonly ILicenseService? _license;
+    private readonly IDigitalCodeService? _digitalCodeService;
 
         public SaleService(
             ISalesInvoiceRepository invoiceRepo,
@@ -53,7 +54,8 @@ namespace DzentoPOS2.App.Services.Sales
             IPermissionService permissionService,
             IPosProductStore posProductStore,
         IActiveBranchContext activeBranch,
-        ILicenseService? license = null)
+        ILicenseService? license = null,
+        IDigitalCodeService? digitalCodeService = null)
         {
             _invoiceRepo = invoiceRepo;
             _unitOfWork = unitOfWork;
@@ -71,6 +73,7 @@ namespace DzentoPOS2.App.Services.Sales
             _posProductStore = posProductStore;
             _activeBranch = activeBranch;
             _license = license;
+            _digitalCodeService = digitalCodeService;
         }
 
         public async Task<List<SaleDto>> GetAllAsync(Guid? branchId = null, bool viewAll = false)
@@ -452,6 +455,37 @@ namespace DzentoPOS2.App.Services.Sales
                         }
                     }
 
+                    // Hand out digital codes for digital-kind products. Best
+                    // effort: an exhausted pool never blocks the sale.
+                    if (_digitalCodeService is not null)
+                    {
+                        for (var index = 0; index < dto.Items.Count; index++)
+                        {
+                            var item = dto.Items[index];
+                            if (products[item.ProductId].ProductKind != ProductKind.DigitalCode)
+                                continue;
+
+                            var variantForCode = item.VariantId != Guid.Empty
+                                ? item.VariantId
+                                : defaultVariantIds[item.ProductId];
+
+                            var invoiceItem = invoice.Items.ElementAt(index);
+
+                            var allocated = await _digitalCodeService.AllocateForSaleAsync(
+                                variantForCode,
+                                invoice.Id,
+                                invoiceItem.Id,
+                                (int)Math.Max(1m, item.Quantity),
+                                saleDate);
+
+                            if (allocated.Count > 0)
+                            {
+                                invoiceItem.DigitalCode =
+                                    string.Join(", ", allocated.Select(c => c.Code));
+                            }
+                        }
+                    }
+
                     await _unitOfWork.SaveChangesAsync();
                     await _unitOfWork.CommitTransactionAsync();
 
@@ -567,6 +601,10 @@ namespace DzentoPOS2.App.Services.Sales
                         .ToList(),
                     MovementType.SaleVoidIn,
                     _currentUser.UserId);
+
+                // Release any digital codes this invoice delivered back to the pool.
+                if (_digitalCodeService is not null)
+                    await _digitalCodeService.ReturnForSaleAsync(invoice.Id);
 
                 invoice.Void(_currentUser.UserId, reason, _clock.UtcNow);
 
@@ -689,6 +727,7 @@ namespace DzentoPOS2.App.Services.Sales
                     SerialNumber = i.SerialNumber,
                     IMEI = i.IMEI,
                     WarrantyExpiry = i.WarrantyExpiry,
+                    DigitalCode = i.DigitalCode,
                     Quantity = i.Quantity,
                     Price = i.Price,
                     Total = i.Total,

@@ -2,6 +2,124 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] - 2026-11-12 (Phase 3: digital codes)
+
+### Added
+- **Digital-code module** (`ProductKind.DigitalCode` — prepaid cards / recharge
+  vouchers / activation keys):
+  - `DigitalCode` entity (`Code`, optional `Pin`, `VariantId`, `Status`,
+    `SalesInvoiceId?`, `SalesInvoiceItemId?`, `DeliveredAt?`) with a unique
+    `(VariantId, Code)` index; `DigitalCodeStatus` = `Available`/`Delivered`/`Cancelled`.
+  - `IDigitalCodeService` / `DigitalCodeService` — bulk import (skips blanks,
+    repeats and codes already on file), listing/search, available-count,
+    allocation on sale and release on void.
+  - **Allocation on sale**: `SaleService.CreateInternalAsync` hands out available
+    codes for `ProductKind.DigitalCode` lines inside the invoice transaction
+    (best effort — an exhausted pool never blocks a sale) and freezes the
+    delivered code onto the line as `SalesInvoiceItem.DigitalCode`.
+  - **Release on void**: `SaleService.VoidAsync` returns the invoice's delivered
+    codes to the pool.
+  - **Admin UI**: a `Digital codes` tab (`DigitalCodesForm`) inside
+    `ProductsHubForm` (import / list / search / cancel) plus
+    `DigitalCodeImportDialog`; the delivered code is shown to the operator when
+    the sale completes (`SalesForm`).
+  - **Permissions**: `Permissions.DigitalCodesView` / `DigitalCodesManage`
+    (auto-seeded; granted to Manager).
+  - **Migration** `20261112214014_DigitalCodes` (new `DigitalCodes` table +
+    `SalesInvoiceItem.DigitalCode` snapshot column).
+  - **Localization**: 22 new `DigitalCode*` keys across all four resx files +
+    `AppStrings.Designer.cs`.
+  - **Tests**: `DigitalCodeTests` (integration, 12) — import/skip, listing,
+    search/filter, allocate, return, cancel, plus end-to-end sale allocation,
+    exhausted-pool sale, and void release.
+
+### Verified
+- Build 0 errors / **0 C# warnings** (only `NU1701`, tracked in ROADMAP Phase 7).
+- Unit **205/205**; Integration **156/156**.
+- `--layout-audit`: **132 scenarios, 0 violations** (2832 controls).
+- `--migration-audit`: **PASSED** (0 rows removed/changed, 1 new table).
+
+## [Unreleased] - 2026-11-12 (Licensing: offline signed keys + plan enforcement)
+
+### Added
+- **Offline licensing system** (`DzentoPOS2.App/Services/Licensing`):
+  - `LicenseKeyCodec` — vendor signs a JSON payload with **RSA-SHA256 (PKCS#1)**;
+    a key is `base64url(payload).base64url(signature)`. Verification needs only the
+    public key, so it works with no internet.
+  - `ILicenseService` / `LicenseService` — current state, plan, limits, activation,
+    deactivation and the enforcement guards (`EnsureWritableAsync`,
+    `EnsureCanCreateBranchAsync`, `EnsureCanCreateUserAsync`).
+  - `IDeviceIdentifier` with `DefaultDeviceIdentifier` (portable hash) plus a
+    WinForms `WindowsDeviceIdentifier` that hashes the registry `MachineGuid`.
+  - `LicenseBranchLimitPolicy` — real `IBranchLimitPolicy` (replaces the
+    always-allow stub).
+- **Separate vendor issuer** (`tools/DzentoPOS2.LicenseIssuer`, WinForms + CLI,
+  **never shipped**): `--generate` (password-protected PKCS#8 private key),
+  `--issue` and `--verify`, plus an `issued-licenses.csv` ledger. The signing code
+  and private key are no longer part of the customer product.
+- **Shared licensing library** (`DzentoPOS2.Licensing`): payload, validation
+  result and a verify/validate codec with no key material, referenced by the app.
+  Signing/key generation live in the vendor-only `DzentoPOS2.Licensing.Signing`
+  library, which the customer app never references.
+- **UI**: `LicenseActivationDialog` (state, device fingerprint with copy, key entry,
+  activate/deactivate, admin-gated) and a **License** card in `SettingsForm`.
+- **Configuration**: `Licensing` section in `DzentoPOS2/appsettings.json`
+  (`Enforce`, `GraceDays`, `ExpiringSoonDays`, `DefaultPlanName`). The vendor public
+  key is **compiled into the app** (`LicensePublicKey.Pem`), not configurable.
+- **Localization**: 33 new `AppStrings` licence keys across all four resx files +
+  `AppStrings.Designer.cs`.
+- **Docs**: `docs/licensing.md`, **ADR-13** and **ADR-14** in `docs/decisions.md`.
+- **Tests**: `LicenseKeyCodecTests` (unit, 11) and `LicenseServiceTests`
+  (integration, 9) covering tamper, wrong device, expiry/grace, branch & user
+  ceilings and the activate→deactivate cycle.
+
+### Changed
+- `BranchService`, `UserService` and `SaleService` accept an **optional**
+  `ILicenseService` and call the guards before creating/writing, so limits and
+  expiry are enforced without breaking tests that construct the services directly.
+- New `DomainErrorCodes` (`license.*`) mapped to localized messages in
+  `ExceptionFormatter`; `LicenseStatus` now carries the device fingerprint.
+- Removed the licence tooling and the public key from the customer app
+  (`--license-keygen`/`--license-issue`/`--license-verify` and
+  `Licensing:PublicKeyPem`); they moved to the vendor issuer and the compiled-in
+  `LicensePublicKey.Pem` respectively.
+
+### Verified
+- Build 0 errors / **0 C# warnings** (the only warnings are `NU1701` for 6 legacy
+  .NET Framework packages, tracked in ROADMAP Phase 7).
+- Unit **205/205**; Integration **144/144**.
+- `--layout-audit`: **120 scenarios, 0 violations** (2664 controls).
+
+## [Unreleased] - 2026-11-12 (Quality gate: zero C# warnings + localization cleanup)
+
+### Added
+- **`ROADMAP.md`**: a prioritized, phase-by-phase execution plan with measurable
+  acceptance criteria, derived from the full-project audit.
+- Seven new `AppStrings` keys (all four resx files + `AppStrings.Designer.cs`):
+  `WarrantyUnderWarranty`, `SerialLabel`, `ImeiLabel`, `SaleDateLabel`,
+  `WarrantyExpiresLabel`, `StatusLabel`, `NoSerial`.
+
+### Changed
+- **Zero C# build warnings** across the solution (was ~25). Fixed nullability
+  (`CS8602/CS8604/CS8618`), async-without-await (`CS1998`), unintended reference
+  comparison (`CS0252` in `ProductsHubForm`), unused members (`CS0067`,
+  `CS0168`, `CS0169`), an obsolete-member use (`CS0618` in `ActiveBranchContext`,
+  now documented and suppressed intentionally) and generated-designer `CS0414`
+  (suppressed via `.editorconfig`).
+- `WarrantyQueryForm` and `SerialUnitPickerDialog` no longer contain hardcoded
+  English UI strings; every label comes from `AppStrings`.
+- `ImageService` falls back to `ImageFormat.Jpeg` when the JPEG codec is not
+  available instead of dereferencing a possibly-null encoder.
+- Documentation synced: `README.md` test/warning counts, `api-reference.md`
+  (now a pointer), `reports/*.md` (repaired, marked historical) and `Todos.md`
+  header (points to `ROADMAP.md`). The remaining `NU1701` package warnings are
+  tracked in `ROADMAP.md` Phase 7.
+
+### Verified
+- Build 0 errors / **0 C# warnings** (15 `NU1701` remaining, tracked).
+- Unit **194/194**; Integration **135/135**; localization parity 0 diff.
+- `--layout-audit`: **120 scenarios, 0 violations** (2592 controls).
+
 ## [Unreleased] - 2026-11-12 (Branch management, Phase 4: unified cross-branch report)
 
 ### Added

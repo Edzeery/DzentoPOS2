@@ -36,6 +36,7 @@ public partial class ProductsHubForm : LocalizableFormBase
                 if ((page.Tag as Type) == typeof(ProductsForm)) page.Text = AppStrings.Products;
                 else if ((page.Tag as Type) == typeof(ProductCategoriesForm)) page.Text = AppStrings.Categories;
                 else if ((page.Tag as Type) == typeof(ProductUnitsForm)) page.Text = AppStrings.Units;
+                else if ((page.Tag as Type) == typeof(DigitalCodesForm)) page.Text = AppStrings.DigitalCodesTitle;
             }
         }
     }
@@ -49,6 +50,8 @@ public partial class ProductsHubForm : LocalizableFormBase
                 AddTab(AppStrings.Categories, typeof(ProductCategoriesForm));
             if (await _guard.IsAllowedAsync(Permissions.UnitsView))
                 AddTab(AppStrings.Units, typeof(ProductUnitsForm));
+            if (await _guard.IsAllowedAsync(Permissions.DigitalCodesView))
+                AddTab(AppStrings.DigitalCodesTitle, typeof(DigitalCodesForm));
 
             if (_tabs.TabPages.Count > 0)
             {

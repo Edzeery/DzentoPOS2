@@ -970,6 +970,63 @@ namespace DzentoPOS2.Data.Migrations
                     b.ToTable("Batches", (string)null);
                 });
 
+            modelBuilder.Entity("DzentoPOS2.Core.Entities.Inventory.DigitalCode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeliveredAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Pin")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("SalesInvoiceId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("SalesInvoiceItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("VariantId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SalesInvoiceId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("VariantId", "Code")
+                        .IsUnique();
+
+                    b.ToTable("DigitalCodes", (string)null);
+                });
+
             modelBuilder.Entity("DzentoPOS2.Core.Entities.Inventory.InventorySnapshot", b =>
                 {
                     b.Property<Guid>("Id")
@@ -2548,6 +2605,10 @@ namespace DzentoPOS2.Data.Migrations
                         .HasColumnType("TEXT")
                         .HasDefaultValue("");
 
+                    b.Property<string>("DigitalCode")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
                     b.Property<decimal>("DiscountAmount")
                         .HasPrecision(18, 2)
                         .HasColumnType("TEXT");
@@ -3512,6 +3573,17 @@ namespace DzentoPOS2.Data.Migrations
                     b.Navigation("Variant");
 
                     b.Navigation("Warehouse");
+                });
+
+            modelBuilder.Entity("DzentoPOS2.Core.Entities.Inventory.DigitalCode", b =>
+                {
+                    b.HasOne("DzentoPOS2.Core.Entities.Inventory.ProductVariant", "Variant")
+                        .WithMany()
+                        .HasForeignKey("VariantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Variant");
                 });
 
             modelBuilder.Entity("DzentoPOS2.Core.Entities.Inventory.InventoryTransaction", b =>

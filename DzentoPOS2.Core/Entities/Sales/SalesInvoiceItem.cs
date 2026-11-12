@@ -46,6 +46,9 @@ namespace DzentoPOS2.Core.Entities.Sales
         /// <summary>Warranty expiry date (computed from sale date + variant.WarrantyMonths).</summary>
         public DateTime? WarrantyExpiry { get; set; }
 
+        /// <summary>Digital code delivered on this line (snapshot for the receipt).</summary>
+        public string? DigitalCode { get; set; }
+
         /// <summary>Free text of the line (empty for regular product lines).</summary>
         public string Description { get; set; } = string.Empty;
     }

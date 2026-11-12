@@ -20,6 +20,9 @@ namespace DzentoPOS2.Shared.Contracts.DTOs.Sales
         /// <summary>Warranty expiry date.</summary>
         public DateTime? WarrantyExpiry { get; set; }
 
+        /// <summary>Digital code delivered on this line (for digital-kind products).</summary>
+        public string? DigitalCode { get; set; }
+
         public string ProductName { get; set; } = string.Empty;
         public string SKU { get; set; } = string.Empty;
         public decimal Quantity { get; set; }

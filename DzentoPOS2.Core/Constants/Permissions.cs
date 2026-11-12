@@ -87,6 +87,10 @@ namespace DzentoPOS2.Core.Constants
         public const string UnitsEdit = "permissions.units.edit";
         public const string UnitsDelete = "permissions.units.delete";
 
+        // Digital codes (prepaid cards / activation keys)
+        public const string DigitalCodesView = "permissions.digitalcodes.view";
+        public const string DigitalCodesManage = "permissions.digitalcodes.manage";
+
         // Settings
         public const string SettingsView = "permissions.settings.view";
         public const string SettingsEdit = "permissions.settings.edit";

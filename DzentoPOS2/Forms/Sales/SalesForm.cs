@@ -1487,7 +1487,25 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             if (_btnPrintLast != null)
                 _btnPrintLast.Enabled = true;
 
-            AppMessageBox.Success(AppStrings.DataSaved);
+            var deliveredCodes = sale.Items
+                .Where(i => !string.IsNullOrWhiteSpace(i.DigitalCode))
+                .Select(i => $"{i.VariantName}: {i.DigitalCode}")
+                .ToList();
+
+            if (deliveredCodes.Count > 0)
+            {
+                MessageBox.Show(
+                    AppStrings.DigitalCodeDeliveryHint
+                        + Environment.NewLine + Environment.NewLine
+                        + string.Join(Environment.NewLine, deliveredCodes),
+                    AppStrings.DigitalCodeDeliveredTitle,
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            else
+            {
+                AppMessageBox.Success(AppStrings.DataSaved);
+            }
 
             _cart.Clear();
             _numDiscount.Value = 0;

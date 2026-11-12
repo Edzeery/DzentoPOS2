@@ -64,6 +64,8 @@ namespace DzentoPOS2.Data.Context
 
         public DbSet<SerialUnit> SerialUnits => Set<SerialUnit>();
 
+        public DbSet<DigitalCode> DigitalCodes => Set<DigitalCode>();
+
         public DbSet<Batch> Batches => Set<Batch>();
 
         public DbSet<AttributeDefinition> AttributeDefinitions => Set<AttributeDefinition>();

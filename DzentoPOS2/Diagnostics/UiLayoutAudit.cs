@@ -11,6 +11,7 @@ using DzentoPOS2.App.Session;
 using EZControls.Core.Base;
 using DzentoPOS2.Core.Configuration;
 using DzentoPOS2.Core.Enums;
+using DzentoPOS2.Core.Entities.Inventory;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
@@ -141,6 +142,7 @@ public static class UiLayoutAudit
         new ProductBarcodesDialog(new StubBarcodeService(), Guid.NewGuid()),
         new ProductUnitEditDialog(new StubUnitService(), new StubLanguageService()),
         new ProductUnitsForm(new StubUnitService(), new StubLanguageService()),
+        new DigitalCodesForm(new StubDigitalCodeService(), new StubLanguageService()),
         new BranchEditDialog(new StubBranchService(), new StubLanguageService()),
         new BranchResourcesDialog(new StubBranchResourceService(), new StubLanguageService(), new BranchDto { Name = "Branch" }),
         new BranchesForm(new StubBranchService(), new StubBranchResourceService(), new StubLanguageService()),
@@ -596,8 +598,44 @@ private static int CountControls(Control parent)
         public Task DeleteAsync(Guid id) => Task.CompletedTask;
     }
 
-    private sealed class StubBranchService : IBranchService
+    private sealed class StubDigitalCodeService : IDigitalCodeService
     {
+        public Task<List<DigitalVariantOptionDto>> GetDigitalVariantsAsync(CancellationToken ct = default) =>
+            Task.FromResult(new List<DigitalVariantOptionDto>());
+
+        public Task<List<DigitalCodeDto>> SearchAsync(
+            Guid? variantId,
+            DigitalCodeStatus? status,
+            string? term,
+            CancellationToken ct = default) =>
+            Task.FromResult(new List<DigitalCodeDto>());
+
+        public Task<DigitalCodeImportResultDto> ImportAsync(
+            Guid variantId,
+            IEnumerable<string> codes,
+            CancellationToken ct = default) =>
+            Task.FromResult(new DigitalCodeImportResultDto());
+
+        public Task<int> GetAvailableCountAsync(Guid variantId, CancellationToken ct = default) =>
+            Task.FromResult(0);
+
+        public Task<List<DigitalCode>> AllocateForSaleAsync(
+            Guid variantId,
+            Guid salesInvoiceId,
+            Guid salesInvoiceItemId,
+            int quantity,
+            DateTime deliveredAt,
+            CancellationToken ct = default) =>
+            Task.FromResult(new List<DigitalCode>());
+
+        public Task<int> ReturnForSaleAsync(Guid salesInvoiceId, CancellationToken ct = default) =>
+            Task.FromResult(0);
+
+        public Task CancelAsync(Guid id, CancellationToken ct = default) =>
+            Task.CompletedTask;
+    }
+
+    private sealed class StubBranchService : IBranchService    {
         public Task<List<BranchListItemDto>> GetAllAsync() =>
             Task.FromResult(new List<BranchListItemDto>());
 

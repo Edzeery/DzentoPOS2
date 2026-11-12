@@ -35,6 +35,11 @@ Forms depend on service **interfaces**; services depend on repositories / the
   produces the session summary (`GetSessionSummaryAsync`).
 - `IStockService` — the single entry point for stock changes (`SaleOut`,
   `VoidIn`, adjustments) and the negative-stock guard.
+- `IDigitalCodeService` — the pool of digital codes (`ProductKind.DigitalCode`:
+  prepaid cards / recharge vouchers / activation keys): bulk import, listing and
+  search, allocation on sale and release on void. Allocation runs inside the sale
+  transaction and freezes the delivered code on the invoice line; an exhausted
+  pool never blocks a sale.
 - `IExpenseService` — records an expense and, when cash, the linked
   `Purchase` cash row (`SourceType = "Expense"`).
 - `ISalesEventPublisher` — singleton in-process event bus (see below).
@@ -54,19 +59,24 @@ A checkout (`SaleService.CreateAsync`) runs inside one database transaction:
 3. **Stock.** For each tracked line `IStockService` writes a `SaleOut`
    movement and updates `ProductStocks`; insufficient stock throws
    `CodedDomainException(InsufficientStock)`.
-4. **Persist.** `SalesInvoice` + `SalesInvoiceItems` (+ `SalesPayments`) are
+4. **Digital codes.** Digital-kind lines pull available codes from
+   `IDigitalCodeService` (best effort — an exhausted pool is not an error) and
+   store them on the line (`SalesInvoiceItem.DigitalCode`) while marking each
+   code `Delivered`.
+5. **Persist.** `SalesInvoice` + `SalesInvoiceItems` (+ `SalesPayments`) are
    saved, then a `CashTransaction` (`SaleCashIn`) is linked to the session only
    for the cash that was actually taken. Card sales never touch the drawer.
-5. **Commit.** `SaveChangesAsync()` + `CommitTransactionAsync()`.
-6. **Publish (after commit).** Only once the transaction is committed does the
+6. **Commit.** `SaveChangesAsync()` + `CommitTransactionAsync()`.
+7. **Publish (after commit).** Only once the transaction is committed does the
    service raise `ISalesEventPublisher.SaleCompleted`. A subscriber that reads
    the database therefore always observes the committed invoice, payment and
    cash row.
 
-`VoidAsync` mirrors the flow: it reverses stock (`VoidIn`) and, only for the
-cash that was really taken (looked up from `SalesPayments`), writes a
-`SaleVoidCashOut` row, then raises `SaleVoided` after the commit. A voided card
-sale never moves the drawer.
+`VoidAsync` mirrors the flow: it reverses stock (`VoidIn`), releases any digital
+codes the invoice delivered back to the pool and, only for the cash that was
+really taken (looked up from `SalesPayments`), writes a `SaleVoidCashOut` row,
+then raises `SaleVoided` after the commit. A voided card sale never moves the
+drawer.
 
 ```
 SalesForm ─► ISaleService ─► InvoiceCalculator (totals + rules)

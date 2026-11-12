@@ -6,10 +6,10 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
 {
     internal class InsightsModule
     {
-        private DataGridView _bestGrid = null!;
-        private DataGridView _alertsGrid = null!;
-        private DataGridView _customersGrid = null!;
-        private DataGridView _suppliersGrid = null!;
+        private DataGridView? _bestGrid;
+        private DataGridView? _alertsGrid;
+        private DataGridView? _customersGrid;
+        private DataGridView? _suppliersGrid;
 
         public Panel Build()
         {
@@ -32,15 +32,20 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             for (int i = 0; i < 4; i++)
                 grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
 
-            _bestGrid = BuildInsightGrid(AppStrings.ProductLabel, "Total");
-            _alertsGrid = BuildInsightGrid(AppStrings.ProductLabel, AppStrings.MinimumStockAmount);
-            _customersGrid = BuildInsightGrid(AppStrings.CustomerLabel, "Total");
-            _suppliersGrid = BuildInsightGrid(AppStrings.SupplierLabel, "Total");
+            var bestGrid = BuildInsightGrid(AppStrings.ProductLabel, "Total");
+            var alertsGrid = BuildInsightGrid(AppStrings.ProductLabel, AppStrings.MinimumStockAmount);
+            var customersGrid = BuildInsightGrid(AppStrings.CustomerLabel, "Total");
+            var suppliersGrid = BuildInsightGrid(AppStrings.SupplierLabel, "Total");
 
-            grid.Controls.Add(UIHelper.WrapInCard(_bestGrid, AppStrings.TopSellingProducts, 36, 16, 50), 0, 0);
-            grid.Controls.Add(UIHelper.WrapInCard(_alertsGrid, AppStrings.StockAlerts, 36, 16, 50), 1, 0);
-            grid.Controls.Add(UIHelper.WrapInCard(_customersGrid, AppStrings.BestCustomers, 36, 16, 50), 2, 0);
-            grid.Controls.Add(UIHelper.WrapInCard(_suppliersGrid, AppStrings.MostActiveSuppliers, 36, 16, 50), 3, 0);
+            _bestGrid = bestGrid;
+            _alertsGrid = alertsGrid;
+            _customersGrid = customersGrid;
+            _suppliersGrid = suppliersGrid;
+
+            grid.Controls.Add(UIHelper.WrapInCard(bestGrid, AppStrings.TopSellingProducts, 36, 16, 50), 0, 0);
+            grid.Controls.Add(UIHelper.WrapInCard(alertsGrid, AppStrings.StockAlerts, 36, 16, 50), 1, 0);
+            grid.Controls.Add(UIHelper.WrapInCard(customersGrid, AppStrings.BestCustomers, 36, 16, 50), 2, 0);
+            grid.Controls.Add(UIHelper.WrapInCard(suppliersGrid, AppStrings.MostActiveSuppliers, 36, 16, 50), 3, 0);
 
             panel.Controls.Add(grid);
             return panel;
@@ -70,8 +75,12 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             FillGrid(_suppliersGrid, data.TopSuppliers);
         }
 
-        private static void FillGrid(DataGridView grid, List<InsightRow> rows)
+        private static void FillGrid(DataGridView? grid, List<InsightRow> rows)
         {
+            // Build() may not have run yet (for example a branch change raised
+            // before the form loaded). Nothing to fill in that case.
+            if (grid is null || grid.IsDisposed) return;
+
             grid.Rows.Clear();
             foreach (var r in rows)
                 grid.Rows.Add(r.Rank, r.Name, r.DisplayValue);

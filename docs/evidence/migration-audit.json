@@ -1,9 +1,9 @@
 {
-  "GeneratedAt": "2026-11-12T13:46:23.2486098+01:00",
+  "GeneratedAt": "2026-11-12T14:13:10.5721194+01:00",
   "SourceDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\DzentoPOS2\\Database\\DzentoPOS.db",
   "SourceBytes": 1286144,
-  "SourceHadWal": true,
-  "WorkDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\Temp\\DzentoPOS2.MigrationAudit\\20261112-134621\\DzentoPOS.db",
+  "SourceHadWal": false,
+  "WorkDatabase": "C:\\Users\\PC-LB\\AppData\\Local\\Temp\\DzentoPOS2.MigrationAudit\\20261112-141309\\DzentoPOS.db",
   "IntegrityBefore": "ok",
   "IntegrityAfter": "ok",
   "ForeignKeyViolationsBefore": 0,
@@ -18,7 +18,7 @@
     "Attachments": 0,
     "AttributeDefinitions": 0,
     "AttributeValues": 0,
-    "AuditLogs": 277,
+    "AuditLogs": 279,
     "Batches": 0,
     "BranchActivities": 3,
     "Branches": 1,
@@ -36,7 +36,7 @@
     "ExpenseCategories": 7,
     "Expenses": 0,
     "FinancialPeriods": 0,
-    "InventorySnapshots": 6,
+    "InventorySnapshots": 7,
     "InventoryTransactions": 19,
     "LicensePlans": 4,
     "Licenses": 0,
@@ -85,7 +85,7 @@
     "Attachments": 0,
     "AttributeDefinitions": 0,
     "AttributeValues": 0,
-    "AuditLogs": 277,
+    "AuditLogs": 279,
     "Batches": 0,
     "BranchActivities": 3,
     "Branches": 1,
@@ -103,7 +103,7 @@
     "ExpenseCategories": 7,
     "Expenses": 0,
     "FinancialPeriods": 0,
-    "InventorySnapshots": 6,
+    "InventorySnapshots": 7,
     "InventoryTransactions": 19,
     "LicensePlans": 4,
     "Licenses": 0,
@@ -147,44 +147,15 @@
     "__EFMigrationsLock": 0
   },
   "RowsRemoved": 0,
-  "RowsChanged": 4,
+  "RowsChanged": 0,
   "RowsAdded": 2,
   "MissingTables": [],
   "MissingColumns": [],
   "RemovedRowKeys": [],
-  "ChangedRowDetails": [
-    {
-      "Table": "InventorySnapshots",
-      "Key": "str:B133A129-41F5-4DDB-A600-89C7CAE53051\u0001",
-      "ChangedColumns": [
-        "BranchId"
-      ]
-    },
-    {
-      "Table": "InventorySnapshots",
-      "Key": "str:45650028-1283-49F2-84E3-DA4BE191BD49\u0001",
-      "ChangedColumns": [
-        "BranchId"
-      ]
-    },
-    {
-      "Table": "InventorySnapshots",
-      "Key": "str:D21F680F-461B-4614-9EE3-491D839E18CE\u0001",
-      "ChangedColumns": [
-        "BranchId"
-      ]
-    },
-    {
-      "Table": "InventorySnapshots",
-      "Key": "str:4145CC89-5352-4336-B980-8ECF894226F5\u0001",
-      "ChangedColumns": [
-        "BranchId"
-      ]
-    }
-  ],
+  "ChangedRowDetails": [],
   "AddedRowKeys": [
-    "Customers:str:2878ADD4-08E0-49FB-9539-1D1FD40951CF\u0001",
-    "Customers:str:8641A413-7825-4D31-8606-E1DB895991C2\u0001"
+    "Customers:str:06C8E3D0-D773-48F7-A197-7B130F0A1CF3\u0001",
+    "Customers:str:C622C5FB-8008-4D70-92F1-B455828A7569\u0001"
   ],
   "MigrationsBefore": [
     "20260517183403_InitialCreate",

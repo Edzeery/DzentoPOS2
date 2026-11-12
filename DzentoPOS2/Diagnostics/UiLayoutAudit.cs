@@ -1,5 +1,9 @@
+using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using DzentoPOS2.App.Services.Inventory;
+using DzentoPOS2.App.Services.Partners;
+using DzentoPOS2.App.Services.Reports.Interfaces;
 using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.App.Session;
 using EZControls.Core.Base;
@@ -8,8 +12,11 @@ using DzentoPOS2.Core.Enums;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
+using DzentoPOS2.Shared.Contracts.DTOs.Partners;
+using DzentoPOS2.Shared.Contracts.DTOs.Reports;
 using DzentoPOS2.Shared.Helpers;
 using DzentoPOS2.WinForms.Configurations;
+using DzentoPOS2.WinForms.Forms.Dashboard;
 using DzentoPOS2.WinForms.Forms.Inventory;
 using DzentoPOS2.WinForms.Forms.Settings;
 using DzentoPOS2.WinForms.Forms.Setup;
@@ -50,6 +57,18 @@ public static class UiLayoutAudit
 
                 foreach (bool rtl in new[] { true, false })
                 {
+                    try
+                    {
+                        AuditSmoke(rtl);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(
+                            $"FAIL dashboard smoke [{theme}/{rtl}] {ex.GetType().Name}: {ex.Message}");
+                        Console.WriteLine(ex.StackTrace);
+                        return 1;
+                    }
+
                     var forms = CreateForms(database.Context);
 
                     try
@@ -97,6 +116,7 @@ public static class UiLayoutAudit
         Console.WriteLine($"UI layout audit: {scenarios.Count} scenarios, {violations} violations");
         Console.WriteLine($"Controls measured: {scenarios.Sum(s => s.ControlsMeasured)}");
         Console.WriteLine($"Forms: variants, barcodes, unit edit, unit list, first-run wizard, settings");
+        Console.WriteLine($"Smoke (built + refreshed, not scored): dashboard");
         Console.WriteLine($"Widths: {string.Join(", ", Widths)} | heights: {AuditHeight} | themes: Light, Dark | direction: RTL, LTR");
         Console.WriteLine($"Report: {reportPath}");
 
@@ -123,6 +143,61 @@ public static class UiLayoutAudit
             new StubBackupService(),
             new EmptyServiceProvider())
     ];
+
+    /// <summary>
+    /// Forms that are built and refreshed (to catch crashes in
+    /// <c>Build()</c>/<c>Update()</c>) but are not part of the responsive
+    /// layout scoring yet. The dashboard is included here because it exercises
+    /// every KPI/chart/insight module; add it to <see cref="CreateForms"/> once
+    /// its narrow-width layout is made responsive.
+    /// </summary>
+    private static List<Form> CreateSmokeForms() =>
+    [
+        new DashboardForm(
+            new StubDashboardService(),
+            new StubCustomerService(),
+            new StubLanguageService(),
+            new RegionalContext())
+    ];
+
+    /// <summary>
+    /// Runs each smoke form's real load path (which builds and refreshes the
+    /// dashboard modules) so any exception in <c>Build()</c>/<c>Update()</c>
+    /// fails the audit. <see cref="Form.OnLoad"/> is invoked directly instead of
+    /// <see cref="Form.Show"/> on purpose: exceptions raised while a native
+    /// window message is being dispatched are swallowed by
+    /// <c>Application.ThreadException</c> (and would only pop a modal error
+    /// dialog), which would make the audit pass regardless.
+    /// </summary>
+    private static void AuditSmoke(bool rtl)
+    {
+        var onLoad = typeof(Form).GetMethod(
+            "OnLoad",
+            BindingFlags.Instance | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("Form.OnLoad was not found.");
+
+        foreach (Form form in CreateSmokeForms())
+        {
+            try
+            {
+                form.RightToLeft = rtl ? RightToLeft.Yes : RightToLeft.No;
+                form.RightToLeftLayout = rtl;
+
+                try
+                {
+                    onLoad.Invoke(form, [EventArgs.Empty]);
+                }
+                catch (TargetInvocationException ex) when (ex.InnerException is not null)
+                {
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                }
+            }
+            finally
+            {
+                form.Dispose();
+            }
+        }
+    }
 
     private static ScenarioResult Audit(Form form, ThemeMode theme, bool rtl, int width)
     {
@@ -455,6 +530,32 @@ private static int CountControls(Control parent)
 
         public Task<List<Guid>> FindVariantIdsByBarcodeAsync(string barcode) =>
             Task.FromResult(new List<Guid>());
+    }
+
+    private sealed class StubDashboardService : IDashboardService
+    {
+        public Task<DashboardSummaryDto> GetSummaryAsync(DashboardFilterDto? filter = null) =>
+            Task.FromResult(new DashboardSummaryDto());
+    }
+
+    private sealed class StubCustomerService : ICustomerService
+    {
+        public Task<List<CustomerDto>> GetAllAsync() =>
+            Task.FromResult(new List<CustomerDto>());
+
+        public Task<CustomerDto?> GetByIdAsync(Guid id) =>
+            Task.FromResult<CustomerDto?>(null);
+
+        public Task<List<CustomerDto>> SearchAsync(string? term) =>
+            Task.FromResult(new List<CustomerDto>());
+
+        public Task<CustomerDto> CreateAsync(CreateCustomerDto dto) =>
+            throw new NotSupportedException();
+
+        public Task<CustomerDto> UpdateAsync(UpdateCustomerDto dto) =>
+            throw new NotSupportedException();
+
+        public Task DeleteAsync(Guid id) => Task.CompletedTask;
     }
 
     private sealed class StubUnitService : IProductUnitService

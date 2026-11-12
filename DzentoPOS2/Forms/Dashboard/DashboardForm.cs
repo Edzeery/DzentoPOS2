@@ -30,6 +30,7 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
         private System.Windows.Forms.Timer _debounceTimer = null!;
         private Guid? _selectedCustomerId;
         private int _selectedPresetIndex = 3;
+        private bool _modulesBuilt;
 
         public DashboardForm(IDashboardService dashboardService, ICustomerService customerService, ILanguageService languageService, RegionalContext regional)
             : base(languageService)
@@ -81,6 +82,8 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
 
             SuspendLayout();
 
+            _modulesBuilt = false;
+
             while (_layout.Controls.Count > 0)
             {
                 var c = _layout.Controls[0];
@@ -94,6 +97,7 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
             _layout.Controls.Add(_insights.Build(), 0, 3);
             _layout.Controls.Add(_charts.Build(), 0, 4);
 
+            _modulesBuilt = true;
             ResumeLayout();
         }
 
@@ -249,6 +253,10 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
 
         private void RefreshSummarySafe()
         {
+            // The dashboard modules are created by LoadText(); never touch them
+            // before they exist (a branch change can fire first).
+            if (!_modulesBuilt) return;
+
             RunSafe(async () =>
             {
                 var data = await _dashboardService.GetSummaryAsync(GetFilter());

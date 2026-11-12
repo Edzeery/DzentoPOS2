@@ -2,6 +2,34 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] - 2026-11-12 (Phase 6 hotfix: dashboard KPI/insights crash)
+
+### Fixed
+- **`KpiCardsModule`** no longer throws `IndexOutOfRangeException`: the KPI
+  cards are built from a single `(key, icon)` list (13 entries) instead of
+  parallel `Keys`/`Icons` arrays that had drifted out of sync; a missing
+  localized title now falls back to the key instead of crashing.
+- **`InsightsModule`, `ChartsModule`, `ProfitSummaryModule`** tolerate
+  `Update` being called before `Build` (a branch change can arrive before the
+  form loaded) — missing or disposed controls are skipped instead of
+  null-dereferenced.
+- **`DashboardForm`** ignores summary refreshes until its modules are built,
+  so a build failure can no longer cascade into a `NullReferenceException`
+  reported through `LocalizableFormBase.RunSafe`.
+
+### Added
+- **Dashboard smoke pass** in `--layout-audit`: the real `DashboardForm` load
+  path is exercised in light/dark and RTL/LTR, and any exception fails the
+  audit instead of being swallowed by `Application.ThreadException`.
+- **`DashboardKpiCardMapTests.Build_ContainsExactlyTheRenderedCardKeys`** locks
+  the thirteen rendered card keys.
+
+### Verified
+- Build 0 errors; Unit **194/194**; Integration **114/114**.
+- Migration audit: PASSED (0 rows removed; 2 seed rows added).
+- Layout audit: 72 scenarios, 0 violations (2028 controls measured) plus the
+  dashboard smoke pass in Light/Dark x RTL/LTR.
+
 ## [Unreleased] - 2026-11-12 (Phase 6 hardening: branch-aware UI, batch allocation, coverage)
 
 ### Added

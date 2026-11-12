@@ -119,7 +119,8 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
 
         public void ApplyTheme()
         {
-            if (_title.IsDisposed) return;
+            if (_title is null || _title.IsDisposed) return;
+            if (_grid is null || _grid.IsDisposed) return;
             _title.ForeColor = AppColors.Ink;
             _grid.BackColor = AppColors.Surface;
             foreach (Control c in _grid.Controls)

@@ -8,9 +8,9 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
     internal class ChartsModule
     {
         private readonly RecentTransactionsModule _recentTransactions;
-        private Chart _lineChart = null!;
-        private Chart _columnChart = null!;
-        private Chart _pieChart = null!;
+        private Chart? _lineChart;
+        private Chart? _columnChart;
+        private Chart? _pieChart;
 
         private static Color TrendSeriesColor => AppColors.KpiPalette[3];
         private static Color SalesSeriesColor => AppColors.KpiPalette[1];
@@ -106,7 +106,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"ApplyChartsTheme failed: {ex.Message}"); }
         }
 
-        private static void ApplyChartTheme(Chart chart)
+        private static void ApplyChartTheme(Chart? chart)
         {
             if (chart == null || chart.IsDisposed) return;
             chart.BackColor = AppColors.Surface;
@@ -197,32 +197,39 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
 
         public void Update(DashboardSummaryDto data)
         {
-            UpdateLineChart(data.SalesTrend);
-            UpdateColumnChart(data.MonthlyComparison);
-            UpdatePieChart(data.CategoryDistribution);
+            // Update() must not assume Build() already ran: a refresh can be
+            // triggered before the form finished loading (for example a branch
+            // change). Silently skip until the charts exist.
+            if (_lineChart is null || _lineChart.IsDisposed) return;
+            if (_columnChart is null || _columnChart.IsDisposed) return;
+            if (_pieChart is null || _pieChart.IsDisposed) return;
+
+            UpdateLineChart(_lineChart, data.SalesTrend);
+            UpdateColumnChart(_columnChart, data.MonthlyComparison);
+            UpdatePieChart(_pieChart, data.CategoryDistribution);
         }
 
-        private void UpdateLineChart(List<LineChartPoint> points)
+        private static void UpdateLineChart(Chart chart, List<LineChartPoint> points)
         {
-            _lineChart.Series[0].Points.Clear();
+            chart.Series[0].Points.Clear();
             foreach (var pt in points)
-                _lineChart.Series[0].Points.AddXY(pt.Label, pt.Value);
+                chart.Series[0].Points.AddXY(pt.Label, pt.Value);
         }
 
-        private void UpdateColumnChart(List<ComparisonPoint> points)
+        private static void UpdateColumnChart(Chart chart, List<ComparisonPoint> points)
         {
-            _columnChart.Series[0].Points.Clear();
-            _columnChart.Series[1].Points.Clear();
+            chart.Series[0].Points.Clear();
+            chart.Series[1].Points.Clear();
             foreach (var pt in points)
             {
-                _columnChart.Series[0].Points.AddXY(pt.Label, pt.Sales);
-                _columnChart.Series[1].Points.AddXY(pt.Label, pt.Purchases);
+                chart.Series[0].Points.AddXY(pt.Label, pt.Sales);
+                chart.Series[1].Points.AddXY(pt.Label, pt.Purchases);
             }
         }
 
-        private void UpdatePieChart(List<PieSliceData> slices)
+        private static void UpdatePieChart(Chart chart, List<PieSliceData> slices)
         {
-            _pieChart.Series[0].Points.Clear();
+            chart.Series[0].Points.Clear();
             var pieColors = AppColors.KpiPalette;
             int ci = 0;
             foreach (var slice in slices)
@@ -233,13 +240,13 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
                     dp.Color = pieColors[ci++];
                 dp.Label = $"{slice.Category}\n{slice.Value:N0}";
                 dp.ToolTip = $"{slice.Category}: {slice.Value:N2}";
-                _pieChart.Series[0].Points.Add(dp);
+                chart.Series[0].Points.Add(dp);
             }
 
             if (slices.Count == 0)
             {
-                _pieChart.Series[0].Points.Add(new DataPoint { Color = AppColors.Border });
-                _pieChart.Series[0].Points[0].SetValueXY(AppStrings.NoDataAvailable, 1);
+                chart.Series[0].Points.Add(new DataPoint { Color = AppColors.Border });
+                chart.Series[0].Points[0].SetValueXY(AppStrings.NoDataAvailable, 1);
             }
         }
     }

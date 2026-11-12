@@ -410,7 +410,8 @@ namespace DzentoPOS2.App.Services.Sales
                             .Select(i => new StockChange(
                                 i.ProductId,
                                 i.VariantId != Guid.Empty ? i.VariantId : defaultVariantIds[i.ProductId],
-                                i.Quantity))
+                                i.Quantity,
+                                BatchId: i.BatchId))
                             .ToList(),
                         _currentUser.UserId);
 

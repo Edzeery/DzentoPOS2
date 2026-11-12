@@ -210,6 +210,18 @@ public sealed class StockService : IStockService
             .GroupBy(x => (x.ProductId, x.VariantId))
             .ToDictionary(g => g.Key, g => g.Sum(x => x.Quantity));
 
+        // Lines that explicitly picked a batch, in cart order. The stock
+        // movement stays aggregated per product/variant; only batch
+        // allocation needs the per-batch quantities.
+        var preferredBatches = lines
+            .Where(x => x.BatchId != Guid.Empty)
+            .GroupBy(x => (x.ProductId, x.VariantId))
+            .ToDictionary(
+                g => g.Key,
+                g => g.GroupBy(x => x.BatchId)
+                      .Select(b => (BatchId: b.Key, Quantity: b.Sum(x => x.Quantity)))
+                      .ToList());
+
         if (aggregated.Count == 0)
             return;
 
@@ -322,14 +334,28 @@ public sealed class StockService : IStockService
                 }
                 else
                 {
-                    // Sale/adjustment: allocate from batches (FEFO)
+                    // Sale/adjustment: subtract the batch picked by the
+                    // cashier first, then allocate the remainder FEFO.
                     var remainingQuantity = quantity;
                     var batches = await _context.Batches
-                        .AsNoTracking()
                         .Where(b => b.VariantId == variantId && b.WarehouseId == warehouseId && b.Quantity > 0)
                         .OrderBy(b => b.ExpiryDate ?? DateTime.MaxValue)
                         .ThenBy(b => b.ReceivedAt)
                         .ToListAsync(cancellationToken);
+
+                    if (preferredBatches.TryGetValue((productId, variantId), out var preferred))
+                    {
+                        foreach (var pick in preferred)
+                        {
+                            if (remainingQuantity <= 0) break;
+                            var batch = batches.FirstOrDefault(b => b.Id == pick.BatchId);
+                            if (batch is null) continue;
+
+                            var take = Math.Min(remainingQuantity, Math.Min(pick.Quantity, batch.Quantity));
+                            batch.Quantity -= take;
+                            remainingQuantity -= take;
+                        }
+                    }
 
                     foreach (var batch in batches)
                     {

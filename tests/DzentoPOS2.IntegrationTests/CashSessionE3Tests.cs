@@ -51,6 +51,10 @@ public sealed class CashSessionE3Tests : IAsyncLifetime
             BranchName = "Main Branch",
             IsAdmin = true
         });
+
+        var activeBranch = scope.ServiceProvider
+            .GetRequiredService<DzentoPOS2.App.Services.Systems.IActiveBranchContext>();
+        await activeBranch.InitializeAsync(currentUser);
     }
 
     public async Task DisposeAsync()

@@ -2,6 +2,7 @@ using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.App.Services.Partners;
 using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Purchases;
+using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.Core.Constants;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
@@ -15,7 +16,7 @@ using FontAwesome.Sharp;
 
 namespace DzentoPOS2.WinForms.Forms.Purchases;
 
-public partial class PurchasesForm : LocalizableFormBase
+public partial class PurchasesForm : LocalizableFormBase, IBranchAware
 {
     private readonly IPurchaseService _purchaseService;
     private readonly IAuthorizationGuard _guard;
@@ -116,6 +117,12 @@ public partial class PurchasesForm : LocalizableFormBase
         {
             System.Diagnostics.Debug.WriteLine("PurchasesForm permission check failed: " + ex.Message);
         }
+    }
+
+    public Task OnBranchChangedAsync(Guid branchId)
+    {
+        RunSafe(InitializeAsync);
+        return Task.CompletedTask;
     }
 
     private async Task InitializeAsync()

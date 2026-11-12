@@ -189,4 +189,65 @@ public class ActiveBranchContextTests
         // ActiveBranchId should throw
         Assert.Throws<InvalidOperationException>(() => ctx.ActiveBranchId);
     }
+
+    [Fact]
+    public async Task CanSwitchBranch_IsCachedFromInitialize()
+    {
+        var (ctx, user, perm, db, resolver) = Create();
+        var branchId = Guid.NewGuid();
+        db.Branches.Add(new Branch { Id = branchId, Name = "A", IsActive = true, IsMainBranch = true });
+        db.SaveChanges();
+
+        user.SetUser(new UserSession { BranchId = branchId, BranchName = "A" });
+        perm.HasPermission = true;
+        await ctx.InitializeAsync(user);
+
+        Assert.True(ctx.CanSwitchBranch);
+
+        // A later permission change must not be observed synchronously; the
+        // getter never queries the database.
+        perm.HasPermission = false;
+        Assert.True(ctx.CanSwitchBranch);
+    }
+
+    [Fact]
+    public void CanSwitchBranch_BeforeInitialize_ReturnsFalse()
+    {
+        var (ctx, user, perm, db, resolver) = Create();
+        Assert.False(ctx.CanSwitchBranch);
+    }
+
+    [Fact]
+    public async Task Initialize_NoResolvableBranch_InitializesEmpty()
+    {
+        var (ctx, user, perm, db, resolver) = Create();
+        user.SetUser(new UserSession { BranchId = null, BranchName = string.Empty });
+        perm.HasPermission = true;
+
+        await ctx.InitializeAsync(user);
+
+        Assert.Equal(Guid.Empty, ctx.ActiveBranchId);
+        Assert.Equal(string.Empty, ctx.ActiveBranchName);
+        Assert.False(ctx.CanSwitchBranch);
+    }
+
+    [Fact]
+    public void InitializeEmpty_EnablesGettersWithoutABranch()
+    {
+        var (ctx, user, perm, db, resolver) = Create();
+
+        ctx.InitializeEmpty();
+
+        Assert.Equal(Guid.Empty, ctx.ActiveBranchId);
+        Assert.Equal(string.Empty, ctx.ActiveBranchName);
+        Assert.False(ctx.CanSwitchBranch);
+    }
+
+    [Fact]
+    public async Task TrySwitch_BeforeInitialize_Throws()
+    {
+        var (ctx, user, perm, db, resolver) = Create();
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => ctx.TrySwitchBranchAsync(Guid.NewGuid()));
+    }
 }

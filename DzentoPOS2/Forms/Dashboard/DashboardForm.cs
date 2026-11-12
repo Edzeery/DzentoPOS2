@@ -7,11 +7,12 @@ using DzentoPOS2.WinForms.Controls;
 using DzentoPOS2.App.Services.Partners;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.WinForms.Modules.Dashboard;
+using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.WinForms.Themes;
 
 namespace DzentoPOS2.WinForms.Forms.Dashboard
 {
-    public partial class DashboardForm : LocalizableFormBase
+    public partial class DashboardForm : LocalizableFormBase, IBranchAware
     {
         private readonly IDashboardService _dashboardService;
         private readonly ICustomerService _customerService;
@@ -99,6 +100,12 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
         protected override void OnLanguageChangedAfterLoadText() => RunSafe(RefreshSummaryAsync);
 
         protected override void OnInitialized() => RunSafe(RefreshSummaryAsync);
+
+        public Task OnBranchChangedAsync(Guid branchId)
+        {
+            RunSafe(RefreshSummaryAsync);
+            return Task.CompletedTask;
+        }
 
         private FlowLayoutPanel BuildFilterBar()
         {

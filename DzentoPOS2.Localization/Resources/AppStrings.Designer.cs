@@ -508,6 +508,18 @@ namespace DzentoPOS2.Localization.Resources {
             }
         }
 
+        public static string NoActiveBranchMessage {
+            get {
+                return ResourceManager.GetString("NoActiveBranchMessage", resourceCulture);
+            }
+        }
+
+        public static string NoExpiry {
+            get {
+                return ResourceManager.GetString("NoExpiry", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to You do not have permission to switch branches..
         /// </summary>

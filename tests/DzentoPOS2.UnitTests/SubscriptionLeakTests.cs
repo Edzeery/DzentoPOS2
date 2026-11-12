@@ -52,5 +52,6 @@ public class SubscriptionLeakTests
         public event EventHandler<ActiveBranchChangedEventArgs>? BranchChanged;
         public Task<bool> TrySwitchBranchAsync(Guid branchId, System.Threading.CancellationToken cancellationToken = default) => Task.FromResult(true);
         public Task InitializeAsync(ICurrentUserService currentUser, System.Threading.CancellationToken cancellationToken = default) => Task.CompletedTask;
+        public void InitializeEmpty() { }
     }
 }

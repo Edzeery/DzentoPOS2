@@ -103,23 +103,23 @@ public class BatchSelectionDialog : ThemedDialog
         _lst.Items.Clear();
         foreach (var b in batches)
         {
+            var expiry = b.ExpiryDate.HasValue
+                ? b.ExpiryDate.Value.ToString("yyyy-MM-dd")
+                : AppStrings.NoExpiry;
+
             _lst.Items.Add(new BatchItem
             {
                 BatchId = b.Id,
                 BatchNumber = b.BatchNumber,
-                ExpiryText = b.ExpiryDate.HasValue ? b.ExpiryDate.Value.ToString("yyyy-MM-dd") : "No expiry",
-                Quantity = b.Quantity,
-                Display = $"{b.BatchNumber} | Exp: {(b.ExpiryDate.HasValue ? b.ExpiryDate.Value.ToString("yyyy-MM-dd") : "N/A")} | Qty: {b.Quantity}"
+                Display = $"{b.BatchNumber} | {AppStrings.ExpiryDate}: {expiry} | {AppStrings.Quantity}: {b.Quantity}"
             });
         }
     }
 
-    private class BatchItem
+    private sealed class BatchItem
     {
         public Guid BatchId { get; set; }
         public string BatchNumber { get; set; } = "";
-        public string ExpiryText { get; set; } = "";
-        public decimal Quantity { get; set; }
         public string Display { get; set; } = "";
         public override string ToString() => Display;
     }

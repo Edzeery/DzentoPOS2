@@ -263,3 +263,14 @@
 | N.6.0d-1 | Tests: ActiveBranchContext, CapabilityService, BranchIsolation, SubscriptionLeak, guard registry | Done | 11 tests; BranchPermissionSeeder; IBranchResolver; UserBranchBackfill; build 0 errors; unit 185/185; integration 80/80 |
 | N.6.0d-2 | Read isolation reality: InventorySnapshot migration, CashSessionService, BranchScope, IBranchAware, DashboardService ViewAll | Done | build 0 errors; unit 185/185; integration 80/80; migration audit PASSED |
 | N.6.0d-3 | UI: FirstRunModulesDialog 8 activities, BranchActivitySeeder, ProductEditDialog AppStrings, PNG screenshots | Done | build 0 errors; unit 185/185; integration 80/80; migration audit PASSED; layout audit 72 scenarios 0 violations |
+
+## N — Phase 6 hardening (2026-11-12)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| N.6.0д-2 | الصفحات الواعية بالفرع وإعادة التحميل عند تبديل الفرع | ✅ | `IBranchAware` على 7 صفحات (`Dashboard`, `Sales`, `Purchases`, `Expenses`, `CashSession`, `Products`, `Reports`)؛ `MainForm` يعيد تحميل الصفحة عبر `INavigationService.Navigate(Type)`؛ build 0 errors |
+| N.6.0д-3 | `ActiveBranchContext` آمن للاستدعاء غير المتزامن | ✅ | تهيئة صريحة، `CanSwitchBranch` مخزّن عند التهيئة، فرع فارغ عند تعذّر الحل مع تحذير، واختبارات وحدة للتهيئة الفارغة ورمي الاستدعاء قبل التهيئة |
+| N.6.1 | الوحدات المتسلسلة والدفعات (خدمات + اختبارات) | ✅ | `SerialUnitService` و`BatchService`؛ 11 اختبار تكامل للتسلسل و9 اختبارات للدفعات؛ ترتيب الدفعات يضع بلا تاريخ انتهاء أخيراً |
+| N.6.2 | حوارات الوزن والدفعة داخل نقطة البيع | ✅ | `WeightEntryDialog` يضبط كمية السطر من الوزن؛ `BatchSelectionDialog` يمرّر `BatchId` عبر `StockChange`؛ الدفعة المختارة تُستهلك أولاً ثم FEFO؛ اختبارات تثبيت خصم الدفعات |
+| N.6.2-д | ترحيل فروق الفروع للبيانات القديمة | ✅ | `InvoiceBranchBackfill` يغطي 8 جداول؛ يتجنّب تعارض `(BranchId, SnapshotDate)` ولا يحذف صفوفاً؛ اختبارا ترقية وidempotency |
+| N.6.3 | تغطية التكامل الشاملة | ✅ | `RealPathIntegrationTests`, `BranchScopingIntegrationTests`, `SerialUnitTests`, `BatchServiceTests`, `StockBatchAllocationTests`؛ build 0 errors; unit 193/193; integration 114/114; migration audit PASSED; layout audit 72 scenarios 0 violations |

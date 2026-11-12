@@ -1,4 +1,5 @@
 using DzentoPOS2.App.Services.Reports.Interfaces;
+using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Reports;
@@ -11,7 +12,7 @@ using FontAwesome.Sharp;
 
 namespace DzentoPOS2.WinForms.Forms.Reports;
 
-public partial class ReportsForm : LocalizableFormBase
+public partial class ReportsForm : LocalizableFormBase, IBranchAware
 {
     private readonly IDashboardService _dashboardService;
 
@@ -111,6 +112,12 @@ public partial class ReportsForm : LocalizableFormBase
     {
         base.OnLoad(e);
         RunSafe(LoadSummaryAsync);
+    }
+
+    public Task OnBranchChangedAsync(Guid branchId)
+    {
+        RunSafe(LoadSummaryAsync);
+        return Task.CompletedTask;
     }
 
     private async Task LoadSummaryAsync()

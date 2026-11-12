@@ -2,6 +2,27 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] - 2026-11-12 (Phase 6 hardening: branch-aware UI, batch allocation, coverage)
+
+### Added
+- **`IBranchAware`** implemented by Dashboard, Sales, Purchases, Expenses, CashSession, Products and Reports pages; the shell reloads the current page when the active branch changes.
+- **`INavigationService.Navigate(Type)`** so the shell can reload a page without reopening it from the menu.
+- **Weight entry** in sales: `WeightEntryDialog` sets the line quantity from the weighed amount.
+- **Batch selection** in sales: `BatchSelectionDialog` records `BatchId` on the cart line; `StockChange` and `SaleService` carry it to stock allocation.
+- **Integration coverage**: `RealPathIntegrationTests` (fresh bootstrap, admin login, every module write/read, legacy upgrade backfill), `BranchScopingIntegrationTests` (cashboxes, sessions, valuation, snapshots, dashboard ViewAll), `SerialUnitTests` (11), `BatchServiceTests` (9), `StockBatchAllocationTests` (4).
+- **`PurchasePreviewCalculatorTests`** (3) and a dashboard date-preset regression test.
+
+### Changed
+- **`ActiveBranchContext`** is async-safe: no lazy database initialization in getters, an explicit uninitialized-state error, `CanSwitchBranch` cached at initialization, and an empty-branch fallback with a warning when no branch can be resolved.
+- **Batch allocation** consumes the cashier-selected batch first and the remainder FEFO; batch decrements are tracked and persisted across scopes.
+- **Batch ordering** places rows without an expiry date last in variant and warehouse queries.
+- **`InvoiceBranchBackfill`** now covers sales invoices, purchase invoices, expenses, warehouses, cashboxes, cash registers, sales quotations and inventory snapshots. Legacy snapshots that share a date with an existing main-branch row stay as legacy aggregates, so the unique `(BranchId, SnapshotDate)` index is never violated and no rows are deleted.
+
+### Verified
+- Build 0 errors; Unit **193/193**; Integration **114/114**.
+- Migration audit: PASSED (0 rows removed; 4 legacy snapshot rows assigned to the main branch; 2 seed rows added).
+- Layout audit: 72 scenarios, 0 violations (2028 controls measured).
+
 ## [Unreleased] - 2026-11-11 (Phase 6: Active Branch Context complete)
 
 ### Added

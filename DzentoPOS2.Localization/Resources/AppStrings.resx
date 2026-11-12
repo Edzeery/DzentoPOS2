@@ -1877,4 +1877,10 @@
   <data name="SelectBatch" xml:space="preserve">
     <value>Select Batch</value>
   </data>
+  <data name="NoActiveBranchMessage" xml:space="preserve">
+    <value>No active branch could be resolved. Sign-in continues, but branch data is unavailable until a main branch exists.</value>
+  </data>
+  <data name="NoExpiry" xml:space="preserve">
+    <value>No expiry</value>
+  </data>
 </root>

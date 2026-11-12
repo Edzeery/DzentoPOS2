@@ -536,6 +536,7 @@ private static int CountControls(Control parent)
             Task.FromResult(true);
         public Task InitializeAsync(ICurrentUserService currentUser, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
+        public void InitializeEmpty() { }
     }
 
     private sealed class StubCurrentSettingsService : ICurrentSettingsService

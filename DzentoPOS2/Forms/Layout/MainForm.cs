@@ -1211,7 +1211,11 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             else
             {
                 // Page doesn't implement IBranchAware: reload via navigation.
-                // (This includes cash sessions, reports, products, etc.)
+                var pageType = currentPage?.GetType();
+                if (pageType != null)
+                {
+                    _navigation.Navigate(pageType);
+                }
             }
         }
 

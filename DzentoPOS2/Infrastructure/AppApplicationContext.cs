@@ -75,7 +75,23 @@ public class AppApplicationContext : ApplicationContext
         _currentUser.SetUser(session);
 
         // Initialize active branch context before showing MainForm.
-        _activeBranch.InitializeAsync(_currentUser).GetAwaiter().GetResult();
+        // If no branch can be resolved the context stays initialized with
+        // an empty branch so the shell still opens: the admin is warned but
+        // not locked out.
+        bool noActiveBranch;
+        try
+        {
+            _activeBranch.InitializeAsync(_currentUser).GetAwaiter().GetResult();
+            noActiveBranch = _activeBranch.ActiveBranchId == Guid.Empty;
+        }
+        catch (Exception ex)
+        {
+            DzentoPOS2.App.Diagnostics.ExceptionLogger.Write(ex, "AppApplicationContext.InitializeActiveBranch");
+            // Leave the context initialized with an empty branch so getters do
+            // not throw while the shell opens with its warning.
+            _activeBranch.InitializeEmpty();
+            noActiveBranch = true;
+        }
 
         var loginForm = _currentForm;
         var loginScope = _currentScope;
@@ -111,6 +127,13 @@ public class AppApplicationContext : ApplicationContext
                     await asyncDisposable.DisposeAsync();
                 else
                     loginScope.Dispose();
+            }
+
+            if (noActiveBranch)
+            {
+                DzentoPOS2.WinForms.Helpers.AppMessageBox.Warning(
+                    DzentoPOS2.Localization.Resources.AppStrings.NoActiveBranchMessage,
+                    DzentoPOS2.Localization.Resources.AppStrings.Warning);
             }
         }));
     }

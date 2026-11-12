@@ -1876,5 +1876,11 @@
   <data name="SelectBatch" xml:space="preserve">
     <value>اختيار الدفعة</value>
   </data>
+  <data name="NoActiveBranchMessage" xml:space="preserve">
+    <value>تعذر العثور على فرع نشط. تم متابعة تسجيل الدخول، لكن بيانات الفرع غير متاحة حتى يتم إنشاء فرع رئيسي.</value>
+  </data>
+  <data name="NoExpiry" xml:space="preserve">
+    <value>بدون انتهاء</value>
+  </data>
 </root>
 

@@ -28,6 +28,25 @@ public sealed class ProfitFlowTests
         var purchases = scope.ServiceProvider.GetRequiredService<IPurchaseService>();
         var sales = scope.ServiceProvider.GetRequiredService<ISaleService>();
         var products = scope.ServiceProvider.GetRequiredService<IProductService>();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        // Use a dedicated product so the moving-average assertion is not
+        // affected by other tests sharing the fixture database.
+        var categoryId = await context.ProductCategories.Select(c => c.Id).FirstAsync();
+        var unitId = await context.ProductUnits.Select(u => u.Id).FirstAsync();
+        var fresh = await products.CreateAsync(new CreateProductDto
+        {
+            Name = "Moving Average Product",
+            SKU = $"MA-{Guid.NewGuid():N}",
+            CategoryId = categoryId,
+            UnitId = unitId,
+            CostPrice = 5,
+            SalePrice = 10,
+            MinimumStock = 0,
+            OpeningStock = 100,
+            TrackStock = true,
+            IsActive = true
+        });
 
         await purchases.CreateAsync(new CreatePurchaseInvoiceDto
         {
@@ -37,14 +56,14 @@ public sealed class ProfitFlowTests
             {
                 new CreatePurchaseItemDto
                 {
-                    ProductId = _fixture.Data.TrackedProductId,
+                    ProductId = fresh.Id,
                     Quantity = 10,
                     CostPrice = 8
                 }
             }
         });
 
-        var productAfterPurchase = await products.GetByIdAsync(_fixture.Data.TrackedProductId);
+        var productAfterPurchase = await products.GetByIdAsync(fresh.Id);
         Assert.NotNull(productAfterPurchase);
         Assert.Equal(5.27m, productAfterPurchase!.CostPrice);
 
@@ -55,7 +74,7 @@ public sealed class ProfitFlowTests
             {
                 new CreateSaleItemDto
                 {
-                    ProductId = _fixture.Data.TrackedProductId,
+                    ProductId = fresh.Id,
                     Quantity = 2,
                     Price = 10
                 }
@@ -67,7 +86,7 @@ public sealed class ProfitFlowTests
 
         await products.UpdateAsync(new UpdateProductDto
         {
-            Id = _fixture.Data.TrackedProductId,
+            Id = fresh.Id,
             Name = productAfterPurchase.Name,
             CategoryId = productAfterPurchase.CategoryId,
             UnitId = productAfterPurchase.UnitId,

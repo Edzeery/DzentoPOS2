@@ -44,7 +44,7 @@ public class BatchService : IBatchService
         return await _context.Batches
             .AsNoTracking()
             .Where(b => b.VariantId == variantId)
-            .OrderBy(b => b.ExpiryDate)
+            .OrderBy(b => b.ExpiryDate ?? DateTime.MaxValue)
             .ThenBy(b => b.ReceivedAt)
             .ToListAsync(ct);
     }
@@ -54,7 +54,7 @@ public class BatchService : IBatchService
         return await _context.Batches
             .AsNoTracking()
             .Where(b => b.WarehouseId == warehouseId)
-            .OrderBy(b => b.ExpiryDate)
+            .OrderBy(b => b.ExpiryDate ?? DateTime.MaxValue)
             .ThenBy(b => b.ReceivedAt)
             .ToListAsync(ct);
     }

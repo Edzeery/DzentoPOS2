@@ -1876,5 +1876,11 @@
   <data name="SelectBatch" xml:space="preserve">
     <value>Selection lot</value>
   </data>
+  <data name="NoActiveBranchMessage" xml:space="preserve">
+    <value>Aucune succursale active n'a pu etre trouvee. La connexion continue, mais les donnees de succursale restent indisponibles jusqu'a la creation d'une succursale principale.</value>
+  </data>
+  <data name="NoExpiry" xml:space="preserve">
+    <value>Sans expiration</value>
+  </data>
 </root>
 

@@ -1,6 +1,7 @@
 using DzentoPOS2.App.Authorization;
 using DzentoPOS2.WinForms.Services.Barcodes;
 using DzentoPOS2.App.Services.Inventory;
+using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.Core.Constants;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
@@ -15,7 +16,7 @@ using FontAwesome.Sharp;
 
 namespace DzentoPOS2.WinForms.Forms.Inventory;
 
-public partial class ProductsForm : LocalizableFormBase
+public partial class ProductsForm : LocalizableFormBase, IBranchAware
 {
     private readonly IProductService _productService;
     private readonly ICurrentSettingsService _currentSettings;
@@ -383,6 +384,13 @@ public partial class ProductsForm : LocalizableFormBase
         }
     }
 
+
+    public Task OnBranchChangedAsync(Guid branchId)
+    {
+        RunSafe(LoadGridAsync);
+        RunSafe(LoadStatsAsync);
+        return Task.CompletedTask;
+    }
 
     private async Task LoadGridAsync()
     {

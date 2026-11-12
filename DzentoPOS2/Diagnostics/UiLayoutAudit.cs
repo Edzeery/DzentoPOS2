@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
+using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.App.Services.Businesses;
 using DzentoPOS2.App.Services.Partners;
@@ -21,6 +22,7 @@ using DzentoPOS2.WinForms.Configurations;
 using DzentoPOS2.WinForms.Forms.Dashboard;
 using DzentoPOS2.WinForms.Forms.Businesses;
 using DzentoPOS2.WinForms.Forms.Inventory;
+using DzentoPOS2.WinForms.Forms.Reports;
 using DzentoPOS2.WinForms.Forms.Settings;
 using DzentoPOS2.WinForms.Forms.Setup;
 using DzentoPOS2.WinForms.Themes;
@@ -118,7 +120,7 @@ public static class UiLayoutAudit
 
         Console.WriteLine($"UI layout audit: {scenarios.Count} scenarios, {violations} violations");
         Console.WriteLine($"Controls measured: {scenarios.Sum(s => s.ControlsMeasured)}");
-        Console.WriteLine($"Forms: variants, barcodes, unit edit, unit list, branch edit, branch resources, branch list, first-run wizard, settings");
+        Console.WriteLine($"Forms: variants, barcodes, unit edit, unit list, branch edit, branch resources, branch list, cross-branch report, first-run wizard, settings");
         Console.WriteLine($"Smoke (built + refreshed, not scored): dashboard");
         Console.WriteLine($"Widths: {string.Join(", ", Widths)} | heights: {AuditHeight} | themes: Light, Dark | direction: RTL, LTR");
         Console.WriteLine($"Report: {reportPath}");
@@ -142,6 +144,7 @@ public static class UiLayoutAudit
         new BranchEditDialog(new StubBranchService(), new StubLanguageService()),
         new BranchResourcesDialog(new StubBranchResourceService(), new StubLanguageService(), new BranchDto { Name = "Branch" }),
         new BranchesForm(new StubBranchService(), new StubBranchResourceService(), new StubLanguageService()),
+        new CrossBranchReportForm(new StubCrossBranchReportService(), new StubAuthorizationGuard(), new StubLanguageService()),
         new FirstRunModulesDialog(new StubCapabilityService(), new StubBackupService(), new StubActiveBranchContext()),
         new SettingsForm(
             new StubCurrentSettingsService(),
@@ -630,6 +633,19 @@ private static int CountControls(Control parent)
 
         public Task<CashboxListItemDto> SetCashboxActiveAsync(Guid id, bool isActive) =>
             Task.FromResult(new CashboxListItemDto { Id = id, IsActive = isActive });
+    }
+
+    private sealed class StubCrossBranchReportService : ICrossBranchReportService
+    {
+        public Task<CrossBranchReportDto> GetAsync(CrossBranchReportFilterDto? filter = null) =>
+            Task.FromResult(new CrossBranchReportDto());
+    }
+
+    private sealed class StubAuthorizationGuard : IAuthorizationGuard
+    {
+        public Task<bool> IsAllowedAsync(string permissionCode) => Task.FromResult(true);
+
+        public Task DemandAsync(string permissionCode) => Task.CompletedTask;
     }
 
     private sealed class StubLanguageService : ILanguageService

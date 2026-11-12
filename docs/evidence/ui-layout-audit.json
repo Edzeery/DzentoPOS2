@@ -1,6 +1,6 @@
 {
-  "GeneratedAt": "2026-11-12T17:13:00.2333912+01:00",
-  "ScenarioCount": 108,
+  "GeneratedAt": "2026-11-12T18:01:59.1290846+01:00",
+  "ScenarioCount": 120,
   "ViolationCount": 0,
   "Scenarios": [
     {
@@ -67,6 +67,15 @@
       "Violations": []
     },
     {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Light",
       "Direction": "RTL",
@@ -148,6 +157,15 @@
       "Violations": []
     },
     {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Light",
       "Direction": "RTL",
@@ -229,6 +247,15 @@
       "Violations": []
     },
     {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Light",
       "Direction": "RTL",
@@ -310,6 +337,15 @@
       "Violations": []
     },
     {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Light",
       "Direction": "LTR",
@@ -391,6 +427,15 @@
       "Violations": []
     },
     {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Light",
       "Direction": "LTR",
@@ -472,6 +517,15 @@
       "Violations": []
     },
     {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Light",
       "Direction": "LTR",
@@ -553,6 +607,15 @@
       "Violations": []
     },
     {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Dark",
       "Direction": "RTL",
@@ -634,6 +697,15 @@
       "Violations": []
     },
     {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Dark",
       "Direction": "RTL",
@@ -715,6 +787,15 @@
       "Violations": []
     },
     {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Dark",
       "Direction": "RTL",
@@ -796,6 +877,15 @@
       "Violations": []
     },
     {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Dark",
       "Direction": "LTR",
@@ -877,6 +967,15 @@
       "Violations": []
     },
     {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Dark",
       "Direction": "LTR",
@@ -955,6 +1054,15 @@
       "Width": 1440,
       "Height": 800,
       "ControlsMeasured": 11,
+      "Violations": []
+    },
+    {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 7,
       "Violations": []
     },
     {

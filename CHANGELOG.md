@@ -2,6 +2,45 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] - 2026-11-12 (Branch management, Phase 4: unified cross-branch report)
+
+### Added
+- **`ICrossBranchReportService` / `CrossBranchReportService`** in
+  `DzentoPOS2.App/Services/Reports`: one row per branch for a period (sales,
+  returns, net sales, purchases, expenses, gross profit, net profit) plus a
+  grand total, so a manager can compare every branch side by side. Read-only.
+- **`CrossBranchReportFilterDto`, `CrossBranchReportDto`, `BranchReportRowDto`**
+  in `DzentoPOS2.Shared/Contracts/DTOs/Reports/CrossBranchReportDtos.cs`.
+- **`CrossBranchReportForm`** (`DzentoPOS2/Forms/Reports`): period preset
+  combo (reusing `DatePreset*`), from/to pickers shown only for *Custom*, an
+  **All branches** checkbox and a **Refresh** action over a bold-total grid.
+  It is `IBranchAware` and reloads when the active branch changes.
+- **`MainForm` navigation**: a `CrossBranchReport` sidebar button after
+  `Branches`, visible only when the user holds **both** `ReportsView` and
+  `BranchesViewAll`.
+- **Localization** for the new UI in all four resource files and
+  `AppStrings.Designer.cs`: `CrossBranchReport`, `NetSales`, `ViewAllBranches`.
+- `CrossBranchReportForm` is now part of the **scored** `--layout-audit` matrix.
+
+### Access model
+- The report always requires `ReportsView`.
+- The `ViewAllBranches` flag is only a **request**: every branch is returned
+  only when the caller also holds `BranchesViewAll`; otherwise the report
+  silently falls back to the active branch (`ViewAllBranches = false`).
+
+### Consistency
+- Profit columns follow the same `ProfitCalculator` math over the frozen line
+  values as the dashboard (revenue net of discount, stored unit cost, and the
+  returns' profit impact), so the report and the dashboard can never disagree.
+
+### Verified
+- Build 0 errors; Unit **194/194**; Integration **135/135** (2 new
+  `CrossBranchReportTests`).
+- Localization parity: **0 diff** across `ar`/`en`/`fr`.
+- Migration audit: PASSED (0 rows removed, 0 changed, 2 seed rows added).
+- `--layout-audit`: **120 scenarios, 0 violations** (2592 controls, 10 scored
+  forms at 375/768/1440 × RTL/LTR × Light/Dark).
+
 ## [Unreleased] - 2026-11-12 (Branch management, Phase 3: warehouses & cashboxes)
 
 ### Added

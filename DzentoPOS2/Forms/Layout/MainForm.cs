@@ -78,6 +78,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
         private IconButton _btnCashSessions = null!;
         private IconButton _btnExpenses = null!;
         private IconButton _btnBranches = null!;
+        private IconButton _btnCrossBranch = null!;
         private readonly ToolTip _toolTip = new();
         private string _currentBranchName = string.Empty;
         private Label _storeNameLabel = null!;
@@ -147,6 +148,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             _btnSuppliers = AddSidebarButton("btnSuppliers", IconChar.Truck, AppStrings.Suppliers, b => NavigateTo<SuppliersForm>(b), BtnCustomers);
             _btnCashSessions = AddSidebarButton("btnCashSessions", IconChar.CashRegister, AppStrings.CashSessions, b => NavigateTo<CashSessionForm>(b), _btnSuppliers);
             _btnBranches = AddSidebarButton("btnBranches", IconChar.Building, AppStrings.Branches, b => NavigateTo<BranchesForm>(b), btnUsersRoles);
+            _btnCrossBranch = AddSidebarButton("btnCrossBranch", IconChar.ChartLine, AppStrings.CrossBranchReport, b => NavigateTo<CrossBranchReportForm>(b), _btnBranches);
 
             // Enforce permissions on sidebar buttons
             _ = EnforcePermissionsAsync();
@@ -762,6 +764,13 @@ namespace DzentoPOS2.WinForms.Forms.Layout
                     _btnBranches.Visible = false;
                 }
 
+                // Cross-branch report (needs both report viewing and cross-branch access)
+                if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.ReportsView) ||
+                    !await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.BranchesViewAll))
+                {
+                    _btnCrossBranch.Visible = false;
+                }
+
                 // Settings
                 if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.SettingsView))
                 {
@@ -954,6 +963,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             _btnCashSessions.Text = "  " + AppStrings.CashSessions;
             _btnExpenses.Text = "  " + AppStrings.ExpensesButton;
             _btnBranches.Text = "  " + AppStrings.Branches;
+            _btnCrossBranch.Text = "  " + AppStrings.CrossBranchReport;
 
             btnInventory.Text = AppStrings.Inventory; 
 

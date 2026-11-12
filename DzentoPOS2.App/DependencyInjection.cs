@@ -87,6 +87,10 @@ namespace DzentoPOS2.App
                 IDashboardService,
                 DashboardService>();
 
+            services.AddScoped<
+                ICrossBranchReportService,
+                CrossBranchReportService>();
+
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IBarcodeService, BarcodeService>();
             services.AddScoped<ISerialUnitService, SerialUnitService>();

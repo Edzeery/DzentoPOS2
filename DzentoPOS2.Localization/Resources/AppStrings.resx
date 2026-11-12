@@ -1967,6 +1967,15 @@
   <data name="CashboxHasOpenSessionMsg" xml:space="preserve">
     <value>A cashbox with an open cash session cannot be deactivated.</value>
   </data>
+  <data name="CrossBranchReport" xml:space="preserve">
+    <value>Cross-branch report</value>
+  </data>
+  <data name="NetSales" xml:space="preserve">
+    <value>Net sales</value>
+  </data>
+  <data name="ViewAllBranches" xml:space="preserve">
+    <value>All branches</value>
+  </data>
   <data name="NoExpiry" xml:space="preserve">
     <value>No expiry</value>
   </data>

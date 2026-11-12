@@ -1966,6 +1966,15 @@
   <data name="CashboxHasOpenSessionMsg" xml:space="preserve">
     <value>لا يمكن تعطيل صندوق له جلسة مفتوحة.</value>
   </data>
+  <data name="CrossBranchReport" xml:space="preserve">
+    <value>تقرير موحّد عبر الفروع</value>
+  </data>
+  <data name="NetSales" xml:space="preserve">
+    <value>صافي المبيعات</value>
+  </data>
+  <data name="ViewAllBranches" xml:space="preserve">
+    <value>كل الفروع</value>
+  </data>
   <data name="NoExpiry" xml:space="preserve">
     <value>بدون انتهاء</value>
   </data>

@@ -76,6 +76,7 @@ public static class DependencyInjection
             services.AddTransient<CashSessionForm>();
         services.AddTransient<CashSessionOpenDialog>();
         services.AddTransient<BranchesForm>();
+        services.AddTransient<CrossBranchReportForm>();
         services.AddTransient<Forms.Setup.FirstRunModulesDialog>();
 
         return services;

@@ -4733,6 +4733,24 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("WarehouseNotFoundMsg", resourceCulture);
             }
         }
+        
+        public static string CrossBranchReport {
+            get {
+                return ResourceManager.GetString("CrossBranchReport", resourceCulture);
+            }
+        }
+        
+        public static string NetSales {
+            get {
+                return ResourceManager.GetString("NetSales", resourceCulture);
+            }
+        }
+        
+        public static string ViewAllBranches {
+            get {
+                return ResourceManager.GetString("ViewAllBranches", resourceCulture);
+            }
+        }
 
     }
 }

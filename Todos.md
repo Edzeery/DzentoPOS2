@@ -313,3 +313,17 @@
 | P3.5 | توطين الواجهة | ✅ | 13 مفتاحاً جديداً في `AppStrings{,.ar,.en,.fr}.resx` + `AppStrings.Designer.cs`؛ `ExceptionFormatter` يربط رموز أخطاء المستودعات/الصناديق الثمانية؛ تكافؤ الترجمة 0 فرق |
 | P3.6 | اختبارات المرحلة | ✅ | `BranchResourceTests` (10 اختبارات): إضافة مستودع/صندوق، رفض الاسم المكرر، منع تعطيل آخر مستودع/صندوق، منع تعطيل صندوق له جلسة مفتوحة، دورة تعطيل/تفعيل للمستودع والصندوق، وحرمان الكاشير |
 | P3.7 | بوابة المرحلة | ✅ | build 0 errors; unit 194/194; integration 133/133; migration audit PASSED (0 محذوف، 0 مغيَّر، 2 صف بذر مضاف); layout audit 108 سيناريو 0 مخالفة (9 نماذج مُقيَّمة عند 375/768/1440 × RTL/LTR × فاتح/داكن) |
+
+## P — تقارير موحّدة عبر الفروع (المرحلة 4)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| P4.1 | DTOs التقرير الموحّد | ✅ | `CrossBranchReportFilterDto`, `CrossBranchReportDto`, `BranchReportRowDto` في `DzentoPOS2.Shared/Contracts/DTOs/Reports/CrossBranchReportDtos.cs` |
+| P4.2 | خدمة التقرير عبر الفروع | ✅ | `ICrossBranchReportService`/`CrossBranchReportService` في `DzentoPOS2.App/Services/Reports`: صف لكل فرع (مبيعات، مرتجعات، صافي مبيعات، مشتريات، مصروفات، ربح إجمالي، ربح صافٍ) + إجمالي عام لفترة؛ للقراءة فقط؛ مسجّلة في `DzentoPOS2.App/DependencyInjection.cs` |
+| P4.3 | نموذج العرض | ✅ | `CrossBranchReportForm` في `DzentoPOS2/Forms/Reports`: قائمة الفترة (5 خيارات)، منتقيا من/إلى يظهران عند «مخصّص» فقط، مربّع «كل الفروع»، زر «تحديث»، وشبكة 10 أعمدة بإجمالي عريض؛ يُنفّذ `IBranchAware` |
+| P4.4 | الوصول والصلاحيات | ✅ | يتطلّب `ReportsView` دائماً؛ علَم «كل الفروع» طلبٌ يُلبّى فقط لحامل `BranchesViewAll`، وإلا يُقصَر على الفرع النشط (`ViewAllBranches=false`) |
+| P4.5 | ربط التنقل والصلاحيات في الواجهة | ✅ | زر `CrossBranchReport` في `MainForm` بعد `Branches` عبر `IconChar.ChartLine`؛ يظهر فقط عند اجتماع `ReportsView` و`BranchesViewAll`؛ تسجيل `CrossBranchReportForm` في `DzentoPOS2/Infrastructure/DependencyInjection.cs` |
+| P4.6 | توطين الواجهة | ✅ | 3 مفاتيح جديدة (`CrossBranchReport`, `NetSales`, `ViewAllBranches`) في `AppStrings{,.ar,.en,.fr}.resx` + `AppStrings.Designer.cs`؛ إعادة استخدام مفاتيح الفترة/الأعمدة الموجودة؛ تكافؤ الترجمة 0 فرق |
+| P4.7 | إدخال النموذج في فحص التخطيط المُقيَّم | ✅ | `CrossBranchReportForm` في `UiLayoutAudit.CreateForms` مع `StubCrossBranchReportService`/`StubAuthorizationGuard`؛ تم تحديث سطر `Forms:` المطبوع |
+| P4.8 | اختبارات المرحلة | ✅ | `CrossBranchReportTests` (2): مقارنة كل الفروع عبر صلاحية `BranchesViewAll` مع مطابقة أرقام كل فرع والإجمالي، والرجوع للفرع النشط لمستخدم يملك `ReportsView` دون `BranchesViewAll` |
+| P4.9 | بوابة المرحلة | ✅ | build 0 errors; unit 194/194; integration 135/135; migration audit PASSED (0 محذوف، 0 مغيَّر، 2 صف بذر مضاف); layout audit 120 سيناريو 0 مخالفة (2592 عنصراً، 10 نماذج مُقيَّمة عند 375/768/1440 × RTL/LTR × فاتح/داكن) |

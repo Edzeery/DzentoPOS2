@@ -153,6 +153,14 @@ public static class ExceptionFormatter
         DomainErrorCodes.CashboxDuplicateName => AppStrings.CashboxDuplicateNameMsg,
         DomainErrorCodes.CashboxLastActive => AppStrings.CashboxLastActiveMsg,
         DomainErrorCodes.CashboxHasOpenSession => AppStrings.CashboxHasOpenSessionMsg,
+        DomainErrorCodes.LicenseInvalid => AppStrings.LicenseInvalidKeyMsg,
+        DomainErrorCodes.LicenseMalformed => AppStrings.LicenseInvalidKeyMsg,
+        DomainErrorCodes.LicenseBadSignature => AppStrings.LicenseBadSignatureMsg,
+        DomainErrorCodes.LicenseDeviceMismatch => AppStrings.LicenseDeviceMismatchMsg,
+        DomainErrorCodes.LicenseExpired => AppStrings.LicenseExpiredMsg,
+        DomainErrorCodes.LicenseReadOnly => AppStrings.LicenseReadOnlyMsg,
+        DomainErrorCodes.LicenseUserLimit => AppStrings.LicenseUserLimitMsg,
+        DomainErrorCodes.LicenseBranchLimit => AppStrings.LicenseBranchLimitMsg,
         _ => null
     };
 }

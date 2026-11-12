@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\DzentoPOS2.Core\DzentoPOS2.Core.csproj" />
     <ProjectReference Include="..\DzentoPOS2.Data\DzentoPOS2.Data.csproj" />
+    <ProjectReference Include="..\DzentoPOS2.Licensing\DzentoPOS2.Licensing.csproj" />
     <ProjectReference Include="..\DzentoPOS2.Shared\DzentoPOS2.Shared.csproj" />
   </ItemGroup>
 
@@ -38,6 +39,7 @@
     <PackageReference Include="AutoMapper" Version="16.1.1" />
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.22" />
   </ItemGroup>
 
 </Project>

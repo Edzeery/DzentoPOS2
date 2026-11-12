@@ -1,4 +1,5 @@
 using DzentoPOS2.App.Authorization;
+using DzentoPOS2.App.Services.Licensing;
 using DzentoPOS2.Core.Constants;
 using DzentoPOS2.Core.Entities.Accounting;
 using DzentoPOS2.Core.Entities.Businesses;
@@ -33,19 +34,22 @@ public class BranchService : IBranchService
     private readonly AppDbContext _context;
     private readonly IAuthorizationGuard _guard;
     private readonly IAuditService _audit;
+    private readonly ILicenseService? _license;
 
     public BranchService(
         IBranchRepository branchRepo,
         IUnitOfWork unitOfWork,
         AppDbContext context,
         IAuthorizationGuard guard,
-        IAuditService audit)
+        IAuditService audit,
+        ILicenseService? license = null)
     {
         _branchRepo = branchRepo;
         _unitOfWork = unitOfWork;
         _context = context;
         _guard = guard;
         _audit = audit;
+        _license = license;
     }
 
     public async Task<List<BranchListItemDto>> GetAllAsync()
@@ -117,6 +121,9 @@ public class BranchService : IBranchService
     public async Task<BranchDto> CreateAsync(CreateBranchDto dto)
     {
         await DemandAsync(Permissions.BranchesCreate);
+
+        if (_license is not null)
+            await _license.EnsureCanCreateBranchAsync();
 
         var name = (dto.Name ?? string.Empty).Trim();
         if (string.IsNullOrWhiteSpace(name))

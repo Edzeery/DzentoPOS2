@@ -19,6 +19,8 @@ public sealed class HardcodedArabicLiteralTests
         "DzentoPOS2.App",
         "DzentoPOS2.Core",
         "DzentoPOS2.Data",
+        "DzentoPOS2.Licensing",
+        "DzentoPOS2.Licensing.Signing",
         "DzentoPOS2.Shared",
         "DzentoPOS2.Localization",
         "EZControls"

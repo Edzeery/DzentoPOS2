@@ -10,7 +10,9 @@ using DzentoPOS2.WinForms.Themes;
 using Microsoft.Extensions.DependencyInjection;
 using DzentoPOS2.App.Services.Barcodes;
 using DzentoPOS2.App.Authorization;
+using DzentoPOS2.App.Services.Licensing;
 using DzentoPOS2.App.Services.Systems;
+using DzentoPOS2.App.Session;
 using DzentoPOS2.Core.Constants;
 
 namespace DzentoPOS2.WinForms.Forms.Settings;
@@ -32,6 +34,7 @@ public partial class SettingsForm : LocalizableFormBase
     private readonly SettingsCard _printingCard;
     private readonly SettingsCard _barcodeCard;
     private readonly SettingsCard _backupCard;
+    private readonly SettingsCard _licenseCard;
     private readonly SettingsCard _aboutCard;
 
     private readonly PictureBox _picLogo;
@@ -67,6 +70,9 @@ public partial class SettingsForm : LocalizableFormBase
     private readonly ThemedButton _btnChooseBackupFolder;
     private readonly ThemedButton _btnBackupNow;
     private readonly ThemedButton _btnRestoreBackup;
+
+    private readonly Label _lblLicenseStatus;
+    private readonly ThemedButton _btnManageLicense;
 
     private readonly Label _lblVersion;
 
@@ -372,6 +378,23 @@ public partial class SettingsForm : LocalizableFormBase
         _backupCard.AddControl(_lblBackupFolder);
         _backupCard.AddControl(backupButtons);
 
+        // ── License ────────────────────────────────────────────────────────
+        _licenseCard = new SettingsCard(AppStrings.LicenseSection, AppStrings.LicenseSectionHint);
+
+        _lblLicenseStatus = new Label
+        {
+            Font = AppStyle.BodyFont,
+            ForeColor = AppColors.Ink,
+            AutoSize = true,
+            MaximumSize = new Size(620, 0),
+            UseMnemonic = false
+        };
+        _licenseCard.AddControl(_lblLicenseStatus);
+
+        _btnManageLicense = ButtonFactory.Primary(AppStrings.LicenseManage, ButtonFactory.ButtonSize.Small);
+        _btnManageLicense.Click += async (_, _) => await OpenLicenseDialogAsync();
+        _licenseCard.AddControl(_btnManageLicense);
+
         // ── About ──────────────────────────────────────────────────────────
         _aboutCard = new SettingsCard(AppStrings.About, AppStrings.SettingsDescription);
 
@@ -391,6 +414,7 @@ public partial class SettingsForm : LocalizableFormBase
         _cards.Add(_printingCard);
         _cards.Add(_barcodeCard);
         _cards.Add(_backupCard);
+        _cards.Add(_licenseCard);
         _cards.Add(_aboutCard);
 
         // ── Footer ─────────────────────────────────────────────────────────
@@ -471,6 +495,7 @@ public partial class SettingsForm : LocalizableFormBase
 
         RefreshLogo();
         LayoutCards();
+        _ = RefreshLicenseStatusAsync();
     }
 
     protected override void LoadText()
@@ -523,6 +548,10 @@ public partial class SettingsForm : LocalizableFormBase
         _btnBackupNow.Text = AppStrings.BackupNow;
         _btnRestoreBackup.Text = AppStrings.RestoreBackup;
 
+        _licenseCard.Title = AppStrings.LicenseSection;
+        _licenseCard.Hint = AppStrings.LicenseSectionHint;
+        _btnManageLicense.Text = AppStrings.LicenseManage;
+
         _aboutCard.Title = AppStrings.About;
         _lblVersion.Text = $"{AppStrings.Version}: {Application.ProductVersion}   |   DzentoPOS2";
 
@@ -554,6 +583,46 @@ public partial class SettingsForm : LocalizableFormBase
         _btnBackupNow.Text = AppStrings.BackupNow;
         _btnRestoreBackup.Text = AppStrings.RestoreBackup;
         LayoutCards();
+    }
+
+    private async Task RefreshLicenseStatusAsync()
+    {
+        var license = _services?.GetService<ILicenseService>();
+        if (license is null)
+        {
+            _lblLicenseStatus.Text = AppStrings.LicenseNotConfiguredMsg;
+            return;
+        }
+
+        try
+        {
+            var status = await license.GetStatusAsync();
+            if (IsDisposed) return;
+
+            _lblLicenseStatus.Text = LicenseStatusText.Summary(status);
+
+            var currentUser = _services?.GetService<ICurrentUserService>();
+            _btnManageLicense.Enabled = currentUser?.IsAdmin ?? false;
+
+            LayoutCards();
+        }
+        catch (Exception ex)
+        {
+            if (!IsDisposed)
+                _lblLicenseStatus.Text = ex.Message;
+        }
+    }
+
+    private async Task OpenLicenseDialogAsync()
+    {
+        var license = _services?.GetService<ILicenseService>();
+        var currentUser = _services?.GetService<ICurrentUserService>();
+        if (license is null || currentUser is null)
+            return;
+
+        using var dialog = new LicenseActivationDialog(license, currentUser);
+        dialog.ShowDialog(this);
+        await RefreshLicenseStatusAsync();
     }
 
     private async Task ApplyBackupPermissionsAsync()

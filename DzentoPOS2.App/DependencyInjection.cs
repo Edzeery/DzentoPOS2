@@ -6,6 +6,7 @@ using DzentoPOS2.App.Services.Events;
 using DzentoPOS2.App.Services.Identity;
 using DzentoPOS2.App.Services.Identity.Interfaces;
 using DzentoPOS2.App.Services.Inventory;
+using DzentoPOS2.App.Services.Licensing;
 using DzentoPOS2.App.Services.Partners;
 using DzentoPOS2.App.Services.Purchases;
 using DzentoPOS2.App.Services.Reports;
@@ -17,7 +18,9 @@ using DzentoPOS2.Core.Services;
 using DzentoPOS2.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using FluentValidation;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.Reflection;
 
 namespace DzentoPOS2.App
@@ -43,7 +46,18 @@ namespace DzentoPOS2.App
             services.AddSingleton<IBranchSwitchGuardRegistry, BranchSwitchGuardRegistry>();
             services.AddTransient<IBranchSwitchGuard, BranchSwitchGuard>();
             services.AddScoped<ICapabilityService, CapabilityService>();
-            services.AddSingleton<IBranchLimitPolicy, BranchLimitPolicyStub>();
+            services.AddScoped<IBranchLimitPolicy, LicenseBranchLimitPolicy>();
+
+            // Offline licensing: tuning comes from the "Licensing" configuration
+            // section (the public key is embedded in the assembly). The device
+            // identifier is replaced by a Windows-specific implementation in the
+            // WinForms layer when available. TryAdd lets tests register their own
+            // LicenseOptions (with a test key) before this call.
+            services.TryAddSingleton(sp =>
+                LicenseOptions.FromConfiguration(sp.GetService<IConfiguration>()));
+            services.TryAddSingleton<IDeviceIdentifier, DefaultDeviceIdentifier>();
+            services.AddScoped<ILicenseService, LicenseService>();
+
             services.AddScoped<IDocumentNumberService, DocumentNumberService>();
             services.AddScoped<IBackupService>(sp =>
     new BackupService(

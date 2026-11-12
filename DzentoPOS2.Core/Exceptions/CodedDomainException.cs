@@ -44,6 +44,16 @@ public static class DomainErrorCodes
     public const string CashboxDuplicateName = "cashbox.duplicate_name";
     public const string CashboxLastActive = "cashbox.last_active";
     public const string CashboxHasOpenSession = "cashbox.has_open_session";
+
+    // Licensing
+    public const string LicenseInvalid = "license.invalid";
+    public const string LicenseMalformed = "license.malformed";
+    public const string LicenseBadSignature = "license.bad_signature";
+    public const string LicenseDeviceMismatch = "license.device_mismatch";
+    public const string LicenseExpired = "license.expired";
+    public const string LicenseReadOnly = "license.read_only";
+    public const string LicenseUserLimit = "license.user_limit";
+    public const string LicenseBranchLimit = "license.branch_limit";
 }
 
 /// <summary>

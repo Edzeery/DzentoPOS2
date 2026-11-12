@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 
 using DzentoPOS2.App.Authentication;
+using DzentoPOS2.App.Services.Licensing;
 using DzentoPOS2.Shared.Contracts.DTOs.Identity.Users;
 using DzentoPOS2.App.Services.Identity.Interfaces;
 
@@ -31,13 +32,16 @@ namespace DzentoPOS2.App.Services.Identity
 
         private readonly DzentoPOS2.App.Authorization.IAuthorizationGuard _authorizationGuard;
 
+        private readonly ILicenseService? _license;
+
         public UserService(
             IUserRepository userRepository,
             IUserRoleRepository userRoleRepository,
             IUnitOfWork unitOfWork,
             IPasswordHasher passwordHasher,
             IMapper mapper,
-            DzentoPOS2.App.Authorization.IAuthorizationGuard authorizationGuard)
+            DzentoPOS2.App.Authorization.IAuthorizationGuard authorizationGuard,
+            ILicenseService? license = null)
         {
             _userRepository = userRepository;
 
@@ -50,6 +54,8 @@ namespace DzentoPOS2.App.Services.Identity
             _mapper = mapper;
 
             _authorizationGuard = authorizationGuard;
+
+            _license = license;
         }
 
         public async Task<Result> CreateAsync(
@@ -57,6 +63,9 @@ namespace DzentoPOS2.App.Services.Identity
         {
             await _authorizationGuard.DemandAsync(
                 DzentoPOS2.Core.Constants.Permissions.UsersCreate);
+
+            if (_license is not null)
+                await _license.EnsureCanCreateUserAsync();
 
             var existingUser =
                 await _userRepository

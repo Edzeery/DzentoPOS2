@@ -22,6 +22,7 @@
     <ProjectReference Include="..\..\DzentoPOS2.Core\DzentoPOS2.Core.csproj" />
     <ProjectReference Include="..\..\DzentoPOS2.Data\DzentoPOS2.Data.csproj" />
     <ProjectReference Include="..\..\DzentoPOS2.App\DzentoPOS2.App.csproj" />
+    <ProjectReference Include="..\..\DzentoPOS2.Licensing.Signing\DzentoPOS2.Licensing.Signing.csproj" />
     <ProjectReference Include="..\..\DzentoPOS2.Shared\DzentoPOS2.Shared.csproj" />
   </ItemGroup>
 

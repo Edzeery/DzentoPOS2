@@ -1,6 +1,7 @@
 using DzentoPOS2.App.Services.Events;
 using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Inventory;
+using DzentoPOS2.App.Services.Licensing;
 using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.App.Session;
 using DzentoPOS2.Core.Constants;
@@ -34,6 +35,7 @@ namespace DzentoPOS2.App.Services.Sales
         private readonly IPermissionService _permissionService;
     private readonly IPosProductStore _posProductStore;
     private readonly IActiveBranchContext _activeBranch;
+    private readonly ILicenseService? _license;
 
         public SaleService(
             ISalesInvoiceRepository invoiceRepo,
@@ -50,7 +52,8 @@ namespace DzentoPOS2.App.Services.Sales
             DzentoPOS2.App.Authorization.IAuthorizationGuard authorizationGuard,
             IPermissionService permissionService,
             IPosProductStore posProductStore,
-        IActiveBranchContext activeBranch)
+        IActiveBranchContext activeBranch,
+        ILicenseService? license = null)
         {
             _invoiceRepo = invoiceRepo;
             _unitOfWork = unitOfWork;
@@ -67,6 +70,7 @@ namespace DzentoPOS2.App.Services.Sales
             _permissionService = permissionService;
             _posProductStore = posProductStore;
             _activeBranch = activeBranch;
+            _license = license;
         }
 
         public async Task<List<SaleDto>> GetAllAsync(Guid? branchId = null, bool viewAll = false)
@@ -160,6 +164,9 @@ namespace DzentoPOS2.App.Services.Sales
         {
             await _authorizationGuard.DemandAsync(
                 DzentoPOS2.Core.Constants.Permissions.SalesCreate);
+
+            if (_license is not null)
+                await _license.EnsureWritableAsync();
 
             // The whole body is wrapped so that a failure during the
             // pre-transaction lookups (which used to run outside any guard)

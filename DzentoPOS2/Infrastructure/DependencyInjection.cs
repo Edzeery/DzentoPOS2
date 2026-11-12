@@ -1,4 +1,5 @@
 ﻿using DzentoPOS2.App;
+using DzentoPOS2.App.Services.Licensing;
 using DzentoPOS2.Data;
 using DzentoPOS2.Localization;
 using DzentoPOS2.WinForms.Configurations;
@@ -18,6 +19,7 @@ using DzentoPOS2.WinForms.Forms.Suppliers;
 using DzentoPOS2.WinForms.Navigation;
 using DzentoPOS2.WinForms.Services.Barcodes;
 using DzentoPOS2.WinForms.Services.Images;
+using DzentoPOS2.WinForms.Services.Licensing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -42,6 +44,10 @@ public static class DependencyInjection
 
         // App Layer
         services.AddApplicationServices();
+
+        // Licensing: prefer the Windows MachineGuid over the portable fallback.
+        // Registered after AddApplicationServices so it wins for a single resolve.
+        services.AddSingleton<IDeviceIdentifier, WindowsDeviceIdentifier>();
 
         // Data Layer
         services.AddDataServices(configuration);

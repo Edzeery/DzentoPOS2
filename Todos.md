@@ -275,3 +275,17 @@
 | N.6.2-д | ترحيل فروق الفروع للبيانات القديمة | ✅ | `InvoiceBranchBackfill` يغطي 8 جداول؛ يتجنّب تعارض `(BranchId, SnapshotDate)` ولا يحذف صفوفاً؛ اختبارا ترقية وidempotency |
 | N.6.3 | تغطية التكامل الشاملة | ✅ | `RealPathIntegrationTests`, `BranchScopingIntegrationTests`, `SerialUnitTests`, `BatchServiceTests`, `StockBatchAllocationTests`؛ build 0 errors; unit 193/193; integration 114/114; migration audit PASSED; layout audit 72 scenarios 0 violations |
 | N.6.3-д | إصلاح انهيار لوحة التحكم وقت التشغيل (`KpiCards`/`Insights`) | ✅ | `KpiCardsModule` يبني البطاقات من قائمة موحّدة (مفتاح + أيقونة) من 13 عنصراً فلا يتكرر `IndexOutOfRangeException`؛ `InsightsModule`/`ChartsModule`/`ProfitSummaryModule` تتحمّل `Update` قبل `Build`؛ `DashboardForm` يتجاهل التحديث قبل بناء الوحدات؛ فحص دخان للوحة التحكم داخل `--layout-audit`؛ build 0 errors; unit 194/194; integration 114/114; migration audit PASSED; layout audit 72 scenarios 0 violations |
+
+## P — إدارة الفروع (المرحلة 1: النواة)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| P.1 | DTOs للفروع | ✅ | `BranchDto`, `BranchListItemDto`, `CreateBranchDto`, `UpdateBranchDto` في `DzentoPOS2.Shared/Contracts/DTOs/Businesses/BranchDtos.cs` |
+| P.2 | خدمة إدارة الفروع | ✅ | `IBranchService`/`BranchService` في `DzentoPOS2.App/Services/Businesses`: `GetAllAsync` (مع أعداد المستودعات/الصناديق وحالة الجلسة)، `GetByIdAsync`, `CreateAsync`, `UpdateAsync`, `SetActiveAsync`؛ مسجّلة في `DzentoPOS2.App/DependencyInjection.cs` |
+| P.3 | الإنشاء الذرّي (فرع + مستودع + صندوق) | ✅ | `CreateAsync` داخل `BeginTransactionAsync`/`CommitTransactionAsync`؛ أي فشل ⇒ `RollbackTransactionAsync` بلا صفوف متروكة؛ الأسماء الافتراضية `"<اسم الفرع> — <المستودع الرئيسي>"` و`"<اسم الفرع> — <الصندوق الرئيسي>"`؛ أول فرع يصبح الرئيسي |
+| P.4 | الصلاحيات | ✅ | `BranchesView/Create/Edit/Deactivate/Manage` في `Permissions.cs`؛ `PermissionSeeder` يدرجها (يعكس كل ثوابت `Permissions`)؛ `RolePermissionSeeder` يمنح `BranchesManage` لدور المدير؛ الخدمة تقبل الصلاحية التفصيلية أو صلاحية الإدارة الجامعة |
+| P.5 | قواعد السلامة عند التعطيل (لا حذف) | ✅ | منع تعطيل الفرع الرئيسي، ومنع تعطيل آخر فرع نشط، ومنع التعطيل مع جلسة صندوق مفتوحة؛ التعطيل يضبط `IsActive=false` فقط ولا يحذف |
+| P.6 | اختبارات المرحلة | ✅ | `BranchManagementTests` (9 اختبارات): الإنشاء الذرّي، رفض الاسم المكرر، rollback عند فشل الـcommit، ملكية المدير لـ`BranchesManage` وحرمان الكاشير، ثلاث قواعد تعطيل، ودورة تعطيل/تفعيل |
+| P.7 | بوابة المرحلة | ✅ | build 0 errors; unit 194/194; integration 123/123; migration audit PASSED (0 محذوف، 0 مغيَّر، 13 صف بذر مضاف) |
+
+> ملاحظة نطاق: تحديث مفاتيح الترجمة لواجهة الفروع (`AppStrings` × 4 + `Designer`) مؤجَّل للمرحلة 2 حين تظهر الرسائل في الواجهة؛ المرحلة 1 نواة خادمية بلا تغيير واجهة.

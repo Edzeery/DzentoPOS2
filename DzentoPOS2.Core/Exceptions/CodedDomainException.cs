@@ -25,6 +25,14 @@ public static class DomainErrorCodes
     public const string SessionNotFound = "cash.session_not_found";
     public const string CashboxNotFound = "cash.cashbox_not_found";
     public const string PermissionDenied = "auth.permission_denied";
+
+    // Branches
+    public const string BranchNameRequired = "branch.name_required";
+    public const string BranchDuplicateName = "branch.duplicate_name";
+    public const string BranchNotFound = "branch.not_found";
+    public const string BranchLastActive = "branch.last_active";
+    public const string BranchHasOpenSession = "branch.has_open_session";
+    public const string BranchMainCannotDeactivate = "branch.main_cannot_deactivate";
 }
 
 /// <summary>

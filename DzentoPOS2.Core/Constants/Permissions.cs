@@ -99,5 +99,15 @@ namespace DzentoPOS2.Core.Constants
         public const string BranchesSwitch = "permissions.branches.switch";
         public const string BranchesViewAll = "permissions.branches.view_all";
         public const string BranchesActivitiesEdit = "permissions.branches.activities_edit";
+
+        // Branch management. <see cref="BranchesManage"/> is the umbrella grant
+        // for a branch manager; the granular codes let a supervisor be given a
+        // single action. A service operation is allowed when the caller holds
+        // either the granular code or BranchesManage.
+        public const string BranchesView = "permissions.branches.view";
+        public const string BranchesCreate = "permissions.branches.create";
+        public const string BranchesEdit = "permissions.branches.edit";
+        public const string BranchesDeactivate = "permissions.branches.deactivate";
+        public const string BranchesManage = "permissions.branches.manage";
     }
 }

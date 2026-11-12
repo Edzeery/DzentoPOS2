@@ -2,6 +2,46 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] - 2026-11-12 (Branch management, Phase 1: core)
+
+### Added
+- **`IBranchService` / `BranchService`** in `DzentoPOS2.App/Services/Businesses`:
+  branch list with warehouse/cashbox counts, detail, create, update and
+  activate/deactivate. Every operation is permission-guarded.
+- **Atomic branch creation**: the branch plus its default warehouse and default
+  cashbox are inserted inside one explicit transaction
+  (`BeginTransactionAsync` / `CommitTransactionAsync`); any failure rolls all
+  three back. The default names are `"<branch name> — <main warehouse>"` and
+  `"<branch name> — <main cashbox>"`. The first branch created becomes the main
+  branch.
+- **`BranchDto`, `BranchListItemDto`, `CreateBranchDto`, `UpdateBranchDto`** in
+  `DzentoPOS2.Shared/Contracts/DTOs/Businesses`.
+- **Branch permissions** `BranchesView`, `BranchesCreate`, `BranchesEdit`,
+  `BranchesDeactivate` and the umbrella `BranchesManage`; the granular codes let
+  a supervisor be given a single action while `BranchesManage` is the single
+  grant for a branch manager. A service operation is allowed when the caller
+  holds either.
+- **`IBranchRepository.GetAllOrderedAsync`** and
+  **`IBranchRepository.HasOpenCashSessionAsync`**.
+
+### Changed
+- **`PermissionSeeder`** now inserts the branch-management permission rows (it
+  reflects over every `Permissions` constant) and **`RolePermissionSeeder`**
+  grants `BranchesManage` to the **Manager** role.
+- New stable error codes: `BranchNameRequired`, `BranchDuplicateName`,
+  `BranchNotFound`, `BranchLastActive`, `BranchHasOpenSession`,
+  `BranchMainCannotDeactivate`.
+
+### Safety rules (deactivation never deletes rows)
+- The **main branch** cannot be deactivated.
+- The **last active branch** cannot be deactivated.
+- A branch whose cashbox has an **open cash session** cannot be deactivated.
+
+### Verified
+- Build 0 errors; Unit **194/194**; Integration **123/123** (9 new
+  `BranchManagementTests`).
+- Migration audit: PASSED (0 rows removed, 0 changed, 13 seed rows added).
+
 ## [Unreleased] - 2026-11-12 (Phase 6 hotfix: dashboard KPI/insights crash)
 
 ### Fixed

@@ -1,6 +1,7 @@
 ﻿using DzentoPOS2.App.Authentication;
 using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Accounting;
+using DzentoPOS2.App.Services.Businesses;
 using DzentoPOS2.App.Services.Events;
 using DzentoPOS2.App.Services.Identity;
 using DzentoPOS2.App.Services.Identity.Interfaces;
@@ -105,6 +106,8 @@ namespace DzentoPOS2.App
             services.AddScoped<IPurchaseService, PurchaseService>();
 
             services.AddScoped<ICashSessionService, CashSessionService>();
+
+            services.AddScoped<IBranchService, BranchService>();
 
             services.AddScoped<IModuleService, ModuleService>();
 

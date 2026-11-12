@@ -1880,6 +1880,54 @@
   <data name="NoActiveBranchMessage" xml:space="preserve">
     <value>No active branch could be resolved. Sign-in continues, but branch data is unavailable until a main branch exists.</value>
   </data>
+  <data name="Branches" xml:space="preserve">
+    <value>Branches</value>
+  </data>
+  <data name="AddBranch" xml:space="preserve">
+    <value>New branch</value>
+  </data>
+  <data name="EditBranch" xml:space="preserve">
+    <value>Edit branch</value>
+  </data>
+  <data name="BranchName" xml:space="preserve">
+    <value>Branch name</value>
+  </data>
+  <data name="BranchPhone" xml:space="preserve">
+    <value>Phone</value>
+  </data>
+  <data name="BranchStreet" xml:space="preserve">
+    <value>Street</value>
+  </data>
+  <data name="Deactivate" xml:space="preserve">
+    <value>Deactivate</value>
+  </data>
+  <data name="Activate" xml:space="preserve">
+    <value>Activate</value>
+  </data>
+  <data name="Cashboxes" xml:space="preserve">
+    <value>Cashboxes</value>
+  </data>
+  <data name="DeactivateBranchConfirm" xml:space="preserve">
+    <value>Deactivate this branch? Existing data is kept and the branch can be reactivated.</value>
+  </data>
+  <data name="BranchNameRequiredMsg" xml:space="preserve">
+    <value>A branch name is required.</value>
+  </data>
+  <data name="BranchDuplicateNameMsg" xml:space="preserve">
+    <value>A branch with this name already exists.</value>
+  </data>
+  <data name="BranchNotFoundMsg" xml:space="preserve">
+    <value>The branch was not found.</value>
+  </data>
+  <data name="BranchLastActiveMsg" xml:space="preserve">
+    <value>The last active branch cannot be deactivated.</value>
+  </data>
+  <data name="BranchHasOpenSessionMsg" xml:space="preserve">
+    <value>A branch with an open cash session cannot be deactivated.</value>
+  </data>
+  <data name="BranchMainCannotDeactivateMsg" xml:space="preserve">
+    <value>The main branch cannot be deactivated.</value>
+  </data>
   <data name="NoExpiry" xml:space="preserve">
     <value>No expiry</value>
   </data>

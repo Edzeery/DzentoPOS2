@@ -139,6 +139,12 @@ public static class ExceptionFormatter
         DomainErrorCodes.SessionNotFound => AppStrings.NoOpenSession,
         DomainErrorCodes.CashboxNotFound => AppStrings.ErrorDomain,
         DomainErrorCodes.PermissionDenied => AppStrings.AccessDenied,
+        DomainErrorCodes.BranchNameRequired => AppStrings.BranchNameRequiredMsg,
+        DomainErrorCodes.BranchDuplicateName => AppStrings.BranchDuplicateNameMsg,
+        DomainErrorCodes.BranchNotFound => AppStrings.BranchNotFoundMsg,
+        DomainErrorCodes.BranchLastActive => AppStrings.BranchLastActiveMsg,
+        DomainErrorCodes.BranchHasOpenSession => AppStrings.BranchHasOpenSessionMsg,
+        DomainErrorCodes.BranchMainCannotDeactivate => AppStrings.BranchMainCannotDeactivateMsg,
         _ => null
     };
 }

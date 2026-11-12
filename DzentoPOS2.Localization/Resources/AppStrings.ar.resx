@@ -1879,6 +1879,54 @@
   <data name="NoActiveBranchMessage" xml:space="preserve">
     <value>تعذر العثور على فرع نشط. تم متابعة تسجيل الدخول، لكن بيانات الفرع غير متاحة حتى يتم إنشاء فرع رئيسي.</value>
   </data>
+  <data name="Branches" xml:space="preserve">
+    <value>الفروع</value>
+  </data>
+  <data name="AddBranch" xml:space="preserve">
+    <value>فرع جديد</value>
+  </data>
+  <data name="EditBranch" xml:space="preserve">
+    <value>تعديل الفرع</value>
+  </data>
+  <data name="BranchName" xml:space="preserve">
+    <value>اسم الفرع</value>
+  </data>
+  <data name="BranchPhone" xml:space="preserve">
+    <value>الهاتف</value>
+  </data>
+  <data name="BranchStreet" xml:space="preserve">
+    <value>الشارع</value>
+  </data>
+  <data name="Deactivate" xml:space="preserve">
+    <value>تعطيل</value>
+  </data>
+  <data name="Activate" xml:space="preserve">
+    <value>تفعيل</value>
+  </data>
+  <data name="Cashboxes" xml:space="preserve">
+    <value>الصناديق</value>
+  </data>
+  <data name="DeactivateBranchConfirm" xml:space="preserve">
+    <value>تعطيل هذا الفرع؟ تُحفظ البيانات الحالية ويمكن إعادة تفعيله لاحقاً.</value>
+  </data>
+  <data name="BranchNameRequiredMsg" xml:space="preserve">
+    <value>اسم الفرع مطلوب.</value>
+  </data>
+  <data name="BranchDuplicateNameMsg" xml:space="preserve">
+    <value>يوجد فرع بهذا الاسم بالفعل.</value>
+  </data>
+  <data name="BranchNotFoundMsg" xml:space="preserve">
+    <value>لم يتم العثور على الفرع.</value>
+  </data>
+  <data name="BranchLastActiveMsg" xml:space="preserve">
+    <value>لا يمكن تعطيل آخر فرع نشط.</value>
+  </data>
+  <data name="BranchHasOpenSessionMsg" xml:space="preserve">
+    <value>لا يمكن تعطيل فرع له جلسة صندوق مفتوحة.</value>
+  </data>
+  <data name="BranchMainCannotDeactivateMsg" xml:space="preserve">
+    <value>لا يمكن تعطيل الفرع الرئيسي.</value>
+  </data>
   <data name="NoExpiry" xml:space="preserve">
     <value>بدون انتهاء</value>
   </data>

@@ -4559,6 +4559,102 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("FEFO", resourceCulture);
             }
         }
+        
+        public static string Activate {
+            get {
+                return ResourceManager.GetString("Activate", resourceCulture);
+            }
+        }
+        
+        public static string AddBranch {
+            get {
+                return ResourceManager.GetString("AddBranch", resourceCulture);
+            }
+        }
+        
+        public static string BranchDuplicateNameMsg {
+            get {
+                return ResourceManager.GetString("BranchDuplicateNameMsg", resourceCulture);
+            }
+        }
+        
+        public static string BranchHasOpenSessionMsg {
+            get {
+                return ResourceManager.GetString("BranchHasOpenSessionMsg", resourceCulture);
+            }
+        }
+        
+        public static string BranchLastActiveMsg {
+            get {
+                return ResourceManager.GetString("BranchLastActiveMsg", resourceCulture);
+            }
+        }
+        
+        public static string BranchMainCannotDeactivateMsg {
+            get {
+                return ResourceManager.GetString("BranchMainCannotDeactivateMsg", resourceCulture);
+            }
+        }
+        
+        public static string BranchName {
+            get {
+                return ResourceManager.GetString("BranchName", resourceCulture);
+            }
+        }
+        
+        public static string BranchNameRequiredMsg {
+            get {
+                return ResourceManager.GetString("BranchNameRequiredMsg", resourceCulture);
+            }
+        }
+        
+        public static string BranchNotFoundMsg {
+            get {
+                return ResourceManager.GetString("BranchNotFoundMsg", resourceCulture);
+            }
+        }
+        
+        public static string BranchPhone {
+            get {
+                return ResourceManager.GetString("BranchPhone", resourceCulture);
+            }
+        }
+        
+        public static string Branches {
+            get {
+                return ResourceManager.GetString("Branches", resourceCulture);
+            }
+        }
+        
+        public static string BranchStreet {
+            get {
+                return ResourceManager.GetString("BranchStreet", resourceCulture);
+            }
+        }
+        
+        public static string Cashboxes {
+            get {
+                return ResourceManager.GetString("Cashboxes", resourceCulture);
+            }
+        }
+        
+        public static string Deactivate {
+            get {
+                return ResourceManager.GetString("Deactivate", resourceCulture);
+            }
+        }
+        
+        public static string DeactivateBranchConfirm {
+            get {
+                return ResourceManager.GetString("DeactivateBranchConfirm", resourceCulture);
+            }
+        }
+        
+        public static string EditBranch {
+            get {
+                return ResourceManager.GetString("EditBranch", resourceCulture);
+            }
+        }
 
     }
 }

@@ -13,6 +13,7 @@ using DzentoPOS2.WinForms.Controls;
 using DzentoPOS2.WinForms.Controls.Header;
 using DzentoPOS2.WinForms.Events;
 using DzentoPOS2.WinForms.Forms.Accounting;
+using DzentoPOS2.WinForms.Forms.Businesses;
 using DzentoPOS2.WinForms.Forms.Customers;
 using DzentoPOS2.WinForms.Forms.Dashboard;
 using DzentoPOS2.WinForms.Forms.Identity;
@@ -76,6 +77,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
         private IconButton _btnUnits = null!;
         private IconButton _btnCashSessions = null!;
         private IconButton _btnExpenses = null!;
+        private IconButton _btnBranches = null!;
         private readonly ToolTip _toolTip = new();
         private string _currentBranchName = string.Empty;
         private Label _storeNameLabel = null!;
@@ -144,6 +146,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             _btnExpenses = AddSidebarButton("btnExpenses", IconChar.MoneyBillWave, AppStrings.ExpensesButton, b => NavigateTo<ExpensesForm>(b), btnInventory);
             _btnSuppliers = AddSidebarButton("btnSuppliers", IconChar.Truck, AppStrings.Suppliers, b => NavigateTo<SuppliersForm>(b), BtnCustomers);
             _btnCashSessions = AddSidebarButton("btnCashSessions", IconChar.CashRegister, AppStrings.CashSessions, b => NavigateTo<CashSessionForm>(b), _btnSuppliers);
+            _btnBranches = AddSidebarButton("btnBranches", IconChar.Building, AppStrings.Branches, b => NavigateTo<BranchesForm>(b), btnUsersRoles);
 
             // Enforce permissions on sidebar buttons
             _ = EnforcePermissionsAsync();
@@ -752,6 +755,13 @@ namespace DzentoPOS2.WinForms.Forms.Layout
                 if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.CashSessionsView))
                     _btnCashSessions.Visible = false;
 
+                // Branches (umbrella manage grant OR the granular view)
+                if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.BranchesManage) &&
+                    !await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.BranchesView))
+                {
+                    _btnBranches.Visible = false;
+                }
+
                 // Settings
                 if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.SettingsView))
                 {
@@ -943,6 +953,7 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             _btnSuppliers.Text = "  " + AppStrings.Suppliers; 
             _btnCashSessions.Text = "  " + AppStrings.CashSessions;
             _btnExpenses.Text = "  " + AppStrings.ExpensesButton;
+            _btnBranches.Text = "  " + AppStrings.Branches;
 
             btnInventory.Text = AppStrings.Inventory; 
 

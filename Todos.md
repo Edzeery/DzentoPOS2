@@ -289,3 +289,15 @@
 | P.7 | بوابة المرحلة | ✅ | build 0 errors; unit 194/194; integration 123/123; migration audit PASSED (0 محذوف، 0 مغيَّر، 13 صف بذر مضاف) |
 
 > ملاحظة نطاق: تحديث مفاتيح الترجمة لواجهة الفروع (`AppStrings` × 4 + `Designer`) مؤجَّل للمرحلة 2 حين تظهر الرسائل في الواجهة؛ المرحلة 1 نواة خادمية بلا تغيير واجهة.
+
+## P — إدارة الفروع (المرحلة 2: الواجهة)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| P2.1 | نموذج قائمة الفروع | ✅ | `BranchesForm` في `DzentoPOS2/Forms/Businesses`: شريط أدوات (إضافة/تعديل/تفعيل-تعطيل) + بحث + `DataGridView` على `BranchListItemDto` (الاسم، المدينة، الهاتف، عدد المستودعات، عدد الصناديق، الحالة)؛ الأعمدة تُعرض بأسماء مترجمة |
+| P2.2 | حوار إنشاء/تعديل الفرع | ✅ | `BranchEditDialog` يمدّ `ThemedDialog`: الاسم (مطلوب)، المدينة، الشارع، الهاتف، الحالة؛ يستدعي `IBranchService.CreateAsync/UpdateAsync` |
+| P2.3 | زر التفعيل/التعطيل الآمن | ✅ | زر واحد يتبدّل نصّه حسب الصف المحدّد؛ التعطيل يطلب تأكيداً (`DeactivateBranchConfirm`) ثم `SetActiveAsync(id,false)`؛ لا حذف إطلاقاً |
+| P2.4 | ربط التنقل | ✅ | زر `btnBranches` في `MainForm` عبر `AddSidebarButton` → `NavigateTo<BranchesForm>`؛ يظهر فقط لدى حامل `BranchesManage` أو `BranchesView`؛ تسجيل `BranchesForm` في `DzentoPOS2/Infrastructure/DependencyInjection.cs` |
+| P2.5 | توطين الواجهة | ✅ | 16 مفتاحاً جديداً في `AppStrings{,.ar,.en,.fr}.resx` + `AppStrings.Designer.cs` (`Branches`, `AddBranch`, `EditBranch`, `BranchName`, `BranchPhone`, `BranchStreet`, `Deactivate`, `Activate`, `Cashboxes`, `DeactivateBranchConfirm` + 6 رسائل خطأ)؛ `ExceptionFormatter` يربط رموز أخطاء الفروع الستة بالترجمة؛ تكافؤ الترجمة 0 فرق |
+| P2.6 | إدخال النموذجين في فحص التخطيط المُقيَّم | ✅ | `BranchesForm` و`BranchEditDialog` في `UiLayoutAudit.CreateForms` مع `StubBranchService`؛ تم تحديث سطر `Forms:` المطبوع |
+| P2.7 | بوابة المرحلة | ✅ | build 0 errors; unit 194/194; integration 123/123; migration audit PASSED (0 محذوف، 0 مغيَّر، 13 صف بذر مضاف); layout audit 96 سيناريو 0 مخالفة (8 نماذج مُقيَّمة عند 375/768/1440 × RTL/LTR × فاتح/داكن) |

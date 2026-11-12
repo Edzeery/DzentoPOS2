@@ -1879,6 +1879,54 @@
   <data name="NoActiveBranchMessage" xml:space="preserve">
     <value>Aucune succursale active n'a pu etre trouvee. La connexion continue, mais les donnees de succursale restent indisponibles jusqu'a la creation d'une succursale principale.</value>
   </data>
+  <data name="Branches" xml:space="preserve">
+    <value>Succursales</value>
+  </data>
+  <data name="AddBranch" xml:space="preserve">
+    <value>Nouvelle succursale</value>
+  </data>
+  <data name="EditBranch" xml:space="preserve">
+    <value>Modifier la succursale</value>
+  </data>
+  <data name="BranchName" xml:space="preserve">
+    <value>Nom de la succursale</value>
+  </data>
+  <data name="BranchPhone" xml:space="preserve">
+    <value>Téléphone</value>
+  </data>
+  <data name="BranchStreet" xml:space="preserve">
+    <value>Rue</value>
+  </data>
+  <data name="Deactivate" xml:space="preserve">
+    <value>Désactiver</value>
+  </data>
+  <data name="Activate" xml:space="preserve">
+    <value>Activer</value>
+  </data>
+  <data name="Cashboxes" xml:space="preserve">
+    <value>Caisses</value>
+  </data>
+  <data name="DeactivateBranchConfirm" xml:space="preserve">
+    <value>Désactiver cette succursale ? Les données sont conservées et elle peut être réactivée.</value>
+  </data>
+  <data name="BranchNameRequiredMsg" xml:space="preserve">
+    <value>Le nom de la succursale est requis.</value>
+  </data>
+  <data name="BranchDuplicateNameMsg" xml:space="preserve">
+    <value>Une succursale portant ce nom existe déjà.</value>
+  </data>
+  <data name="BranchNotFoundMsg" xml:space="preserve">
+    <value>Succursale introuvable.</value>
+  </data>
+  <data name="BranchLastActiveMsg" xml:space="preserve">
+    <value>La dernière succursale active ne peut pas être désactivée.</value>
+  </data>
+  <data name="BranchHasOpenSessionMsg" xml:space="preserve">
+    <value>Une succursale avec une session de caisse ouverte ne peut pas être désactivée.</value>
+  </data>
+  <data name="BranchMainCannotDeactivateMsg" xml:space="preserve">
+    <value>La succursale principale ne peut pas être désactivée.</value>
+  </data>
   <data name="NoExpiry" xml:space="preserve">
     <value>Sans expiration</value>
   </data>

@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using DzentoPOS2.App.Services.Inventory;
+using DzentoPOS2.App.Services.Businesses;
 using DzentoPOS2.App.Services.Partners;
 using DzentoPOS2.App.Services.Reports.Interfaces;
 using DzentoPOS2.App.Services.Systems;
@@ -12,11 +13,13 @@ using DzentoPOS2.Core.Enums;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
+using DzentoPOS2.Shared.Contracts.DTOs.Businesses;
 using DzentoPOS2.Shared.Contracts.DTOs.Partners;
 using DzentoPOS2.Shared.Contracts.DTOs.Reports;
 using DzentoPOS2.Shared.Helpers;
 using DzentoPOS2.WinForms.Configurations;
 using DzentoPOS2.WinForms.Forms.Dashboard;
+using DzentoPOS2.WinForms.Forms.Businesses;
 using DzentoPOS2.WinForms.Forms.Inventory;
 using DzentoPOS2.WinForms.Forms.Settings;
 using DzentoPOS2.WinForms.Forms.Setup;
@@ -115,7 +118,7 @@ public static class UiLayoutAudit
 
         Console.WriteLine($"UI layout audit: {scenarios.Count} scenarios, {violations} violations");
         Console.WriteLine($"Controls measured: {scenarios.Sum(s => s.ControlsMeasured)}");
-        Console.WriteLine($"Forms: variants, barcodes, unit edit, unit list, first-run wizard, settings");
+        Console.WriteLine($"Forms: variants, barcodes, unit edit, unit list, branch edit, branch list, first-run wizard, settings");
         Console.WriteLine($"Smoke (built + refreshed, not scored): dashboard");
         Console.WriteLine($"Widths: {string.Join(", ", Widths)} | heights: {AuditHeight} | themes: Light, Dark | direction: RTL, LTR");
         Console.WriteLine($"Report: {reportPath}");
@@ -136,6 +139,8 @@ public static class UiLayoutAudit
         new ProductBarcodesDialog(new StubBarcodeService(), Guid.NewGuid()),
         new ProductUnitEditDialog(new StubUnitService(), new StubLanguageService()),
         new ProductUnitsForm(new StubUnitService(), new StubLanguageService()),
+        new BranchEditDialog(new StubBranchService(), new StubLanguageService()),
+        new BranchesForm(new StubBranchService(), new StubLanguageService()),
         new FirstRunModulesDialog(new StubCapabilityService(), new StubBackupService(), new StubActiveBranchContext()),
         new SettingsForm(
             new StubCurrentSettingsService(),
@@ -585,6 +590,24 @@ private static int CountControls(Control parent)
             Task.FromResult(new ProductUnitDto { Id = dto.Id, Name = dto.Name, Symbol = dto.Symbol, IsBaseUnit = dto.IsBaseUnit });
 
         public Task DeleteAsync(Guid id) => Task.CompletedTask;
+    }
+
+    private sealed class StubBranchService : IBranchService
+    {
+        public Task<List<BranchListItemDto>> GetAllAsync() =>
+            Task.FromResult(new List<BranchListItemDto>());
+
+        public Task<BranchDto?> GetByIdAsync(Guid id) =>
+            Task.FromResult<BranchDto?>(null);
+
+        public Task<BranchDto> CreateAsync(CreateBranchDto dto) =>
+            Task.FromResult(new BranchDto { Name = dto.Name, IsActive = dto.IsActive });
+
+        public Task<BranchDto> UpdateAsync(UpdateBranchDto dto) =>
+            Task.FromResult(new BranchDto { Id = dto.Id, Name = dto.Name });
+
+        public Task<BranchDto> SetActiveAsync(Guid id, bool isActive) =>
+            Task.FromResult(new BranchDto { Id = id, IsActive = isActive });
     }
 
     private sealed class StubLanguageService : ILanguageService

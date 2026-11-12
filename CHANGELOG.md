@@ -2,6 +2,44 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] - 2026-11-12 (Branch management, Phase 2: UI)
+
+### Added
+- **`BranchesForm`** (`DzentoPOS2/Forms/Businesses`): branch-management list
+  with a search box, Add/Edit toolbar actions and an Activate/Deactivate toggle
+  whose label follows the selected row. The grid shows name, city, phone,
+  warehouse count, cashbox count and active state.
+- **`BranchEditDialog`**: create/edit dialog for the descriptive fields (name,
+  city, street, phone, active). The default warehouse and cashbox are still
+  provisioned by the service when a branch is created.
+- **Branch navigation entry** in `MainForm`: a `Branches` sidebar button wired
+  to `NavigateTo<BranchesForm>`, hidden unless the signed-in user holds
+  `BranchesManage` or `BranchesView`.
+- **Localization** for the branch UI in all four resource files
+  (`AppStrings.resx`, `.en`, `.ar`, `.fr`) and `AppStrings.Designer.cs`:
+  `Branches`, `AddBranch`, `EditBranch`, `BranchName`, `BranchPhone`,
+  `BranchStreet`, `Deactivate`, `Activate`, `Cashboxes`, `DeactivateBranchConfirm`
+  and the six `Branch*Msg` error messages.
+- Both branch forms are now part of the **scored** `--layout-audit` matrix.
+
+### Changed
+- **`ExceptionFormatter`** maps the six branch error codes to their localized
+  `AppStrings` messages instead of showing the untranslated exception message.
+- `BranchesForm`/`BranchEditDialog` registered in the WinForms DI container.
+
+### Safety rules (deactivation never deletes rows)
+- The Activate/Deactivate toggle is the only mutation of a branch's state; it
+  asks for confirmation and relies on the service rules: the **main branch**,
+  the **last active branch** and a branch with an **open cash session** cannot be
+  deactivated.
+
+### Verified
+- Build 0 errors; Unit **194/194**; Integration **123/123**.
+- Localization parity: **0 diff** across `ar`/`en`/`fr`.
+- Migration audit: PASSED (0 rows removed, 0 changed, 13 seed rows added).
+- `--layout-audit`: **96 scenarios, 0 violations** (8 scored forms including
+  branch edit/list, at 375/768/1440 × RTL/LTR × Light/Dark).
+
 ## [Unreleased] - 2026-11-12 (Branch management, Phase 1: core)
 
 ### Added

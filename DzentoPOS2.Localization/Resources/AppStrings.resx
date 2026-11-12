@@ -1928,6 +1928,45 @@
   <data name="BranchMainCannotDeactivateMsg" xml:space="preserve">
     <value>The main branch cannot be deactivated.</value>
   </data>
+  <data name="Location" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="AddWarehouse" xml:space="preserve">
+    <value>New warehouse</value>
+  </data>
+  <data name="AddCashbox" xml:space="preserve">
+    <value>New cashbox</value>
+  </data>
+  <data name="BranchResources" xml:space="preserve">
+    <value>Warehouses &amp; cashboxes</value>
+  </data>
+  <data name="DeactivateConfirm" xml:space="preserve">
+    <value>Deactivate this item? Existing data is kept and it can be reactivated.</value>
+  </data>
+  <data name="WarehouseNameRequiredMsg" xml:space="preserve">
+    <value>A warehouse name is required.</value>
+  </data>
+  <data name="WarehouseDuplicateNameMsg" xml:space="preserve">
+    <value>A warehouse with this name already exists in this branch.</value>
+  </data>
+  <data name="WarehouseNotFoundMsg" xml:space="preserve">
+    <value>The warehouse was not found.</value>
+  </data>
+  <data name="WarehouseLastActiveMsg" xml:space="preserve">
+    <value>The last active warehouse of a branch cannot be deactivated.</value>
+  </data>
+  <data name="CashboxNameRequiredMsg" xml:space="preserve">
+    <value>A cashbox name is required.</value>
+  </data>
+  <data name="CashboxDuplicateNameMsg" xml:space="preserve">
+    <value>A cashbox with this name already exists in this branch.</value>
+  </data>
+  <data name="CashboxLastActiveMsg" xml:space="preserve">
+    <value>The last active cashbox of a branch cannot be deactivated.</value>
+  </data>
+  <data name="CashboxHasOpenSessionMsg" xml:space="preserve">
+    <value>A cashbox with an open cash session cannot be deactivated.</value>
+  </data>
   <data name="NoExpiry" xml:space="preserve">
     <value>No expiry</value>
   </data>

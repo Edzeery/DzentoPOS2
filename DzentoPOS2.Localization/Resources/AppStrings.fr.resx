@@ -1927,6 +1927,45 @@
   <data name="BranchMainCannotDeactivateMsg" xml:space="preserve">
     <value>La succursale principale ne peut pas être désactivée.</value>
   </data>
+  <data name="Location" xml:space="preserve">
+    <value>Emplacement</value>
+  </data>
+  <data name="AddWarehouse" xml:space="preserve">
+    <value>Nouvel entrepôt</value>
+  </data>
+  <data name="AddCashbox" xml:space="preserve">
+    <value>Nouvelle caisse</value>
+  </data>
+  <data name="BranchResources" xml:space="preserve">
+    <value>Entrepôts et caisses</value>
+  </data>
+  <data name="DeactivateConfirm" xml:space="preserve">
+    <value>Désactiver cet élément ? Les données sont conservées et il peut être réactivé.</value>
+  </data>
+  <data name="WarehouseNameRequiredMsg" xml:space="preserve">
+    <value>Le nom de l'entrepôt est requis.</value>
+  </data>
+  <data name="WarehouseDuplicateNameMsg" xml:space="preserve">
+    <value>Un entrepôt portant ce nom existe déjà dans cette succursale.</value>
+  </data>
+  <data name="WarehouseNotFoundMsg" xml:space="preserve">
+    <value>Entrepôt introuvable.</value>
+  </data>
+  <data name="WarehouseLastActiveMsg" xml:space="preserve">
+    <value>Le dernier entrepôt actif d'une succursale ne peut pas être désactivé.</value>
+  </data>
+  <data name="CashboxNameRequiredMsg" xml:space="preserve">
+    <value>Le nom de la caisse est requis.</value>
+  </data>
+  <data name="CashboxDuplicateNameMsg" xml:space="preserve">
+    <value>Une caisse portant ce nom existe déjà dans cette succursale.</value>
+  </data>
+  <data name="CashboxLastActiveMsg" xml:space="preserve">
+    <value>La dernière caisse active d'une succursale ne peut pas être désactivée.</value>
+  </data>
+  <data name="CashboxHasOpenSessionMsg" xml:space="preserve">
+    <value>Une caisse avec une session ouverte ne peut pas être désactivée.</value>
+  </data>
   <data name="NoExpiry" xml:space="preserve">
     <value>Sans expiration</value>
   </data>

@@ -19,9 +19,11 @@ namespace DzentoPOS2.WinForms.Forms.Businesses;
 public partial class BranchesForm : LocalizableFormBase
 {
     private readonly IBranchService _branchService;
+    private readonly IBranchResourceService _resourceService;
     private readonly TableLayoutPanel _topPanel;
     private readonly ThemedIconButton _btnAdd;
     private readonly ThemedIconButton _btnEdit;
+    private readonly ThemedIconButton _btnResources;
     private readonly ThemedIconButton _btnToggle;
     private readonly EZTextBox _searchBox;
     private readonly Label _lblSearch;
@@ -30,10 +32,12 @@ public partial class BranchesForm : LocalizableFormBase
 
     public BranchesForm(
         IBranchService branchService,
+        IBranchResourceService resourceService,
         ILanguageService languageService)
         : base(languageService)
     {
         _branchService = branchService;
+        _resourceService = resourceService;
         Size = new Size(1100, 650);
         MinimumSize = new Size(320, 300);
         BackColor = AppColors.Background;
@@ -45,6 +49,12 @@ public partial class BranchesForm : LocalizableFormBase
 
         _btnEdit = ButtonFactory.ToolEdit(AppStrings.EditBranch);
         _btnEdit.Click += (_, _) => RunSafe(EditBranch);
+
+        _btnResources = ButtonFactory.Tool(IconChar.Warehouse, AppStrings.BranchResources, ButtonTone.Info);
+        _btnResources.AutoSize = true;
+        _btnResources.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        _btnResources.MinimumSize = new Size(150, 34);
+        _btnResources.Click += (_, _) => RunSafe(OpenResources);
 
         _btnToggle = ButtonFactory.Tool(IconChar.Ban, AppStrings.Deactivate, ButtonTone.Danger);
         _btnToggle.AutoSize = true;
@@ -79,7 +89,7 @@ public partial class BranchesForm : LocalizableFormBase
             AutoSizeMode = AutoSizeMode.GrowAndShrink,
             Margin = Padding.Empty
         };
-        buttons.Controls.AddRange(new Control[] { _btnAdd, _btnEdit, _btnToggle });
+        buttons.Controls.AddRange(new Control[] { _btnAdd, _btnEdit, _btnResources, _btnToggle });
 
         var search = new TableLayoutPanel
         {
@@ -144,6 +154,7 @@ public partial class BranchesForm : LocalizableFormBase
         _searchBox.PlaceholderText = AppStrings.Search;
         _btnAdd.Text = "  " + AppStrings.AddBranch;
         _btnEdit.Text = "  " + AppStrings.EditBranch;
+        _btnResources.Text = "  " + AppStrings.BranchResources;
         UpdateToggleButton();
     }
 
@@ -206,6 +217,14 @@ public partial class BranchesForm : LocalizableFormBase
         using var dialog = new BranchEditDialog(_branchService, _languageService, branch);
         if (dialog.ShowDialog() == DialogResult.OK)
             await LoadDataAsync();
+    }
+
+    private async Task OpenResources()
+    {
+        if (_grid.CurrentRow?.DataBoundItem is not BranchListItemDto branch) return;
+        using var dialog = new BranchResourcesDialog(_resourceService, _languageService, branch);
+        dialog.ShowDialog();
+        await LoadDataAsync();
     }
 
     private async Task ToggleActiveAsync()

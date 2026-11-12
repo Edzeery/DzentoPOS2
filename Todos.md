@@ -301,3 +301,15 @@
 | P2.5 | توطين الواجهة | ✅ | 16 مفتاحاً جديداً في `AppStrings{,.ar,.en,.fr}.resx` + `AppStrings.Designer.cs` (`Branches`, `AddBranch`, `EditBranch`, `BranchName`, `BranchPhone`, `BranchStreet`, `Deactivate`, `Activate`, `Cashboxes`, `DeactivateBranchConfirm` + 6 رسائل خطأ)؛ `ExceptionFormatter` يربط رموز أخطاء الفروع الستة بالترجمة؛ تكافؤ الترجمة 0 فرق |
 | P2.6 | إدخال النموذجين في فحص التخطيط المُقيَّم | ✅ | `BranchesForm` و`BranchEditDialog` في `UiLayoutAudit.CreateForms` مع `StubBranchService`؛ تم تحديث سطر `Forms:` المطبوع |
 | P2.7 | بوابة المرحلة | ✅ | build 0 errors; unit 194/194; integration 123/123; migration audit PASSED (0 محذوف، 0 مغيَّر، 13 صف بذر مضاف); layout audit 96 سيناريو 0 مخالفة (8 نماذج مُقيَّمة عند 375/768/1440 × RTL/LTR × فاتح/داكن) |
+
+## P — إدارة الفروع (المرحلة 3: المستودعات والصناديق)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| P3.1 | DTOs موارد الفرع | ✅ | `WarehouseListItemDto`, `CashboxListItemDto`, `CreateWarehouseDto`, `CreateCashboxDto` في `DzentoPOS2.Shared/Contracts/DTOs/Businesses/BranchResourceDtos.cs` |
+| P3.2 | خدمة موارد الفرع | ✅ | `IBranchResourceService`/`BranchResourceService` في `DzentoPOS2.App/Services/Businesses`: `GetWarehousesAsync`, `GetCashboxesAsync` (مع علَم الجلسة المفتوحة)، `CreateWarehouseAsync`, `CreateCashboxAsync`, `SetWarehouseActiveAsync`, `SetCashboxActiveAsync`؛ مسجّلة في `DzentoPOS2.App/DependencyInjection.cs` |
+| P3.3 | قواعد السلامة (تعطيل فقط، لا حذف) | ✅ | منع تعطيل آخر مستودع نشط، ومنع تعطيل آخر صندوق نشط، ومنع تعطيل صندوق له جلسة مفتوحة؛ الاسم مطلوب وفريد داخل الفرع؛ التعطيل يضبط `IsActive=false` فقط |
+| P3.4 | واجهة موارد الفرع | ✅ | `BranchResourcesDialog`: شبكتان (مستودعات: الاسم/الموقع/الحالة — صناديق: الاسم/الرصيد/الحالة) مع صفوف إضافة مبنية داخل الحوار وزر تفعيل/تعطيل لكل قسم؛ يُفتح من زر «المستودعات والصناديق» في `BranchesForm` |
+| P3.5 | توطين الواجهة | ✅ | 13 مفتاحاً جديداً في `AppStrings{,.ar,.en,.fr}.resx` + `AppStrings.Designer.cs`؛ `ExceptionFormatter` يربط رموز أخطاء المستودعات/الصناديق الثمانية؛ تكافؤ الترجمة 0 فرق |
+| P3.6 | اختبارات المرحلة | ✅ | `BranchResourceTests` (10 اختبارات): إضافة مستودع/صندوق، رفض الاسم المكرر، منع تعطيل آخر مستودع/صندوق، منع تعطيل صندوق له جلسة مفتوحة، دورة تعطيل/تفعيل للمستودع والصندوق، وحرمان الكاشير |
+| P3.7 | بوابة المرحلة | ✅ | build 0 errors; unit 194/194; integration 133/133; migration audit PASSED (0 محذوف، 0 مغيَّر، 2 صف بذر مضاف); layout audit 108 سيناريو 0 مخالفة (9 نماذج مُقيَّمة عند 375/768/1440 × RTL/LTR × فاتح/داكن) |

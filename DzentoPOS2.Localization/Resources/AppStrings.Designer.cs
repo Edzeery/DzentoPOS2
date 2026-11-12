@@ -4655,6 +4655,84 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("EditBranch", resourceCulture);
             }
         }
+        
+        public static string AddCashbox {
+            get {
+                return ResourceManager.GetString("AddCashbox", resourceCulture);
+            }
+        }
+        
+        public static string AddWarehouse {
+            get {
+                return ResourceManager.GetString("AddWarehouse", resourceCulture);
+            }
+        }
+        
+        public static string BranchResources {
+            get {
+                return ResourceManager.GetString("BranchResources", resourceCulture);
+            }
+        }
+        
+        public static string CashboxDuplicateNameMsg {
+            get {
+                return ResourceManager.GetString("CashboxDuplicateNameMsg", resourceCulture);
+            }
+        }
+        
+        public static string CashboxHasOpenSessionMsg {
+            get {
+                return ResourceManager.GetString("CashboxHasOpenSessionMsg", resourceCulture);
+            }
+        }
+        
+        public static string CashboxLastActiveMsg {
+            get {
+                return ResourceManager.GetString("CashboxLastActiveMsg", resourceCulture);
+            }
+        }
+        
+        public static string CashboxNameRequiredMsg {
+            get {
+                return ResourceManager.GetString("CashboxNameRequiredMsg", resourceCulture);
+            }
+        }
+        
+        public static string DeactivateConfirm {
+            get {
+                return ResourceManager.GetString("DeactivateConfirm", resourceCulture);
+            }
+        }
+        
+        public static string Location {
+            get {
+                return ResourceManager.GetString("Location", resourceCulture);
+            }
+        }
+        
+        public static string WarehouseDuplicateNameMsg {
+            get {
+                return ResourceManager.GetString("WarehouseDuplicateNameMsg", resourceCulture);
+            }
+        }
+        
+        public static string WarehouseLastActiveMsg {
+            get {
+                return ResourceManager.GetString("WarehouseLastActiveMsg", resourceCulture);
+            }
+        }
+        
+        public static string WarehouseNameRequiredMsg {
+            get {
+                return ResourceManager.GetString("WarehouseNameRequiredMsg", resourceCulture);
+            }
+        }
+        
+        public static string WarehouseNotFoundMsg {
+            get {
+                return ResourceManager.GetString("WarehouseNotFoundMsg", resourceCulture);
+            }
+        }
 
     }
 }

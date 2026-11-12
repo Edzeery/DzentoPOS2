@@ -109,6 +109,8 @@ namespace DzentoPOS2.App
 
             services.AddScoped<IBranchService, BranchService>();
 
+            services.AddScoped<IBranchResourceService, BranchResourceService>();
+
             services.AddScoped<IModuleService, ModuleService>();
 
             return services;

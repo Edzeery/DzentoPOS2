@@ -1,6 +1,6 @@
 {
-  "GeneratedAt": "2026-11-12T16:56:06.0871047+01:00",
-  "ScenarioCount": 96,
+  "GeneratedAt": "2026-11-12T17:13:00.2333912+01:00",
+  "ScenarioCount": 108,
   "ViolationCount": 0,
   "Scenarios": [
     {
@@ -49,12 +49,21 @@
       "Violations": []
     },
     {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
       "Form": "BranchesForm",
       "Theme": "Light",
       "Direction": "RTL",
       "Width": 375,
       "Height": 800,
-      "ControlsMeasured": 10,
+      "ControlsMeasured": 11,
       "Violations": []
     },
     {
@@ -121,12 +130,21 @@
       "Violations": []
     },
     {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
       "Form": "BranchesForm",
       "Theme": "Light",
       "Direction": "RTL",
       "Width": 768,
       "Height": 800,
-      "ControlsMeasured": 10,
+      "ControlsMeasured": 11,
       "Violations": []
     },
     {
@@ -193,12 +211,21 @@
       "Violations": []
     },
     {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
       "Form": "BranchesForm",
       "Theme": "Light",
       "Direction": "RTL",
       "Width": 1440,
       "Height": 800,
-      "ControlsMeasured": 10,
+      "ControlsMeasured": 11,
       "Violations": []
     },
     {
@@ -265,12 +292,21 @@
       "Violations": []
     },
     {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
       "Form": "BranchesForm",
       "Theme": "Light",
       "Direction": "LTR",
       "Width": 375,
       "Height": 800,
-      "ControlsMeasured": 10,
+      "ControlsMeasured": 11,
       "Violations": []
     },
     {
@@ -337,12 +373,21 @@
       "Violations": []
     },
     {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
       "Form": "BranchesForm",
       "Theme": "Light",
       "Direction": "LTR",
       "Width": 768,
       "Height": 800,
-      "ControlsMeasured": 10,
+      "ControlsMeasured": 11,
       "Violations": []
     },
     {
@@ -409,12 +454,21 @@
       "Violations": []
     },
     {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
       "Form": "BranchesForm",
       "Theme": "Light",
       "Direction": "LTR",
       "Width": 1440,
       "Height": 800,
-      "ControlsMeasured": 10,
+      "ControlsMeasured": 11,
       "Violations": []
     },
     {
@@ -481,12 +535,21 @@
       "Violations": []
     },
     {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
       "Form": "BranchesForm",
       "Theme": "Dark",
       "Direction": "RTL",
       "Width": 375,
       "Height": 800,
-      "ControlsMeasured": 10,
+      "ControlsMeasured": 11,
       "Violations": []
     },
     {
@@ -553,12 +616,21 @@
       "Violations": []
     },
     {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
       "Form": "BranchesForm",
       "Theme": "Dark",
       "Direction": "RTL",
       "Width": 768,
       "Height": 800,
-      "ControlsMeasured": 10,
+      "ControlsMeasured": 11,
       "Violations": []
     },
     {
@@ -625,12 +697,21 @@
       "Violations": []
     },
     {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
       "Form": "BranchesForm",
       "Theme": "Dark",
       "Direction": "RTL",
       "Width": 1440,
       "Height": 800,
-      "ControlsMeasured": 10,
+      "ControlsMeasured": 11,
       "Violations": []
     },
     {
@@ -697,12 +778,21 @@
       "Violations": []
     },
     {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
       "Form": "BranchesForm",
       "Theme": "Dark",
       "Direction": "LTR",
       "Width": 375,
       "Height": 800,
-      "ControlsMeasured": 10,
+      "ControlsMeasured": 11,
       "Violations": []
     },
     {
@@ -769,12 +859,21 @@
       "Violations": []
     },
     {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
       "Form": "BranchesForm",
       "Theme": "Dark",
       "Direction": "LTR",
       "Width": 768,
       "Height": 800,
-      "ControlsMeasured": 10,
+      "ControlsMeasured": 11,
       "Violations": []
     },
     {
@@ -841,12 +940,21 @@
       "Violations": []
     },
     {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
       "Form": "BranchesForm",
       "Theme": "Dark",
       "Direction": "LTR",
       "Width": 1440,
       "Height": 800,
-      "ControlsMeasured": 10,
+      "ControlsMeasured": 11,
       "Violations": []
     },
     {

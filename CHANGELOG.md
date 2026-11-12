@@ -2,6 +2,44 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] - 2026-11-12 (Branch management, Phase 3: warehouses & cashboxes)
+
+### Added
+- **`IBranchResourceService` / `BranchResourceService`** in
+  `DzentoPOS2.App/Services/Businesses`: list/create/activate-deactivate of the
+  warehouses and cashboxes that belong to a branch. Every operation is
+  permission-guarded.
+- **`WarehouseListItemDto`, `CashboxListItemDto`, `CreateWarehouseDto`,
+  `CreateCashboxDto`** in `DzentoPOS2.Shared/Contracts/DTOs/Businesses`.
+- **`BranchResourcesDialog`**: per-branch management of warehouses and
+  cashboxes (two grids with inline add rows and an activate/deactivate toggle).
+  Opened from a new **Warehouses & cashboxes** action on `BranchesForm`.
+- **Localization** for the resource UI in all four resource files and
+  `AppStrings.Designer.cs`: `Location`, `AddWarehouse`, `AddCashbox`,
+  `BranchResources`, `DeactivateConfirm` and the seven warehouse/cashbox
+  `*Msg` error messages.
+- `BranchResourcesDialog` is now part of the **scored** `--layout-audit` matrix.
+
+### Changed
+- **`ExceptionFormatter`** maps the new warehouse/cashbox error codes to their
+  localized `AppStrings` messages.
+
+### Safety rules (deactivation never deletes rows)
+- The **last active warehouse** of a branch cannot be deactivated.
+- The **last active cashbox** of a branch cannot be deactivated.
+- A cashbox with an **open cash session** cannot be deactivated.
+- New stable error codes: `WarehouseNameRequired`, `WarehouseDuplicateName`,
+  `WarehouseNotFound`, `WarehouseLastActive`, `CashboxNameRequired`,
+  `CashboxDuplicateName`, `CashboxLastActive`, `CashboxHasOpenSession`.
+
+### Verified
+- Build 0 errors; Unit **194/194**; Integration **133/133** (10 new
+  `BranchResourceTests`).
+- Localization parity: **0 diff** across `ar`/`en`/`fr`.
+- Migration audit: PASSED (0 rows removed, 0 changed, 2 seed rows added).
+- `--layout-audit`: **108 scenarios, 0 violations** (9 scored forms at
+  375/768/1440 × RTL/LTR × Light/Dark).
+
 ## [Unreleased] - 2026-11-12 (Branch management, Phase 2: UI)
 
 ### Added

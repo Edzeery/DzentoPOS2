@@ -1927,6 +1927,45 @@
   <data name="BranchMainCannotDeactivateMsg" xml:space="preserve">
     <value>لا يمكن تعطيل الفرع الرئيسي.</value>
   </data>
+  <data name="Location" xml:space="preserve">
+    <value>الموقع</value>
+  </data>
+  <data name="AddWarehouse" xml:space="preserve">
+    <value>مستودع جديد</value>
+  </data>
+  <data name="AddCashbox" xml:space="preserve">
+    <value>صندوق جديد</value>
+  </data>
+  <data name="BranchResources" xml:space="preserve">
+    <value>المستودعات والصناديق</value>
+  </data>
+  <data name="DeactivateConfirm" xml:space="preserve">
+    <value>تعطيل هذا العنصر؟ تُحفظ البيانات الحالية ويمكن إعادة تفعيله لاحقاً.</value>
+  </data>
+  <data name="WarehouseNameRequiredMsg" xml:space="preserve">
+    <value>اسم المستودع مطلوب.</value>
+  </data>
+  <data name="WarehouseDuplicateNameMsg" xml:space="preserve">
+    <value>يوجد مستودع بهذا الاسم في هذا الفرع بالفعل.</value>
+  </data>
+  <data name="WarehouseNotFoundMsg" xml:space="preserve">
+    <value>لم يتم العثور على المستودع.</value>
+  </data>
+  <data name="WarehouseLastActiveMsg" xml:space="preserve">
+    <value>لا يمكن تعطيل آخر مستودع نشط في الفرع.</value>
+  </data>
+  <data name="CashboxNameRequiredMsg" xml:space="preserve">
+    <value>اسم الصندوق مطلوب.</value>
+  </data>
+  <data name="CashboxDuplicateNameMsg" xml:space="preserve">
+    <value>يوجد صندوق بهذا الاسم في هذا الفرع بالفعل.</value>
+  </data>
+  <data name="CashboxLastActiveMsg" xml:space="preserve">
+    <value>لا يمكن تعطيل آخر صندوق نشط في الفرع.</value>
+  </data>
+  <data name="CashboxHasOpenSessionMsg" xml:space="preserve">
+    <value>لا يمكن تعطيل صندوق له جلسة مفتوحة.</value>
+  </data>
   <data name="NoExpiry" xml:space="preserve">
     <value>بدون انتهاء</value>
   </data>

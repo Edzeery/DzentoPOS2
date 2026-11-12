@@ -118,7 +118,7 @@ public static class UiLayoutAudit
 
         Console.WriteLine($"UI layout audit: {scenarios.Count} scenarios, {violations} violations");
         Console.WriteLine($"Controls measured: {scenarios.Sum(s => s.ControlsMeasured)}");
-        Console.WriteLine($"Forms: variants, barcodes, unit edit, unit list, branch edit, branch list, first-run wizard, settings");
+        Console.WriteLine($"Forms: variants, barcodes, unit edit, unit list, branch edit, branch resources, branch list, first-run wizard, settings");
         Console.WriteLine($"Smoke (built + refreshed, not scored): dashboard");
         Console.WriteLine($"Widths: {string.Join(", ", Widths)} | heights: {AuditHeight} | themes: Light, Dark | direction: RTL, LTR");
         Console.WriteLine($"Report: {reportPath}");
@@ -140,7 +140,8 @@ public static class UiLayoutAudit
         new ProductUnitEditDialog(new StubUnitService(), new StubLanguageService()),
         new ProductUnitsForm(new StubUnitService(), new StubLanguageService()),
         new BranchEditDialog(new StubBranchService(), new StubLanguageService()),
-        new BranchesForm(new StubBranchService(), new StubLanguageService()),
+        new BranchResourcesDialog(new StubBranchResourceService(), new StubLanguageService(), new BranchDto { Name = "Branch" }),
+        new BranchesForm(new StubBranchService(), new StubBranchResourceService(), new StubLanguageService()),
         new FirstRunModulesDialog(new StubCapabilityService(), new StubBackupService(), new StubActiveBranchContext()),
         new SettingsForm(
             new StubCurrentSettingsService(),
@@ -608,6 +609,27 @@ private static int CountControls(Control parent)
 
         public Task<BranchDto> SetActiveAsync(Guid id, bool isActive) =>
             Task.FromResult(new BranchDto { Id = id, IsActive = isActive });
+    }
+
+    private sealed class StubBranchResourceService : IBranchResourceService
+    {
+        public Task<List<WarehouseListItemDto>> GetWarehousesAsync(Guid branchId) =>
+            Task.FromResult(new List<WarehouseListItemDto>());
+
+        public Task<List<CashboxListItemDto>> GetCashboxesAsync(Guid branchId) =>
+            Task.FromResult(new List<CashboxListItemDto>());
+
+        public Task<WarehouseListItemDto> CreateWarehouseAsync(CreateWarehouseDto dto) =>
+            Task.FromResult(new WarehouseListItemDto { BranchId = dto.BranchId, Name = dto.Name, Location = dto.Location, IsActive = dto.IsActive });
+
+        public Task<CashboxListItemDto> CreateCashboxAsync(CreateCashboxDto dto) =>
+            Task.FromResult(new CashboxListItemDto { BranchId = dto.BranchId, Name = dto.Name, IsActive = dto.IsActive });
+
+        public Task<WarehouseListItemDto> SetWarehouseActiveAsync(Guid id, bool isActive) =>
+            Task.FromResult(new WarehouseListItemDto { Id = id, IsActive = isActive });
+
+        public Task<CashboxListItemDto> SetCashboxActiveAsync(Guid id, bool isActive) =>
+            Task.FromResult(new CashboxListItemDto { Id = id, IsActive = isActive });
     }
 
     private sealed class StubLanguageService : ILanguageService

@@ -12,9 +12,12 @@
 | `DzentoPOS2.App` | طبقة التطبيق (خدمات البيع/الزبائن/الموردين/التقارير) و`RegionalContext` |
 | `DzentoPOS2.Core` | الكيانات ومنطق المجال (Sales, Inventory, Identity, Partners) |
 | `DzentoPOS2.Data` | EF Core + SQLite + الترحيلات (Migrations) + المستودعات |
+| `DzentoPOS2.Licensing` | مكتبة مشتركة: صيغة مفتاح الترخيص والتحقق (`LicenseKeyCodec`/`LicensePayload`) — بلا أسرار |
 | `DzentoPOS2.Shared` | عقود الـDTO + `RegionalCatalog` / `RegionalContext` |
 | `DzentoPOS2.Localization` | الموارد `AppStrings` (ar / en / fr) + `LanguageService` |
 | `EZControls` | مكتبة عناصر واجهة مخصّصة (قوائم، حقول، رسوم) |
+
+> **أداة المورّد (لا تُشحن):** `tools/DzentoPOS2.LicenseIssuer` تطبيق WinForms/CLI مستقل يُولّد المفاتيح ويُصدر التراخيص بالمفتاح الخاص، ويعتمد على مكتبة التوقيع `DzentoPOS2.Licensing.Signing` التي لا يشير إليها تطبيق العميل إطلاقًا؛ يُشغَّل على جهاز المورّد فقط ولا يدخل حزمة العميل. التفاصيل في [`docs/licensing.md`](docs/licensing.md).
 
 ## المتطلبات
 
@@ -46,6 +49,7 @@ dotnet build DzentoPOS2.sln -t:Rebuild -v:m -nologo   # 0 أخطاء
 ## التوثيق
 
 - [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md) — قواعد التصميم والهوية البصرية (Apple Design Restraint).
+- [`docs/licensing.md`](docs/licensing.md) — نظام الترخيص المُوقّع بلا اتصال ونظام إصدار المفاتيح المنفصل.
 - [`docs/design-system-plan.md`](docs/design-system-plan.md) — خطة نظام التصميم وحالة التنفيذ.
 - [`docs/net9-retarget.md`](docs/net9-retarget.md) — سبب استهداف .NET 9 (تعذّر .NET 10 على Visual Studio 2022) والتحقق الكامل من البناء والاختبارات والترحيلات.
 - [`docs/net10-package-audit.md`](docs/net10-package-audit.md) — تدقيق الحزم (تراخيص / ثغرات / إهمال).
@@ -61,7 +65,7 @@ dotnet build DzentoPOS2.sln -t:Rebuild -v:m -nologo   # 0 أخطاء
 dotnet test DzentoPOS2.sln
 ```
 
-- `DzentoPOS2.UnitTests`: **84** اختبارًا.
-- `DzentoPOS2.IntegrationTests`: **41** اختبارًا (قاعدة بيانات SQLite مؤقتة + كل الترحيلات + مسارات الترقية القديمة).
+- `DzentoPOS2.UnitTests`: **205** اختبارًا.
+- `DzentoPOS2.IntegrationTests`: **156** اختبارًا (قاعدة بيانات SQLite مؤقتة + كل الترحيلات + مسارات الترقية القديمة).
 
-البناء النظيف (`dotnet build DzentoPOS2.sln -t:Rebuild`): **0 أخطاء / 21 تحذيرًا**، وكلها `NU1701` لحزم موجّهة إلى .NET Framework فقط (`AForge*` / `OpenTK*` / `SkiaSharp.Views.WindowsForms`) — لا توجد تحذيرات جديدة.
+البناء النظيف (`dotnet build DzentoPOS2.sln -t:Rebuild`): **0 أخطاء / 0 تحذير C#**؛ التحذيرات المتبقية `NU1701` فقط لحزم موجّهة إلى .NET Framework (`AForge*` / `OpenTK*` / `SkiaSharp.Views.WindowsForms`، 6 حزم) وهي دين تقني مقصود معالَج في [`ROADMAP.md`](ROADMAP.md) المرحلة 7.

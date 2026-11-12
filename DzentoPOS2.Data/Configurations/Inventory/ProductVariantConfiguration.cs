@@ -55,6 +55,17 @@ namespace DzentoPOS2.Data.Configurations.Inventory
                     .HasPrecision(18, 2);
             });
 
+            builder.Property(x => x.WarrantyMonths);
+
+            builder.Property(x => x.IsWeighed)
+                .HasDefaultValue(false);
+
+            builder.Property(x => x.TrackBatch)
+                .HasDefaultValue(false);
+
+            builder.Property(x => x.TrackExpiry)
+                .HasDefaultValue(false);
+
             builder.Property(x => x.ImagePath)
                 .HasMaxLength(500);
 

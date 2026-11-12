@@ -4,6 +4,7 @@ using DzentoPOS2.Localization;
 using DzentoPOS2.WinForms.Configurations;
 using DzentoPOS2.WinForms.Forms.Accounting;
 using DzentoPOS2.WinForms.Forms.Auth;
+using DzentoPOS2.WinForms.Forms.Businesses;
 using DzentoPOS2.WinForms.Forms.Customers;
 using DzentoPOS2.WinForms.Forms.Dashboard;
 using DzentoPOS2.WinForms.Forms.Identity;
@@ -74,6 +75,8 @@ public static class DependencyInjection
             services.AddTransient<ProductUnitsForm>();
             services.AddTransient<CashSessionForm>();
         services.AddTransient<CashSessionOpenDialog>();
+        services.AddTransient<BranchesForm>();
+        services.AddTransient<CrossBranchReportForm>();
         services.AddTransient<Forms.Setup.FirstRunModulesDialog>();
 
         return services;

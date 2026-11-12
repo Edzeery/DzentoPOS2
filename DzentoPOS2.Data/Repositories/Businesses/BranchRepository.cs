@@ -42,5 +42,27 @@ namespace DzentoPOS2.Data.Repositories.Businesses
                     x.Name == name &&
                     !x.IsDeleted);
         }
+
+        public async Task<IReadOnlyList<Branch>> GetAllOrderedAsync()
+        {
+            return await _dbSet
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted)
+                .OrderByDescending(x => x.IsMainBranch)
+                .ThenBy(x => x.CreatedAt)
+                .ThenBy(x => x.Id)
+                .ToListAsync();
+        }
+
+        public async Task<bool> HasOpenCashSessionAsync(Guid branchId)
+        {
+            return await _context.CashSessions
+                .AnyAsync(session =>
+                    session.Status == DzentoPOS2.Core.Enums.CashSessionStatus.Open &&
+                    _context.Cashboxes.Any(box =>
+                        box.Id == session.CashboxId &&
+                        box.BranchId == branchId &&
+                        !box.IsDeleted));
+        }
     }
 }

@@ -2,6 +2,7 @@ using System.Globalization;
 using DzentoPOS2.App.Diagnostics;
 using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Accounting;
+using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.Core.Constants;
 using DzentoPOS2.App.Services.Events;
 using DzentoPOS2.Core.Enums;
@@ -21,7 +22,7 @@ namespace DzentoPOS2.WinForms.Forms.Accounting;
 /// data loading, live refresh and formatting. Every number goes through
 /// <see cref="KpiCard.SetValue"/> so nothing is ever parsed back from text.
 /// </summary>
-public partial class CashSessionForm : LocalizableFormBase
+public partial class CashSessionForm : LocalizableFormBase, IBranchAware
 {
     private readonly ICashSessionService _sessionService;
     private readonly ISalesEventPublisher _events;
@@ -76,6 +77,12 @@ public partial class CashSessionForm : LocalizableFormBase
 
         ThemeManager.ThemeChanged += OnThemeChanged;
         ApplyTheme();
+    }
+
+    public Task OnBranchChangedAsync(Guid branchId)
+    {
+        RequestRefresh();
+        return Task.CompletedTask;
     }
 
     protected override void OnInitialized()

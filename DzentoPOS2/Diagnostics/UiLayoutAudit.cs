@@ -1,14 +1,28 @@
+using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Text.Json;
+using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Inventory;
+using DzentoPOS2.App.Services.Businesses;
+using DzentoPOS2.App.Services.Partners;
+using DzentoPOS2.App.Services.Reports.Interfaces;
 using DzentoPOS2.App.Services.Systems;
+using DzentoPOS2.App.Session;
 using EZControls.Core.Base;
 using DzentoPOS2.Core.Configuration;
+using DzentoPOS2.Core.Enums;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Localization.Services.Interfaces;
 using DzentoPOS2.Shared.Contracts.DTOs.Inventory;
+using DzentoPOS2.Shared.Contracts.DTOs.Businesses;
+using DzentoPOS2.Shared.Contracts.DTOs.Partners;
+using DzentoPOS2.Shared.Contracts.DTOs.Reports;
 using DzentoPOS2.Shared.Helpers;
 using DzentoPOS2.WinForms.Configurations;
+using DzentoPOS2.WinForms.Forms.Dashboard;
+using DzentoPOS2.WinForms.Forms.Businesses;
 using DzentoPOS2.WinForms.Forms.Inventory;
+using DzentoPOS2.WinForms.Forms.Reports;
 using DzentoPOS2.WinForms.Forms.Settings;
 using DzentoPOS2.WinForms.Forms.Setup;
 using DzentoPOS2.WinForms.Themes;
@@ -48,6 +62,18 @@ public static class UiLayoutAudit
 
                 foreach (bool rtl in new[] { true, false })
                 {
+                    try
+                    {
+                        AuditSmoke(rtl);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(
+                            $"FAIL dashboard smoke [{theme}/{rtl}] {ex.GetType().Name}: {ex.Message}");
+                        Console.WriteLine(ex.StackTrace);
+                        return 1;
+                    }
+
                     var forms = CreateForms(database.Context);
 
                     try
@@ -94,7 +120,8 @@ public static class UiLayoutAudit
 
         Console.WriteLine($"UI layout audit: {scenarios.Count} scenarios, {violations} violations");
         Console.WriteLine($"Controls measured: {scenarios.Sum(s => s.ControlsMeasured)}");
-        Console.WriteLine($"Forms: variants, barcodes, unit edit, unit list, first-run wizard, settings");
+        Console.WriteLine($"Forms: variants, barcodes, unit edit, unit list, branch edit, branch resources, branch list, cross-branch report, first-run wizard, settings");
+        Console.WriteLine($"Smoke (built + refreshed, not scored): dashboard");
         Console.WriteLine($"Widths: {string.Join(", ", Widths)} | heights: {AuditHeight} | themes: Light, Dark | direction: RTL, LTR");
         Console.WriteLine($"Report: {reportPath}");
 
@@ -114,13 +141,72 @@ public static class UiLayoutAudit
         new ProductBarcodesDialog(new StubBarcodeService(), Guid.NewGuid()),
         new ProductUnitEditDialog(new StubUnitService(), new StubLanguageService()),
         new ProductUnitsForm(new StubUnitService(), new StubLanguageService()),
-        new FirstRunModulesDialog(new StubModuleService(), new StubBackupService()),
+        new BranchEditDialog(new StubBranchService(), new StubLanguageService()),
+        new BranchResourcesDialog(new StubBranchResourceService(), new StubLanguageService(), new BranchDto { Name = "Branch" }),
+        new BranchesForm(new StubBranchService(), new StubBranchResourceService(), new StubLanguageService()),
+        new CrossBranchReportForm(new StubCrossBranchReportService(), new StubAuthorizationGuard(), new StubLanguageService()),
+        new FirstRunModulesDialog(new StubCapabilityService(), new StubBackupService(), new StubActiveBranchContext()),
         new SettingsForm(
             new StubCurrentSettingsService(),
             new StubLanguageService(),
             new StubBackupService(),
             new EmptyServiceProvider())
     ];
+
+    /// <summary>
+    /// Forms that are built and refreshed (to catch crashes in
+    /// <c>Build()</c>/<c>Update()</c>) but are not part of the responsive
+    /// layout scoring yet. The dashboard is included here because it exercises
+    /// every KPI/chart/insight module; add it to <see cref="CreateForms"/> once
+    /// its narrow-width layout is made responsive.
+    /// </summary>
+    private static List<Form> CreateSmokeForms() =>
+    [
+        new DashboardForm(
+            new StubDashboardService(),
+            new StubCustomerService(),
+            new StubLanguageService(),
+            new RegionalContext())
+    ];
+
+    /// <summary>
+    /// Runs each smoke form's real load path (which builds and refreshes the
+    /// dashboard modules) so any exception in <c>Build()</c>/<c>Update()</c>
+    /// fails the audit. <see cref="Form.OnLoad"/> is invoked directly instead of
+    /// <see cref="Form.Show"/> on purpose: exceptions raised while a native
+    /// window message is being dispatched are swallowed by
+    /// <c>Application.ThreadException</c> (and would only pop a modal error
+    /// dialog), which would make the audit pass regardless.
+    /// </summary>
+    private static void AuditSmoke(bool rtl)
+    {
+        var onLoad = typeof(Form).GetMethod(
+            "OnLoad",
+            BindingFlags.Instance | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("Form.OnLoad was not found.");
+
+        foreach (Form form in CreateSmokeForms())
+        {
+            try
+            {
+                form.RightToLeft = rtl ? RightToLeft.Yes : RightToLeft.No;
+                form.RightToLeftLayout = rtl;
+
+                try
+                {
+                    onLoad.Invoke(form, [EventArgs.Empty]);
+                }
+                catch (TargetInvocationException ex) when (ex.InnerException is not null)
+                {
+                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                }
+            }
+            finally
+            {
+                form.Dispose();
+            }
+        }
+    }
 
     private static ScenarioResult Audit(Form form, ThemeMode theme, bool rtl, int width)
     {
@@ -455,6 +541,32 @@ private static int CountControls(Control parent)
             Task.FromResult(new List<Guid>());
     }
 
+    private sealed class StubDashboardService : IDashboardService
+    {
+        public Task<DashboardSummaryDto> GetSummaryAsync(DashboardFilterDto? filter = null) =>
+            Task.FromResult(new DashboardSummaryDto());
+    }
+
+    private sealed class StubCustomerService : ICustomerService
+    {
+        public Task<List<CustomerDto>> GetAllAsync() =>
+            Task.FromResult(new List<CustomerDto>());
+
+        public Task<CustomerDto?> GetByIdAsync(Guid id) =>
+            Task.FromResult<CustomerDto?>(null);
+
+        public Task<List<CustomerDto>> SearchAsync(string? term) =>
+            Task.FromResult(new List<CustomerDto>());
+
+        public Task<CustomerDto> CreateAsync(CreateCustomerDto dto) =>
+            throw new NotSupportedException();
+
+        public Task<CustomerDto> UpdateAsync(UpdateCustomerDto dto) =>
+            throw new NotSupportedException();
+
+        public Task DeleteAsync(Guid id) => Task.CompletedTask;
+    }
+
     private sealed class StubUnitService : IProductUnitService
     {
         public Task<List<ProductUnitDto>> GetAllAsync() =>
@@ -482,6 +594,58 @@ private static int CountControls(Control parent)
             Task.FromResult(new ProductUnitDto { Id = dto.Id, Name = dto.Name, Symbol = dto.Symbol, IsBaseUnit = dto.IsBaseUnit });
 
         public Task DeleteAsync(Guid id) => Task.CompletedTask;
+    }
+
+    private sealed class StubBranchService : IBranchService
+    {
+        public Task<List<BranchListItemDto>> GetAllAsync() =>
+            Task.FromResult(new List<BranchListItemDto>());
+
+        public Task<BranchDto?> GetByIdAsync(Guid id) =>
+            Task.FromResult<BranchDto?>(null);
+
+        public Task<BranchDto> CreateAsync(CreateBranchDto dto) =>
+            Task.FromResult(new BranchDto { Name = dto.Name, IsActive = dto.IsActive });
+
+        public Task<BranchDto> UpdateAsync(UpdateBranchDto dto) =>
+            Task.FromResult(new BranchDto { Id = dto.Id, Name = dto.Name });
+
+        public Task<BranchDto> SetActiveAsync(Guid id, bool isActive) =>
+            Task.FromResult(new BranchDto { Id = id, IsActive = isActive });
+    }
+
+    private sealed class StubBranchResourceService : IBranchResourceService
+    {
+        public Task<List<WarehouseListItemDto>> GetWarehousesAsync(Guid branchId) =>
+            Task.FromResult(new List<WarehouseListItemDto>());
+
+        public Task<List<CashboxListItemDto>> GetCashboxesAsync(Guid branchId) =>
+            Task.FromResult(new List<CashboxListItemDto>());
+
+        public Task<WarehouseListItemDto> CreateWarehouseAsync(CreateWarehouseDto dto) =>
+            Task.FromResult(new WarehouseListItemDto { BranchId = dto.BranchId, Name = dto.Name, Location = dto.Location, IsActive = dto.IsActive });
+
+        public Task<CashboxListItemDto> CreateCashboxAsync(CreateCashboxDto dto) =>
+            Task.FromResult(new CashboxListItemDto { BranchId = dto.BranchId, Name = dto.Name, IsActive = dto.IsActive });
+
+        public Task<WarehouseListItemDto> SetWarehouseActiveAsync(Guid id, bool isActive) =>
+            Task.FromResult(new WarehouseListItemDto { Id = id, IsActive = isActive });
+
+        public Task<CashboxListItemDto> SetCashboxActiveAsync(Guid id, bool isActive) =>
+            Task.FromResult(new CashboxListItemDto { Id = id, IsActive = isActive });
+    }
+
+    private sealed class StubCrossBranchReportService : ICrossBranchReportService
+    {
+        public Task<CrossBranchReportDto> GetAsync(CrossBranchReportFilterDto? filter = null) =>
+            Task.FromResult(new CrossBranchReportDto());
+    }
+
+    private sealed class StubAuthorizationGuard : IAuthorizationGuard
+    {
+        public Task<bool> IsAllowedAsync(string permissionCode) => Task.FromResult(true);
+
+        public Task DemandAsync(string permissionCode) => Task.CompletedTask;
     }
 
     private sealed class StubLanguageService : ILanguageService
@@ -512,6 +676,29 @@ private static int CountControls(Control parent)
 
         public Task<Dictionary<ActivityModule, bool>> GetAllAsync() =>
             Task.FromResult(new Dictionary<ActivityModule, bool>());
+    }
+
+    private sealed class StubCapabilityService : ICapabilityService
+    {
+        public Task<bool> HasCapabilityAsync(BranchCapability capability, CancellationToken cancellationToken = default) =>
+            Task.FromResult(true);
+        public Task<BranchCapability> GetCapabilitiesAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult(BranchCapability.None);
+        public Task SetCapabilitiesAsync(Guid branchId, BranchCapability capabilities, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+    }
+
+    private sealed class StubActiveBranchContext : IActiveBranchContext
+    {
+        public Guid ActiveBranchId => Guid.Empty;
+        public string ActiveBranchName => "Stub";
+        public bool CanSwitchBranch => true;
+        public event EventHandler<ActiveBranchChangedEventArgs>? BranchChanged;
+        public Task<bool> TrySwitchBranchAsync(Guid branchId, CancellationToken cancellationToken = default) =>
+            Task.FromResult(true);
+        public Task InitializeAsync(ICurrentUserService currentUser, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+        public void InitializeEmpty() { }
     }
 
     private sealed class StubCurrentSettingsService : ICurrentSettingsService

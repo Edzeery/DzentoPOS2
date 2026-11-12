@@ -139,6 +139,20 @@ public static class ExceptionFormatter
         DomainErrorCodes.SessionNotFound => AppStrings.NoOpenSession,
         DomainErrorCodes.CashboxNotFound => AppStrings.ErrorDomain,
         DomainErrorCodes.PermissionDenied => AppStrings.AccessDenied,
+        DomainErrorCodes.BranchNameRequired => AppStrings.BranchNameRequiredMsg,
+        DomainErrorCodes.BranchDuplicateName => AppStrings.BranchDuplicateNameMsg,
+        DomainErrorCodes.BranchNotFound => AppStrings.BranchNotFoundMsg,
+        DomainErrorCodes.BranchLastActive => AppStrings.BranchLastActiveMsg,
+        DomainErrorCodes.BranchHasOpenSession => AppStrings.BranchHasOpenSessionMsg,
+        DomainErrorCodes.BranchMainCannotDeactivate => AppStrings.BranchMainCannotDeactivateMsg,
+        DomainErrorCodes.WarehouseNameRequired => AppStrings.WarehouseNameRequiredMsg,
+        DomainErrorCodes.WarehouseDuplicateName => AppStrings.WarehouseDuplicateNameMsg,
+        DomainErrorCodes.WarehouseNotFound => AppStrings.WarehouseNotFoundMsg,
+        DomainErrorCodes.WarehouseLastActive => AppStrings.WarehouseLastActiveMsg,
+        DomainErrorCodes.CashboxNameRequired => AppStrings.CashboxNameRequiredMsg,
+        DomainErrorCodes.CashboxDuplicateName => AppStrings.CashboxDuplicateNameMsg,
+        DomainErrorCodes.CashboxLastActive => AppStrings.CashboxLastActiveMsg,
+        DomainErrorCodes.CashboxHasOpenSession => AppStrings.CashboxHasOpenSessionMsg,
         _ => null
     };
 }

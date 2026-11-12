@@ -1,4 +1,4 @@
-# قائمة المهام — DzentoPOS2
+﻿# قائمة المهام — DzentoPOS2
 
 **آخر تحديث:** 2026-10-31
 **المرجع البصري:** [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md) — [`docs/design-system-plan.md`](docs/design-system-plan.md)
@@ -192,6 +192,16 @@
 | G1.5 | إعادة تعيين كلمة مرور SuperAdmin (طوارئ) | ✅ | AdminSeeder يدعم إعادة التعيين через ADMIN_EMERGENCY_RESET=true (متغير بيئة) أو Admin:EmergencyReset=true (appsettings.json). при التفعيل: إعادة تعيين كلمة المرور إلى admin وتعيين MustChangePassword=true، وإجبار تغيير كلمة المرور при следующем входе. documented suggested future methods: email-based reset، security questions، recovery code، super-admin reset. دليل: بناء 0 أخطاء / 21 تحذير NU1701، الوحدة 84/84، التكامل 51/51.
 
 
+## INV - ربح المخزون (NRV / IAS 2): مراجعة تناقضات
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| M.1 | مراجعة شاملة: ExpectedProfit (KPI) > Potential (ProfitSummary) — تناقض scopes | ✅ | Fixed: KPI Expected = InventoryExpected(realistic) only (was Sold + InventoryExpected). Potential = InventoryPotential (stock only). Tooltip updated. |
+| M.2 | معاينة الشراء (PurchaseEditDialog) تستخدم potential (qty*(sale-cost)) بدل NRV-realistic | ✅ | PurchaseEditDialog uses PurchasePreviewCalculator (NRV-realistic) + real-time refresh |
+| M.3 | AtRiskProfit/RealizationRate/ForecastBias محسوبة but غير معروضة | ✅ | Displayed in ProfitSummaryModule: InvAtRisk, RealizationRate, ForecastBias rows |
+| M.4 | ExpectedStockProfit KPI card غير معروض (ليس في KpiCardsModule.Keys) | 🟨 | Still not in KpiCardsModule.Keys (deferred — shown in ProfitSummary instead) |
+| M.5 | تصحيح تسميات/نطاقات (tooltip formula) | ✅ | Tooltip: "ExpectedProfit (ExpectedStock, NRV) ≤ PotentialProfit" |
+
 ## H5 - Deferred Designer migration
 | H.5 | Move Fees/Discount inputs to SalesForm.Designer.cs within general designer migration task | ? | Documented only |
 
@@ -242,3 +252,78 @@
 - ReloadStockAsync: awaitable, cancellation, logging, stale-result protection
 - AppStrings: BranchSwitchNoPermission, BranchSwitchCartNotEmpty, BranchSwitchBranchInactive
 - Build 0 errors; unit 174/174; integration 70/70; migration audit PASSED; layout audit 0 violations
+
+## N — Phase 6: Active Branch Context (6.0)
+
+| # | Task | Status | Evidence |
+|---|---|---|---|
+| N.6.0a | IActiveBranchContext (Singleton) + StoreContextService + PosProductStore stock filter + MainForm selector + SalesForm guard | Done | build 0 errors; unit 185/185; integration 80/80; migration audit PASSED; layout audit 0 violations |
+| N.6.0b | BranchActivity + 8 templates + ICapabilityService + ProductEditDialog capability filtering | Done | build 0 errors; unit 185/185; integration 80/80 |
+| N.6.0c | Read isolation: Dashboard, Sale/Purchase/Expense, InventoryValuation, InventorySnapshot, CashSession | Done | build 0 errors; unit 185/185; integration 80/80; migration audit PASSED |
+| N.6.0d-1 | Tests: ActiveBranchContext, CapabilityService, BranchIsolation, SubscriptionLeak, guard registry | Done | 11 tests; BranchPermissionSeeder; IBranchResolver; UserBranchBackfill; build 0 errors; unit 185/185; integration 80/80 |
+| N.6.0d-2 | Read isolation reality: InventorySnapshot migration, CashSessionService, BranchScope, IBranchAware, DashboardService ViewAll | Done | build 0 errors; unit 185/185; integration 80/80; migration audit PASSED |
+| N.6.0d-3 | UI: FirstRunModulesDialog 8 activities, BranchActivitySeeder, ProductEditDialog AppStrings, PNG screenshots | Done | build 0 errors; unit 185/185; integration 80/80; migration audit PASSED; layout audit 72 scenarios 0 violations |
+
+## N — Phase 6 hardening (2026-11-12)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| N.6.0д-2 | الصفحات الواعية بالفرع وإعادة التحميل عند تبديل الفرع | ✅ | `IBranchAware` على 7 صفحات (`Dashboard`, `Sales`, `Purchases`, `Expenses`, `CashSession`, `Products`, `Reports`)؛ `MainForm` يعيد تحميل الصفحة عبر `INavigationService.Navigate(Type)`؛ build 0 errors |
+| N.6.0д-3 | `ActiveBranchContext` آمن للاستدعاء غير المتزامن | ✅ | تهيئة صريحة، `CanSwitchBranch` مخزّن عند التهيئة، فرع فارغ عند تعذّر الحل مع تحذير، واختبارات وحدة للتهيئة الفارغة ورمي الاستدعاء قبل التهيئة |
+| N.6.1 | الوحدات المتسلسلة والدفعات (خدمات + اختبارات) | ✅ | `SerialUnitService` و`BatchService`؛ 11 اختبار تكامل للتسلسل و9 اختبارات للدفعات؛ ترتيب الدفعات يضع بلا تاريخ انتهاء أخيراً |
+| N.6.2 | حوارات الوزن والدفعة داخل نقطة البيع | ✅ | `WeightEntryDialog` يضبط كمية السطر من الوزن؛ `BatchSelectionDialog` يمرّر `BatchId` عبر `StockChange`؛ الدفعة المختارة تُستهلك أولاً ثم FEFO؛ اختبارات تثبيت خصم الدفعات |
+| N.6.2-д | ترحيل فروق الفروع للبيانات القديمة | ✅ | `InvoiceBranchBackfill` يغطي 8 جداول؛ يتجنّب تعارض `(BranchId, SnapshotDate)` ولا يحذف صفوفاً؛ اختبارا ترقية وidempotency |
+| N.6.3 | تغطية التكامل الشاملة | ✅ | `RealPathIntegrationTests`, `BranchScopingIntegrationTests`, `SerialUnitTests`, `BatchServiceTests`, `StockBatchAllocationTests`؛ build 0 errors; unit 193/193; integration 114/114; migration audit PASSED; layout audit 72 scenarios 0 violations |
+| N.6.3-д | إصلاح انهيار لوحة التحكم وقت التشغيل (`KpiCards`/`Insights`) | ✅ | `KpiCardsModule` يبني البطاقات من قائمة موحّدة (مفتاح + أيقونة) من 13 عنصراً فلا يتكرر `IndexOutOfRangeException`؛ `InsightsModule`/`ChartsModule`/`ProfitSummaryModule` تتحمّل `Update` قبل `Build`؛ `DashboardForm` يتجاهل التحديث قبل بناء الوحدات؛ فحص دخان للوحة التحكم داخل `--layout-audit`؛ build 0 errors; unit 194/194; integration 114/114; migration audit PASSED; layout audit 72 scenarios 0 violations |
+
+## P — إدارة الفروع (المرحلة 1: النواة)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| P.1 | DTOs للفروع | ✅ | `BranchDto`, `BranchListItemDto`, `CreateBranchDto`, `UpdateBranchDto` في `DzentoPOS2.Shared/Contracts/DTOs/Businesses/BranchDtos.cs` |
+| P.2 | خدمة إدارة الفروع | ✅ | `IBranchService`/`BranchService` في `DzentoPOS2.App/Services/Businesses`: `GetAllAsync` (مع أعداد المستودعات/الصناديق وحالة الجلسة)، `GetByIdAsync`, `CreateAsync`, `UpdateAsync`, `SetActiveAsync`؛ مسجّلة في `DzentoPOS2.App/DependencyInjection.cs` |
+| P.3 | الإنشاء الذرّي (فرع + مستودع + صندوق) | ✅ | `CreateAsync` داخل `BeginTransactionAsync`/`CommitTransactionAsync`؛ أي فشل ⇒ `RollbackTransactionAsync` بلا صفوف متروكة؛ الأسماء الافتراضية `"<اسم الفرع> — <المستودع الرئيسي>"` و`"<اسم الفرع> — <الصندوق الرئيسي>"`؛ أول فرع يصبح الرئيسي |
+| P.4 | الصلاحيات | ✅ | `BranchesView/Create/Edit/Deactivate/Manage` في `Permissions.cs`؛ `PermissionSeeder` يدرجها (يعكس كل ثوابت `Permissions`)؛ `RolePermissionSeeder` يمنح `BranchesManage` لدور المدير؛ الخدمة تقبل الصلاحية التفصيلية أو صلاحية الإدارة الجامعة |
+| P.5 | قواعد السلامة عند التعطيل (لا حذف) | ✅ | منع تعطيل الفرع الرئيسي، ومنع تعطيل آخر فرع نشط، ومنع التعطيل مع جلسة صندوق مفتوحة؛ التعطيل يضبط `IsActive=false` فقط ولا يحذف |
+| P.6 | اختبارات المرحلة | ✅ | `BranchManagementTests` (9 اختبارات): الإنشاء الذرّي، رفض الاسم المكرر، rollback عند فشل الـcommit، ملكية المدير لـ`BranchesManage` وحرمان الكاشير، ثلاث قواعد تعطيل، ودورة تعطيل/تفعيل |
+| P.7 | بوابة المرحلة | ✅ | build 0 errors; unit 194/194; integration 123/123; migration audit PASSED (0 محذوف، 0 مغيَّر، 13 صف بذر مضاف) |
+
+> ملاحظة نطاق: تحديث مفاتيح الترجمة لواجهة الفروع (`AppStrings` × 4 + `Designer`) مؤجَّل للمرحلة 2 حين تظهر الرسائل في الواجهة؛ المرحلة 1 نواة خادمية بلا تغيير واجهة.
+
+## P — إدارة الفروع (المرحلة 2: الواجهة)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| P2.1 | نموذج قائمة الفروع | ✅ | `BranchesForm` في `DzentoPOS2/Forms/Businesses`: شريط أدوات (إضافة/تعديل/تفعيل-تعطيل) + بحث + `DataGridView` على `BranchListItemDto` (الاسم، المدينة، الهاتف، عدد المستودعات، عدد الصناديق، الحالة)؛ الأعمدة تُعرض بأسماء مترجمة |
+| P2.2 | حوار إنشاء/تعديل الفرع | ✅ | `BranchEditDialog` يمدّ `ThemedDialog`: الاسم (مطلوب)، المدينة، الشارع، الهاتف، الحالة؛ يستدعي `IBranchService.CreateAsync/UpdateAsync` |
+| P2.3 | زر التفعيل/التعطيل الآمن | ✅ | زر واحد يتبدّل نصّه حسب الصف المحدّد؛ التعطيل يطلب تأكيداً (`DeactivateBranchConfirm`) ثم `SetActiveAsync(id,false)`؛ لا حذف إطلاقاً |
+| P2.4 | ربط التنقل | ✅ | زر `btnBranches` في `MainForm` عبر `AddSidebarButton` → `NavigateTo<BranchesForm>`؛ يظهر فقط لدى حامل `BranchesManage` أو `BranchesView`؛ تسجيل `BranchesForm` في `DzentoPOS2/Infrastructure/DependencyInjection.cs` |
+| P2.5 | توطين الواجهة | ✅ | 16 مفتاحاً جديداً في `AppStrings{,.ar,.en,.fr}.resx` + `AppStrings.Designer.cs` (`Branches`, `AddBranch`, `EditBranch`, `BranchName`, `BranchPhone`, `BranchStreet`, `Deactivate`, `Activate`, `Cashboxes`, `DeactivateBranchConfirm` + 6 رسائل خطأ)؛ `ExceptionFormatter` يربط رموز أخطاء الفروع الستة بالترجمة؛ تكافؤ الترجمة 0 فرق |
+| P2.6 | إدخال النموذجين في فحص التخطيط المُقيَّم | ✅ | `BranchesForm` و`BranchEditDialog` في `UiLayoutAudit.CreateForms` مع `StubBranchService`؛ تم تحديث سطر `Forms:` المطبوع |
+| P2.7 | بوابة المرحلة | ✅ | build 0 errors; unit 194/194; integration 123/123; migration audit PASSED (0 محذوف، 0 مغيَّر، 13 صف بذر مضاف); layout audit 96 سيناريو 0 مخالفة (8 نماذج مُقيَّمة عند 375/768/1440 × RTL/LTR × فاتح/داكن) |
+
+## P — إدارة الفروع (المرحلة 3: المستودعات والصناديق)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| P3.1 | DTOs موارد الفرع | ✅ | `WarehouseListItemDto`, `CashboxListItemDto`, `CreateWarehouseDto`, `CreateCashboxDto` في `DzentoPOS2.Shared/Contracts/DTOs/Businesses/BranchResourceDtos.cs` |
+| P3.2 | خدمة موارد الفرع | ✅ | `IBranchResourceService`/`BranchResourceService` في `DzentoPOS2.App/Services/Businesses`: `GetWarehousesAsync`, `GetCashboxesAsync` (مع علَم الجلسة المفتوحة)، `CreateWarehouseAsync`, `CreateCashboxAsync`, `SetWarehouseActiveAsync`, `SetCashboxActiveAsync`؛ مسجّلة في `DzentoPOS2.App/DependencyInjection.cs` |
+| P3.3 | قواعد السلامة (تعطيل فقط، لا حذف) | ✅ | منع تعطيل آخر مستودع نشط، ومنع تعطيل آخر صندوق نشط، ومنع تعطيل صندوق له جلسة مفتوحة؛ الاسم مطلوب وفريد داخل الفرع؛ التعطيل يضبط `IsActive=false` فقط |
+| P3.4 | واجهة موارد الفرع | ✅ | `BranchResourcesDialog`: شبكتان (مستودعات: الاسم/الموقع/الحالة — صناديق: الاسم/الرصيد/الحالة) مع صفوف إضافة مبنية داخل الحوار وزر تفعيل/تعطيل لكل قسم؛ يُفتح من زر «المستودعات والصناديق» في `BranchesForm` |
+| P3.5 | توطين الواجهة | ✅ | 13 مفتاحاً جديداً في `AppStrings{,.ar,.en,.fr}.resx` + `AppStrings.Designer.cs`؛ `ExceptionFormatter` يربط رموز أخطاء المستودعات/الصناديق الثمانية؛ تكافؤ الترجمة 0 فرق |
+| P3.6 | اختبارات المرحلة | ✅ | `BranchResourceTests` (10 اختبارات): إضافة مستودع/صندوق، رفض الاسم المكرر، منع تعطيل آخر مستودع/صندوق، منع تعطيل صندوق له جلسة مفتوحة، دورة تعطيل/تفعيل للمستودع والصندوق، وحرمان الكاشير |
+| P3.7 | بوابة المرحلة | ✅ | build 0 errors; unit 194/194; integration 133/133; migration audit PASSED (0 محذوف، 0 مغيَّر، 2 صف بذر مضاف); layout audit 108 سيناريو 0 مخالفة (9 نماذج مُقيَّمة عند 375/768/1440 × RTL/LTR × فاتح/داكن) |
+
+## P — تقارير موحّدة عبر الفروع (المرحلة 4)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| P4.1 | DTOs التقرير الموحّد | ✅ | `CrossBranchReportFilterDto`, `CrossBranchReportDto`, `BranchReportRowDto` في `DzentoPOS2.Shared/Contracts/DTOs/Reports/CrossBranchReportDtos.cs` |
+| P4.2 | خدمة التقرير عبر الفروع | ✅ | `ICrossBranchReportService`/`CrossBranchReportService` في `DzentoPOS2.App/Services/Reports`: صف لكل فرع (مبيعات، مرتجعات، صافي مبيعات، مشتريات، مصروفات، ربح إجمالي، ربح صافٍ) + إجمالي عام لفترة؛ للقراءة فقط؛ مسجّلة في `DzentoPOS2.App/DependencyInjection.cs` |
+| P4.3 | نموذج العرض | ✅ | `CrossBranchReportForm` في `DzentoPOS2/Forms/Reports`: قائمة الفترة (5 خيارات)، منتقيا من/إلى يظهران عند «مخصّص» فقط، مربّع «كل الفروع»، زر «تحديث»، وشبكة 10 أعمدة بإجمالي عريض؛ يُنفّذ `IBranchAware` |
+| P4.4 | الوصول والصلاحيات | ✅ | يتطلّب `ReportsView` دائماً؛ علَم «كل الفروع» طلبٌ يُلبّى فقط لحامل `BranchesViewAll`، وإلا يُقصَر على الفرع النشط (`ViewAllBranches=false`) |
+| P4.5 | ربط التنقل والصلاحيات في الواجهة | ✅ | زر `CrossBranchReport` في `MainForm` بعد `Branches` عبر `IconChar.ChartLine`؛ يظهر فقط عند اجتماع `ReportsView` و`BranchesViewAll`؛ تسجيل `CrossBranchReportForm` في `DzentoPOS2/Infrastructure/DependencyInjection.cs` |
+| P4.6 | توطين الواجهة | ✅ | 3 مفاتيح جديدة (`CrossBranchReport`, `NetSales`, `ViewAllBranches`) في `AppStrings{,.ar,.en,.fr}.resx` + `AppStrings.Designer.cs`؛ إعادة استخدام مفاتيح الفترة/الأعمدة الموجودة؛ تكافؤ الترجمة 0 فرق |
+| P4.7 | إدخال النموذج في فحص التخطيط المُقيَّم | ✅ | `CrossBranchReportForm` في `UiLayoutAudit.CreateForms` مع `StubCrossBranchReportService`/`StubAuthorizationGuard`؛ تم تحديث سطر `Forms:` المطبوع |
+| P4.8 | اختبارات المرحلة | ✅ | `CrossBranchReportTests` (2): مقارنة كل الفروع عبر صلاحية `BranchesViewAll` مع مطابقة أرقام كل فرع والإجمالي، والرجوع للفرع النشط لمستخدم يملك `ReportsView` دون `BranchesViewAll` |
+| P4.9 | بوابة المرحلة | ✅ | build 0 errors; unit 194/194; integration 135/135; migration audit PASSED (0 محذوف، 0 مغيَّر، 2 صف بذر مضاف); layout audit 120 سيناريو 0 مخالفة (2592 عنصراً، 10 نماذج مُقيَّمة عند 375/768/1440 × RTL/LTR × فاتح/داكن) |

@@ -7,6 +7,12 @@ namespace DzentoPOS2.Shared.Contracts.DTOs.Sales
         /// <summary>Variant sold. Empty means the product's default variant.</summary>
         public Guid VariantId { get; set; }
 
+        /// <summary>Serial unit sold (for serialized products). Empty means non-serialized.</summary>
+        public Guid SerialUnitId { get; set; }
+
+        /// <summary>Batch selected for this line (for batch-tracked variants). Empty means FEFO.</summary>
+        public Guid BatchId { get; set; }
+
         /// <summary>Variant name at sale time (for cart display).</summary>
         public string VariantName { get; set; } = string.Empty;
 

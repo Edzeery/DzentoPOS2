@@ -1753,4 +1753,230 @@
   <data name="ProductKindLabel" xml:space="preserve">
     <value>نوع المنتج</value>
   </data>
+  <data name="ActivityGrocery" xml:space="preserve">
+    <value>مواد غذائية</value>
+  </data>
+  <data name="ActivityProduce" xml:space="preserve">
+    <value>خضر وفواكه</value>
+  </data>
+  <data name="ActivityPhones" xml:space="preserve">
+    <value>هواتف وإلكترونيات</value>
+  </data>
+  <data name="ActivityAppliances" xml:space="preserve">
+    <value>أجهزة كهرومنزلية</value>
+  </data>
+  <data name="ActivityIT" xml:space="preserve">
+    <value>إعلام آلي</value>
+  </data>
+  <data name="ActivityRepair" xml:space="preserve">
+    <value>صيانة وتصليح</value>
+  </data>
+  <data name="ActivityDigital" xml:space="preserve">
+    <value>منتجات رقمية</value>
+  </data>
+  <data name="ActivityMultiService" xml:space="preserve">
+    <value>متعدد الخدمات</value>
+  </data>
+  <data name="SelectSerialUnit" xml:space="preserve">
+    <value>اختيار وحدة تسلسلية</value>
+  </data>
+  <data name="WarrantyQuery" xml:space="preserve">
+    <value>استعلام ضمان</value>
+  </data>
+  <data name="WeightUnit" xml:space="preserve">
+    <value>Weight Unit</value>
+  </data>
+  <data name="BatchNumber" xml:space="preserve">
+    <value>ط±ظ‚ظ… ط§ظ„ط¯ظپط¹ط©</value>
+  </data>
+  <data name="ExpiryDate" xml:space="preserve">
+    <value>طھط§ط±ظٹط® ط§ظ†طھظ‡ط§ط، ط§ظ„طµظ„ط§ط­ظٹط©</value>
+  </data>
+  <data name="IsWeighed" xml:space="preserve">
+    <value>ظ…ظ†طھط¬ ظ…ظˆط²ظˆظ†</value>
+  </data>
+  <data name="TrackBatch" xml:space="preserve">
+    <value>طھطھط¨ط¹ ط§ظ„ط¯ظپط¹ط©</value>
+  </data>
+  <data name="TrackExpiry" xml:space="preserve">
+    <value>طھطھط¨ط¹ ط§ظ†طھظ‡ط§ط، ط§ظ„طµظ„ط§ط­ظٹط©</value>
+  </data>
+  <data name="WeightPerUnit" xml:space="preserve">
+    <value>ط§ظ„ظˆط²ظ† ظ„ظ„ظˆط­ط¯ط©</value>
+  </data>
+  <data name="KG" xml:space="preserve">
+    <value>ظƒط¬ظ…</value>
+  </data>
+  <data name="LB" xml:space="preserve">
+    <value>ط±ط·ظ„</value>
+  </data>
+  <data name="G" xml:space="preserve">
+    <value>ط¬ظ…</value>
+  </data>
+  <data name="InsufficientBatchStock" xml:space="preserve">
+    <value>ظ…ط®ط²ظˆظ† ط§ظ„ط¯ظپط¹ط© ط؛ظٹط± ظƒط§ظپظچ</value>
+  </data>
+  <data name="BatchNotFound" xml:space="preserve">
+    <value>ط§ظ„ط¯ظپط¹ط© ط؛ظٹط± ظ…ظˆط¬ظˆط¯ط©</value>
+  </data>
+  <data name="ExpiringSoon" xml:space="preserve">
+    <value>طھظ†طھظ‡ظٹ طµظ„ط§ط­ظٹطھظ‡ط§ ظ‚ط±ظٹط¨ط§ظ‹</value>
+  </data>
+  <data name="Expired" xml:space="preserve">
+    <value>ظ…ظ†طھظ‡ظٹط© ط§ظ„طµظ„ط§ط­ظٹط©</value>
+  </data>
+  <data name="FEFO" xml:space="preserve">
+    <value>ط£ظˆظ„ ط§ظ„ظ…ظ†طھظ‡ظٹ طµظ„ط§ط­ظٹطھظ‡ ط£ظˆظ„ ط®ط±ظˆط¬</value>
+  </data>
+  <data name="PotentialProfit" xml:space="preserve">
+    <value>الربح المحتمل</value>
+  </data>
+  <data name="InventoryCostValue" xml:space="preserve">
+    <value>قيمة المخزون (التكلفة)</value>
+  </data>
+  <data name="InventoryRetailValue" xml:space="preserve">
+    <value>قيمة المخزون (التجزئة)</value>
+  </data>
+  <data name="InventoryAtRiskProfit" xml:space="preserve">
+    <value>ربح معرّض للخسارة</value>
+  </data>
+  <data name="InventoryWarnings" xml:space="preserve">
+    <value>تحذيرات</value>
+  </data>
+  <data name="RealizationRate" xml:space="preserve">
+    <value>نسبة التحقق</value>
+  </data>
+  <data name="ForecastBias" xml:space="preserve">
+    <value>انحياز التنبؤ</value>
+  </data>
+  <data name="TotalExpected" xml:space="preserve">
+    <value>الربح المتوقع (إجمالي)</value>
+  </data>
+  <data name="WeightEntry" xml:space="preserve">
+    <value>إدخال الوزن</value>
+  </data>
+  <data name="ExpiryAlerts" xml:space="preserve">
+    <value>تنبيهات انتهاء الصلاحية</value>
+  </data>
+  <data name="ExpiringInDays" xml:space="preserve">
+    <value>تنتهي خلال {0} يوم</value>
+  </data>
+  <data name="BatchSelectionTitle" xml:space="preserve">
+    <value>اختيار الدفعة</value>
+  </data>
+  <data name="WeightEntryTitle" xml:space="preserve">
+    <value>إدخال الوزن</value>
+  </data>
+  <data name="WeightLabel" xml:space="preserve">
+    <value>الوزن</value>
+  </data>
+  <data name="CalculatedPrice" xml:space="preserve">
+    <value>السعر المحسوب</value>
+  </data>
+  <data name="SelectBatch" xml:space="preserve">
+    <value>اختيار الدفعة</value>
+  </data>
+  <data name="NoActiveBranchMessage" xml:space="preserve">
+    <value>تعذر العثور على فرع نشط. تم متابعة تسجيل الدخول، لكن بيانات الفرع غير متاحة حتى يتم إنشاء فرع رئيسي.</value>
+  </data>
+  <data name="Branches" xml:space="preserve">
+    <value>الفروع</value>
+  </data>
+  <data name="AddBranch" xml:space="preserve">
+    <value>فرع جديد</value>
+  </data>
+  <data name="EditBranch" xml:space="preserve">
+    <value>تعديل الفرع</value>
+  </data>
+  <data name="BranchName" xml:space="preserve">
+    <value>اسم الفرع</value>
+  </data>
+  <data name="BranchPhone" xml:space="preserve">
+    <value>الهاتف</value>
+  </data>
+  <data name="BranchStreet" xml:space="preserve">
+    <value>الشارع</value>
+  </data>
+  <data name="Deactivate" xml:space="preserve">
+    <value>تعطيل</value>
+  </data>
+  <data name="Activate" xml:space="preserve">
+    <value>تفعيل</value>
+  </data>
+  <data name="Cashboxes" xml:space="preserve">
+    <value>الصناديق</value>
+  </data>
+  <data name="DeactivateBranchConfirm" xml:space="preserve">
+    <value>تعطيل هذا الفرع؟ تُحفظ البيانات الحالية ويمكن إعادة تفعيله لاحقاً.</value>
+  </data>
+  <data name="BranchNameRequiredMsg" xml:space="preserve">
+    <value>اسم الفرع مطلوب.</value>
+  </data>
+  <data name="BranchDuplicateNameMsg" xml:space="preserve">
+    <value>يوجد فرع بهذا الاسم بالفعل.</value>
+  </data>
+  <data name="BranchNotFoundMsg" xml:space="preserve">
+    <value>لم يتم العثور على الفرع.</value>
+  </data>
+  <data name="BranchLastActiveMsg" xml:space="preserve">
+    <value>لا يمكن تعطيل آخر فرع نشط.</value>
+  </data>
+  <data name="BranchHasOpenSessionMsg" xml:space="preserve">
+    <value>لا يمكن تعطيل فرع له جلسة صندوق مفتوحة.</value>
+  </data>
+  <data name="BranchMainCannotDeactivateMsg" xml:space="preserve">
+    <value>لا يمكن تعطيل الفرع الرئيسي.</value>
+  </data>
+  <data name="Location" xml:space="preserve">
+    <value>الموقع</value>
+  </data>
+  <data name="AddWarehouse" xml:space="preserve">
+    <value>مستودع جديد</value>
+  </data>
+  <data name="AddCashbox" xml:space="preserve">
+    <value>صندوق جديد</value>
+  </data>
+  <data name="BranchResources" xml:space="preserve">
+    <value>المستودعات والصناديق</value>
+  </data>
+  <data name="DeactivateConfirm" xml:space="preserve">
+    <value>تعطيل هذا العنصر؟ تُحفظ البيانات الحالية ويمكن إعادة تفعيله لاحقاً.</value>
+  </data>
+  <data name="WarehouseNameRequiredMsg" xml:space="preserve">
+    <value>اسم المستودع مطلوب.</value>
+  </data>
+  <data name="WarehouseDuplicateNameMsg" xml:space="preserve">
+    <value>يوجد مستودع بهذا الاسم في هذا الفرع بالفعل.</value>
+  </data>
+  <data name="WarehouseNotFoundMsg" xml:space="preserve">
+    <value>لم يتم العثور على المستودع.</value>
+  </data>
+  <data name="WarehouseLastActiveMsg" xml:space="preserve">
+    <value>لا يمكن تعطيل آخر مستودع نشط في الفرع.</value>
+  </data>
+  <data name="CashboxNameRequiredMsg" xml:space="preserve">
+    <value>اسم الصندوق مطلوب.</value>
+  </data>
+  <data name="CashboxDuplicateNameMsg" xml:space="preserve">
+    <value>يوجد صندوق بهذا الاسم في هذا الفرع بالفعل.</value>
+  </data>
+  <data name="CashboxLastActiveMsg" xml:space="preserve">
+    <value>لا يمكن تعطيل آخر صندوق نشط في الفرع.</value>
+  </data>
+  <data name="CashboxHasOpenSessionMsg" xml:space="preserve">
+    <value>لا يمكن تعطيل صندوق له جلسة مفتوحة.</value>
+  </data>
+  <data name="CrossBranchReport" xml:space="preserve">
+    <value>تقرير موحّد عبر الفروع</value>
+  </data>
+  <data name="NetSales" xml:space="preserve">
+    <value>صافي المبيعات</value>
+  </data>
+  <data name="ViewAllBranches" xml:space="preserve">
+    <value>كل الفروع</value>
+  </data>
+  <data name="NoExpiry" xml:space="preserve">
+    <value>بدون انتهاء</value>
+  </data>
 </root>
+

@@ -45,6 +45,7 @@ namespace DzentoPOS2.Data.Seed
 
             await PermissionSeeder.SeedAsync(context);
             await BranchPermissionSeeder.SeedAsync(context);
+            await BranchActivitySeeder.SeedAsync(context);
 
             await RoleSeeder.SeedAsync(context);
 
@@ -73,6 +74,20 @@ namespace DzentoPOS2.Data.Seed
                 System.Diagnostics.Debug.WriteLine(
                     $"[StoreBootstrapper] {bootstrap}");
             }
+
+            // Backfill empty BranchId for all users (idempotent).
+            await UserBranchBackfill.SeedAsync(
+                context,
+                scope.ServiceProvider
+                    .GetService<ILoggerFactory>()
+                    ?.CreateLogger("DzentoPOS2.Data.Seed.UserBranchBackfill"));
+
+            // Backfill empty BranchId on invoices/expenses (idempotent).
+            await InvoiceBranchBackfill.SeedAsync(
+                context,
+                scope.ServiceProvider
+                    .GetService<ILoggerFactory>()
+                    ?.CreateLogger("DzentoPOS2.Data.Seed.InvoiceBranchBackfill"));
 
             await CashierSeeder.SeedAsync(context);
             await CustomerAccountSeeder.SeedAsync(context);

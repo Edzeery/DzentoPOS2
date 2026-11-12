@@ -28,6 +28,17 @@ namespace DzentoPOS2.Core.Entities.Inventory
 
         public bool IsDefault { get; set; } = false;
 
+        /// <summary>Warranty period in months (null = no warranty).</summary>
+        public int? WarrantyMonths { get; set; }
+
+        // Weight support
+        public bool IsWeighed { get; set; } = false;
+        public Guid? WeightUnitId { get; set; }
+
+        // Batch/Expiry support
+        public bool TrackBatch { get; set; } = false;
+        public bool TrackExpiry { get; set; } = false;
+
         public string? ImagePath { get; set; }
 
         public string? ThumbnailPath { get; set; }

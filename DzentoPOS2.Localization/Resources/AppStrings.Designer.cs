@@ -95,6 +95,31 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("Active", resourceCulture);
             }
         }
+
+        public static string ActivityAppliances {
+            get { return ResourceManager.GetString("ActivityAppliances", resourceCulture); }
+        }
+        public static string ActivityDigital {
+            get { return ResourceManager.GetString("ActivityDigital", resourceCulture); }
+        }
+        public static string ActivityGrocery {
+            get { return ResourceManager.GetString("ActivityGrocery", resourceCulture); }
+        }
+        public static string ActivityIT {
+            get { return ResourceManager.GetString("ActivityIT", resourceCulture); }
+        }
+        public static string ActivityMultiService {
+            get { return ResourceManager.GetString("ActivityMultiService", resourceCulture); }
+        }
+        public static string ActivityPhones {
+            get { return ResourceManager.GetString("ActivityPhones", resourceCulture); }
+        }
+        public static string ActivityProduce {
+            get { return ResourceManager.GetString("ActivityProduce", resourceCulture); }
+        }
+        public static string ActivityRepair {
+            get { return ResourceManager.GetString("ActivityRepair", resourceCulture); }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Active Customers.
@@ -480,6 +505,18 @@ namespace DzentoPOS2.Localization.Resources {
         public static string BranchSwitchFailed {
             get {
                 return ResourceManager.GetString("BranchSwitchFailed", resourceCulture);
+            }
+        }
+
+        public static string NoActiveBranchMessage {
+            get {
+                return ResourceManager.GetString("NoActiveBranchMessage", resourceCulture);
+            }
+        }
+
+        public static string NoExpiry {
+            get {
+                return ResourceManager.GetString("NoExpiry", resourceCulture);
             }
         }
 
@@ -2854,6 +2891,18 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("Select", resourceCulture);
             }
         }
+        public static string SelectBatch {
+            get { return ResourceManager.GetString("SelectBatch", resourceCulture); }
+        }
+        public static string WeightEntryTitle {
+            get { return ResourceManager.GetString("WeightEntryTitle", resourceCulture); }
+        }
+        public static string WeightLabel {
+            get { return ResourceManager.GetString("WeightLabel", resourceCulture); }
+        }
+        public static string CalculatedPrice {
+            get { return ResourceManager.GetString("CalculatedPrice", resourceCulture); }
+        }
         
         public static string SelectBranch {
             get {
@@ -2939,6 +2988,15 @@ namespace DzentoPOS2.Localization.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Select Shared Barcode.
         /// </summary>
+        /// <summary>
+        ///   Looks up a localized string similar to Select Serial Unit.
+        /// </summary>
+        public static string SelectSerialUnit {
+            get {
+                return ResourceManager.GetString("SelectSerialUnit", resourceCulture);
+            }
+        }
+
         public static string SelectSharedBarcode {
             get {
                 return ResourceManager.GetString("SelectSharedBarcode", resourceCulture);
@@ -3250,6 +3308,30 @@ namespace DzentoPOS2.Localization.Resources {
 
         public static string ProfitSummaryTitle {
             get { return ResourceManager.GetString("ProfitSummaryTitle", resourceCulture); }
+        }
+        public static string PotentialProfit {
+            get { return ResourceManager.GetString("PotentialProfit", resourceCulture); }
+        }
+        public static string InventoryCostValue {
+            get { return ResourceManager.GetString("InventoryCostValue", resourceCulture); }
+        }
+        public static string InventoryRetailValue {
+            get { return ResourceManager.GetString("InventoryRetailValue", resourceCulture); }
+        }
+        public static string InventoryAtRiskProfit {
+            get { return ResourceManager.GetString("InventoryAtRiskProfit", resourceCulture); }
+        }
+        public static string InventoryWarnings {
+            get { return ResourceManager.GetString("InventoryWarnings", resourceCulture); }
+        }
+        public static string RealizationRate {
+            get { return ResourceManager.GetString("RealizationRate", resourceCulture); }
+        }
+        public static string ForecastBias {
+            get { return ResourceManager.GetString("ForecastBias", resourceCulture); }
+        }
+        public static string TotalExpected {
+            get { return ResourceManager.GetString("TotalExpected", resourceCulture); }
         }
         public static string NetRevenue {
             get { return ResourceManager.GetString("NetRevenue", resourceCulture); }
@@ -3678,6 +3760,15 @@ namespace DzentoPOS2.Localization.Resources {
         /// <summary>
         ///   Looks up a localized string similar to Warning.
         /// </summary>
+        /// <summary>
+        ///   Looks up a localized string similar to Warranty Query.
+        /// </summary>
+        public static string WarrantyQuery {
+            get {
+                return ResourceManager.GetString("WarrantyQuery", resourceCulture);
+            }
+        }
+
         public static string Warning {
             get {
                 return ResourceManager.GetString("Warning", resourceCulture);
@@ -4391,6 +4482,273 @@ namespace DzentoPOS2.Localization.Resources {
         public static string CurrencyUaeDirham {
             get {
                 return ResourceManager.GetString("CurrencyUaeDirham", resourceCulture);
+            }
+        }
+        public static string WeightUnit {
+            get {
+                return ResourceManager.GetString("WeightUnit", resourceCulture);
+            }
+        }
+        public static string BatchNumber {
+            get {
+                return ResourceManager.GetString("BatchNumber", resourceCulture);
+            }
+        }
+        public static string ExpiryDate {
+            get {
+                return ResourceManager.GetString("ExpiryDate", resourceCulture);
+            }
+        }
+        public static string IsWeighed {
+            get {
+                return ResourceManager.GetString("IsWeighed", resourceCulture);
+            }
+        }
+        public static string TrackBatch {
+            get {
+                return ResourceManager.GetString("TrackBatch", resourceCulture);
+            }
+        }
+        public static string TrackExpiry {
+            get {
+                return ResourceManager.GetString("TrackExpiry", resourceCulture);
+            }
+        }
+        public static string WeightPerUnit {
+            get {
+                return ResourceManager.GetString("WeightPerUnit", resourceCulture);
+            }
+        }
+        public static string KG {
+            get {
+                return ResourceManager.GetString("KG", resourceCulture);
+            }
+        }
+        public static string LB {
+            get {
+                return ResourceManager.GetString("LB", resourceCulture);
+            }
+        }
+        public static string G {
+            get {
+                return ResourceManager.GetString("G", resourceCulture);
+            }
+        }
+        public static string InsufficientBatchStock {
+            get {
+                return ResourceManager.GetString("InsufficientBatchStock", resourceCulture);
+            }
+        }
+        public static string BatchNotFound {
+            get {
+                return ResourceManager.GetString("BatchNotFound", resourceCulture);
+            }
+        }
+        public static string ExpiringSoon {
+            get {
+                return ResourceManager.GetString("ExpiringSoon", resourceCulture);
+            }
+        }
+        public static string Expired {
+            get {
+                return ResourceManager.GetString("Expired", resourceCulture);
+            }
+        }
+        public static string FEFO {
+            get {
+                return ResourceManager.GetString("FEFO", resourceCulture);
+            }
+        }
+        
+        public static string Activate {
+            get {
+                return ResourceManager.GetString("Activate", resourceCulture);
+            }
+        }
+        
+        public static string AddBranch {
+            get {
+                return ResourceManager.GetString("AddBranch", resourceCulture);
+            }
+        }
+        
+        public static string BranchDuplicateNameMsg {
+            get {
+                return ResourceManager.GetString("BranchDuplicateNameMsg", resourceCulture);
+            }
+        }
+        
+        public static string BranchHasOpenSessionMsg {
+            get {
+                return ResourceManager.GetString("BranchHasOpenSessionMsg", resourceCulture);
+            }
+        }
+        
+        public static string BranchLastActiveMsg {
+            get {
+                return ResourceManager.GetString("BranchLastActiveMsg", resourceCulture);
+            }
+        }
+        
+        public static string BranchMainCannotDeactivateMsg {
+            get {
+                return ResourceManager.GetString("BranchMainCannotDeactivateMsg", resourceCulture);
+            }
+        }
+        
+        public static string BranchName {
+            get {
+                return ResourceManager.GetString("BranchName", resourceCulture);
+            }
+        }
+        
+        public static string BranchNameRequiredMsg {
+            get {
+                return ResourceManager.GetString("BranchNameRequiredMsg", resourceCulture);
+            }
+        }
+        
+        public static string BranchNotFoundMsg {
+            get {
+                return ResourceManager.GetString("BranchNotFoundMsg", resourceCulture);
+            }
+        }
+        
+        public static string BranchPhone {
+            get {
+                return ResourceManager.GetString("BranchPhone", resourceCulture);
+            }
+        }
+        
+        public static string Branches {
+            get {
+                return ResourceManager.GetString("Branches", resourceCulture);
+            }
+        }
+        
+        public static string BranchStreet {
+            get {
+                return ResourceManager.GetString("BranchStreet", resourceCulture);
+            }
+        }
+        
+        public static string Cashboxes {
+            get {
+                return ResourceManager.GetString("Cashboxes", resourceCulture);
+            }
+        }
+        
+        public static string Deactivate {
+            get {
+                return ResourceManager.GetString("Deactivate", resourceCulture);
+            }
+        }
+        
+        public static string DeactivateBranchConfirm {
+            get {
+                return ResourceManager.GetString("DeactivateBranchConfirm", resourceCulture);
+            }
+        }
+        
+        public static string EditBranch {
+            get {
+                return ResourceManager.GetString("EditBranch", resourceCulture);
+            }
+        }
+        
+        public static string AddCashbox {
+            get {
+                return ResourceManager.GetString("AddCashbox", resourceCulture);
+            }
+        }
+        
+        public static string AddWarehouse {
+            get {
+                return ResourceManager.GetString("AddWarehouse", resourceCulture);
+            }
+        }
+        
+        public static string BranchResources {
+            get {
+                return ResourceManager.GetString("BranchResources", resourceCulture);
+            }
+        }
+        
+        public static string CashboxDuplicateNameMsg {
+            get {
+                return ResourceManager.GetString("CashboxDuplicateNameMsg", resourceCulture);
+            }
+        }
+        
+        public static string CashboxHasOpenSessionMsg {
+            get {
+                return ResourceManager.GetString("CashboxHasOpenSessionMsg", resourceCulture);
+            }
+        }
+        
+        public static string CashboxLastActiveMsg {
+            get {
+                return ResourceManager.GetString("CashboxLastActiveMsg", resourceCulture);
+            }
+        }
+        
+        public static string CashboxNameRequiredMsg {
+            get {
+                return ResourceManager.GetString("CashboxNameRequiredMsg", resourceCulture);
+            }
+        }
+        
+        public static string DeactivateConfirm {
+            get {
+                return ResourceManager.GetString("DeactivateConfirm", resourceCulture);
+            }
+        }
+        
+        public static string Location {
+            get {
+                return ResourceManager.GetString("Location", resourceCulture);
+            }
+        }
+        
+        public static string WarehouseDuplicateNameMsg {
+            get {
+                return ResourceManager.GetString("WarehouseDuplicateNameMsg", resourceCulture);
+            }
+        }
+        
+        public static string WarehouseLastActiveMsg {
+            get {
+                return ResourceManager.GetString("WarehouseLastActiveMsg", resourceCulture);
+            }
+        }
+        
+        public static string WarehouseNameRequiredMsg {
+            get {
+                return ResourceManager.GetString("WarehouseNameRequiredMsg", resourceCulture);
+            }
+        }
+        
+        public static string WarehouseNotFoundMsg {
+            get {
+                return ResourceManager.GetString("WarehouseNotFoundMsg", resourceCulture);
+            }
+        }
+        
+        public static string CrossBranchReport {
+            get {
+                return ResourceManager.GetString("CrossBranchReport", resourceCulture);
+            }
+        }
+        
+        public static string NetSales {
+            get {
+                return ResourceManager.GetString("NetSales", resourceCulture);
+            }
+        }
+        
+        public static string ViewAllBranches {
+            get {
+                return ResourceManager.GetString("ViewAllBranches", resourceCulture);
             }
         }
 

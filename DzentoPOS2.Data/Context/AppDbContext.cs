@@ -62,6 +62,10 @@ namespace DzentoPOS2.Data.Context
 
         public DbSet<ProductVariant> ProductVariants => Set<ProductVariant>();
 
+        public DbSet<SerialUnit> SerialUnits => Set<SerialUnit>();
+
+        public DbSet<Batch> Batches => Set<Batch>();
+
         public DbSet<AttributeDefinition> AttributeDefinitions => Set<AttributeDefinition>();
 
         public DbSet<AttributeValue> AttributeValues => Set<AttributeValue>();
@@ -99,6 +103,8 @@ namespace DzentoPOS2.Data.Context
         public DbSet<SalesInvoice> SalesInvoices => Set<SalesInvoice>();
 
         public DbSet<SalesInvoiceItem> SalesInvoiceItems => Set<SalesInvoiceItem>();
+
+        public DbSet<SalesInvoiceItemUnit> SalesInvoiceItemUnits => Set<SalesInvoiceItemUnit>();
 
         public DbSet<SalesReturn> SalesReturns => Set<SalesReturn>();
 

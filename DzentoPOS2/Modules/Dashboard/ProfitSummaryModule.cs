@@ -1,3 +1,4 @@
+using DzentoPOS2.Core.Services.Sales;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Shared.Contracts.DTOs.Reports;
 using DzentoPOS2.Shared.Helpers;
@@ -39,7 +40,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             {
                 Dock = DockStyle.Top,
                 AutoSize = true,
-                MaximumSize = new Size(560, 0),
+                MaximumSize = new Size(520, 0),
                 ColumnCount = 2,
                 RowCount = 0,
                 Margin = new Padding(0, 8, 0, 0),
@@ -47,7 +48,7 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
                 BackColor = AppColors.Surface
             };
             _grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-            _grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 140F));
+            _grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
 
             BuildRows();
         }
@@ -65,7 +66,13 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             AddRow("Net", AppStrings.NetProfit);
             AddRow("Expected", AppStrings.ExpectedProfit);
             AddRow("ExpectedSold", AppStrings.ExpectedSold);
-            AddRow("ExpectedStock", AppStrings.ExpectedStock);
+            AddRow("InvCost", AppStrings.InventoryCostValue);
+            AddRow("InvRetail", AppStrings.InventoryRetailValue);
+            AddRow("InvPotential", AppStrings.PotentialProfit);
+            AddRow("InvAtRisk", AppStrings.InventoryAtRiskProfit);
+            AddRow("InvWarnings", AppStrings.InventoryWarnings);
+            AddRow("RealizationRate", AppStrings.RealizationRate);
+            AddRow("ForecastBias", AppStrings.ForecastBias);
         }
 
         private void AddRow(string key, string label)
@@ -112,7 +119,8 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
 
         public void ApplyTheme()
         {
-            if (_title.IsDisposed) return;
+            if (_title is null || _title.IsDisposed) return;
+            if (_grid is null || _grid.IsDisposed) return;
             _title.ForeColor = AppColors.Ink;
             _grid.BackColor = AppColors.Surface;
             foreach (Control c in _grid.Controls)
@@ -135,7 +143,15 @@ namespace DzentoPOS2.WinForms.Modules.Dashboard
             Set("Net", data.NetProfit.Value, currencyDigits, culture);
             Set("Expected", data.ExpectedProfit.Value, currencyDigits, culture);
             Set("ExpectedSold", data.ExpectedSoldProfit.Value, currencyDigits, culture);
-            Set("ExpectedStock", data.ExpectedStockProfit.Value, currencyDigits, culture);
+            Set("InvCost", data.InventoryCostValue, currencyDigits, culture);
+            Set("InvRetail", data.InventoryRetailValue, currencyDigits, culture);
+            Set("InvPotential", data.InventoryPotentialProfit, currencyDigits, culture);
+            Set("InvAtRisk", data.InventoryAtRiskProfit, currencyDigits, culture);
+            Set("InvWarnings", data.InventoryWarningNoSalePrice + data.InventoryWarningNegativeMargin + data.InventoryWarningZeroCost, 0, culture);
+            var realizationRate = ProfitCalculator.CalculateRealizationRate(data.ActualProfit.Value, data.ExpectedSoldProfit.Value);
+            var forecastBias = ProfitCalculator.CalculateForecastBias(data.ActualProfit.Value, data.ExpectedSoldProfit.Value);
+            Set("RealizationRate", realizationRate, 2, culture);
+            Set("ForecastBias", forecastBias, 2, culture);
         }
 
         private void Set(string key, decimal value, int digits, CultureInfo culture)

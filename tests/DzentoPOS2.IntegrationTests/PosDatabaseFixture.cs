@@ -69,6 +69,10 @@ public sealed class PosDatabaseFixture : IAsyncLifetime
             BranchName = "Main Branch",
             IsAdmin = true
         });
+
+        var activeBranch = scope.ServiceProvider
+            .GetRequiredService<DzentoPOS2.App.Services.Systems.IActiveBranchContext>();
+        await activeBranch.InitializeAsync(currentUser);
     }
 
     public AsyncServiceScope CreateScope()

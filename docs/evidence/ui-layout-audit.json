@@ -1,6 +1,6 @@
 {
-  "GeneratedAt": "2026-11-09T11:26:58.0744423+01:00",
-  "ScenarioCount": 72,
+  "GeneratedAt": "2026-11-12T18:01:59.1290846+01:00",
+  "ScenarioCount": 120,
   "ViolationCount": 0,
   "Scenarios": [
     {
@@ -40,12 +40,48 @@
       "Violations": []
     },
     {
+      "Form": "BranchEditDialog",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 13,
+      "Violations": []
+    },
+    {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
+      "Form": "BranchesForm",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 11,
+      "Violations": []
+    },
+    {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Light",
       "Direction": "RTL",
       "Width": 375,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {
@@ -94,12 +130,48 @@
       "Violations": []
     },
     {
+      "Form": "BranchEditDialog",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 13,
+      "Violations": []
+    },
+    {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
+      "Form": "BranchesForm",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 11,
+      "Violations": []
+    },
+    {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Light",
       "Direction": "RTL",
       "Width": 768,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {
@@ -148,12 +220,48 @@
       "Violations": []
     },
     {
+      "Form": "BranchEditDialog",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 13,
+      "Violations": []
+    },
+    {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
+      "Form": "BranchesForm",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 11,
+      "Violations": []
+    },
+    {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Light",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Light",
       "Direction": "RTL",
       "Width": 1440,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {
@@ -202,12 +310,48 @@
       "Violations": []
     },
     {
+      "Form": "BranchEditDialog",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 13,
+      "Violations": []
+    },
+    {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
+      "Form": "BranchesForm",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 11,
+      "Violations": []
+    },
+    {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Light",
       "Direction": "LTR",
       "Width": 375,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {
@@ -256,12 +400,48 @@
       "Violations": []
     },
     {
+      "Form": "BranchEditDialog",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 13,
+      "Violations": []
+    },
+    {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
+      "Form": "BranchesForm",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 11,
+      "Violations": []
+    },
+    {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Light",
       "Direction": "LTR",
       "Width": 768,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {
@@ -310,12 +490,48 @@
       "Violations": []
     },
     {
+      "Form": "BranchEditDialog",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 13,
+      "Violations": []
+    },
+    {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
+      "Form": "BranchesForm",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 11,
+      "Violations": []
+    },
+    {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Light",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Light",
       "Direction": "LTR",
       "Width": 1440,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {
@@ -364,12 +580,48 @@
       "Violations": []
     },
     {
+      "Form": "BranchEditDialog",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 13,
+      "Violations": []
+    },
+    {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
+      "Form": "BranchesForm",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 11,
+      "Violations": []
+    },
+    {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Dark",
       "Direction": "RTL",
       "Width": 375,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {
@@ -418,12 +670,48 @@
       "Violations": []
     },
     {
+      "Form": "BranchEditDialog",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 13,
+      "Violations": []
+    },
+    {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
+      "Form": "BranchesForm",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 11,
+      "Violations": []
+    },
+    {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Dark",
       "Direction": "RTL",
       "Width": 768,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {
@@ -472,12 +760,48 @@
       "Violations": []
     },
     {
+      "Form": "BranchEditDialog",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 13,
+      "Violations": []
+    },
+    {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
+      "Form": "BranchesForm",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 11,
+      "Violations": []
+    },
+    {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Dark",
+      "Direction": "RTL",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Dark",
       "Direction": "RTL",
       "Width": 1440,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {
@@ -526,12 +850,48 @@
       "Violations": []
     },
     {
+      "Form": "BranchEditDialog",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 13,
+      "Violations": []
+    },
+    {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
+      "Form": "BranchesForm",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 11,
+      "Violations": []
+    },
+    {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 375,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Dark",
       "Direction": "LTR",
       "Width": 375,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {
@@ -580,12 +940,48 @@
       "Violations": []
     },
     {
+      "Form": "BranchEditDialog",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 13,
+      "Violations": []
+    },
+    {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
+      "Form": "BranchesForm",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 11,
+      "Violations": []
+    },
+    {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 768,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Dark",
       "Direction": "LTR",
       "Width": 768,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {
@@ -634,12 +1030,48 @@
       "Violations": []
     },
     {
+      "Form": "BranchEditDialog",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 13,
+      "Violations": []
+    },
+    {
+      "Form": "BranchResourcesDialog",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 16,
+      "Violations": []
+    },
+    {
+      "Form": "BranchesForm",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 11,
+      "Violations": []
+    },
+    {
+      "Form": "CrossBranchReportForm",
+      "Theme": "Dark",
+      "Direction": "LTR",
+      "Width": 1440,
+      "Height": 800,
+      "ControlsMeasured": 7,
+      "Violations": []
+    },
+    {
       "Form": "FirstRunModulesDialog",
       "Theme": "Dark",
       "Direction": "LTR",
       "Width": 1440,
       "Height": 800,
-      "ControlsMeasured": 12,
+      "ControlsMeasured": 13,
       "Violations": []
     },
     {

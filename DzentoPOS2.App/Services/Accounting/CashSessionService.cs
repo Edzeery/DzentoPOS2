@@ -35,6 +35,7 @@ namespace DzentoPOS2.App.Services.Accounting
         private readonly IBusinessClock _clock;
         private readonly ISalesEventPublisher _events;
         private readonly IAuthorizationGuard _guard;
+        private readonly IActiveBranchContext _activeBranch;
 
         public CashSessionService(
             ICashSessionRepository sessionRepo,
@@ -45,7 +46,8 @@ namespace DzentoPOS2.App.Services.Accounting
             AppDbContext context,
             IBusinessClock clock,
             ISalesEventPublisher events,
-            IAuthorizationGuard guard)
+            IAuthorizationGuard guard,
+            IActiveBranchContext activeBranch)
         {
             _sessionRepo = sessionRepo;
             _cashboxRepo = cashboxRepo;
@@ -56,11 +58,16 @@ namespace DzentoPOS2.App.Services.Accounting
             _clock = clock;
             _events = events;
             _guard = guard;
+            _activeBranch = activeBranch;
         }
 
         public async Task<List<CashboxDto>> GetCashboxesAsync()
         {
-            var boxes = await _cashboxRepo.GetActiveAsync();
+            var branchId = _activeBranch.ActiveBranchId;
+            var boxes = await _context.Cashboxes
+                .AsNoTracking()
+                .Where(c => c.BranchId == branchId && c.IsActive)
+                .ToListAsync();
             return boxes
                 .Select(c => new CashboxDto
                 {
@@ -74,7 +81,16 @@ namespace DzentoPOS2.App.Services.Accounting
 
         public async Task<CashSessionDto?> GetOpenSessionAsync()
         {
-            var session = await _sessionRepo.GetOpenAsync();
+            var branchId = _activeBranch.ActiveBranchId;
+            var cashboxId = await _context.Cashboxes
+                .AsNoTracking()
+                .Where(c => c.BranchId == branchId && c.IsActive)
+                .OrderBy(c => c.CreatedAt)
+                .ThenBy(c => c.Id)
+                .Select(c => (Guid?)c.Id)
+                .FirstOrDefaultAsync();
+            if (cashboxId is null) return null;
+            var session = await _sessionRepo.GetOpenByCashboxAsync(cashboxId.Value);
             if (session == null) return null;
 
             return Map(session);
@@ -105,6 +121,12 @@ namespace DzentoPOS2.App.Services.Accounting
                 ?? throw new CodedDomainException(
                     DomainErrorCodes.CashboxNotFound,
                     $"Cashbox {dto.CashboxId} not found.");
+
+            // Reject cashbox from a different branch.
+            if (cashbox.BranchId != _activeBranch.ActiveBranchId)
+                throw new CodedDomainException(
+                    DomainErrorCodes.CashboxNotFound,
+                    $"Cashbox {dto.CashboxId} does not belong to the active branch.");
 
             var session = new CashSession
             {

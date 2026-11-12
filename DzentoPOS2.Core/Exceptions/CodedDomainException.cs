@@ -25,6 +25,25 @@ public static class DomainErrorCodes
     public const string SessionNotFound = "cash.session_not_found";
     public const string CashboxNotFound = "cash.cashbox_not_found";
     public const string PermissionDenied = "auth.permission_denied";
+
+    // Branches
+    public const string BranchNameRequired = "branch.name_required";
+    public const string BranchDuplicateName = "branch.duplicate_name";
+    public const string BranchNotFound = "branch.not_found";
+    public const string BranchLastActive = "branch.last_active";
+    public const string BranchHasOpenSession = "branch.has_open_session";
+    public const string BranchMainCannotDeactivate = "branch.main_cannot_deactivate";
+
+    // Branch resources (warehouses & cashboxes). A branch owns warehouses and
+    // cashboxes; they are deactivated, never deleted.
+    public const string WarehouseNameRequired = "warehouse.name_required";
+    public const string WarehouseDuplicateName = "warehouse.duplicate_name";
+    public const string WarehouseNotFound = "warehouse.not_found";
+    public const string WarehouseLastActive = "warehouse.last_active";
+    public const string CashboxNameRequired = "cashbox.name_required";
+    public const string CashboxDuplicateName = "cashbox.duplicate_name";
+    public const string CashboxLastActive = "cashbox.last_active";
+    public const string CashboxHasOpenSession = "cashbox.has_open_session";
 }
 
 /// <summary>

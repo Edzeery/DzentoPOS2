@@ -193,6 +193,10 @@ public sealed class SaleServiceE3Tests
                 BranchId = null
             });
 
+            var activeBranch = scope.ServiceProvider
+                .GetRequiredService<DzentoPOS2.App.Services.Systems.IActiveBranchContext>();
+            await activeBranch.InitializeAsync(currentUser);
+
             var sales = scope.ServiceProvider.GetRequiredService<ISaleService>();
 
             var sale = await sales.CreateAsync(new CreateSaleDto
@@ -277,6 +281,10 @@ public sealed class SaleServiceE3Tests
                 IsAdmin = true,
                 BranchId = null
             });
+
+            var activeBranch = scope.ServiceProvider
+                .GetRequiredService<DzentoPOS2.App.Services.Systems.IActiveBranchContext>();
+            await activeBranch.InitializeAsync(currentUser);
 
             // 4) A product seeded through the opening-quantity path.
             var category = new ProductCategory { Name = "Cat", IsActive = true };

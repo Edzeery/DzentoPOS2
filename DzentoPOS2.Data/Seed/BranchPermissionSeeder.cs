@@ -18,7 +18,12 @@ public static class BranchPermissionSeeder
         {
             Permissions.BranchesSwitch,
             Permissions.BranchesViewAll,
-            Permissions.BranchesActivitiesEdit
+            Permissions.BranchesActivitiesEdit,
+            Permissions.BranchesView,
+            Permissions.BranchesCreate,
+            Permissions.BranchesEdit,
+            Permissions.BranchesDeactivate,
+            Permissions.BranchesManage
         };
 
         foreach (var perm in permissions)

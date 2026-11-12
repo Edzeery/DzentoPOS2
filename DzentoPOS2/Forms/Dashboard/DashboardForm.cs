@@ -7,11 +7,12 @@ using DzentoPOS2.WinForms.Controls;
 using DzentoPOS2.App.Services.Partners;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.WinForms.Modules.Dashboard;
+using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.WinForms.Themes;
 
 namespace DzentoPOS2.WinForms.Forms.Dashboard
 {
-    public partial class DashboardForm : LocalizableFormBase
+    public partial class DashboardForm : LocalizableFormBase, IBranchAware
     {
         private readonly IDashboardService _dashboardService;
         private readonly ICustomerService _customerService;
@@ -29,6 +30,7 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
         private System.Windows.Forms.Timer _debounceTimer = null!;
         private Guid? _selectedCustomerId;
         private int _selectedPresetIndex = 3;
+        private bool _modulesBuilt;
 
         public DashboardForm(IDashboardService dashboardService, ICustomerService customerService, ILanguageService languageService, RegionalContext regional)
             : base(languageService)
@@ -80,6 +82,8 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
 
             SuspendLayout();
 
+            _modulesBuilt = false;
+
             while (_layout.Controls.Count > 0)
             {
                 var c = _layout.Controls[0];
@@ -93,12 +97,19 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
             _layout.Controls.Add(_insights.Build(), 0, 3);
             _layout.Controls.Add(_charts.Build(), 0, 4);
 
+            _modulesBuilt = true;
             ResumeLayout();
         }
 
         protected override void OnLanguageChangedAfterLoadText() => RunSafe(RefreshSummaryAsync);
 
         protected override void OnInitialized() => RunSafe(RefreshSummaryAsync);
+
+        public Task OnBranchChangedAsync(Guid branchId)
+        {
+            RunSafe(RefreshSummaryAsync);
+            return Task.CompletedTask;
+        }
 
         private FlowLayoutPanel BuildFilterBar()
         {
@@ -213,7 +224,7 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
 
         private DashboardFilterDto GetFilter()
         {
-            var preset = _cmbDatePreset.SelectedIndex switch
+            var preset = _selectedPresetIndex switch
             {
                 0 => DashboardDatePreset.Today,
                 1 => DashboardDatePreset.Yesterday,
@@ -242,6 +253,10 @@ namespace DzentoPOS2.WinForms.Forms.Dashboard
 
         private void RefreshSummarySafe()
         {
+            // The dashboard modules are created by LoadText(); never touch them
+            // before they exist (a branch change can fire first).
+            if (!_modulesBuilt) return;
+
             RunSafe(async () =>
             {
                 var data = await _dashboardService.GetSummaryAsync(GetFilter());

@@ -2,6 +2,247 @@
 
 All notable changes to the DzentoPOS2 project are documented in this file.
 
+## [Unreleased] - 2026-11-12 (Branch management, Phase 4: unified cross-branch report)
+
+### Added
+- **`ICrossBranchReportService` / `CrossBranchReportService`** in
+  `DzentoPOS2.App/Services/Reports`: one row per branch for a period (sales,
+  returns, net sales, purchases, expenses, gross profit, net profit) plus a
+  grand total, so a manager can compare every branch side by side. Read-only.
+- **`CrossBranchReportFilterDto`, `CrossBranchReportDto`, `BranchReportRowDto`**
+  in `DzentoPOS2.Shared/Contracts/DTOs/Reports/CrossBranchReportDtos.cs`.
+- **`CrossBranchReportForm`** (`DzentoPOS2/Forms/Reports`): period preset
+  combo (reusing `DatePreset*`), from/to pickers shown only for *Custom*, an
+  **All branches** checkbox and a **Refresh** action over a bold-total grid.
+  It is `IBranchAware` and reloads when the active branch changes.
+- **`MainForm` navigation**: a `CrossBranchReport` sidebar button after
+  `Branches`, visible only when the user holds **both** `ReportsView` and
+  `BranchesViewAll`.
+- **Localization** for the new UI in all four resource files and
+  `AppStrings.Designer.cs`: `CrossBranchReport`, `NetSales`, `ViewAllBranches`.
+- `CrossBranchReportForm` is now part of the **scored** `--layout-audit` matrix.
+
+### Access model
+- The report always requires `ReportsView`.
+- The `ViewAllBranches` flag is only a **request**: every branch is returned
+  only when the caller also holds `BranchesViewAll`; otherwise the report
+  silently falls back to the active branch (`ViewAllBranches = false`).
+
+### Consistency
+- Profit columns follow the same `ProfitCalculator` math over the frozen line
+  values as the dashboard (revenue net of discount, stored unit cost, and the
+  returns' profit impact), so the report and the dashboard can never disagree.
+
+### Verified
+- Build 0 errors; Unit **194/194**; Integration **135/135** (2 new
+  `CrossBranchReportTests`).
+- Localization parity: **0 diff** across `ar`/`en`/`fr`.
+- Migration audit: PASSED (0 rows removed, 0 changed, 2 seed rows added).
+- `--layout-audit`: **120 scenarios, 0 violations** (2592 controls, 10 scored
+  forms at 375/768/1440 × RTL/LTR × Light/Dark).
+
+## [Unreleased] - 2026-11-12 (Branch management, Phase 3: warehouses & cashboxes)
+
+### Added
+- **`IBranchResourceService` / `BranchResourceService`** in
+  `DzentoPOS2.App/Services/Businesses`: list/create/activate-deactivate of the
+  warehouses and cashboxes that belong to a branch. Every operation is
+  permission-guarded.
+- **`WarehouseListItemDto`, `CashboxListItemDto`, `CreateWarehouseDto`,
+  `CreateCashboxDto`** in `DzentoPOS2.Shared/Contracts/DTOs/Businesses`.
+- **`BranchResourcesDialog`**: per-branch management of warehouses and
+  cashboxes (two grids with inline add rows and an activate/deactivate toggle).
+  Opened from a new **Warehouses & cashboxes** action on `BranchesForm`.
+- **Localization** for the resource UI in all four resource files and
+  `AppStrings.Designer.cs`: `Location`, `AddWarehouse`, `AddCashbox`,
+  `BranchResources`, `DeactivateConfirm` and the seven warehouse/cashbox
+  `*Msg` error messages.
+- `BranchResourcesDialog` is now part of the **scored** `--layout-audit` matrix.
+
+### Changed
+- **`ExceptionFormatter`** maps the new warehouse/cashbox error codes to their
+  localized `AppStrings` messages.
+
+### Safety rules (deactivation never deletes rows)
+- The **last active warehouse** of a branch cannot be deactivated.
+- The **last active cashbox** of a branch cannot be deactivated.
+- A cashbox with an **open cash session** cannot be deactivated.
+- New stable error codes: `WarehouseNameRequired`, `WarehouseDuplicateName`,
+  `WarehouseNotFound`, `WarehouseLastActive`, `CashboxNameRequired`,
+  `CashboxDuplicateName`, `CashboxLastActive`, `CashboxHasOpenSession`.
+
+### Verified
+- Build 0 errors; Unit **194/194**; Integration **133/133** (10 new
+  `BranchResourceTests`).
+- Localization parity: **0 diff** across `ar`/`en`/`fr`.
+- Migration audit: PASSED (0 rows removed, 0 changed, 2 seed rows added).
+- `--layout-audit`: **108 scenarios, 0 violations** (9 scored forms at
+  375/768/1440 × RTL/LTR × Light/Dark).
+
+## [Unreleased] - 2026-11-12 (Branch management, Phase 2: UI)
+
+### Added
+- **`BranchesForm`** (`DzentoPOS2/Forms/Businesses`): branch-management list
+  with a search box, Add/Edit toolbar actions and an Activate/Deactivate toggle
+  whose label follows the selected row. The grid shows name, city, phone,
+  warehouse count, cashbox count and active state.
+- **`BranchEditDialog`**: create/edit dialog for the descriptive fields (name,
+  city, street, phone, active). The default warehouse and cashbox are still
+  provisioned by the service when a branch is created.
+- **Branch navigation entry** in `MainForm`: a `Branches` sidebar button wired
+  to `NavigateTo<BranchesForm>`, hidden unless the signed-in user holds
+  `BranchesManage` or `BranchesView`.
+- **Localization** for the branch UI in all four resource files
+  (`AppStrings.resx`, `.en`, `.ar`, `.fr`) and `AppStrings.Designer.cs`:
+  `Branches`, `AddBranch`, `EditBranch`, `BranchName`, `BranchPhone`,
+  `BranchStreet`, `Deactivate`, `Activate`, `Cashboxes`, `DeactivateBranchConfirm`
+  and the six `Branch*Msg` error messages.
+- Both branch forms are now part of the **scored** `--layout-audit` matrix.
+
+### Changed
+- **`ExceptionFormatter`** maps the six branch error codes to their localized
+  `AppStrings` messages instead of showing the untranslated exception message.
+- `BranchesForm`/`BranchEditDialog` registered in the WinForms DI container.
+
+### Safety rules (deactivation never deletes rows)
+- The Activate/Deactivate toggle is the only mutation of a branch's state; it
+  asks for confirmation and relies on the service rules: the **main branch**,
+  the **last active branch** and a branch with an **open cash session** cannot be
+  deactivated.
+
+### Verified
+- Build 0 errors; Unit **194/194**; Integration **123/123**.
+- Localization parity: **0 diff** across `ar`/`en`/`fr`.
+- Migration audit: PASSED (0 rows removed, 0 changed, 13 seed rows added).
+- `--layout-audit`: **96 scenarios, 0 violations** (8 scored forms including
+  branch edit/list, at 375/768/1440 × RTL/LTR × Light/Dark).
+
+## [Unreleased] - 2026-11-12 (Branch management, Phase 1: core)
+
+### Added
+- **`IBranchService` / `BranchService`** in `DzentoPOS2.App/Services/Businesses`:
+  branch list with warehouse/cashbox counts, detail, create, update and
+  activate/deactivate. Every operation is permission-guarded.
+- **Atomic branch creation**: the branch plus its default warehouse and default
+  cashbox are inserted inside one explicit transaction
+  (`BeginTransactionAsync` / `CommitTransactionAsync`); any failure rolls all
+  three back. The default names are `"<branch name> — <main warehouse>"` and
+  `"<branch name> — <main cashbox>"`. The first branch created becomes the main
+  branch.
+- **`BranchDto`, `BranchListItemDto`, `CreateBranchDto`, `UpdateBranchDto`** in
+  `DzentoPOS2.Shared/Contracts/DTOs/Businesses`.
+- **Branch permissions** `BranchesView`, `BranchesCreate`, `BranchesEdit`,
+  `BranchesDeactivate` and the umbrella `BranchesManage`; the granular codes let
+  a supervisor be given a single action while `BranchesManage` is the single
+  grant for a branch manager. A service operation is allowed when the caller
+  holds either.
+- **`IBranchRepository.GetAllOrderedAsync`** and
+  **`IBranchRepository.HasOpenCashSessionAsync`**.
+
+### Changed
+- **`PermissionSeeder`** now inserts the branch-management permission rows (it
+  reflects over every `Permissions` constant) and **`RolePermissionSeeder`**
+  grants `BranchesManage` to the **Manager** role.
+- New stable error codes: `BranchNameRequired`, `BranchDuplicateName`,
+  `BranchNotFound`, `BranchLastActive`, `BranchHasOpenSession`,
+  `BranchMainCannotDeactivate`.
+
+### Safety rules (deactivation never deletes rows)
+- The **main branch** cannot be deactivated.
+- The **last active branch** cannot be deactivated.
+- A branch whose cashbox has an **open cash session** cannot be deactivated.
+
+### Verified
+- Build 0 errors; Unit **194/194**; Integration **123/123** (9 new
+  `BranchManagementTests`).
+- Migration audit: PASSED (0 rows removed, 0 changed, 13 seed rows added).
+
+## [Unreleased] - 2026-11-12 (Phase 6 hotfix: dashboard KPI/insights crash)
+
+### Fixed
+- **`KpiCardsModule`** no longer throws `IndexOutOfRangeException`: the KPI
+  cards are built from a single `(key, icon)` list (13 entries) instead of
+  parallel `Keys`/`Icons` arrays that had drifted out of sync; a missing
+  localized title now falls back to the key instead of crashing.
+- **`InsightsModule`, `ChartsModule`, `ProfitSummaryModule`** tolerate
+  `Update` being called before `Build` (a branch change can arrive before the
+  form loaded) — missing or disposed controls are skipped instead of
+  null-dereferenced.
+- **`DashboardForm`** ignores summary refreshes until its modules are built,
+  so a build failure can no longer cascade into a `NullReferenceException`
+  reported through `LocalizableFormBase.RunSafe`.
+
+### Added
+- **Dashboard smoke pass** in `--layout-audit`: the real `DashboardForm` load
+  path is exercised in light/dark and RTL/LTR, and any exception fails the
+  audit instead of being swallowed by `Application.ThreadException`.
+- **`DashboardKpiCardMapTests.Build_ContainsExactlyTheRenderedCardKeys`** locks
+  the thirteen rendered card keys.
+
+### Verified
+- Build 0 errors; Unit **194/194**; Integration **114/114**.
+- Migration audit: PASSED (0 rows removed; 2 seed rows added).
+- Layout audit: 72 scenarios, 0 violations (2028 controls measured) plus the
+  dashboard smoke pass in Light/Dark x RTL/LTR.
+
+## [Unreleased] - 2026-11-12 (Phase 6 hardening: branch-aware UI, batch allocation, coverage)
+
+### Added
+- **`IBranchAware`** implemented by Dashboard, Sales, Purchases, Expenses, CashSession, Products and Reports pages; the shell reloads the current page when the active branch changes.
+- **`INavigationService.Navigate(Type)`** so the shell can reload a page without reopening it from the menu.
+- **Weight entry** in sales: `WeightEntryDialog` sets the line quantity from the weighed amount.
+- **Batch selection** in sales: `BatchSelectionDialog` records `BatchId` on the cart line; `StockChange` and `SaleService` carry it to stock allocation.
+- **Integration coverage**: `RealPathIntegrationTests` (fresh bootstrap, admin login, every module write/read, legacy upgrade backfill), `BranchScopingIntegrationTests` (cashboxes, sessions, valuation, snapshots, dashboard ViewAll), `SerialUnitTests` (11), `BatchServiceTests` (9), `StockBatchAllocationTests` (4).
+- **`PurchasePreviewCalculatorTests`** (3) and a dashboard date-preset regression test.
+
+### Changed
+- **`ActiveBranchContext`** is async-safe: no lazy database initialization in getters, an explicit uninitialized-state error, `CanSwitchBranch` cached at initialization, and an empty-branch fallback with a warning when no branch can be resolved.
+- **Batch allocation** consumes the cashier-selected batch first and the remainder FEFO; batch decrements are tracked and persisted across scopes.
+- **Batch ordering** places rows without an expiry date last in variant and warehouse queries.
+- **`InvoiceBranchBackfill`** now covers sales invoices, purchase invoices, expenses, warehouses, cashboxes, cash registers, sales quotations and inventory snapshots. Legacy snapshots that share a date with an existing main-branch row stay as legacy aggregates, so the unique `(BranchId, SnapshotDate)` index is never violated and no rows are deleted.
+
+### Verified
+- Build 0 errors; Unit **193/193**; Integration **114/114**.
+- Migration audit: PASSED (0 rows removed; 4 legacy snapshot rows assigned to the main branch; 2 seed rows added).
+- Layout audit: 72 scenarios, 0 violations (2028 controls measured).
+
+## [Unreleased] - 2026-11-11 (Phase 6: Active Branch Context complete)
+
+### Added
+- **IActiveBranchContext** (Singleton): real active branch context with IBranchResolver fallback to main branch.
+- **IBranchSwitchGuardRegistry**: list-based guard for branch switching (cart-not-empty check).
+- **BranchActivity** entity + 8 activity templates + ICapabilityService.
+- **BranchPermissionSeeder**: seeds BranchesSwitch, BranchesViewAll, BranchesActivitiesEdit.
+- **BranchActivitySeeder**: migrates old AppSettings module flags to BranchActivity.
+- **UserBranchBackfill**: fills empty BranchId for all users.
+- **IBranchAware** interface: pages notified on branch change.
+- **BranchScope** enum (Active/All) for read isolation.
+- **InventorySnapshot.BranchId** with conditional unique indexes.
+- **SerialUnit** + **SalesInvoiceItemUnit** entities for serial tracking.
+- **Batch** entity for weight/batch/expiry tracking.
+- **IBatchService** + BatchService (FEFO selection, expiry alerts).
+- **LuhnValidator** for IMEI validation.
+- **SerialUnitPickerDialog** + **WarrantyQueryForm**.
+- **FirstRunModulesDialog** rebuilt with 8 activities.
+- **24 PNG screenshots** for visual verification.
+
+### Changed
+- StoreContextService uses IBranchResolver (no circular dependency).
+- ExpenseService uses IActiveBranchContext (removed User?.BranchId).
+- MainForm branch selector uses IActiveBranchContext.
+- DashboardService filters by active branch + ViewAll permission.
+- CashSessionService filters by active branch.
+- InventoryValuationService filters by branch warehouse.
+- ProductService.GetProductStocksAsync filters by branch.
+- ProductEditDialog uses AppStrings (no hardcoded English).
+- CurrentUserService.BranchId marked [Obsolete].
+
+### Verified
+- Build 0 errors; Unit **185/185**; Integration **80/80** (2 pre-existing flaky).
+- Migration audit: PASSED (0 rows removed).
+- Layout audit: 72 scenarios, 0 violations.
+- HardcodedArabicLiteralTests: 0 literals.
+
 ## [Unreleased] - 2026-11-06 (Phase 5 batch 5.4: benchmark and documentation)
 
 ### Added

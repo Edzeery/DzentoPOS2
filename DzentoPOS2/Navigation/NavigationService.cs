@@ -16,6 +16,8 @@ namespace DzentoPOS2.WinForms.Navigation
         private Label? _titleLabel;
         private Form? _activeForm;
         private IServiceScope? _activeScope;
+
+        public Form? CurrentPage => _activeForm;
         private IconButton? _activeButton;
 
         // Colors — sourced from the central design tokens.
@@ -61,6 +63,45 @@ namespace DzentoPOS2.WinForms.Navigation
         {
             _container = container;
             _titleLabel = titleLabel;
+        }
+
+        public void Navigate(Type formType)
+        {
+            if (_container == null)
+                throw new InvalidOperationException("Navigation host not set.");
+            if (formType == null || !typeof(Form).IsAssignableFrom(formType))
+                return;
+
+            try
+            {
+                var scope = _scopeFactory.CreateScope();
+                var form = (Form)scope.ServiceProvider.GetRequiredService(formType);
+
+                if (_activeForm != null)
+                {
+                    FormTransition.Cancel(_activeForm);
+                    _activeForm.Hide();
+                    _activeForm.Dispose();
+                }
+                if (_activeScope != null)
+                {
+                    if (_activeScope is IAsyncDisposable ad) ad.DisposeAsync().AsTask().Wait();
+                    else _activeScope.Dispose();
+                }
+
+                _activeForm = form;
+                _activeScope = scope;
+                form.TopLevel = false;
+                form.FormBorderStyle = FormBorderStyle.None;
+                form.Dock = DockStyle.Fill;
+                _container.Controls.Clear();
+                _container.Controls.Add(form);
+                form.Show();
+            }
+            catch (Exception ex)
+            {
+                DzentoPOS2.App.Diagnostics.ExceptionLogger.Write(ex, "NavigationService.Navigate(Type)");
+            }
         }
 
         public void SetActiveButton(IconButton button)

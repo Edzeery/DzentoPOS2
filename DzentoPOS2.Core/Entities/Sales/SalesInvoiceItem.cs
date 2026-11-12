@@ -37,6 +37,15 @@ namespace DzentoPOS2.Core.Entities.Sales
         /// (they display the product name instead).</summary>
         public string? VariantName { get; set; }
 
+        /// <summary>Serial number for serialized items (legacy untracked stock).</summary>
+        public string? SerialNumber { get; set; }
+
+        /// <summary>IMEI for phones.</summary>
+        public string? IMEI { get; set; }
+
+        /// <summary>Warranty expiry date (computed from sale date + variant.WarrantyMonths).</summary>
+        public DateTime? WarrantyExpiry { get; set; }
+
         /// <summary>Free text of the line (empty for regular product lines).</summary>
         public string Description { get; set; } = string.Empty;
     }

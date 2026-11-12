@@ -18,6 +18,9 @@ namespace DzentoPOS2.Shared.Contracts.DTOs.Reports
         public decimal InventoryPotentialProfit { get; set; }
         public decimal InventoryExpectedProfit { get; set; }
         public decimal InventoryAtRiskProfit { get; set; }
+        public int InventoryWarningNoSalePrice { get; set; }
+        public int InventoryWarningNegativeMargin { get; set; }
+        public int InventoryWarningZeroCost { get; set; }
         public DashboardCardData ActualProfit { get; set; } = new();
         public DashboardCardData NetProfit { get; set; } = new();
         public decimal MonthlyDiscountAmount { get; set; }

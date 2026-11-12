@@ -1,5 +1,6 @@
 using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Accounting;
+using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.Core.Constants;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services.Interfaces;
@@ -10,7 +11,7 @@ using FontAwesome.Sharp;
 
 namespace DzentoPOS2.WinForms.Forms.Accounting;
 
-public partial class ExpensesForm : LocalizableFormBase
+public partial class ExpensesForm : LocalizableFormBase, IBranchAware
 {
     private readonly IExpenseService _expenseService;
     private readonly IAuthorizationGuard _guard;
@@ -159,6 +160,12 @@ public partial class ExpensesForm : LocalizableFormBase
         {
             System.Diagnostics.Debug.WriteLine("ExpensesForm permission check failed: " + ex.Message);
         }
+    }
+
+    public Task OnBranchChangedAsync(Guid branchId)
+    {
+        RunSafe(LoadLookupsAndDataAsync);
+        return Task.CompletedTask;
     }
 
     private async Task LoadLookupsAndDataAsync()

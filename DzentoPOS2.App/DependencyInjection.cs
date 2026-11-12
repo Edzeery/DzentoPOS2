@@ -1,6 +1,7 @@
 ﻿using DzentoPOS2.App.Authentication;
 using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Accounting;
+using DzentoPOS2.App.Services.Businesses;
 using DzentoPOS2.App.Services.Events;
 using DzentoPOS2.App.Services.Identity;
 using DzentoPOS2.App.Services.Identity.Interfaces;
@@ -37,6 +38,7 @@ namespace DzentoPOS2.App
             services.AddSingleton<Shared.Helpers.RegionalContext>();
             services.AddSingleton<IBusinessClock, BusinessClock>();
             services.AddScoped<IStoreContextService, StoreContextService>();
+            services.AddSingleton<IBranchResolver, BranchResolver>();
             services.AddSingleton<IActiveBranchContext, ActiveBranchContext>();
             services.AddSingleton<IBranchSwitchGuardRegistry, BranchSwitchGuardRegistry>();
             services.AddTransient<IBranchSwitchGuard, BranchSwitchGuard>();
@@ -85,8 +87,14 @@ namespace DzentoPOS2.App
                 IDashboardService,
                 DashboardService>();
 
+            services.AddScoped<
+                ICrossBranchReportService,
+                CrossBranchReportService>();
+
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IBarcodeService, BarcodeService>();
+            services.AddScoped<ISerialUnitService, SerialUnitService>();
+            services.AddScoped<IBatchService, BatchService>();
             services.AddScoped<IPosProductStore, PosProductStore>();
             services.AddSingleton<ICatalogChangeNotifier, CatalogChangeNotifier>();
             services.AddScoped<IStockService, StockService>();
@@ -102,6 +110,10 @@ namespace DzentoPOS2.App
             services.AddScoped<IPurchaseService, PurchaseService>();
 
             services.AddScoped<ICashSessionService, CashSessionService>();
+
+            services.AddScoped<IBranchService, BranchService>();
+
+            services.AddScoped<IBranchResourceService, BranchResourceService>();
 
             services.AddScoped<IModuleService, ModuleService>();
 

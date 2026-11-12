@@ -14,6 +14,7 @@ namespace DzentoPOS2.App.Session
 
         string? RoleName { get; }
 
+        [Obsolete("Use IActiveBranchContext.ActiveBranchId instead.")]
         Guid? BranchId { get; }
 
         /// <summary>

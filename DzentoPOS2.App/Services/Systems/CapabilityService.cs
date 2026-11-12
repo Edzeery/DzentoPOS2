@@ -36,6 +36,9 @@ public class CapabilityService : ICapabilityService
     public async Task<BranchCapability> GetCapabilitiesAsync(CancellationToken ct = default)
     {
         var branchId = _activeBranch.ActiveBranchId;
+        if (branchId == Guid.Empty)
+            return BranchCapability.None;
+
         var activities = await _context.BranchActivities
             .AsNoTracking()
             .Where(a => a.BranchId == branchId && a.IsEnabled)
@@ -52,6 +55,9 @@ public class CapabilityService : ICapabilityService
 
     public async Task SetCapabilitiesAsync(Guid branchId, BranchCapability capabilities, CancellationToken ct = default)
     {
+        if (branchId == Guid.Empty)
+            return; // No active branch; nothing to do.
+
         // Remove existing activities for this branch.
         var existing = await _context.BranchActivities
             .Where(a => a.BranchId == branchId)

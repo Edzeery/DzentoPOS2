@@ -84,7 +84,10 @@ namespace DzentoPOS2.Data.Seed
 
                     Permissions.ReportsView,
                     Permissions.SettingsView,
-                    Permissions.BackupCreate
+                    Permissions.BackupCreate,
+
+                    // Branch management: one umbrella grant for a branch manager.
+                    Permissions.BranchesManage
                 });
 
             // CASHIER

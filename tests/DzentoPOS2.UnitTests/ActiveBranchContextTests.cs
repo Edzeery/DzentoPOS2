@@ -2,6 +2,7 @@ using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.App.Session;
 using DzentoPOS2.Core.Constants;
+using DzentoPOS2.Core.Entities.Businesses;
 using DzentoPOS2.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,7 +34,7 @@ public class ActiveBranchContextTests
         public Task RefreshCacheAsync(Guid userId) => Task.CompletedTask;
     }
 
-    private static (ActiveBranchContext ctx, FakeCurrentUser user, FakePermissionService perm, AppDbContext db) Create()
+    private static (ActiveBranchContext ctx, FakeCurrentUser user, FakePermissionService perm, AppDbContext db, IBranchResolver resolver) Create()
     {
         var dbPath = Path.Combine(Path.GetTempPath(), $"test-{Guid.NewGuid():N}.db");
         var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlite($"Data Source={dbPath}").Options;
@@ -47,74 +48,97 @@ public class ActiveBranchContextTests
         services.AddSingleton<ICurrentUserService>(user);
         services.AddSingleton<IPermissionService>(perm);
         services.AddSingleton<AppDbContext>(db);
+        services.AddSingleton<IBranchResolver>(sp => new BranchResolver(sp));
         var sp = services.BuildServiceProvider();
 
-        var ctx = new ActiveBranchContext(sp);
-        return (ctx, user, perm, db);
+        var resolver = sp.GetRequiredService<IBranchResolver>();
+        var ctx = new ActiveBranchContext(sp, resolver);
+        return (ctx, user, perm, db, resolver);
     }
 
     [Fact]
-    public void TrySwitch_WithoutPermission_ReturnsFalse()
+    public async Task TrySwitch_WithoutPermission_ReturnsFalse()
     {
-        var (ctx, user, perm, db) = Create();
+        var (ctx, user, perm, db, resolver) = Create();
         perm.HasPermission = false;
-        user.SetUser(new UserSession { BranchId = Guid.NewGuid(), BranchName = "A" });
-
-        var result = ctx.TrySwitchBranchAsync(Guid.NewGuid()).GetAwaiter().GetResult();
-        Assert.False(result);
-    }
-
-    [Fact]
-    public void TrySwitch_NonExistentBranch_ReturnsFalse()
-    {
-        var (ctx, user, perm, db) = Create();
-        perm.HasPermission = true;
         var branchId = Guid.NewGuid();
-        user.SetUser(new UserSession { BranchId = branchId, BranchName = "A" });
-
-        var result = ctx.TrySwitchBranchAsync(Guid.NewGuid()).GetAwaiter().GetResult();
-        Assert.False(result);
-    }
-
-    [Fact]
-    public void TrySwitch_SameBranch_ReturnsTrue_NoEvent()
-    {
-        var (ctx, user, perm, db) = Create();
-        perm.HasPermission = true;
-        var branchId = Guid.NewGuid();
-        // Seed branch
-        db.Branches.Add(new DzentoPOS2.Core.Entities.Businesses.Branch { Id = branchId, Name = "A", IsActive = true, IsMainBranch = true });
+        db.Branches.Add(new Branch { Id = branchId, Name = "A", IsActive = true, IsMainBranch = true });
         db.SaveChanges();
         user.SetUser(new UserSession { BranchId = branchId, BranchName = "A" });
+        await ctx.InitializeAsync(user);
 
-        // Trigger initialization
-        var currentId = ctx.ActiveBranchId;
-        Assert.Equal(branchId, currentId);
+        var result = await ctx.TrySwitchBranchAsync(Guid.NewGuid());
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task TrySwitch_NonExistentBranch_ReturnsFalse()
+    {
+        var (ctx, user, perm, db, resolver) = Create();
+        perm.HasPermission = true;
+        var branchId = Guid.NewGuid();
+        db.Branches.Add(new Branch { Id = branchId, Name = "A", IsActive = true, IsMainBranch = true });
+        db.SaveChanges();
+        user.SetUser(new UserSession { BranchId = branchId, BranchName = "A" });
+        await ctx.InitializeAsync(user);
+
+        var result = await ctx.TrySwitchBranchAsync(Guid.NewGuid());
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task TrySwitch_InactiveBranch_ReturnsFalse()
+    {
+        var (ctx, user, perm, db, resolver) = Create();
+        perm.HasPermission = true;
+        var branchId = Guid.NewGuid();
+        var inactiveBranchId = Guid.NewGuid();
+        db.Branches.Add(new Branch { Id = branchId, Name = "A", IsActive = true, IsMainBranch = true });
+        db.Branches.Add(new Branch { Id = inactiveBranchId, Name = "Inactive", IsActive = false, IsMainBranch = false });
+        db.SaveChanges();
+        user.SetUser(new UserSession { BranchId = branchId, BranchName = "A" });
+        await ctx.InitializeAsync(user);
+
+        var result = await ctx.TrySwitchBranchAsync(inactiveBranchId);
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task TrySwitch_SameBranch_ReturnsTrue_NoEvent()
+    {
+        var (ctx, user, perm, db, resolver) = Create();
+        perm.HasPermission = true;
+        var branchId = Guid.NewGuid();
+        db.Branches.Add(new Branch { Id = branchId, Name = "A", IsActive = true, IsMainBranch = true });
+        db.SaveChanges();
+        user.SetUser(new UserSession { BranchId = branchId, BranchName = "A" });
+        await ctx.InitializeAsync(user);
 
         bool eventFired = false;
         ctx.BranchChanged += (_, _) => eventFired = true;
 
-        var result = ctx.TrySwitchBranchAsync(branchId).GetAwaiter().GetResult();
+        var result = await ctx.TrySwitchBranchAsync(branchId);
         Assert.True(result);
         Assert.False(eventFired);
     }
 
     [Fact]
-    public void TrySwitch_Success_FiresBranchChanged()
+    public async Task TrySwitch_Success_FiresBranchChanged()
     {
-        var (ctx, user, perm, db) = Create();
+        var (ctx, user, perm, db, resolver) = Create();
         perm.HasPermission = true;
         var branchA = Guid.NewGuid();
         var branchB = Guid.NewGuid();
-        db.Branches.Add(new DzentoPOS2.Core.Entities.Businesses.Branch { Id = branchA, Name = "A", IsActive = true, IsMainBranch = true });
-        db.Branches.Add(new DzentoPOS2.Core.Entities.Businesses.Branch { Id = branchB, Name = "B", IsActive = true, IsMainBranch = false });
+        db.Branches.Add(new Branch { Id = branchA, Name = "A", IsActive = true, IsMainBranch = true });
+        db.Branches.Add(new Branch { Id = branchB, Name = "B", IsActive = true, IsMainBranch = false });
         db.SaveChanges();
         user.SetUser(new UserSession { BranchId = branchA, BranchName = "A" });
+        await ctx.InitializeAsync(user);
 
         bool eventFired = false;
         ctx.BranchChanged += (_, _) => eventFired = true;
 
-        var result = ctx.TrySwitchBranchAsync(branchB).GetAwaiter().GetResult();
+        var result = await ctx.TrySwitchBranchAsync(branchB);
         Assert.True(result);
         Assert.True(eventFired);
         Assert.Equal(branchB, ctx.ActiveBranchId);
@@ -123,7 +147,7 @@ public class ActiveBranchContextTests
     [Fact]
     public void CanSwitchBranch_ReflectsPermission()
     {
-        var (ctx, user, perm, db) = Create();
+        var (ctx, user, perm, db, resolver) = Create();
         user.SetUser(new UserSession { BranchId = Guid.NewGuid(), BranchName = "A" });
 
         perm.HasPermission = true;
@@ -135,31 +159,95 @@ public class ActiveBranchContextTests
     }
 
     [Fact]
-    public void Reset_OnUserChange_ClearsState()
+    public async Task Reset_OnUserChange_ClearsState()
     {
-        var (ctx, user, perm, db) = Create();
+        var (ctx, user, perm, db, resolver) = Create();
         perm.HasPermission = true;
         var branchA = Guid.NewGuid();
         var branchB = Guid.NewGuid();
-        db.Branches.Add(new DzentoPOS2.Core.Entities.Businesses.Branch { Id = branchA, Name = "A", IsActive = true, IsMainBranch = true });
-        db.Branches.Add(new DzentoPOS2.Core.Entities.Businesses.Branch { Id = branchB, Name = "B", IsActive = true, IsMainBranch = false });
+        db.Branches.Add(new Branch { Id = branchA, Name = "A", IsActive = true, IsMainBranch = true });
+        db.Branches.Add(new Branch { Id = branchB, Name = "B", IsActive = true, IsMainBranch = false });
         db.SaveChanges();
 
         user.SetUser(new UserSession { BranchId = branchA, BranchName = "A" });
+        await ctx.InitializeAsync(user);
         Assert.Equal(branchA, ctx.ActiveBranchId);
 
+        // Reset and re-initialize for branch B
+        ctx.Reset();
         user.Clear();
         user.SetUser(new UserSession { BranchId = branchB, BranchName = "B" });
+        await ctx.InitializeAsync(user);
         Assert.Equal(branchB, ctx.ActiveBranchId);
     }
 
     [Fact]
     public void EnsureInitialized_DoesNotInitialize_WhenUserNull()
     {
-        var (ctx, user, perm, db) = Create();
+        var (ctx, user, perm, db, resolver) = Create();
         // No user set
-        // ActiveBranchId should not throw, but _initialized stays false
-        var id = ctx.ActiveBranchId;
-        Assert.Equal(Guid.Empty, id);
+        // ActiveBranchId should throw
+        Assert.Throws<InvalidOperationException>(() => ctx.ActiveBranchId);
+    }
+
+    [Fact]
+    public async Task CanSwitchBranch_IsCachedFromInitialize()
+    {
+        var (ctx, user, perm, db, resolver) = Create();
+        var branchId = Guid.NewGuid();
+        db.Branches.Add(new Branch { Id = branchId, Name = "A", IsActive = true, IsMainBranch = true });
+        db.SaveChanges();
+
+        user.SetUser(new UserSession { BranchId = branchId, BranchName = "A" });
+        perm.HasPermission = true;
+        await ctx.InitializeAsync(user);
+
+        Assert.True(ctx.CanSwitchBranch);
+
+        // A later permission change must not be observed synchronously; the
+        // getter never queries the database.
+        perm.HasPermission = false;
+        Assert.True(ctx.CanSwitchBranch);
+    }
+
+    [Fact]
+    public void CanSwitchBranch_BeforeInitialize_ReturnsFalse()
+    {
+        var (ctx, user, perm, db, resolver) = Create();
+        Assert.False(ctx.CanSwitchBranch);
+    }
+
+    [Fact]
+    public async Task Initialize_NoResolvableBranch_InitializesEmpty()
+    {
+        var (ctx, user, perm, db, resolver) = Create();
+        user.SetUser(new UserSession { BranchId = null, BranchName = string.Empty });
+        perm.HasPermission = true;
+
+        await ctx.InitializeAsync(user);
+
+        Assert.Equal(Guid.Empty, ctx.ActiveBranchId);
+        Assert.Equal(string.Empty, ctx.ActiveBranchName);
+        Assert.False(ctx.CanSwitchBranch);
+    }
+
+    [Fact]
+    public void InitializeEmpty_EnablesGettersWithoutABranch()
+    {
+        var (ctx, user, perm, db, resolver) = Create();
+
+        ctx.InitializeEmpty();
+
+        Assert.Equal(Guid.Empty, ctx.ActiveBranchId);
+        Assert.Equal(string.Empty, ctx.ActiveBranchName);
+        Assert.False(ctx.CanSwitchBranch);
+    }
+
+    [Fact]
+    public async Task TrySwitch_BeforeInitialize_Throws()
+    {
+        var (ctx, user, perm, db, resolver) = Create();
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => ctx.TrySwitchBranchAsync(Guid.NewGuid()));
     }
 }

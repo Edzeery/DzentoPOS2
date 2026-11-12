@@ -1,12 +1,15 @@
-using DzentoPOS2.App.Services.Inventory;
+﻿using DzentoPOS2.App.Services.Inventory;
 using DzentoPOS2.App.Services.Reports.Interfaces;
+using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Systems;
+using DzentoPOS2.Core.Constants;
 using DzentoPOS2.Core.Services.Sales;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Shared.Contracts.DTOs.Reports;
 using DzentoPOS2.Shared.Helpers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 
 namespace DzentoPOS2.App.Services.Reports
@@ -19,6 +22,7 @@ namespace DzentoPOS2.App.Services.Reports
         private readonly IInventoryValuationService _valuation;
         private readonly IInventorySnapshotService _snapshots;
         private readonly IActiveBranchContext _activeBranch;
+        private readonly IServiceProvider _serviceProvider;
         private Guid _activeBranchId;
         private bool _viewAllBranches;
 
@@ -28,7 +32,8 @@ namespace DzentoPOS2.App.Services.Reports
             IBusinessClock clock,
             IInventoryValuationService valuation,
             IInventorySnapshotService snapshots,
-            IActiveBranchContext activeBranch)
+            IActiveBranchContext activeBranch,
+            IServiceProvider serviceProvider)
         {
             _context = context;
             _regional = regional;
@@ -36,6 +41,7 @@ namespace DzentoPOS2.App.Services.Reports
             _valuation = valuation;
             _snapshots = snapshots;
             _activeBranch = activeBranch;
+            _serviceProvider = serviceProvider;
         }
 
         public async Task<DashboardSummaryDto> GetSummaryAsync(DashboardFilterDto? filter = null)
@@ -43,7 +49,16 @@ namespace DzentoPOS2.App.Services.Reports
             filter ??= new DashboardFilterDto { Preset = DashboardDatePreset.Today };
 
             _activeBranchId = _activeBranch.ActiveBranchId;
-            _viewAllBranches = filter?.ViewAllBranches == true; // TODO: check permission
+            // Enforce permission: only users with BranchesViewAll can view all branches.
+            var canViewAll = false;
+            try
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var permService = scope.ServiceProvider.GetRequiredService<IPermissionService>();
+                canViewAll = await permService.HasPermissionAsync(Permissions.BranchesViewAll);
+            }
+            catch { /* default to false */ }
+            _viewAllBranches = filter?.ViewAllBranches == true && canViewAll;
 
             var localNow = _clock.Now;
             var resolved = DashboardRangeResolver.Resolve(_clock, filter);
@@ -84,7 +99,7 @@ namespace DzentoPOS2.App.Services.Reports
             // double in SQL (translated to CAST(x AS REAL)) and converted back on read.
             // One grouped query computes every sales KPI instead of six round trips.
             var salesStats = await _context.SalesInvoices
-                .Where(s => s.BranchId == _activeBranchId && !s.IsVoided && (customerId == null || s.CustomerId == customerId.Value))
+                .Where(s => (_viewAllBranches || s.BranchId == _activeBranchId) && !s.IsVoided && (customerId == null || s.CustomerId == customerId.Value))
                 .GroupBy(_ => 1)
                 .Select(g => new
                 {
@@ -102,7 +117,7 @@ namespace DzentoPOS2.App.Services.Reports
 
             // Purchases — invoice value (Total); same single grouped query approach.
             var purchaseStats = await _context.PurchaseInvoices
-                .Where(p => p.BranchId == _activeBranchId)
+                .Where(p => (_viewAllBranches || p.BranchId == _activeBranchId))
                 .GroupBy(_ => 1)
                 .Select(g => new
                 {
@@ -121,7 +136,7 @@ namespace DzentoPOS2.App.Services.Reports
             SetCardData(dto.MonthlyPurchases, (decimal)(purchaseStats?.MonthTotal ?? 0), (decimal)(purchaseStats?.LastMonthTotal ?? 0), KpiValueKind.Money);
 
             var monthlyExpenses = await _context.Expenses
-                .Where(e => e.BranchId == _activeBranchId && e.ExpenseDate >= monthStart && e.ExpenseDate < nextMonthStart)
+                .Where(e => (_viewAllBranches || e.BranchId == _activeBranchId) && e.ExpenseDate >= monthStart && e.ExpenseDate < nextMonthStart)
                 .SumAsync(e => (double?)e.Amount) is double me ? (decimal)me : 0m;
 
             // Store operating expenses are never attributed to a single customer
@@ -138,7 +153,7 @@ namespace DzentoPOS2.App.Services.Reports
             var monthRows = await (
                 from item in _context.SalesInvoiceItems
                 join invoice in _context.SalesInvoices on item.SalesInvoiceId equals invoice.Id
-                where invoice.BranchId == _activeBranchId && invoice.CreatedAt >= monthStart && invoice.CreatedAt < nextMonthStart
+                where (_viewAllBranches || invoice.BranchId == _activeBranchId) && invoice.CreatedAt >= monthStart && invoice.CreatedAt < nextMonthStart
                     && !invoice.IsVoided
                     && (customerId == null || invoice.CustomerId == customerId.Value)
                 select new
@@ -158,7 +173,7 @@ namespace DzentoPOS2.App.Services.Reports
             // Fees come from the distinct invoice query (not repeated per line).
             var invoiceFees = await _context.SalesInvoices
                 .AsNoTracking()
-                .Where(i => i.BranchId == _activeBranchId && i.CreatedAt >= monthStart && i.CreatedAt < nextMonthStart && !i.IsVoided)
+                .Where(i => (_viewAllBranches || i.BranchId == _activeBranchId) && i.CreatedAt >= monthStart && i.CreatedAt < nextMonthStart && !i.IsVoided)
                 .ToDictionaryAsync(i => i.Id, i => i.FeesAmount.Amount);
 
             var hasEstimated = monthRows.Any(x => x.IsCostEstimated);
@@ -175,6 +190,9 @@ namespace DzentoPOS2.App.Services.Reports
             dto.InventoryPotentialProfit = valuation.PotentialProfit;
             dto.InventoryExpectedProfit = valuation.ExpectedProfit;
             dto.InventoryAtRiskProfit = valuation.AtRiskProfit;
+            dto.InventoryWarningNoSalePrice = valuation.WarningNoSalePrice;
+            dto.InventoryWarningNegativeMargin = valuation.WarningNegativeMargin;
+            dto.InventoryWarningZeroCost = valuation.WarningZeroCost;
 
             // Daily snapshot (upsert, once per local day).
             await _snapshots.UpsertTodayAsync(valuation);
@@ -199,7 +217,7 @@ namespace DzentoPOS2.App.Services.Reports
                 from r in _context.SalesReturns
                 join i in _context.SalesReturnItems on r.Id equals i.SalesReturnId
                 join inv in _context.SalesInvoices on r.SalesInvoiceId equals inv.Id
-                where inv.BranchId == _activeBranchId && r.CreatedAt >= monthStart && r.CreatedAt < nextMonthStart
+                where (_viewAllBranches || inv.BranchId == _activeBranchId) && r.CreatedAt >= monthStart && r.CreatedAt < nextMonthStart
                     && !inv.IsVoided
                     && (customerId == null || r.CustomerId == customerId.Value)
                 select new
@@ -220,7 +238,7 @@ namespace DzentoPOS2.App.Services.Reports
                     from item in _context.SalesInvoiceItems
                     join inv in _context.SalesInvoices on item.SalesInvoiceId equals inv.Id
                     where returnInvoiceIds.Contains(item.SalesInvoiceId)
-                        && _context.SalesInvoices.Any(inv => inv.Id == item.SalesInvoiceId && inv.BranchId == _activeBranchId)
+                        && _context.SalesInvoices.Any(inv => inv.Id == item.SalesInvoiceId && (_viewAllBranches || inv.BranchId == _activeBranchId))
                     select new
                     {
                         item.SalesInvoiceId,
@@ -295,7 +313,7 @@ namespace DzentoPOS2.App.Services.Reports
             var actualMargin = ProfitCalculator.CalculateMargin(actualProfit, revenue, 1);
             var netMargin = ProfitCalculator.CalculateMargin(netProfit, revenue, 1);
 
-            SetCardData(dto.ExpectedProfit, expected + valuation.ExpectedProfit, 0, KpiValueKind.Money);
+            SetCardData(dto.ExpectedProfit, valuation.ExpectedProfit, 0, KpiValueKind.Money);
             SetCardData(dto.ExpectedSoldProfit, expected, 0, KpiValueKind.Money);
             SetCardData(dto.ExpectedStockProfit, expectedStock, 0, KpiValueKind.Money);
             SetCardData(dto.ActualProfit, actualProfit, 0, KpiValueKind.Money);
@@ -392,7 +410,7 @@ namespace DzentoPOS2.App.Services.Reports
             // A single read over the last six months feeds both the daily trend and
             // the month-over-month comparison.
             var salesRows = await _context.SalesInvoices
-                .Where(s => s.BranchId == _activeBranchId && !s.IsVoided && s.CreatedAt >= sixMonthsAgo && s.CreatedAt < tomorrowStartUtc
+                .Where(s => (_viewAllBranches || s.BranchId == _activeBranchId) && !s.IsVoided && s.CreatedAt >= sixMonthsAgo && s.CreatedAt < tomorrowStartUtc
                     && (customerId == null || s.CustomerId == customerId.Value))
                 .Select(s => new { s.CreatedAt, Total = (double?)s.Total.Amount })
                 .ToListAsync();
@@ -420,7 +438,7 @@ namespace DzentoPOS2.App.Services.Reports
                 .ToDictionary(g => g.Key, g => (decimal)g.Sum(x => x.Total ?? 0));
 
             var purchasesByMonth = (await _context.PurchaseInvoices
-                .Where(p => p.BranchId == _activeBranchId && p.CreatedAt >= sixMonthsAgo && p.CreatedAt < tomorrowStartUtc)
+                .Where(p => (_viewAllBranches || p.BranchId == _activeBranchId) && p.CreatedAt >= sixMonthsAgo && p.CreatedAt < tomorrowStartUtc)
                 .Select(p => new { p.CreatedAt, Total = (double?)p.Total })
                 .ToListAsync())
                 .GroupBy(x => MonthKey(_regional.ToLocal(x.CreatedAt)))
@@ -448,7 +466,7 @@ namespace DzentoPOS2.App.Services.Reports
                 join invoice in _context.SalesInvoices on item.SalesInvoiceId equals invoice.Id
                 join product in _context.Products on item.ProductId equals product.Id
                 where product.CategoryId != Guid.Empty
-                    && invoice.BranchId == _activeBranchId
+                    && (_viewAllBranches || invoice.BranchId == _activeBranchId)
                     && !invoice.IsVoided
                 group (double?)item.Total by new { product.CategoryId, product.Category.Name } into g
                 orderby g.Sum() descending
@@ -468,7 +486,7 @@ namespace DzentoPOS2.App.Services.Reports
         private async Task ComputeRecentTransactions(DashboardSummaryDto dto)
         {
             var salesRaw = await _context.SalesInvoices
-                .Where(s => s.BranchId == _activeBranchId && !s.IsVoided)
+                .Where(s => (_viewAllBranches || s.BranchId == _activeBranchId) && !s.IsVoided)
                 .OrderByDescending(s => s.CreatedAt)
                 .Take(5)
                 .Select(s => new
@@ -484,7 +502,7 @@ namespace DzentoPOS2.App.Services.Reports
                 .ToListAsync();
 
             var purchaseRaw = await _context.PurchaseInvoices
-                .Where(p => p.BranchId == _activeBranchId)
+                .Where(p => (_viewAllBranches || p.BranchId == _activeBranchId))
                 .OrderByDescending(p => p.CreatedAt)
                 .Take(5)
                 .Select(p => new
@@ -600,7 +618,7 @@ namespace DzentoPOS2.App.Services.Reports
             }).ToList();
 
             var custGroups = await _context.SalesInvoices
-                .Where(s => s.BranchId == _activeBranchId && !s.IsVoided)
+                .Where(s => (_viewAllBranches || s.BranchId == _activeBranchId) && !s.IsVoided)
                 .GroupBy(s => s.CustomerId)
                 .OrderByDescending(g => g.Sum(s => (double?)s.Total.Amount))
                 .Take(5)
@@ -629,7 +647,7 @@ namespace DzentoPOS2.App.Services.Reports
             dto.TopCustomers = topCust;
 
             var suppGroups = await _context.PurchaseInvoices
-                .Where(p => p.BranchId == _activeBranchId)
+                .Where(p => (_viewAllBranches || p.BranchId == _activeBranchId))
                 .GroupBy(p => p.SupplierId)
                 .OrderByDescending(g => g.Sum(p => (double?)p.Total))
                 .Take(5)

@@ -335,4 +335,29 @@ public sealed class DashboardProfitTests
         Assert.Equal(50m, after.MonthlyFeesAmount - before.MonthlyFeesAmount);
         Assert.Equal(200m, after.MonthlyDiscountAmount - before.MonthlyDiscountAmount);
     }
+
+    [Fact]
+    public async Task DatePreset_TodayAndMonthExcludePreviousMonthInvoices()
+    {
+        await using var scope = _fixture.CreateScope();
+        var ctx = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var dashboard = scope.ServiceProvider.GetRequiredService<IDashboardService>();
+
+        var product = await CreateProductAsync(ctx, 5, 10);
+        var regional = scope.ServiceProvider.GetRequiredService<RegionalContext>();
+        var localNow = regional.ToLocal(DateTime.UtcNow);
+        var prevMonth = regional.ToUtcSafe(
+            new DateTime(localNow.Year, localNow.Month, 1).AddMonths(-1).AddDays(14));
+
+        var todayBefore = await dashboard.GetSummaryAsync(new DashboardFilterDto { Preset = DashboardDatePreset.Today });
+        var monthBefore = await dashboard.GetSummaryAsync(new DashboardFilterDto { Preset = DashboardDatePreset.ThisMonth });
+
+        await CreateManualInvoiceAsync(ctx, product.Id, 3, 10, 5, 0, 0, false, prevMonth);
+
+        var todayAfter = await dashboard.GetSummaryAsync(new DashboardFilterDto { Preset = DashboardDatePreset.Today });
+        var monthAfter = await dashboard.GetSummaryAsync(new DashboardFilterDto { Preset = DashboardDatePreset.ThisMonth });
+
+        Assert.Equal(todayBefore.ActualProfit.Value, todayAfter.ActualProfit.Value);
+        Assert.Equal(monthBefore.ActualProfit.Value, monthAfter.ActualProfit.Value);
+    }
 }

@@ -18,23 +18,28 @@ namespace DzentoPOS2.App.Services.Inventory
     {
         private readonly AppDbContext _context;
         private readonly IBusinessClock _clock;
+        private readonly IActiveBranchContext _activeBranch;
 
-        public InventorySnapshotService(AppDbContext context, IBusinessClock clock)
+        public InventorySnapshotService(AppDbContext context, IBusinessClock clock, IActiveBranchContext activeBranch)
         {
             _context = context;
             _clock = clock;
+            _activeBranch = activeBranch;
         }
 
         public async Task UpsertTodayAsync(InventoryValuationDto valuation, CancellationToken cancellationToken = default)
         {
+            // Only write for the active branch (never for "all branches" scope).
+            var branchId = _activeBranch.ActiveBranchId;
+
             var localToday = _clock.Now.Date;
 
             var existing = await _context.InventorySnapshots
-                .FirstOrDefaultAsync(s => s.SnapshotDate == localToday, cancellationToken);
+                .FirstOrDefaultAsync(s => s.BranchId == branchId && s.SnapshotDate == localToday, cancellationToken);
 
             if (existing is null)
             {
-                existing = new InventorySnapshot { SnapshotDate = localToday };
+                existing = new InventorySnapshot { BranchId = branchId, SnapshotDate = localToday };
                 _context.InventorySnapshots.Add(existing);
             }
 

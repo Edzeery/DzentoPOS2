@@ -1753,4 +1753,230 @@
   <data name="ProductKindLabel" xml:space="preserve">
     <value>Type de produit</value>
   </data>
+  <data name="ActivityGrocery" xml:space="preserve">
+    <value>Epicerie</value>
+  </data>
+  <data name="ActivityProduce" xml:space="preserve">
+    <value>Fruits et legumes</value>
+  </data>
+  <data name="ActivityPhones" xml:space="preserve">
+    <value>Telephones et electronique</value>
+  </data>
+  <data name="ActivityAppliances" xml:space="preserve">
+    <value>Electromenager</value>
+  </data>
+  <data name="ActivityIT" xml:space="preserve">
+    <value>Informatique</value>
+  </data>
+  <data name="ActivityRepair" xml:space="preserve">
+    <value>Reparation</value>
+  </data>
+  <data name="ActivityDigital" xml:space="preserve">
+    <value>Produits numeriques</value>
+  </data>
+  <data name="ActivityMultiService" xml:space="preserve">
+    <value>Multi-service</value>
+  </data>
+  <data name="SelectSerialUnit" xml:space="preserve">
+    <value>Selectionner unite serie</value>
+  </data>
+  <data name="WarrantyQuery" xml:space="preserve">
+    <value>Requete garantie</value>
+  </data>
+  <data name="WeightUnit" xml:space="preserve">
+    <value>Weight Unit</value>
+  </data>
+  <data name="BatchNumber" xml:space="preserve">
+    <value>Numأ©ro de lot</value>
+  </data>
+  <data name="ExpiryDate" xml:space="preserve">
+    <value>Date d'expiration</value>
+  </data>
+  <data name="IsWeighed" xml:space="preserve">
+    <value>Produit pesأ©</value>
+  </data>
+  <data name="TrackBatch" xml:space="preserve">
+    <value>Suivre le lot</value>
+  </data>
+  <data name="TrackExpiry" xml:space="preserve">
+    <value>Suivre l'expiration</value>
+  </data>
+  <data name="WeightPerUnit" xml:space="preserve">
+    <value>Poids par unitأ©</value>
+  </data>
+  <data name="KG" xml:space="preserve">
+    <value>kg</value>
+  </data>
+  <data name="LB" xml:space="preserve">
+    <value>lb</value>
+  </data>
+  <data name="G" xml:space="preserve">
+    <value>g</value>
+  </data>
+  <data name="InsufficientBatchStock" xml:space="preserve">
+    <value>Stock de lot insuffisant</value>
+  </data>
+  <data name="BatchNotFound" xml:space="preserve">
+    <value>Lot non trouvأ©</value>
+  </data>
+  <data name="ExpiringSoon" xml:space="preserve">
+    <value>Expirant bientأ´t</value>
+  </data>
+  <data name="Expired" xml:space="preserve">
+    <value>Expirأ©</value>
+  </data>
+  <data name="FEFO" xml:space="preserve">
+    <value>Premier expirأ© premier sorti</value>
+  </data>
+  <data name="PotentialProfit" xml:space="preserve">
+    <value>Profit potentiel</value>
+  </data>
+  <data name="InventoryCostValue" xml:space="preserve">
+    <value>Valeur stock (cout)</value>
+  </data>
+  <data name="InventoryRetailValue" xml:space="preserve">
+    <value>Valeur stock (detail)</value>
+  </data>
+  <data name="InventoryAtRiskProfit" xml:space="preserve">
+    <value>Profit a risque</value>
+  </data>
+  <data name="InventoryWarnings" xml:space="preserve">
+    <value>Avertissements</value>
+  </data>
+  <data name="RealizationRate" xml:space="preserve">
+    <value>Taux de realisation</value>
+  </data>
+  <data name="ForecastBias" xml:space="preserve">
+    <value>Biais de prevision</value>
+  </data>
+  <data name="TotalExpected" xml:space="preserve">
+    <value>Profit attendu (total)</value>
+  </data>
+  <data name="WeightEntry" xml:space="preserve">
+    <value>Saisie poids</value>
+  </data>
+  <data name="ExpiryAlerts" xml:space="preserve">
+    <value>Alertes expiration</value>
+  </data>
+  <data name="ExpiringInDays" xml:space="preserve">
+    <value>Expire dans {0} jours</value>
+  </data>
+  <data name="BatchSelectionTitle" xml:space="preserve">
+    <value>Selection lot</value>
+  </data>
+  <data name="WeightEntryTitle" xml:space="preserve">
+    <value>Saisie poids</value>
+  </data>
+  <data name="WeightLabel" xml:space="preserve">
+    <value>Poids</value>
+  </data>
+  <data name="CalculatedPrice" xml:space="preserve">
+    <value>Prix calcule</value>
+  </data>
+  <data name="SelectBatch" xml:space="preserve">
+    <value>Selection lot</value>
+  </data>
+  <data name="NoActiveBranchMessage" xml:space="preserve">
+    <value>Aucune succursale active n'a pu etre trouvee. La connexion continue, mais les donnees de succursale restent indisponibles jusqu'a la creation d'une succursale principale.</value>
+  </data>
+  <data name="Branches" xml:space="preserve">
+    <value>Succursales</value>
+  </data>
+  <data name="AddBranch" xml:space="preserve">
+    <value>Nouvelle succursale</value>
+  </data>
+  <data name="EditBranch" xml:space="preserve">
+    <value>Modifier la succursale</value>
+  </data>
+  <data name="BranchName" xml:space="preserve">
+    <value>Nom de la succursale</value>
+  </data>
+  <data name="BranchPhone" xml:space="preserve">
+    <value>Téléphone</value>
+  </data>
+  <data name="BranchStreet" xml:space="preserve">
+    <value>Rue</value>
+  </data>
+  <data name="Deactivate" xml:space="preserve">
+    <value>Désactiver</value>
+  </data>
+  <data name="Activate" xml:space="preserve">
+    <value>Activer</value>
+  </data>
+  <data name="Cashboxes" xml:space="preserve">
+    <value>Caisses</value>
+  </data>
+  <data name="DeactivateBranchConfirm" xml:space="preserve">
+    <value>Désactiver cette succursale ? Les données sont conservées et elle peut être réactivée.</value>
+  </data>
+  <data name="BranchNameRequiredMsg" xml:space="preserve">
+    <value>Le nom de la succursale est requis.</value>
+  </data>
+  <data name="BranchDuplicateNameMsg" xml:space="preserve">
+    <value>Une succursale portant ce nom existe déjà.</value>
+  </data>
+  <data name="BranchNotFoundMsg" xml:space="preserve">
+    <value>Succursale introuvable.</value>
+  </data>
+  <data name="BranchLastActiveMsg" xml:space="preserve">
+    <value>La dernière succursale active ne peut pas être désactivée.</value>
+  </data>
+  <data name="BranchHasOpenSessionMsg" xml:space="preserve">
+    <value>Une succursale avec une session de caisse ouverte ne peut pas être désactivée.</value>
+  </data>
+  <data name="BranchMainCannotDeactivateMsg" xml:space="preserve">
+    <value>La succursale principale ne peut pas être désactivée.</value>
+  </data>
+  <data name="Location" xml:space="preserve">
+    <value>Emplacement</value>
+  </data>
+  <data name="AddWarehouse" xml:space="preserve">
+    <value>Nouvel entrepôt</value>
+  </data>
+  <data name="AddCashbox" xml:space="preserve">
+    <value>Nouvelle caisse</value>
+  </data>
+  <data name="BranchResources" xml:space="preserve">
+    <value>Entrepôts et caisses</value>
+  </data>
+  <data name="DeactivateConfirm" xml:space="preserve">
+    <value>Désactiver cet élément ? Les données sont conservées et il peut être réactivé.</value>
+  </data>
+  <data name="WarehouseNameRequiredMsg" xml:space="preserve">
+    <value>Le nom de l'entrepôt est requis.</value>
+  </data>
+  <data name="WarehouseDuplicateNameMsg" xml:space="preserve">
+    <value>Un entrepôt portant ce nom existe déjà dans cette succursale.</value>
+  </data>
+  <data name="WarehouseNotFoundMsg" xml:space="preserve">
+    <value>Entrepôt introuvable.</value>
+  </data>
+  <data name="WarehouseLastActiveMsg" xml:space="preserve">
+    <value>Le dernier entrepôt actif d'une succursale ne peut pas être désactivé.</value>
+  </data>
+  <data name="CashboxNameRequiredMsg" xml:space="preserve">
+    <value>Le nom de la caisse est requis.</value>
+  </data>
+  <data name="CashboxDuplicateNameMsg" xml:space="preserve">
+    <value>Une caisse portant ce nom existe déjà dans cette succursale.</value>
+  </data>
+  <data name="CashboxLastActiveMsg" xml:space="preserve">
+    <value>La dernière caisse active d'une succursale ne peut pas être désactivée.</value>
+  </data>
+  <data name="CashboxHasOpenSessionMsg" xml:space="preserve">
+    <value>Une caisse avec une session ouverte ne peut pas être désactivée.</value>
+  </data>
+  <data name="CrossBranchReport" xml:space="preserve">
+    <value>Rapport multi-succursales</value>
+  </data>
+  <data name="NetSales" xml:space="preserve">
+    <value>Ventes nettes</value>
+  </data>
+  <data name="ViewAllBranches" xml:space="preserve">
+    <value>Toutes les succursales</value>
+  </data>
+  <data name="NoExpiry" xml:space="preserve">
+    <value>Sans expiration</value>
+  </data>
 </root>
+

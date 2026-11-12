@@ -16,6 +16,7 @@ namespace DzentoPOS2.Shared.Helpers
                 ["MonthlySales"] = data.MonthlySales,
                 ["MonthlyPurchases"] = data.MonthlyPurchases,
                 ["ExpectedProfit"] = data.ExpectedProfit,
+                ["ExpectedStockProfit"] = data.ExpectedStockProfit,
                 ["ActualProfit"] = data.ActualProfit,
                 ["ActiveProducts"] = data.ActiveProducts,
                 ["LowStock"] = data.LowStock,

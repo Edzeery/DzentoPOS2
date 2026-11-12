@@ -913,6 +913,63 @@ namespace DzentoPOS2.Data.Migrations
                     b.ToTable("AttributeValues", (string)null);
                 });
 
+            modelBuilder.Entity("DzentoPOS2.Core.Entities.Inventory.Batch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("BatchNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("ExpiryDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ReceivedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("VariantId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("WarehouseId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpiryDate");
+
+                    b.HasIndex("VariantId");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("Batches", (string)null);
+                });
+
             modelBuilder.Entity("DzentoPOS2.Core.Entities.Inventory.InventorySnapshot", b =>
                 {
                     b.Property<Guid>("Id")
@@ -921,6 +978,9 @@ namespace DzentoPOS2.Data.Migrations
 
                     b.Property<decimal>("AtRiskProfit")
                         .HasPrecision(18, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("BranchId")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("CostValue")
@@ -968,7 +1028,12 @@ namespace DzentoPOS2.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("SnapshotDate")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[BranchId] IS NULL");
+
+                    b.HasIndex("BranchId", "SnapshotDate")
+                        .IsUnique()
+                        .HasFilter("[BranchId] IS NOT NULL");
 
                     b.ToTable("InventorySnapshots", (string)null);
                 });
@@ -1382,6 +1447,11 @@ namespace DzentoPOS2.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsWeighed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -1398,6 +1468,16 @@ namespace DzentoPOS2.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
+                    b.Property<bool>("TrackBatch")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("TrackExpiry")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false);
+
                     b.Property<bool>("TrackStock")
                         .HasColumnType("INTEGER");
 
@@ -1405,6 +1485,12 @@ namespace DzentoPOS2.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("WarrantyMonths")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("WeightUnitId")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -1415,6 +1501,92 @@ namespace DzentoPOS2.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("ProductVariants", (string)null);
+                });
+
+            modelBuilder.Entity("DzentoPOS2.Core.Entities.Inventory.SerialUnit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("BatchId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Imei1")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Imei2")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("PurchaseInvoiceItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ReceivedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("SalesInvoiceItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SerialNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("SoldAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("VariantId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("WarehouseId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("WarrantyExpiresAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("WarrantyStartsAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BatchId");
+
+                    b.HasIndex("Imei1")
+                        .IsUnique()
+                        .HasFilter("[Imei1] IS NOT NULL");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.HasIndex("VariantId", "SerialNumber")
+                        .IsUnique()
+                        .HasFilter("[SerialNumber] IS NOT NULL");
+
+                    b.ToTable("SerialUnits", (string)null);
                 });
 
             modelBuilder.Entity("DzentoPOS2.Core.Entities.Inventory.StockAdjustment", b =>
@@ -2380,6 +2552,10 @@ namespace DzentoPOS2.Data.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("IMEI")
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("IsCostEstimated")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER")
@@ -2408,6 +2584,10 @@ namespace DzentoPOS2.Data.Migrations
                     b.Property<Guid>("SalesInvoiceId")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("SerialNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
                     b.Property<decimal>("Total")
                         .HasPrecision(18, 2)
                         .HasColumnType("TEXT");
@@ -2429,6 +2609,9 @@ namespace DzentoPOS2.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime?>("WarrantyExpiry")
+                        .HasColumnType("TEXT");
+
                     b.HasKey("Id");
 
                     b.HasIndex("SalesInvoiceId");
@@ -2436,6 +2619,43 @@ namespace DzentoPOS2.Data.Migrations
                     b.HasIndex("VariantId");
 
                     b.ToTable("SalesInvoiceItems", (string)null);
+                });
+
+            modelBuilder.Entity("DzentoPOS2.Core.Entities.Sales.SalesInvoiceItemUnit", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid>("SalesInvoiceItemId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("SerialUnitId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SerialUnitId");
+
+                    b.HasIndex("SalesInvoiceItemId", "SerialUnitId")
+                        .IsUnique();
+
+                    b.ToTable("SalesInvoiceItemUnits", (string)null);
                 });
 
             modelBuilder.Entity("DzentoPOS2.Core.Entities.Sales.SalesPayment", b =>
@@ -3275,6 +3495,25 @@ namespace DzentoPOS2.Data.Migrations
                     b.Navigation("Definition");
                 });
 
+            modelBuilder.Entity("DzentoPOS2.Core.Entities.Inventory.Batch", b =>
+                {
+                    b.HasOne("DzentoPOS2.Core.Entities.Inventory.ProductVariant", "Variant")
+                        .WithMany()
+                        .HasForeignKey("VariantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DzentoPOS2.Core.Entities.Businesses.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Variant");
+
+                    b.Navigation("Warehouse");
+                });
+
             modelBuilder.Entity("DzentoPOS2.Core.Entities.Inventory.InventoryTransaction", b =>
                 {
                     b.HasOne("DzentoPOS2.Core.Entities.Inventory.Product", "Product")
@@ -3620,6 +3859,32 @@ namespace DzentoPOS2.Data.Migrations
 
                     b.Navigation("SalePrice")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("DzentoPOS2.Core.Entities.Inventory.SerialUnit", b =>
+                {
+                    b.HasOne("DzentoPOS2.Core.Entities.Inventory.Batch", "Batch")
+                        .WithMany()
+                        .HasForeignKey("BatchId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("DzentoPOS2.Core.Entities.Inventory.ProductVariant", "Variant")
+                        .WithMany()
+                        .HasForeignKey("VariantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DzentoPOS2.Core.Entities.Businesses.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Batch");
+
+                    b.Navigation("Variant");
+
+                    b.Navigation("Warehouse");
                 });
 
             modelBuilder.Entity("DzentoPOS2.Core.Entities.Inventory.StockAdjustment", b =>
@@ -4184,6 +4449,25 @@ namespace DzentoPOS2.Data.Migrations
                         .HasForeignKey("SalesInvoiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("DzentoPOS2.Core.Entities.Sales.SalesInvoiceItemUnit", b =>
+                {
+                    b.HasOne("DzentoPOS2.Core.Entities.Sales.SalesInvoiceItem", "SalesInvoiceItem")
+                        .WithMany()
+                        .HasForeignKey("SalesInvoiceItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DzentoPOS2.Core.Entities.Inventory.SerialUnit", "SerialUnit")
+                        .WithMany()
+                        .HasForeignKey("SerialUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("SalesInvoiceItem");
+
+                    b.Navigation("SerialUnit");
                 });
 
             modelBuilder.Entity("DzentoPOS2.Core.Entities.Sales.SalesPayment", b =>

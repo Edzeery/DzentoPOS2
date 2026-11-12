@@ -10,6 +10,16 @@ namespace DzentoPOS2.Shared.Contracts.DTOs.Sales
 
         /// <summary>Variant name at sale time. Product name for legacy invoices.</summary>
         public string VariantName { get; set; } = string.Empty;
+
+        /// <summary>Serial number for serialized items.</summary>
+        public string? SerialNumber { get; set; }
+
+        /// <summary>IMEI for phones.</summary>
+        public string? IMEI { get; set; }
+
+        /// <summary>Warranty expiry date.</summary>
+        public DateTime? WarrantyExpiry { get; set; }
+
         public string ProductName { get; set; } = string.Empty;
         public string SKU { get; set; } = string.Empty;
         public decimal Quantity { get; set; }

@@ -11,43 +11,36 @@ using Microsoft.Extensions.DependencyInjection;
 namespace DzentoPOS2.App.Services.Systems;
 
 /// <summary>
-/// Singleton implementation of IActiveBranchContext. Uses IServiceProvider to
-/// resolve scoped services (ICurrentUserService, IPermissionService, AppDbContext)
-/// on demand via CreateScope.
+/// Singleton implementation of IActiveBranchContext. Uses IBranchResolver to
+/// resolve the active branch (no circular dependency). InitializeAsync is
+/// called from AppApplicationContext after login.
 /// </summary>
 public class ActiveBranchContext : IActiveBranchContext
 {
     private readonly IServiceProvider _serviceProvider;
+    private readonly IBranchResolver _branchResolver;
     private readonly object _gate = new();
 
     private Guid _activeBranchId;
     private string _activeBranchName = string.Empty;
     private bool _initialized;
+    private bool _canSwitchBranch;
 
-    public ActiveBranchContext(IServiceProvider serviceProvider)
+    public ActiveBranchContext(IServiceProvider serviceProvider, IBranchResolver branchResolver)
     {
         _serviceProvider = serviceProvider;
-        // Subscribe to user changes for reset.
-        var currentUser = serviceProvider.GetRequiredService<ICurrentUserService>();
-        currentUser.UserChanged += (_, _) => Reset();
-    }
-
-    private void Reset()
-    {
-        lock (_gate)
-        {
-            _activeBranchId = Guid.Empty;
-            _activeBranchName = string.Empty;
-            _initialized = false;
-        }
+        _branchResolver = branchResolver;
     }
 
     public Guid ActiveBranchId
     {
         get
         {
-            EnsureInitialized();
-            return _activeBranchId;
+            lock (_gate)
+            {
+                ThrowIfNotInitialized();
+                return _activeBranchId;
+            }
         }
     }
 
@@ -55,8 +48,11 @@ public class ActiveBranchContext : IActiveBranchContext
     {
         get
         {
-            EnsureInitialized();
-            return _activeBranchName;
+            lock (_gate)
+            {
+                ThrowIfNotInitialized();
+                return _activeBranchName;
+            }
         }
     }
 
@@ -64,36 +60,87 @@ public class ActiveBranchContext : IActiveBranchContext
     {
         get
         {
-            try
+            lock (_gate)
             {
-                using var scope = _serviceProvider.CreateScope();
-                var permissionService = scope.ServiceProvider.GetRequiredService<IPermissionService>();
-                return permissionService.HasPermissionAsync(Permissions.BranchesSwitch).GetAwaiter().GetResult();
+                return _initialized && _canSwitchBranch;
             }
-            catch
-            {
-                return false;
-            }
+        }
+    }
+
+    private void ThrowIfNotInitialized()
+    {
+        if (!_initialized)
+        {
+            throw new InvalidOperationException(
+                "ActiveBranchContext is not initialized. Call InitializeAsync after login before reading the active branch.");
         }
     }
 
     public event EventHandler<ActiveBranchChangedEventArgs>? BranchChanged;
 
-    private void EnsureInitialized()
+    public async Task InitializeAsync(ICurrentUserService currentUser, CancellationToken cancellationToken = default)
     {
         lock (_gate)
         {
             if (_initialized) return;
+        }
 
-            using var scope = _serviceProvider.CreateScope();
-            var currentUser = scope.ServiceProvider.GetRequiredService<ICurrentUserService>();
-            var user = currentUser.User;
-            if (user is null)
-                return; // Do not initialize if no user.
+        var branch = await _branchResolver.ResolveAsync(currentUser.BranchId, cancellationToken);
 
-            _activeBranchId = user.BranchId ?? Guid.Empty;
-            _activeBranchName = user.BranchName ?? string.Empty;
-            _initialized = true;
+        // Cache the switch permission once. The UI reads CanSwitchBranch
+        // synchronously; it must never query the database from a getter.
+        bool canSwitch;
+        using (var scope = _serviceProvider.CreateScope())
+        {
+            var permissionService = scope.ServiceProvider.GetRequiredService<IPermissionService>();
+            canSwitch = await permissionService.HasPermissionAsync(Permissions.BranchesSwitch);
+        }
+
+        lock (_gate)
+        {
+            // A concurrent caller may have initialized while we were resolving.
+            if (_initialized) return;
+
+            if (branch is null)
+            {
+                // Keep the session usable: the shell shows a clear warning and
+                // the admin is not locked out. No branch data is readable.
+                SetEmptyLocked();
+            }
+            else
+            {
+                _activeBranchId = branch.Id;
+                _activeBranchName = branch.Name;
+                _canSwitchBranch = canSwitch;
+                _initialized = true;
+            }
+        }
+    }
+
+    public void InitializeEmpty()
+    {
+        lock (_gate)
+        {
+            SetEmptyLocked();
+        }
+    }
+
+    private void SetEmptyLocked()
+    {
+        _activeBranchId = Guid.Empty;
+        _activeBranchName = string.Empty;
+        _canSwitchBranch = false;
+        _initialized = true;
+    }
+
+    public void Reset()
+    {
+        lock (_gate)
+        {
+            _activeBranchId = Guid.Empty;
+            _activeBranchName = string.Empty;
+            _canSwitchBranch = false;
+            _initialized = false;
         }
     }
 
@@ -101,9 +148,12 @@ public class ActiveBranchContext : IActiveBranchContext
         Guid branchId,
         CancellationToken cancellationToken = default)
     {
-        EnsureInitialized();
+        lock (_gate)
+        {
+            ThrowIfNotInitialized();
+        }
 
-        // Permission check (resolve scoped service).
+        // Permission check (re-validated on every switch).
         using var scope = _serviceProvider.CreateScope();
         var permissionService = scope.ServiceProvider.GetRequiredService<IPermissionService>();
         bool hasPermission = await permissionService
@@ -111,12 +161,12 @@ public class ActiveBranchContext : IActiveBranchContext
         if (!hasPermission)
             return false;
 
-        // Validate branch exists and is active.
+        // Validate branch
         using var dbScope = _serviceProvider.CreateScope();
         var context = dbScope.ServiceProvider.GetRequiredService<AppDbContext>();
         var branch = await context.Branches
             .AsNoTracking()
-            .Where(b => b.Id == branchId && b.IsActive)
+            .Where(b => b.Id == branchId && b.IsActive && !b.IsDeleted)
             .Select(b => new { b.Id, b.Name })
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -130,6 +180,7 @@ public class ActiveBranchContext : IActiveBranchContext
 
             _activeBranchId = branch.Id;
             _activeBranchName = branch.Name;
+            _canSwitchBranch = true;
         }
 
         BranchChanged?.Invoke(this, new ActiveBranchChangedEventArgs

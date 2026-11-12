@@ -20,6 +20,7 @@ namespace DzentoPOS2.App.Services.Inventory
         private readonly IBusinessClock _clock;
         private readonly ISalesEventPublisher _salesEvents;
         private readonly IInventoryChangedNotifier _notifier;
+        private readonly IActiveBranchContext _activeBranch;
 
         private InventoryValuationDto? _cache;
         private DateTime _cacheAtUtc;
@@ -30,15 +31,18 @@ namespace DzentoPOS2.App.Services.Inventory
             AppDbContext context,
             IBusinessClock clock,
             ISalesEventPublisher salesEvents,
-            IInventoryChangedNotifier notifier)
+            IInventoryChangedNotifier notifier,
+            IActiveBranchContext activeBranch)
         {
             _context = context;
             _clock = clock;
             _salesEvents = salesEvents;
             _notifier = notifier;
+            _activeBranch = activeBranch;
             _salesEvents.SaleCompleted += (_, _) => InvalidateCache();
             _salesEvents.SaleVoided += (_, _) => InvalidateCache();
             _notifier.Changed += (_, _) => InvalidateCache();
+            _activeBranch.BranchChanged += (_, _) => InvalidateCache();
         }
 
         public void InvalidateCache()
@@ -69,11 +73,18 @@ namespace DzentoPOS2.App.Services.Inventory
             var cutoff = _clock.UtcNow.AddDays(-90);
 
             // 1. Main valuation query: stock aggregated per variant (VariantId level).
+            var branchId = _activeBranch.ActiveBranchId;
+            var warehouseIds = await _context.Warehouses
+                .AsNoTracking()
+                .Where(w => w.BranchId == branchId && w.IsActive)
+                .Select(w => w.Id)
+                .ToListAsync(cancellationToken);
+
             var stockRows = await (
                 from s in _context.ProductStocks
                 join v in _context.ProductVariants on s.VariantId equals v.Id
                 join p in _context.Products on v.ProductId equals p.Id
-                where !p.IsDeleted && p.IsActive && v.IsActive && p.TrackStock && v.TrackStock
+                where warehouseIds.Contains(s.WarehouseId) && !p.IsDeleted && p.IsActive && v.IsActive && p.TrackStock && v.TrackStock
                 group s by new
                 {
                     v.Id,
@@ -105,7 +116,7 @@ namespace DzentoPOS2.App.Services.Inventory
             var discountRows = await (
                 from item in _context.SalesInvoiceItems
                 join inv in _context.SalesInvoices on item.SalesInvoiceId equals inv.Id
-                where !inv.IsVoided && inv.CreatedAt >= cutoff
+                where inv.BranchId == branchId && !inv.IsVoided && inv.CreatedAt >= cutoff
                 select new
                 {
                     item.VariantId,
@@ -160,7 +171,7 @@ namespace DzentoPOS2.App.Services.Inventory
             // 3. Fee factor: last 90 days non-voided invoices.
             var feeRows = await _context.SalesInvoices
                 .AsNoTracking()
-                .Where(i => !i.IsVoided && i.CreatedAt >= cutoff)
+                .Where(i => i.BranchId == branchId && !i.IsVoided && i.CreatedAt >= cutoff)
                 .Select(i => new { Fees = i.FeesAmount.Amount, Subtotal = i.Subtotal.Amount, Discount = i.DiscountAmount.Amount })
                 .ToListAsync(cancellationToken);
 

@@ -30,13 +30,16 @@ public sealed class StockService : IStockService
     {
     }
 
-    public StockService(AppDbContext context, IBusinessClock clock, IAuthorizationGuard? guard, ILogger<StockService>? logger)
+    public StockService(AppDbContext context, IBusinessClock clock, IAuthorizationGuard? guard, ILogger<StockService>? logger, IBatchService? batchService = null)
     {
         _context = context;
         _clock = clock;
         _guard = guard;
         _logger = logger;
+        _batchService = batchService;
     }
+
+    private readonly IBatchService? _batchService;
 
     public Task ApplySaleAsync(
         Guid invoiceId,
@@ -207,6 +210,18 @@ public sealed class StockService : IStockService
             .GroupBy(x => (x.ProductId, x.VariantId))
             .ToDictionary(g => g.Key, g => g.Sum(x => x.Quantity));
 
+        // Lines that explicitly picked a batch, in cart order. The stock
+        // movement stays aggregated per product/variant; only batch
+        // allocation needs the per-batch quantities.
+        var preferredBatches = lines
+            .Where(x => x.BatchId != Guid.Empty)
+            .GroupBy(x => (x.ProductId, x.VariantId))
+            .ToDictionary(
+                g => g.Key,
+                g => g.GroupBy(x => x.BatchId)
+                      .Select(b => (BatchId: b.Key, Quantity: b.Sum(x => x.Quantity)))
+                      .ToList());
+
         if (aggregated.Count == 0)
             return;
 
@@ -287,6 +302,72 @@ public sealed class StockService : IStockService
                 referenceNumber,
                 userId,
                 cancellationToken);
+
+            // Track batches for variant with batch tracking enabled
+            var productVariant = await _context.ProductVariants
+                .AsNoTracking()
+                .FirstOrDefaultAsync(v => v.Id == variantId, cancellationToken);
+            if (productVariant?.TrackBatch == true && _batchService is not null)
+            {
+                if (direction > 0)
+                {
+                    // Purchase/return: increase batch quantity
+                    var batchNumber = referenceNumber;
+                    var existingBatch = await _context.Batches
+                        .FirstOrDefaultAsync(b => b.VariantId == variantId && b.BatchNumber == batchNumber, cancellationToken);
+                    if (existingBatch != null)
+                    {
+                        existingBatch.Quantity += quantity;
+                    }
+                    else
+                    {
+                        await _context.Batches.AddAsync(new Batch
+                        {
+                            VariantId = variantId,
+                            WarehouseId = warehouseId,
+                            BatchNumber = batchNumber,
+                            Quantity = quantity,
+                            UnitCost = 0,
+                            ReceivedAt = _clock.UtcNow
+                        }, cancellationToken);
+                    }
+                }
+                else
+                {
+                    // Sale/adjustment: subtract the batch picked by the
+                    // cashier first, then allocate the remainder FEFO.
+                    var remainingQuantity = quantity;
+                    var batches = await _context.Batches
+                        .Where(b => b.VariantId == variantId && b.WarehouseId == warehouseId && b.Quantity > 0)
+                        .OrderBy(b => b.ExpiryDate ?? DateTime.MaxValue)
+                        .ThenBy(b => b.ReceivedAt)
+                        .ToListAsync(cancellationToken);
+
+                    if (preferredBatches.TryGetValue((productId, variantId), out var preferred))
+                    {
+                        foreach (var pick in preferred)
+                        {
+                            if (remainingQuantity <= 0) break;
+                            var batch = batches.FirstOrDefault(b => b.Id == pick.BatchId);
+                            if (batch is null) continue;
+
+                            var take = Math.Min(remainingQuantity, Math.Min(pick.Quantity, batch.Quantity));
+                            batch.Quantity -= take;
+                            remainingQuantity -= take;
+                        }
+                    }
+
+                    foreach (var batch in batches)
+                    {
+                        if (remainingQuantity <= 0) break;
+                        var take = Math.Min(remainingQuantity, batch.Quantity);
+                        batch.Quantity -= take;
+                        remainingQuantity -= take;
+                    }
+
+                    await _context.SaveChangesAsync(cancellationToken);
+                }
+            }
         }
     }
 

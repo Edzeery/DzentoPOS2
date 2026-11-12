@@ -30,7 +30,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DzentoPOS2.WinForms.Forms.Sales;
 
-public partial class SalesForm : LocalizableFormBase
+public partial class SalesForm : LocalizableFormBase, IBranchAware
 {
     /// <summary>Top gap kept above the totals block of the basket.</summary>
     private const int TotalsPadding = 6;
@@ -205,7 +205,7 @@ public partial class SalesForm : LocalizableFormBase
                     _barcodeService);
                 if (picker.ShowDialog(this) == DialogResult.OK && picker.SelectedVariantId != Guid.Empty)
                 {
-                    AddToCart(p, picker.SelectedVariantId, picker.SelectedVariantName, picker.SelectedPrice);
+                    await AddToCartAsync(p, picker.SelectedVariantId, picker.SelectedVariantName, picker.SelectedPrice);
                 }
             }
             else
@@ -214,7 +214,7 @@ public partial class SalesForm : LocalizableFormBase
                 var variantId = productItems.Count == 1 ? productItems[0].VariantId : Guid.Empty;
                 var variantName = productItems.Count == 1 ? productItems[0].Name : string.Empty;
                 var price = productItems.Count == 1 ? productItems[0].SalePrice : p.SalePrice;
-                AddToCart(p, variantId, variantName, price);
+                await AddToCartAsync(p, variantId, variantName, price);
             }
         };
 
@@ -624,6 +624,12 @@ public partial class SalesForm : LocalizableFormBase
         RunSafe(InitializeAsync);
     }
 
+    public Task OnBranchChangedAsync(Guid branchId)
+    {
+        RunSafe(InitializeAsync);
+        return Task.CompletedTask;
+    }
+
     private async Task ApplyPermissionsAsync()
     {
         try
@@ -965,7 +971,7 @@ public partial class SalesForm : LocalizableFormBase
                         _productSearch.Text = code;
                         return;
                     }
-                    AddToCart(prod, item.VariantId, item.Name, item.SalePrice);
+                    await AddToCartAsync(prod, item.VariantId, item.Name, item.SalePrice);
                 }
                 else
                 {
@@ -981,7 +987,7 @@ public partial class SalesForm : LocalizableFormBase
                         {
                             var prod = _products.FirstOrDefault(p => p.Id == item.ProductId);
                             if (prod is not null)
-                                AddToCart(prod, item.VariantId, item.Name, item.SalePrice);
+                                await AddToCartAsync(prod, item.VariantId, item.Name, item.SalePrice);
                         }
                     }
                 }
@@ -990,15 +996,15 @@ public partial class SalesForm : LocalizableFormBase
         }
     }
 
-    private void AddFirstProductToCart()
+    private async void AddFirstProductToCart()
     {
         if (_productGrid.CurrentRow?.DataBoundItem is ProductDto p)
-            AddToCart(p, Guid.Empty, string.Empty, p.SalePrice);
+            await AddToCartAsync(p, Guid.Empty, string.Empty, p.SalePrice);
         else if (_products.Count > 0)
-            AddToCart(_products[0], Guid.Empty, string.Empty, _products[0].SalePrice);
+            await AddToCartAsync(_products[0], Guid.Empty, string.Empty, _products[0].SalePrice);
     }
 
-    private void AddToCart(ProductDto product, Guid variantId, string variantName, decimal price)
+    private async Task AddToCartAsync(ProductDto product, Guid variantId, string variantName, decimal price)
     {
         if (!product.IsActive)
         {
@@ -1006,20 +1012,87 @@ public partial class SalesForm : LocalizableFormBase
             return;
         }
 
-        var existing = _cart.FirstOrDefault(i => i.ProductId == product.Id && i.VariantId == variantId);
+        decimal quantity = 1m;
+
+        // Weighed products: the cashier enters the actual weight; the price
+        // stays per unit and the line quantity becomes the weight.
+        if (product.IsWeighed)
+        {
+            using var weightDialog = new WeightEntryDialog(price, product.Name);
+            if (weightDialog.ShowDialog(this) != DialogResult.OK || weightDialog.Weight <= 0)
+                return;
+            quantity = weightDialog.Weight;
+        }
+
+        // Batch-tracked products: let the cashier pick the batch to consume.
+        // An explicit batch is honoured by StockService; the rest of the
+        // quantity (if any) falls back to FEFO.
+        Guid batchId = Guid.Empty;
+        if (product.TrackBatch)
+        {
+            var warehouseId = await GetActiveWarehouseIdAsync();
+            if (warehouseId is null)
+            {
+                AppMessageBox.Warning(AppStrings.OperationFailed);
+                return;
+            }
+
+            var resolvedVariantId = variantId != Guid.Empty
+                ? variantId
+                : await _barcodeService.GetDefaultVariantIdAsync(product.Id);
+            if (resolvedVariantId == Guid.Empty)
+            {
+                AppMessageBox.Warning(AppStrings.OperationFailed);
+                return;
+            }
+
+            using var batchDialog = new BatchSelectionDialog(
+                _services.GetRequiredService<DzentoPOS2.Data.Context.AppDbContext>(),
+                resolvedVariantId,
+                warehouseId.Value,
+                quantity);
+
+            if (batchDialog.ShowDialog(this) != DialogResult.OK)
+                return;
+
+            batchId = batchDialog.SelectedBatchId;
+        }
+
+        var existing = _cart.FirstOrDefault(i =>
+            i.ProductId == product.Id &&
+            i.VariantId == variantId &&
+            i.BatchId == batchId);
+
         if (existing != null)
-            existing.Quantity += 1;
+            existing.Quantity += quantity;
         else
             _cart.Add(new CreateSaleItemDto
             {
                 ProductId = product.Id,
                 VariantId = variantId,
                 VariantName = variantName,
-                Quantity = 1,
-                Price = price
+                Quantity = quantity,
+                Price = price,
+                BatchId = batchId
             });
 
         RefreshCart();
+    }
+
+    private async Task<Guid?> GetActiveWarehouseIdAsync()
+    {
+        var context = _services.GetRequiredService<DzentoPOS2.Data.Context.AppDbContext>();
+        var branchId = _services
+            .GetRequiredService<IActiveBranchContext>()
+            .ActiveBranchId;
+
+        return await context.Warehouses
+            .AsNoTracking()
+            .Where(w => w.BranchId == branchId && w.IsActive)
+            .OrderBy(w => w.CreatedAt)
+            .ThenBy(w => w.Id)
+            .Select(w => (Guid?)w.Id)
+            .FirstOrDefaultAsync();
     }
 
     private void RemoveFromCart()

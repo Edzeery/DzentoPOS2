@@ -4,6 +4,7 @@ using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.App.Session;
 using DzentoPOS2.Data.Context;
 using DzentoPOS2.Localization.Constants;
+using DzentoPOS2.Core.Enums;
 using DzentoPOS2.Localization.Resources;
 using DzentoPOS2.Localization.Services;
 using DzentoPOS2.Localization.Services.Interfaces;
@@ -12,6 +13,7 @@ using DzentoPOS2.WinForms.Controls;
 using DzentoPOS2.WinForms.Controls.Header;
 using DzentoPOS2.WinForms.Events;
 using DzentoPOS2.WinForms.Forms.Accounting;
+using DzentoPOS2.WinForms.Forms.Businesses;
 using DzentoPOS2.WinForms.Forms.Customers;
 using DzentoPOS2.WinForms.Forms.Dashboard;
 using DzentoPOS2.WinForms.Forms.Identity;
@@ -75,6 +77,8 @@ namespace DzentoPOS2.WinForms.Forms.Layout
         private IconButton _btnUnits = null!;
         private IconButton _btnCashSessions = null!;
         private IconButton _btnExpenses = null!;
+        private IconButton _btnBranches = null!;
+        private IconButton _btnCrossBranch = null!;
         private readonly ToolTip _toolTip = new();
         private string _currentBranchName = string.Empty;
         private Label _storeNameLabel = null!;
@@ -143,6 +147,8 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             _btnExpenses = AddSidebarButton("btnExpenses", IconChar.MoneyBillWave, AppStrings.ExpensesButton, b => NavigateTo<ExpensesForm>(b), btnInventory);
             _btnSuppliers = AddSidebarButton("btnSuppliers", IconChar.Truck, AppStrings.Suppliers, b => NavigateTo<SuppliersForm>(b), BtnCustomers);
             _btnCashSessions = AddSidebarButton("btnCashSessions", IconChar.CashRegister, AppStrings.CashSessions, b => NavigateTo<CashSessionForm>(b), _btnSuppliers);
+            _btnBranches = AddSidebarButton("btnBranches", IconChar.Building, AppStrings.Branches, b => NavigateTo<BranchesForm>(b), btnUsersRoles);
+            _btnCrossBranch = AddSidebarButton("btnCrossBranch", IconChar.ChartLine, AppStrings.CrossBranchReport, b => NavigateTo<CrossBranchReportForm>(b), _btnBranches);
 
             // Enforce permissions on sidebar buttons
             _ = EnforcePermissionsAsync();
@@ -751,6 +757,20 @@ namespace DzentoPOS2.WinForms.Forms.Layout
                 if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.CashSessionsView))
                     _btnCashSessions.Visible = false;
 
+                // Branches (umbrella manage grant OR the granular view)
+                if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.BranchesManage) &&
+                    !await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.BranchesView))
+                {
+                    _btnBranches.Visible = false;
+                }
+
+                // Cross-branch report (needs both report viewing and cross-branch access)
+                if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.ReportsView) ||
+                    !await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.BranchesViewAll))
+                {
+                    _btnCrossBranch.Visible = false;
+                }
+
                 // Settings
                 if (!await _permissionService.HasPermissionAsync(DzentoPOS2.Core.Constants.Permissions.SettingsView))
                 {
@@ -912,11 +932,11 @@ namespace DzentoPOS2.WinForms.Forms.Layout
                 })
                 .ToList();
 
-            _mainHeaderBar.SetBranches(branchViewModels, _currentUser.User?.BranchId);
+            _mainHeaderBar.SetBranches(branchViewModels, _activeBranch.ActiveBranchId);
 
             // Show the real branch under the user name (never the designer
             // placeholder); hide the line when there is no branch.
-            var selectedBranch = branchViewModels.FirstOrDefault(b => b.Id == _currentUser.User?.BranchId)
+            var selectedBranch = branchViewModels.FirstOrDefault(b => b.Id == _activeBranch.ActiveBranchId)
                 ?? branchViewModels.FirstOrDefault(b => b.IsMainBranch)
                 ?? branchViewModels.FirstOrDefault();
 
@@ -942,6 +962,8 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             _btnSuppliers.Text = "  " + AppStrings.Suppliers; 
             _btnCashSessions.Text = "  " + AppStrings.CashSessions;
             _btnExpenses.Text = "  " + AppStrings.ExpensesButton;
+            _btnBranches.Text = "  " + AppStrings.Branches;
+            _btnCrossBranch.Text = "  " + AppStrings.CrossBranchReport;
 
             btnInventory.Text = AppStrings.Inventory; 
 
@@ -1079,12 +1101,17 @@ namespace DzentoPOS2.WinForms.Forms.Layout
 
             _statusTimer.Start();
 
-            // First-run module selection wizard.
-            var moduleService = _services.GetService<DzentoPOS2.App.Services.Systems.IModuleService>();
-            if (moduleService != null && !(await moduleService.IsConfiguredAsync()))
+            // First-run branch activity selection wizard.
+            var capabilityService = _services.GetService<DzentoPOS2.App.Services.Systems.ICapabilityService>();
+            if (capabilityService != null)
             {
-                using var dlg = _services.GetRequiredService<FirstRunModulesDialog>();
-                dlg.ShowDialog(this);
+                // Check if branch activities are configured (at least one activity exists).
+                var activities = await capabilityService.GetCapabilitiesAsync();
+                if (activities == BranchCapability.None)
+                {
+                    using var dlg = _services.GetRequiredService<FirstRunModulesDialog>();
+                    dlg.ShowDialog(this);
+                }
             }
 
             // The sales screen (point of sale) is the working screen of the
@@ -1196,8 +1223,21 @@ namespace DzentoPOS2.WinForms.Forms.Layout
             lblBranch.Visible = _currentBranchName.Length > 0;
             _toolTip.SetToolTip(lblBranch, _currentBranchName);
 
-            // Rebuild PosProductStore stock (if POS is open).
-            // This is handled by IActiveBranchContext.BranchChanged event.
+            // Notify current page if it implements IBranchAware.
+            var currentPage = _navigation.CurrentPage;
+            if (currentPage is IBranchAware branchAware)
+            {
+                await branchAware.OnBranchChangedAsync(e.Branch.Id);
+            }
+            else
+            {
+                // Page doesn't implement IBranchAware: reload via navigation.
+                var pageType = currentPage?.GetType();
+                if (pageType != null)
+                {
+                    _navigation.Navigate(pageType);
+                }
+            }
         }
 
         private void UserMenu_MenuActionSelected(object? sender, UserMenuEventArgs e)

@@ -57,7 +57,7 @@ public sealed class PermissionGuardTests : IAsyncLifetime
         });
     }
 
-    private async Task SetNonAdminUserAsync(IServiceProvider sp)
+    private Task SetNonAdminUserAsync(IServiceProvider sp)
     {
         var currentUser = sp.GetRequiredService<ICurrentUserService>();
         currentUser.SetUser(new UserSession
@@ -70,6 +70,7 @@ public sealed class PermissionGuardTests : IAsyncLifetime
             BranchName = "Main Branch",
             IsAdmin = false
         });
+        return Task.CompletedTask;
     }
 
     [Fact]

@@ -1978,4 +1978,187 @@
   <data name="NoExpiry" xml:space="preserve">
     <value>No expiry</value>
   </data>
+  <data name="WarrantyUnderWarranty" xml:space="preserve">
+    <value>Under warranty</value>
+  </data>
+  <data name="SerialLabel" xml:space="preserve">
+    <value>Serial</value>
+  </data>
+  <data name="ImeiLabel" xml:space="preserve">
+    <value>IMEI</value>
+  </data>
+  <data name="SaleDateLabel" xml:space="preserve">
+    <value>Sale date</value>
+  </data>
+  <data name="WarrantyExpiresLabel" xml:space="preserve">
+    <value>Warranty expires</value>
+  </data>
+  <data name="StatusLabel" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="NoSerial" xml:space="preserve">
+    <value>(no serial)</value>
+  </data>
+  <data name="LicenseTitle" xml:space="preserve">
+    <value>License</value>
+  </data>
+  <data name="LicenseSection" xml:space="preserve">
+    <value>License &amp; activation</value>
+  </data>
+  <data name="LicenseSectionHint" xml:space="preserve">
+    <value>Activate a license key on this device to unlock the full plan.</value>
+  </data>
+  <data name="LicensePlanLabel" xml:space="preserve">
+    <value>Plan</value>
+  </data>
+  <data name="LicenseExpiryLabel" xml:space="preserve">
+    <value>Expires</value>
+  </data>
+  <data name="LicenseDeviceLabel" xml:space="preserve">
+    <value>Device fingerprint</value>
+  </data>
+  <data name="LicenseKeyLabel" xml:space="preserve">
+    <value>License key</value>
+  </data>
+  <data name="LicenseStateActive" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="LicenseStateExpiringSoon" xml:space="preserve">
+    <value>Expiring soon</value>
+  </data>
+  <data name="LicenseStateGrace" xml:space="preserve">
+    <value>Grace period</value>
+  </data>
+  <data name="LicenseStateExpired" xml:space="preserve">
+    <value>Expired</value>
+  </data>
+  <data name="LicenseStateUnlicensed" xml:space="preserve">
+    <value>Unlicensed (trial)</value>
+  </data>
+  <data name="LicenseStateDeviceMismatch" xml:space="preserve">
+    <value>Bound to another device</value>
+  </data>
+  <data name="LicenseDaysLeftFormat" xml:space="preserve">
+    <value>{0} day(s) remaining</value>
+  </data>
+  <data name="LicenseUnlimited" xml:space="preserve">
+    <value>Unlimited</value>
+  </data>
+  <data name="LicenseRequiredBanner" xml:space="preserve">
+    <value>The license has expired. The app is read-only until a valid key is activated.</value>
+  </data>
+  <data name="LicenseManage" xml:space="preserve">
+    <value>Manage license</value>
+  </data>
+  <data name="LicenseDeviceCopied" xml:space="preserve">
+    <value>Device fingerprint copied.</value>
+  </data>
+  <data name="LicenseEnterKey" xml:space="preserve">
+    <value>Enter a license key.</value>
+  </data>
+  <data name="LicenseActivatedMsg" xml:space="preserve">
+    <value>License activated successfully.</value>
+  </data>
+  <data name="LicenseDeactivatedMsg" xml:space="preserve">
+    <value>License deactivated.</value>
+  </data>
+  <data name="LicenseNoneActiveMsg" xml:space="preserve">
+    <value>There is no active license to deactivate.</value>
+  </data>
+  <data name="LicenseInvalidKeyMsg" xml:space="preserve">
+    <value>The license key is invalid.</value>
+  </data>
+  <data name="LicenseNotConfiguredMsg" xml:space="preserve">
+    <value>License validation is not configured in this build.</value>
+  </data>
+  <data name="LicenseBadSignatureMsg" xml:space="preserve">
+    <value>The license key signature is invalid.</value>
+  </data>
+  <data name="LicenseDeviceMismatchMsg" xml:space="preserve">
+    <value>This license key belongs to a different device.</value>
+  </data>
+  <data name="LicenseExpiredMsg" xml:space="preserve">
+    <value>The license has expired.</value>
+  </data>
+  <data name="LicenseReadOnlyMsg" xml:space="preserve">
+    <value>The license does not allow writing operations.</value>
+  </data>
+  <data name="LicenseUserLimitMsg" xml:space="preserve">
+    <value>The user limit of the license has been reached.</value>
+  </data>
+  <data name="LicenseBranchLimitMsg" xml:space="preserve">
+    <value>The branch limit of the license has been reached.</value>
+  </data>
+  <data name="LicenseLimitsFormat" xml:space="preserve">
+    <value>Users: {0} · Branches: {1}</value>
+  </data>
+<data name="LicenseDeactivateConfirm" xml:space="preserve">
+    <value>Deactivate the license on this device?</value>
+  </data>
+  <data name="DigitalCodesTitle" xml:space="preserve">
+    <value>Digital codes</value>
+  </data>
+  <data name="DigitalCodesHint" xml:space="preserve">
+    <value>Import and track prepaid cards / activation keys.</value>
+  </data>
+  <data name="DigitalCodeImport" xml:space="preserve">
+    <value>Import codes</value>
+  </data>
+  <data name="DigitalCodeImportTitle" xml:space="preserve">
+    <value>Import digital codes</value>
+  </data>
+  <data name="DigitalCodeImportHint" xml:space="preserve">
+    <value>Paste one code per line. Existing codes are skipped.</value>
+  </data>
+  <data name="DigitalCodeImportNoVariant" xml:space="preserve">
+    <value>Choose the variant to import into.</value>
+  </data>
+  <data name="DigitalCodeImportEmpty" xml:space="preserve">
+    <value>No codes to import.</value>
+  </data>
+  <data name="DigitalCodeImportResultFormat" xml:space="preserve">
+    <value>Imported: {0} · Skipped: {1}</value>
+  </data>
+  <data name="DigitalCodeColumn" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="DigitalCodeVariantColumn" xml:space="preserve">
+    <value>Variant</value>
+  </data>
+  <data name="DigitalCodeStatusColumn" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="DigitalCodeDeliveredAtColumn" xml:space="preserve">
+    <value>Delivered at</value>
+  </data>
+  <data name="DigitalCodeInvoiceColumn" xml:space="preserve">
+    <value>Invoice</value>
+  </data>
+  <data name="DigitalCodeStatusAvailable" xml:space="preserve">
+    <value>Available</value>
+  </data>
+  <data name="DigitalCodeStatusDelivered" xml:space="preserve">
+    <value>Delivered</value>
+  </data>
+  <data name="DigitalCodeStatusCancelled" xml:space="preserve">
+    <value>Cancelled</value>
+  </data>
+  <data name="DigitalCodeAllVariants" xml:space="preserve">
+    <value>All variants</value>
+  </data>
+  <data name="DigitalCodeAllStatuses" xml:space="preserve">
+    <value>All statuses</value>
+  </data>
+  <data name="DigitalCodeAvailableCountFormat" xml:space="preserve">
+    <value>Available: {0}</value>
+  </data>
+  <data name="DigitalCodeCancelConfirm" xml:space="preserve">
+    <value>Cancel this code? It will no longer be sold.</value>
+  </data>
+  <data name="DigitalCodeDeliveredTitle" xml:space="preserve">
+    <value>Digital codes delivered</value>
+  </data>
+  <data name="DigitalCodeDeliveryHint" xml:space="preserve">
+    <value>Give each code to the customer and keep it for support.</value>
+  </data>
 </root>

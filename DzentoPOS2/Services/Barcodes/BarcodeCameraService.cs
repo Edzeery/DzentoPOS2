@@ -276,7 +276,7 @@ public sealed class BarcodeCameraService : IDisposable
 
             try { _frameAvailable.Set(); } catch (Exception ex) { System.Diagnostics.Debug.WriteLine(ex.Message); }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
         }
     }

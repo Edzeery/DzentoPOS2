@@ -29,8 +29,8 @@ public sealed class KpiValueFormatterCultureTests
         // Latin digits only (no Arabic-Indic digits).
         foreach (var ch in text)
         {
-            if (ch >= '\u0660' && ch <= '\u0669') Assert.True(false, "Arabic-Indic digit found: " + ch);
-            if (ch >= '\u06F0' && ch <= '\u06F9') Assert.True(false, "Extended Arabic-Indic digit found: " + ch);
+            if (ch >= '\u0660' && ch <= '\u0669') Assert.Fail("Arabic-Indic digit found: " + ch);
+            if (ch >= '\u06F0' && ch <= '\u06F9') Assert.Fail("Extended Arabic-Indic digit found: " + ch);
         }
         // Separators must not be identical.
         var norm = KpiValueFormatter.NormalizeCulture(culture);

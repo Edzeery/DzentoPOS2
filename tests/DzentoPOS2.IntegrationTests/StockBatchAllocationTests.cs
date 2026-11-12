@@ -116,12 +116,12 @@ public sealed class StockBatchAllocationTests : IAsyncLifetime
             File.Delete(_dbPath);
     }
 
-    private async Task<StockService> CreateStockServiceAsync(AsyncServiceScope scope)
+    private Task<StockService> CreateStockServiceAsync(AsyncServiceScope scope)
     {
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var clock = scope.ServiceProvider.GetRequiredService<IBusinessClock>();
         var batches = scope.ServiceProvider.GetRequiredService<IBatchService>();
-        return new StockService(context, clock, guard: null, logger: null, batchService: batches);
+        return Task.FromResult(new StockService(context, clock, guard: null, logger: null, batchService: batches));
     }
 
     private Task ApplySaleAsync(StockService stock, decimal quantity, Guid batchId)

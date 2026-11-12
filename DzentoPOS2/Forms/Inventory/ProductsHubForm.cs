@@ -33,9 +33,9 @@ public partial class ProductsHubForm : LocalizableFormBase
             // We keep it simple: titles set at creation; refresh all by tag type name.
             foreach (TabPage page in _tabs.TabPages)
             {
-                if (page.Tag == typeof(ProductsForm)) page.Text = AppStrings.Products;
-                else if (page.Tag == typeof(ProductCategoriesForm)) page.Text = AppStrings.Categories;
-                else if (page.Tag == typeof(ProductUnitsForm)) page.Text = AppStrings.Units;
+                if ((page.Tag as Type) == typeof(ProductsForm)) page.Text = AppStrings.Products;
+                else if ((page.Tag as Type) == typeof(ProductCategoriesForm)) page.Text = AppStrings.Categories;
+                else if ((page.Tag as Type) == typeof(ProductUnitsForm)) page.Text = AppStrings.Units;
             }
         }
     }

@@ -1978,5 +1978,188 @@
   <data name="NoExpiry" xml:space="preserve">
     <value>بدون انتهاء</value>
   </data>
+  <data name="WarrantyUnderWarranty" xml:space="preserve">
+    <value>ضمن الضمان</value>
+  </data>
+  <data name="SerialLabel" xml:space="preserve">
+    <value>الرقم التسلسلي</value>
+  </data>
+  <data name="ImeiLabel" xml:space="preserve">
+    <value>IMEI</value>
+  </data>
+  <data name="SaleDateLabel" xml:space="preserve">
+    <value>تاريخ البيع</value>
+  </data>
+  <data name="WarrantyExpiresLabel" xml:space="preserve">
+    <value>انتهاء الضمان</value>
+  </data>
+  <data name="StatusLabel" xml:space="preserve">
+    <value>الحالة</value>
+  </data>
+  <data name="NoSerial" xml:space="preserve">
+    <value>(بدون رقم تسلسلي)</value>
+  </data>
+  <data name="LicenseTitle" xml:space="preserve">
+    <value>الترخيص</value>
+  </data>
+  <data name="LicenseSection" xml:space="preserve">
+    <value>الترخيص والتفعيل</value>
+  </data>
+  <data name="LicenseSectionHint" xml:space="preserve">
+    <value>فعّل مفتاح ترخيص على هذا الجهاز لفتح الخطة الكاملة.</value>
+  </data>
+  <data name="LicensePlanLabel" xml:space="preserve">
+    <value>الخطة</value>
+  </data>
+  <data name="LicenseExpiryLabel" xml:space="preserve">
+    <value>تاريخ الانتهاء</value>
+  </data>
+  <data name="LicenseDeviceLabel" xml:space="preserve">
+    <value>بصمة الجهاز</value>
+  </data>
+  <data name="LicenseKeyLabel" xml:space="preserve">
+    <value>مفتاح الترخيص</value>
+  </data>
+  <data name="LicenseStateActive" xml:space="preserve">
+    <value>نشط</value>
+  </data>
+  <data name="LicenseStateExpiringSoon" xml:space="preserve">
+    <value>ينتهي قريبًا</value>
+  </data>
+  <data name="LicenseStateGrace" xml:space="preserve">
+    <value>فترة سماح</value>
+  </data>
+  <data name="LicenseStateExpired" xml:space="preserve">
+    <value>منتهٍ</value>
+  </data>
+  <data name="LicenseStateUnlicensed" xml:space="preserve">
+    <value>غير مرخّص (تجريبي)</value>
+  </data>
+  <data name="LicenseStateDeviceMismatch" xml:space="preserve">
+    <value>مرتبط بجهاز آخر</value>
+  </data>
+  <data name="LicenseDaysLeftFormat" xml:space="preserve">
+    <value>متبقٍ {0} يوم</value>
+  </data>
+  <data name="LicenseUnlimited" xml:space="preserve">
+    <value>غير محدود</value>
+  </data>
+  <data name="LicenseRequiredBanner" xml:space="preserve">
+    <value>انتهت صلاحية الترخيص. التطبيق للقراءة فقط حتى تفعيل مفتاح صالح.</value>
+  </data>
+  <data name="LicenseManage" xml:space="preserve">
+    <value>إدارة الترخيص</value>
+  </data>
+  <data name="LicenseDeviceCopied" xml:space="preserve">
+    <value>تم نسخ بصمة الجهاز.</value>
+  </data>
+  <data name="LicenseEnterKey" xml:space="preserve">
+    <value>أدخل مفتاح الترخيص.</value>
+  </data>
+  <data name="LicenseActivatedMsg" xml:space="preserve">
+    <value>تم تفعيل الترخيص بنجاح.</value>
+  </data>
+  <data name="LicenseDeactivatedMsg" xml:space="preserve">
+    <value>تم إلغاء تفعيل الترخيص.</value>
+  </data>
+  <data name="LicenseNoneActiveMsg" xml:space="preserve">
+    <value>لا يوجد ترخيص نشط لإلغاء تفعيله.</value>
+  </data>
+  <data name="LicenseInvalidKeyMsg" xml:space="preserve">
+    <value>مفتاح الترخيص غير صالح.</value>
+  </data>
+  <data name="LicenseNotConfiguredMsg" xml:space="preserve">
+    <value>التحقق من الترخيص غير مُهيأ في هذا الإصدار.</value>
+  </data>
+  <data name="LicenseBadSignatureMsg" xml:space="preserve">
+    <value>توقيع مفتاح الترخيص غير صالح.</value>
+  </data>
+  <data name="LicenseDeviceMismatchMsg" xml:space="preserve">
+    <value>مفتاح الترخيص هذا يخص جهازًا آخر.</value>
+  </data>
+  <data name="LicenseExpiredMsg" xml:space="preserve">
+    <value>انتهت صلاحية الترخيص.</value>
+  </data>
+  <data name="LicenseReadOnlyMsg" xml:space="preserve">
+    <value>الترخيص لا يسمح بعمليات الكتابة.</value>
+  </data>
+  <data name="LicenseUserLimitMsg" xml:space="preserve">
+    <value>تم بلوغ الحد الأقصى لعدد المستخدمين في الترخيص.</value>
+  </data>
+  <data name="LicenseBranchLimitMsg" xml:space="preserve">
+    <value>تم بلوغ الحد الأقصى لعدد الفروع في الترخيص.</value>
+  </data>
+  <data name="LicenseLimitsFormat" xml:space="preserve">
+    <value>المستخدمون: {0} · الفروع: {1}</value>
+  </data>
+<data name="LicenseDeactivateConfirm" xml:space="preserve">
+    <value>هل تريد إلغاء تفعيل الترخيص على هذا الجهاز؟</value>
+  </data>
+  <data name="DigitalCodesTitle" xml:space="preserve">
+    <value>الأكواد الرقمية</value>
+  </data>
+  <data name="DigitalCodesHint" xml:space="preserve">
+    <value>استيراد ومتابعة بطاقات الشحن ومفاتيح التفعيل.</value>
+  </data>
+  <data name="DigitalCodeImport" xml:space="preserve">
+    <value>استيراد أكواد</value>
+  </data>
+  <data name="DigitalCodeImportTitle" xml:space="preserve">
+    <value>استيراد الأكواد الرقمية</value>
+  </data>
+  <data name="DigitalCodeImportHint" xml:space="preserve">
+    <value>الصق كوداً واحداً في كل سطر. تُتخطّى الأكواد الموجودة مسبقاً.</value>
+  </data>
+  <data name="DigitalCodeImportNoVariant" xml:space="preserve">
+    <value>اختر النوع المراد الاستيراد إليه.</value>
+  </data>
+  <data name="DigitalCodeImportEmpty" xml:space="preserve">
+    <value>لا توجد أكواد للاستيراد.</value>
+  </data>
+  <data name="DigitalCodeImportResultFormat" xml:space="preserve">
+    <value>المستورد: {0} · المتخطّى: {1}</value>
+  </data>
+  <data name="DigitalCodeColumn" xml:space="preserve">
+    <value>الكود</value>
+  </data>
+  <data name="DigitalCodeVariantColumn" xml:space="preserve">
+    <value>النوع</value>
+  </data>
+  <data name="DigitalCodeStatusColumn" xml:space="preserve">
+    <value>الحالة</value>
+  </data>
+  <data name="DigitalCodeDeliveredAtColumn" xml:space="preserve">
+    <value>تاريخ التسليم</value>
+  </data>
+  <data name="DigitalCodeInvoiceColumn" xml:space="preserve">
+    <value>الفاتورة</value>
+  </data>
+  <data name="DigitalCodeStatusAvailable" xml:space="preserve">
+    <value>متاح</value>
+  </data>
+  <data name="DigitalCodeStatusDelivered" xml:space="preserve">
+    <value>مُسلَّم</value>
+  </data>
+  <data name="DigitalCodeStatusCancelled" xml:space="preserve">
+    <value>ملغى</value>
+  </data>
+  <data name="DigitalCodeAllVariants" xml:space="preserve">
+    <value>كل الأنواع</value>
+  </data>
+  <data name="DigitalCodeAllStatuses" xml:space="preserve">
+    <value>كل الحالات</value>
+  </data>
+  <data name="DigitalCodeAvailableCountFormat" xml:space="preserve">
+    <value>المتاح: {0}</value>
+  </data>
+  <data name="DigitalCodeCancelConfirm" xml:space="preserve">
+    <value>إلغاء هذا الكود؟ لن يُباع بعد الآن.</value>
+  </data>
+  <data name="DigitalCodeDeliveredTitle" xml:space="preserve">
+    <value>الأكواد الرقمية المُسلَّمة</value>
+  </data>
+  <data name="DigitalCodeDeliveryHint" xml:space="preserve">
+    <value>أعطِ كل كود للعميل واحتفظ به للدعم.</value>
+  </data>
 </root>
 

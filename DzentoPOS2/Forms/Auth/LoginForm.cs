@@ -555,7 +555,7 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             }
         }
 
-        private async void LinkForgotPassword_Click(object sender, EventArgs e)
+        private void LinkForgotPassword_Click(object sender, EventArgs e)
         {
             using var forgot = new ForgotPasswordDialog(_authService, _languageService);
             forgot.ShowDialog(this);

@@ -604,14 +604,15 @@ public partial class SettingsForm : LocalizableFormBase
 
     private async Task RestoreBackupAsync()
     {
-        if (_backupService is null) return;
+        var backupService = _backupService;
+        if (backupService is null) return;
 
         using var dialog = new OpenFileDialog
         {
             Title = AppStrings.RestoreBackup,
             Filter = "Backup|*.db|All files|*.*",
-            InitialDirectory = _backupService is not null && Directory.Exists(_backupService.BackupDirectory)
-                ? _backupService.BackupDirectory
+            InitialDirectory = Directory.Exists(backupService.BackupDirectory)
+                ? backupService.BackupDirectory
                 : Environment.CurrentDirectory
         };
 
@@ -623,8 +624,8 @@ public partial class SettingsForm : LocalizableFormBase
 
         try
         {
-            await _backupService.ValidateBackupAsync(dialog.FileName);
-            await _backupService.RestoreAsync(dialog.FileName);
+            await backupService.ValidateBackupAsync(dialog.FileName);
+            await backupService.RestoreAsync(dialog.FileName);
 
             AppMessageBox.Success(AppStrings.DataSaved);
 

@@ -81,13 +81,15 @@ public class WarrantyQueryForm : ThemedDialog
             return;
         }
 
-        var statusText = info.IsUnderWarranty ? "Under Warranty" : "Expired";
+        var statusText = info.IsUnderWarranty
+            ? AppStrings.WarrantyUnderWarranty
+            : AppStrings.Expired;
         _lblResult.Text = $"{info.ProductName} - {info.VariantName}\n" +
-                          $"Serial: {info.SerialNumber}\n" +
-                          $"IMEI: {info.IMEI}\n" +
-                          $"Sale Date: {info.SaleDate:yyyy-MM-dd}\n" +
-                          $"Warranty Expires: {info.WarrantyExpiry:yyyy-MM-dd}\n" +
-                          $"Status: {statusText}";
+                          $"{AppStrings.SerialLabel}: {info.SerialNumber}\n" +
+                          $"{AppStrings.ImeiLabel}: {info.IMEI}\n" +
+                          $"{AppStrings.SaleDateLabel}: {info.SaleDate:yyyy-MM-dd}\n" +
+                          $"{AppStrings.WarrantyExpiresLabel}: {info.WarrantyExpiry:yyyy-MM-dd}\n" +
+                          $"{AppStrings.StatusLabel}: {statusText}";
     }
 
     protected override void ApplyTheme()

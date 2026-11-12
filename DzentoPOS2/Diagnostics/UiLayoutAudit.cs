@@ -693,7 +693,11 @@ private static int CountControls(Control parent)
         public Guid ActiveBranchId => Guid.Empty;
         public string ActiveBranchName => "Stub";
         public bool CanSwitchBranch => true;
-        public event EventHandler<ActiveBranchChangedEventArgs>? BranchChanged;
+        public event EventHandler<ActiveBranchChangedEventArgs>? BranchChanged
+        {
+            add { }
+            remove { }
+        }
         public Task<bool> TrySwitchBranchAsync(Guid branchId, CancellationToken cancellationToken = default) =>
             Task.FromResult(true);
         public Task InitializeAsync(ICurrentUserService currentUser, CancellationToken cancellationToken = default) =>

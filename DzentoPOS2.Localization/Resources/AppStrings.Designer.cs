@@ -4751,6 +4751,489 @@ namespace DzentoPOS2.Localization.Resources {
                 return ResourceManager.GetString("ViewAllBranches", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Under warranty.
+        /// </summary>
+        public static string WarrantyUnderWarranty {
+            get {
+                return ResourceManager.GetString("WarrantyUnderWarranty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Serial.
+        /// </summary>
+        public static string SerialLabel {
+            get {
+                return ResourceManager.GetString("SerialLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IMEI.
+        /// </summary>
+        public static string ImeiLabel {
+            get {
+                return ResourceManager.GetString("ImeiLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sale date.
+        /// </summary>
+        public static string SaleDateLabel {
+            get {
+                return ResourceManager.GetString("SaleDateLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Warranty expires.
+        /// </summary>
+        public static string WarrantyExpiresLabel {
+            get {
+                return ResourceManager.GetString("WarrantyExpiresLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Status.
+        /// </summary>
+        public static string StatusLabel {
+            get {
+                return ResourceManager.GetString("StatusLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (no serial).
+        /// </summary>
+        public static string NoSerial {
+            get {
+                return ResourceManager.GetString("NoSerial", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to License.
+        /// </summary>
+        public static string LicenseTitle {
+            get {
+                return ResourceManager.GetString("LicenseTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to License &amp; activation.
+        /// </summary>
+        public static string LicenseSection {
+            get {
+                return ResourceManager.GetString("LicenseSection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Activate a license key on this device to unlock the full plan.
+        /// </summary>
+        public static string LicenseSectionHint {
+            get {
+                return ResourceManager.GetString("LicenseSectionHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Plan.
+        /// </summary>
+        public static string LicensePlanLabel {
+            get {
+                return ResourceManager.GetString("LicensePlanLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Expires.
+        /// </summary>
+        public static string LicenseExpiryLabel {
+            get {
+                return ResourceManager.GetString("LicenseExpiryLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Device fingerprint.
+        /// </summary>
+        public static string LicenseDeviceLabel {
+            get {
+                return ResourceManager.GetString("LicenseDeviceLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to License key.
+        /// </summary>
+        public static string LicenseKeyLabel {
+            get {
+                return ResourceManager.GetString("LicenseKeyLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Active.
+        /// </summary>
+        public static string LicenseStateActive {
+            get {
+                return ResourceManager.GetString("LicenseStateActive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Expiring soon.
+        /// </summary>
+        public static string LicenseStateExpiringSoon {
+            get {
+                return ResourceManager.GetString("LicenseStateExpiringSoon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Grace period.
+        /// </summary>
+        public static string LicenseStateGrace {
+            get {
+                return ResourceManager.GetString("LicenseStateGrace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Expired.
+        /// </summary>
+        public static string LicenseStateExpired {
+            get {
+                return ResourceManager.GetString("LicenseStateExpired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unlicensed (trial).
+        /// </summary>
+        public static string LicenseStateUnlicensed {
+            get {
+                return ResourceManager.GetString("LicenseStateUnlicensed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bound to another device.
+        /// </summary>
+        public static string LicenseStateDeviceMismatch {
+            get {
+                return ResourceManager.GetString("LicenseStateDeviceMismatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} day(s) remaining.
+        /// </summary>
+        public static string LicenseDaysLeftFormat {
+            get {
+                return ResourceManager.GetString("LicenseDaysLeftFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unlimited.
+        /// </summary>
+        public static string LicenseUnlimited {
+            get {
+                return ResourceManager.GetString("LicenseUnlimited", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The license has expired. The app is read-only until a valid key is activated..
+        /// </summary>
+        public static string LicenseRequiredBanner {
+            get {
+                return ResourceManager.GetString("LicenseRequiredBanner", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Manage license.
+        /// </summary>
+        public static string LicenseManage {
+            get {
+                return ResourceManager.GetString("LicenseManage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Device fingerprint copied..
+        /// </summary>
+        public static string LicenseDeviceCopied {
+            get {
+                return ResourceManager.GetString("LicenseDeviceCopied", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enter a license key..
+        /// </summary>
+        public static string LicenseEnterKey {
+            get {
+                return ResourceManager.GetString("LicenseEnterKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to License activated successfully..
+        /// </summary>
+        public static string LicenseActivatedMsg {
+            get {
+                return ResourceManager.GetString("LicenseActivatedMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to License deactivated..
+        /// </summary>
+        public static string LicenseDeactivatedMsg {
+            get {
+                return ResourceManager.GetString("LicenseDeactivatedMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There is no active license to deactivate..
+        /// </summary>
+        public static string LicenseNoneActiveMsg {
+            get {
+                return ResourceManager.GetString("LicenseNoneActiveMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The license key is invalid..
+        /// </summary>
+        public static string LicenseInvalidKeyMsg {
+            get {
+                return ResourceManager.GetString("LicenseInvalidKeyMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to License validation is not configured in this build..
+        /// </summary>
+        public static string LicenseNotConfiguredMsg {
+            get {
+                return ResourceManager.GetString("LicenseNotConfiguredMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The license key signature is invalid..
+        /// </summary>
+        public static string LicenseBadSignatureMsg {
+            get {
+                return ResourceManager.GetString("LicenseBadSignatureMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This license key belongs to a different device..
+        /// </summary>
+        public static string LicenseDeviceMismatchMsg {
+            get {
+                return ResourceManager.GetString("LicenseDeviceMismatchMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The license has expired..
+        /// </summary>
+        public static string LicenseExpiredMsg {
+            get {
+                return ResourceManager.GetString("LicenseExpiredMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The license does not allow writing operations..
+        /// </summary>
+        public static string LicenseReadOnlyMsg {
+            get {
+                return ResourceManager.GetString("LicenseReadOnlyMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The user limit of the license has been reached..
+        /// </summary>
+        public static string LicenseUserLimitMsg {
+            get {
+                return ResourceManager.GetString("LicenseUserLimitMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The branch limit of the license has been reached..
+        /// </summary>
+        public static string LicenseBranchLimitMsg {
+            get {
+                return ResourceManager.GetString("LicenseBranchLimitMsg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Users: {0} · Branches: {1}.
+        /// </summary>
+        public static string LicenseLimitsFormat {
+            get {
+                return ResourceManager.GetString("LicenseLimitsFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Deactivate the license on this device?.
+        /// </summary>
+        public static string LicenseDeactivateConfirm {
+            get {
+                return ResourceManager.GetString("LicenseDeactivateConfirm", resourceCulture);
+            }
+        }
+
+        public static string DigitalCodesTitle {
+            get {
+                return ResourceManager.GetString("DigitalCodesTitle", resourceCulture);
+            }
+        }
+
+        public static string DigitalCodesHint {
+            get {
+                return ResourceManager.GetString("DigitalCodesHint", resourceCulture);
+            }
+        }
+
+        public static string DigitalCodeImport {
+            get {
+                return ResourceManager.GetString("DigitalCodeImport", resourceCulture);
+            }
+        }
+
+        public static string DigitalCodeImportTitle {
+            get {
+                return ResourceManager.GetString("DigitalCodeImportTitle", resourceCulture);
+            }
+        }
+
+        public static string DigitalCodeImportHint {
+            get {
+                return ResourceManager.GetString("DigitalCodeImportHint", resourceCulture);
+            }
+        }
+
+        public static string DigitalCodeImportNoVariant {
+            get {
+                return ResourceManager.GetString("DigitalCodeImportNoVariant", resourceCulture);
+            }
+        }
+
+        public static string DigitalCodeImportEmpty {
+            get {
+                return ResourceManager.GetString("DigitalCodeImportEmpty", resourceCulture);
+            }
+        }
+
+        public static string DigitalCodeImportResultFormat {
+            get {
+                return ResourceManager.GetString("DigitalCodeImportResultFormat", resourceCulture);
+            }
+        }
+
+        public static string DigitalCodeColumn {
+            get {
+                return ResourceManager.GetString("DigitalCodeColumn", resourceCulture);
+            }
+        }
+
+        public static string DigitalCodeVariantColumn {
+            get {
+                return ResourceManager.GetString("DigitalCodeVariantColumn", resourceCulture);
+            }
+        }
+
+        public static string DigitalCodeStatusColumn {
+            get {
+                return ResourceManager.GetString("DigitalCodeStatusColumn", resourceCulture);
+            }
+        }
+
+        public static string DigitalCodeDeliveredAtColumn {
+            get {
+                return ResourceManager.GetString("DigitalCodeDeliveredAtColumn", resourceCulture);
+            }
+        }
+
+        public static string DigitalCodeInvoiceColumn {
+            get {
+                return ResourceManager.GetString("DigitalCodeInvoiceColumn", resourceCulture);
+            }
+        }
+
+        public static string DigitalCodeStatusAvailable {
+            get {
+                return ResourceManager.GetString("DigitalCodeStatusAvailable", resourceCulture);
+            }
+        }
+
+        public static string DigitalCodeStatusDelivered {
+            get {
+                return ResourceManager.GetString("DigitalCodeStatusDelivered", resourceCulture);
+            }
+        }
+
+        public static string DigitalCodeStatusCancelled {
+            get {
+                return ResourceManager.GetString("DigitalCodeStatusCancelled", resourceCulture);
+            }
+        }
+
+        public static string DigitalCodeAllVariants {
+            get {
+                return ResourceManager.GetString("DigitalCodeAllVariants", resourceCulture);
+            }
+        }
+
+        public static string DigitalCodeAllStatuses {
+            get {
+                return ResourceManager.GetString("DigitalCodeAllStatuses", resourceCulture);
+            }
+        }
+
+        public static string DigitalCodeAvailableCountFormat {
+            get {
+                return ResourceManager.GetString("DigitalCodeAvailableCountFormat", resourceCulture);
+            }
+        }
+
+        public static string DigitalCodeCancelConfirm {
+            get {
+                return ResourceManager.GetString("DigitalCodeCancelConfirm", resourceCulture);
+            }
+        }
+
+        public static string DigitalCodeDeliveredTitle {
+            get {
+                return ResourceManager.GetString("DigitalCodeDeliveredTitle", resourceCulture);
+            }
+        }
+
+        public static string DigitalCodeDeliveryHint {
+            get {
+                return ResourceManager.GetString("DigitalCodeDeliveryHint", resourceCulture);
+            }
+        }
 
     }
 }

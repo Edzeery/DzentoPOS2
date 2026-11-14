@@ -321,10 +321,23 @@ namespace DzentoPOS2.WinForms.Forms.Auth
             txtPassword.Margin = Padding.Empty;
             fields.Controls.Add(txtPassword, 0, 7);
 
-            ckbRememberMe.Dock = DockStyle.Top;
+            // Keep "remember me" and "forgot password" on the same row so the
+            // link is actually visible (it was dropped by the responsive rebuild).
+            var rememberRow = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.Transparent,
+                Margin = Padding.Empty
+            };
+            ckbRememberMe.Dock = DockStyle.Left;
             ckbRememberMe.AutoSize = true;
-            ckbRememberMe.Margin = Padding.Empty;
-            fields.Controls.Add(ckbRememberMe, 0, 8);
+            ckbRememberMe.Margin = new Padding(0, 6, 0, 0);
+            LinkForgotPassword.Dock = DockStyle.Right;
+            LinkForgotPassword.AutoSize = true;
+            LinkForgotPassword.Margin = new Padding(0, 6, 0, 0);
+            rememberRow.Controls.Add(ckbRememberMe);
+            rememberRow.Controls.Add(LinkForgotPassword);
+            fields.Controls.Add(rememberRow, 0, 8);
 
             ButtonLogin.Dock = DockStyle.Fill;
             ButtonLogin.Margin = Padding.Empty;

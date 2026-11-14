@@ -217,6 +217,18 @@ namespace DzentoPOS2.App.Services.Identity
                         .Failed(AppStrings.InvalidCurrentPassword);
                 }
 
+                if (string.IsNullOrWhiteSpace(dto.NewPassword) || dto.NewPassword.Length < 8)
+                {
+                    return Result<string>
+                        .Failed(AppStrings.PasswordTooShort);
+                }
+
+                if (PasswordHelper.Verify(dto.NewPassword, user.PasswordHash))
+                {
+                    return Result<string>
+                        .Failed(AppStrings.PasswordMustDiffer);
+                }
+
                 user.PasswordHash = PasswordHelper.Hash(dto.NewPassword);
                 user.MustChangePassword = false;
 

@@ -16,7 +16,7 @@ namespace DzentoPOS2.App.Validators.Identity.Auth
             RuleFor(x => x.NewPassword)
                 .NotEmpty()
                 .WithMessage(AppStrings.NewPasswordRequired)
-                .MinimumLength(6)
+                .MinimumLength(8)
                 .WithMessage(AppStrings.PasswordTooShort);
 
             RuleFor(x => x.ConfirmPassword)

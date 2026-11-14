@@ -35,6 +35,9 @@ public sealed partial class ForgotPasswordDialog : ThemedDialog
 
         InitializeComponent();
 
+        var oldReset = _btnReset;
+        var oldCancel = _btnCancel;
+
         _btnReset = ButtonFactory.Primary(AppStrings.ResetPassword);
         _btnReset.Location = new Point(190, 270);
         _btnReset.Size = new Size(160, 40);
@@ -45,8 +48,16 @@ public sealed partial class ForgotPasswordDialog : ThemedDialog
         _btnCancel.Size = new Size(160, 40);
         _btnCancel.DialogResult = DialogResult.Cancel;
 
+        if (oldReset is not null) Controls.Remove(oldReset);
+        if (oldCancel is not null) Controls.Remove(oldCancel);
+        Controls.Add(_btnReset);
+        Controls.Add(_btnCancel);
+
         AcceptButton = _btnReset;
         CancelButton = _btnCancel;
+
+        oldReset?.Dispose();
+        oldCancel?.Dispose();
 
         LoadText();
 

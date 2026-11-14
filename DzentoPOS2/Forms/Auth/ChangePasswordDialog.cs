@@ -44,7 +44,12 @@ public sealed partial class ChangePasswordDialog : ThemedDialog
 
         InitializeComponent();
 
-        // Apply themed buttons after designer layout.
+        // Apply themed buttons after designer layout. The Designer created
+        // plain buttons, so swap them out for the themed factory buttons and
+        // re-wire their click handlers (otherwise the visible buttons are dead).
+        var oldSave = _btnSave;
+        var oldCancel = _btnCancel;
+
         _btnSave = ButtonFactory.Primary(AppStrings.Save);
         _btnSave.Location = new Point(190, 214);
         _btnSave.Size = new Size(160, 40);
@@ -55,8 +60,16 @@ public sealed partial class ChangePasswordDialog : ThemedDialog
         _btnCancel.Size = new Size(160, 40);
         _btnCancel.DialogResult = DialogResult.Cancel;
 
+        if (oldSave is not null) Controls.Remove(oldSave);
+        if (oldCancel is not null) Controls.Remove(oldCancel);
+        Controls.Add(_btnSave);
+        Controls.Add(_btnCancel);
+
         AcceptButton = _btnSave;
         CancelButton = _btnCancel;
+
+        oldSave?.Dispose();
+        oldCancel?.Dispose();
 
         LoadText();
 

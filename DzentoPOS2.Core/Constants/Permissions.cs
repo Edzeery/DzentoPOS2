@@ -47,6 +47,7 @@ namespace DzentoPOS2.Core.Constants
         public const string SalesReturn = "permissions.sales.return";
         public const string SalesDelete = "permissions.sales.delete";
         public const string SalesDiscountOverride = "permissions.sales.discountoverride";
+        public const string SalesOverridePrice = "permissions.sales.overrideprice";
 
         // Purchases
         public const string PurchasesView = "permissions.purchases.view";

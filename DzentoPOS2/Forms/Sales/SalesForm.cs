@@ -103,6 +103,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
     private List<SaleDto> _invoices = new();
     private PaidMode _paidMode = PaidMode.FullPayment;
     private bool _updatingTotals;
+    private bool _canOverridePrice;
     private bool _saleStacked;
     private int _saleCartSize;
     private int _saleCartHeight;
@@ -286,6 +287,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         _cartGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
         _cartGrid.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
         _cartGrid.CellEndEdit += (_, _) => OnCartCellEdited();
+        _cartGrid.CellBeginEdit += OnCartCellBeginEdit;
         _cartGrid.CellContentClick += (_, e) => OnCartCellContentClick(e);
         _cartGrid.KeyDown += (_, e) =>
         {
@@ -652,8 +654,14 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             if (guard is null) return;
 
             bool canDelete = await guard.IsAllowedAsync(Permissions.SalesDelete);
+            bool canOverridePrice = await guard.IsAllowedAsync(Permissions.SalesOverridePrice);
             if (!IsDisposedOrDisposing)
+            {
                 _btnDeleteInvoice.Enabled = canDelete;
+                _canOverridePrice = canOverridePrice;
+                if (_cart.Count > 0)
+                    RefreshCart();
+            }
         }
         catch (Exception ex)
         {
@@ -1195,6 +1203,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             VariantName = variantName,
             Quantity = quantity,
             Price = price,
+            OriginalPrice = price,
             BatchId = batchId
         });
 
@@ -1261,7 +1270,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         {
             new DataGridViewTextBoxColumn { HeaderText = AppStrings.ProductLabel, DataPropertyName = "ProductName", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, MinimumWidth = 90, ReadOnly = true },
             new DataGridViewTextBoxColumn { HeaderText = AppStrings.Quantity, DataPropertyName = "Quantity", Width = 70 },
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Price + " (" + CurrencyCode + ")", DataPropertyName = "Price", Width = 80, DefaultCellStyle = { Format = "N2" } },
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Price + " (" + CurrencyCode + ")", DataPropertyName = "Price", Width = 80, DefaultCellStyle = { Format = "N2" }, ReadOnly = !_canOverridePrice },
             new DataGridViewTextBoxColumn { HeaderText = AppStrings.Total + " (" + CurrencyCode + ")", DataPropertyName = "Total", Width = 90, DefaultCellStyle = { Format = "N2" }, ReadOnly = true },
             new DataGridViewButtonColumn { HeaderText = AppStrings.Delete, Text = "X", UseColumnTextForButtonValue = true, Width = 40 }
         });
@@ -1271,6 +1280,17 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         _branchGuard.CanSwitchBranch = _cart.Count == 0;
 
         UpdateTotals();
+    }
+
+    private void OnCartCellBeginEdit(object? sender, DataGridViewCellCancelEventArgs e)
+    {
+        if (e.ColumnIndex < 0 || e.ColumnIndex >= _cartGrid.Columns.Count) return;
+        if (!string.Equals(_cartGrid.Columns[e.ColumnIndex].DataPropertyName, "Price", StringComparison.Ordinal))
+            return;
+
+        // Price changes require the explicit override permission.
+        if (!_canOverridePrice)
+            e.Cancel = true;
     }
 
     private void OnCartCellEdited()
@@ -1291,15 +1311,21 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
                     _cart[idx].Quantity = qv2;
 
                 var priceVal = _cartGrid.Rows[idx].Cells["Price"].Value;
+                decimal? newPrice = null;
                 if (priceVal is decimal pr)
+                    newPrice = pr;
+                else if (priceVal != null && decimal.TryParse(priceVal.ToString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var pv))
+                    newPrice = pv;
+                else if (priceVal != null && decimal.TryParse(priceVal.ToString(), out var pv2))
+                    newPrice = pv2;
+
+                if (newPrice.HasValue && _canOverridePrice)
                 {
-                    if (pr < 0) pr = 0;
-                    _cart[idx].Price = pr;
+                    var line = _cart[idx];
+                    var applied = Math.Max(0, newPrice.Value);
+                    line.Price = applied;
+                    line.PriceOverridden = applied != line.OriginalPrice;
                 }
-                else if (priceVal != null && decimal.TryParse(priceVal.ToString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var pv) && pv >= 0)
-                    _cart[idx].Price = pv;
-                else if (priceVal != null && decimal.TryParse(priceVal.ToString(), out var pv2) && pv2 >= 0)
-                    _cart[idx].Price = pv2;
 
                 RefreshCart();
             }

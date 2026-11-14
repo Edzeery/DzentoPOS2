@@ -27,6 +27,12 @@ namespace DzentoPOS2.Core.Entities.Sales
         /// <summary>Product list (sale) price frozen at sale time.</summary>
         public decimal ListPrice { get; set; }
 
+        /// <summary>
+        /// Variant list price when the cashier overrode the unit price; null
+        /// when the line was sold at the list price.
+        /// </summary>
+        public decimal? OriginalPrice { get; set; }
+
         /// <summary>This line's share of the invoice-level discount.</summary>
         public decimal DiscountAmount { get; set; }
 

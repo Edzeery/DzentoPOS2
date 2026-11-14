@@ -30,6 +30,9 @@ namespace DzentoPOS2.Shared.Contracts.DTOs.Sales
         public decimal Total { get; set; }
         public decimal UnitCost { get; set; }
         public decimal ListPrice { get; set; }
+
+        /// <summary>Variant list price when the line price was overridden.</summary>
+        public decimal? OriginalPrice { get; set; }
         public decimal DiscountAmount { get; set; }
         public bool IsCostEstimated { get; set; }
         public string Description { get; set; } = string.Empty;

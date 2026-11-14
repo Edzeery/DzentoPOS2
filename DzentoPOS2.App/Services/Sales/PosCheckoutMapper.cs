@@ -27,6 +27,8 @@ public static class PosCheckoutMapper
         VariantName = line.VariantName,
         Quantity = line.Quantity,
         Price = line.Price,
+        PriceOverridden = line.PriceOverridden,
+        OriginalPrice = line.OriginalPrice,
         Description = line.Description
     };
 }

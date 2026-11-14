@@ -192,10 +192,6 @@ namespace DzentoPOS2.App.Services.Sales
             if (dto.Items.Count == 0)
                 throw new InvalidOperationException("Sale must have at least one item");
 
-            var lines = dto.Items
-                .Select(i => new InvoiceLine(i.Quantity, i.Price))
-                .ToList();
-
             var branchId = await _storeContext.GetDefaultBranchIdAsync();
             var warehouseId = await _storeContext.GetDefaultWarehouseIdAsync(branchId);
             var cashboxId = await _storeContext.GetDefaultCashboxIdAsync(branchId);
@@ -269,6 +265,31 @@ namespace DzentoPOS2.App.Services.Sales
                     throw new InvalidOperationException("Invalid or inactive variant");
             }
 
+            // Resolve the applied unit price once. A cashier override is honoured
+            // only when explicitly flagged; otherwise the variant's list price is
+            // authoritative even if the caller sent a different Price value.
+            var pricing = new List<(decimal Applied, decimal ListPrice, bool Overridden)>(dto.Items.Count);
+            foreach (var item in dto.Items)
+            {
+                var variantId = item.VariantId != Guid.Empty ? item.VariantId : defaultVariantIds[item.ProductId];
+                var variant = variants[variantId];
+                var listPrice = variant.SalePrice.Amount > 0
+                    ? variant.SalePrice.Amount
+                    : products[item.ProductId].SalePrice?.Amount ?? 0m;
+
+                var overridden = item.PriceOverridden && item.Price != listPrice;
+                pricing.Add((overridden ? item.Price : listPrice, listPrice, overridden));
+            }
+
+            if (pricing.Any(p => p.Overridden))
+            {
+                await _authorizationGuard.DemandAsync(Permissions.SalesOverridePrice);
+            }
+
+            var lines = dto.Items
+                .Select((i, index) => new InvoiceLine(i.Quantity, pricing[index].Applied))
+                .ToList();
+
             // Single source of truth: every stored/recorded amount comes from
             // this calculator result (invoice, payment and cash movement).
             var totals = InvoiceCalculator.Calculate(
@@ -312,7 +333,8 @@ namespace DzentoPOS2.App.Services.Sales
                         fees);
 
                     var lineGrosses = dto.Items
-                        .Select(i => decimal.Round(i.Quantity * i.Price, digits, MidpointRounding.AwayFromZero))
+                        .Select((i, index) => decimal.Round(
+                            i.Quantity * pricing[index].Applied, digits, MidpointRounding.AwayFromZero))
                         .ToList();
 
                     var shares = ProfitCalculator.DistributeDiscount(lineGrosses, totals.DiscountAmount, digits).ToList();
@@ -324,14 +346,9 @@ namespace DzentoPOS2.App.Services.Sales
                         var variantId = item.VariantId != Guid.Empty ? item.VariantId : defaultVariantIds[item.ProductId];
                         var variant = variants[variantId];
 
-                        // Price and cost come from the variant. A variant without an
-                        // explicit sale price inherits the product price; a variant
-                        // without an explicit cost is marked estimated and may be
-                        // blocked from sale by policy.
-                        var salePrice = variant.SalePrice.Amount > 0
-                            ? variant.SalePrice.Amount
-                            : product.SalePrice?.Amount ?? 0m;
-
+                        // Cost comes from the variant. A variant without an
+                        // explicit cost is marked estimated and may be blocked
+                        // from sale by policy.
                         // For serialized items, use the serial unit's actual cost.
                         decimal costAmount = variant.CostPrice.Amount;
                         bool isCostEstimated = costAmount == 0;
@@ -363,10 +380,13 @@ namespace DzentoPOS2.App.Services.Sales
                             VariantId = variantId,
                             VariantName = variant.Name,
                             Quantity = item.Quantity,
-                            Price = salePrice,
+                            Price = pricing[itemIndex].Applied,
                             Total = lineGrosses[itemIndex],
                             UnitCost = costAmount,
                             ListPrice = product.SalePrice?.Amount ?? 0m,
+                            OriginalPrice = pricing[itemIndex].Overridden
+                                ? pricing[itemIndex].ListPrice
+                                : null,
                             DiscountAmount = shares[itemIndex],
                             IsCostEstimated = isCostEstimated,
                             SerialNumber = serialNumber,
@@ -733,6 +753,7 @@ namespace DzentoPOS2.App.Services.Sales
                     Total = i.Total,
                     UnitCost = i.UnitCost,
                     ListPrice = i.ListPrice,
+                    OriginalPrice = i.OriginalPrice,
                     DiscountAmount = i.DiscountAmount,
                     IsCostEstimated = i.IsCostEstimated,
                     Description = i.Description ?? string.Empty

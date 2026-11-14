@@ -25,6 +25,8 @@ public sealed class PosCheckoutMapperTests
                 VariantName = "Red / 128GB",
                 Quantity = 2.5m,
                 Price = 1499.75m,
+                PriceOverridden = true,
+                OriginalPrice = 1599.75m,
                 Description = "line note"
             }
         };
@@ -39,6 +41,8 @@ public sealed class PosCheckoutMapperTests
         Assert.Equal("Red / 128GB", line.VariantName);
         Assert.Equal(2.5m, line.Quantity);
         Assert.Equal(1499.75m, line.Price);
+        Assert.True(line.PriceOverridden);
+        Assert.Equal(1599.75m, line.OriginalPrice);
         Assert.Equal("line note", line.Description);
     }
 

@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Globalization;
 using System.Windows.Forms;
 using DzentoPOS2.App.Services.Sales;
+using DzentoPOS2.Core.Configuration;
+using DzentoPOS2.Shared.Helpers;
 using DzentoPOS2.WinForms.Themes;
 
 namespace DzentoPOS2.WinForms.Controls.Pos;
@@ -24,6 +27,7 @@ public class PosProductList : Control
     private readonly Dictionary<string, Image> _imageCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly LinkedList<string> _lru = new();
     private const int ImageCacheCapacity = 64;
+    private static readonly string ImagesRoot = Path.Combine(AppPaths.Root, "images");
     private readonly object _imgLock = new();
 
     public event EventHandler<PosProductItem>? ItemClicked;
@@ -179,6 +183,22 @@ public class PosProductList : Control
         {
             using var placeholderBrush = new SolidBrush(AppColors.SurfaceAlt);
             g.FillRectangle(placeholderBrush, rects.Image);
+
+            // Unified fallback: the product's initial, never an empty box.
+            var initial = string.IsNullOrWhiteSpace(item.Name)
+                ? "?"
+                : item.Name.Trim()[0].ToString();
+            using var initialFont = new Font(
+                "Segoe UI",
+                Math.Max(10F, rects.Image.Height / 4F),
+                FontStyle.Bold);
+            using var initialBrush = new SolidBrush(AppColors.InkMuted);
+            var initialFormat = new StringFormat
+            {
+                Alignment = StringAlignment.Center,
+                LineAlignment = StringAlignment.Center
+            };
+            g.DrawString(initial, initialFont, initialBrush, rects.Image, initialFormat);
         }
 
         // Name
@@ -215,7 +235,12 @@ public class PosProductList : Control
             Alignment = rtl ? StringAlignment.Near : StringAlignment.Far,
             LineAlignment = StringAlignment.Center
         };
-        g.DrawString(item.SalePrice.ToString("N2"), priceFont, priceBrush, rects.Price, priceFormat);
+        g.DrawString(
+            item.SalePrice.ToString("N2", KpiValueFormatter.NormalizeCulture(CultureInfo.CurrentCulture)),
+            priceFont,
+            priceBrush,
+            rects.Price,
+            priceFormat);
 
         // Stock badge
         if (item.Stock <= 0)
@@ -249,34 +274,35 @@ public class PosProductList : Control
 
     private Image? GetCachedImage(string? path)
     {
-        if (string.IsNullOrWhiteSpace(path)) return null;
+        var full = PosImagePath.Resolve(ImagesRoot, path);
+        if (full is null) return null;
+
         lock (_imgLock)
         {
-            if (_imageCache.TryGetValue(path, out var cached))
+            if (_imageCache.TryGetValue(full, out var cached))
             {
                 // Move to front of LRU
-                if (_lru.Contains(path))
+                if (_lru.Contains(full))
                 {
-                    _lru.Remove(path);
-                    _lru.AddFirst(path);
+                    _lru.Remove(full);
+                    _lru.AddFirst(full);
                 }
                 return new Bitmap(cached);
             }
         }
 
         // Load async (fire and forget for now, return null until loaded)
-        _ = LoadImageAsync(path);
+        _ = LoadImageAsync(full);
         return null;
     }
 
-    private async System.Threading.Tasks.Task LoadImageAsync(string path)
+    private async System.Threading.Tasks.Task LoadImageAsync(string full)
     {
         try
         {
             // Use a simple file load for now
             await System.Threading.Tasks.Task.Run(() =>
             {
-                var full = path;
                 if (!System.IO.File.Exists(full)) return;
                 using var fs = new System.IO.FileStream(full, System.IO.FileMode.Open, System.IO.FileAccess.Read);
                 using var loaded = Image.FromStream(fs);
@@ -296,8 +322,8 @@ public class PosProductList : Control
                             }
                         }
                     }
-                    var node = _lru.AddFirst(path);
-                    _imageCache[path] = copy;
+                    var node = _lru.AddFirst(full);
+                    _imageCache[full] = copy;
                 }
                 Invalidate();
             });

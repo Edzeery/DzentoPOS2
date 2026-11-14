@@ -335,8 +335,10 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         _totalsLayout = totals;
         totals.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         totals.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
+        // Auto-size rows: a fixed height for nine rows used to overflow the
+        // 250px block and clip the paid/remaining rows.
         for (int i = 0; i < 9; i++)
-            totals.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            totals.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
         _lblSubtotal = MakeLabel(AppStrings.Subtotal + ":");
         _lblSubtotalValue = MakeValueLabel("0.00");
@@ -359,6 +361,8 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         var discountValuePanel = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
+            Height = 26,
+            MinimumSize = new Size(0, 26),
             ColumnCount = 2,
             RowCount = 1,
             Margin = Padding.Empty,
@@ -388,6 +392,8 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         _lblTotal = MakeLabel(AppStrings.GrandTotal + ":");
         _lblTotalValue = MakeValueLabel("0.00");
         _lblTotalValue.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+        _lblTotalValue.Height = 28;
+        _lblTotalValue.MinimumSize = new Size(0, 28);
         _lblTotalValue.ForeColor = AppColors.Primary;
 
         _lblPaid = MakeLabel(AppStrings.PaidAmount + ":");
@@ -402,6 +408,8 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         var paidValuePanel = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
+            Height = 26,
+            MinimumSize = new Size(0, 26),
             ColumnCount = 2,
             RowCount = 1,
             Margin = Padding.Empty,
@@ -481,7 +489,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         _cartLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         _cartLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
         _cartLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        _cartLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 250F));
+        _cartLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         _cartLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 62F));
 
         customerRow.Dock = DockStyle.Fill;
@@ -779,14 +787,10 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
     /// </summary>
     private void ApplyCartLayout(bool compact)
     {
-        int totalsBlock = compact ? 240 : 250;
-        int totalsRow = (totalsBlock - TotalsPadding) / 8;
         int actionsBlock = compact ? 56 : 62;
 
-        for (int i = 0; i < _totalsLayout.RowStyles.Count; i++)
-            _totalsLayout.RowStyles[i] = new RowStyle(SizeType.Absolute, totalsRow);
-
-        _cartLayout.RowStyles[2] = new RowStyle(SizeType.Absolute, totalsBlock);
+        // The totals block now sizes itself from its rows; only the action row
+        // keeps an absolute height.
         _cartLayout.RowStyles[3] = new RowStyle(SizeType.Absolute, actionsBlock);
     }
 
@@ -1721,6 +1725,9 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
     {
         Text = text,
         Dock = DockStyle.Fill,
+        AutoSize = false,
+        Height = 22,
+        MinimumSize = new Size(0, 22),
         Margin = Padding.Empty,
         Font = new Font("Segoe UI", 9F),
         TextAlign = ContentAlignment.MiddleLeft
@@ -1730,6 +1737,9 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
     {
         Text = text,
         Dock = DockStyle.Fill,
+        AutoSize = false,
+        Height = 22,
+        MinimumSize = new Size(0, 22),
         Margin = Padding.Empty,
         Font = new Font("Segoe UI", 10F, FontStyle.Bold),
         TextAlign = ContentAlignment.MiddleRight
@@ -1738,6 +1748,8 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
     private static NumericUpDown MakeNumeric(decimal min, decimal max) => new()
     {
         Dock = DockStyle.Fill,
+        Height = 26,
+        MinimumSize = new Size(0, 26),
         Margin = Padding.Empty,
         Font = new Font("Segoe UI", 10F),
         DecimalPlaces = 2,

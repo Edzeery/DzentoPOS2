@@ -28,4 +28,9 @@ public class EZTextBox : EZInputBase
         if (InnerTextBox is not null)
             InnerTextBox.KeyDown += (_, e) => OnKeyDown(e);
     }
+
+    /// <summary>
+    /// Selects the whole text so the next scan replaces the previous term.
+    /// </summary>
+    public void SelectAllText() => InnerTextBox?.SelectAll();
 }

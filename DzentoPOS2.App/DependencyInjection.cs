@@ -111,6 +111,7 @@ namespace DzentoPOS2.App
             services.AddScoped<IDigitalCodeService, DigitalCodeService>();
             services.AddScoped<IBatchService, BatchService>();
             services.AddScoped<IPosProductStore, PosProductStore>();
+            services.AddScoped<IPosBarcodeResolver, PosBarcodeResolver>();
             services.AddSingleton<ICatalogChangeNotifier, CatalogChangeNotifier>();
             services.AddScoped<IStockService, StockService>();
             services.AddScoped<IExpenseService, ExpenseService>();

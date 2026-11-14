@@ -42,6 +42,8 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
     private readonly ICurrentSettingsService _currentSettings;
     private readonly ICashSessionService _cashSessionService;
     private readonly IBarcodeService _barcodeService;
+    private readonly IPosBarcodeResolver _barcodeResolver;
+    private readonly ICatalogChangeNotifier _catalogNotifier;
     private readonly IBranchSwitchGuard _branchGuard;
     private readonly IBranchSwitchGuardRegistry _branchGuardRegistry;
     private readonly IServiceProvider _services;
@@ -95,6 +97,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
     private readonly TabPage _tabInvoices;
 
     private List<ProductDto> _products = new();
+    private List<ProductDto> _filteredProducts = new();
     private List<CustomerDto> _customers = new();
     private List<CreateSaleItemDto> _cart = new();
     private List<SaleDto> _invoices = new();
@@ -105,6 +108,8 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
     private int _saleCartHeight;
     private bool _layoutPending;
     private SaleDto? _lastInvoice;
+    private bool _catalogReloadPending;
+    private int _productFilterVersion;
 
     public SalesForm(
         ISaleService saleService,
@@ -114,6 +119,8 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         ICurrentSettingsService currentSettings,
         ICashSessionService cashSessionService,
         IBarcodeService barcodeService,
+        IPosBarcodeResolver barcodeResolver,
+        ICatalogChangeNotifier catalogNotifier,
         IBranchSwitchGuard branchGuard,
         IBranchSwitchGuardRegistry branchGuardRegistry,
         IServiceProvider services,
@@ -127,16 +134,26 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         _currentSettings = currentSettings;
         _cashSessionService = cashSessionService;
         _barcodeService = barcodeService;
+        _barcodeResolver = barcodeResolver;
+        _catalogNotifier = catalogNotifier;
         _branchGuard = branchGuard;
         _branchGuardRegistry = branchGuardRegistry;
         _services = services;
 
         // Register guard with registry.
         _branchGuardRegistry.Register(_branchGuard);
-        Disposed += (_, _) => _branchGuardRegistry.Unregister(_branchGuard);
+        _catalogNotifier.CatalogChanged += OnCatalogChanged;
+        Disposed += (_, _) =>
+        {
+            _branchGuardRegistry.Unregister(_branchGuard);
+            _catalogNotifier.CatalogChanged -= OnCatalogChanged;
+        };
 
         Size = new Size(1200, 700);
         BackColor = AppColors.Background;
+
+        // F2 must reach the form even while a text box or grid has focus.
+        KeyPreview = true;
 
         _tabs = new TabControl { Dock = DockStyle.Fill, Font = new Font("Segoe UI", 10F), Padding = new Point(18, 8), SizeMode = TabSizeMode.FillToRight };
         DzentoPOS2.WinForms.Themes.TabsStyler.Apply(_tabs);
@@ -154,13 +171,13 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             Font = new Font("Segoe UI", 11F),
             PlaceholderText = AppStrings.SearchProducts
         };
-        _productSearch.TextChanged += (_, _) => FilterProducts();
+        _productSearch.TextChanged += (_, _) => RunSafe(FilterProductsAsync);
         _productSearch.KeyDown += (_, e) =>
         {
             if (e.KeyCode == Keys.Enter)
             {
                 e.SuppressKeyPress = true;
-                AddFirstProductToCart();
+                RunSafe(AddFirstProductToCartAsync);
             }
         };
 
@@ -192,30 +209,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             if (e.RowIndex < 0 || _productGrid.Rows[e.RowIndex].DataBoundItem is not ProductDto p)
                 return;
 
-            // Check if product has multiple variants via the POS store.
-            var items = await _posProductStore.GetAllAsync();
-            var productItems = items.Where(x => x.ProductId == p.Id).ToList();
-
-            if (productItems.Count > 1)
-            {
-                // Open variant picker.
-                using var picker = new VariantPickerDialog(
-                    _services.GetRequiredService<DzentoPOS2.Data.Context.AppDbContext>(),
-                    p.Id,
-                    _barcodeService);
-                if (picker.ShowDialog(this) == DialogResult.OK && picker.SelectedVariantId != Guid.Empty)
-                {
-                    await AddToCartAsync(p, picker.SelectedVariantId, picker.SelectedVariantName, picker.SelectedPrice);
-                }
-            }
-            else
-            {
-                // Single variant: add directly.
-                var variantId = productItems.Count == 1 ? productItems[0].VariantId : Guid.Empty;
-                var variantName = productItems.Count == 1 ? productItems[0].Name : string.Empty;
-                var price = productItems.Count == 1 ? productItems[0].SalePrice : p.SalePrice;
-                await AddToCartAsync(p, variantId, variantName, price);
-            }
+            await AddProductToCartAsync(p);
         };
 
         _leftPanel.Controls.Add(_productGrid);
@@ -615,6 +609,26 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         Controls.Add(_tabs);
     }
 
+    /// <summary>
+    /// F2 focuses the barcode/search box from anywhere, including while a text
+    /// box or grid cell is editing. ProcessCmdKey runs before the focused
+    /// control, so the grid cannot swallow F2 for cell editing.
+    /// </summary>
+    protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+    {
+        if (keyData == Keys.F2)
+        {
+            if (!IsDisposedOrDisposing)
+            {
+                _productSearch.Focus();
+                _productSearch.SelectAllText();
+            }
+            return true;
+        }
+
+        return base.ProcessCmdKey(ref msg, keyData);
+    }
+
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
@@ -825,7 +839,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
     {
         _products = await _productService.GetAllAsync();
         if (IsDisposedOrDisposing) return;
-        BindProductGrid(_products);
+        await FilterProductsAsync();
     }
 
     private async Task LoadCustomersAsync()
@@ -903,14 +917,70 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         _invoiceGrid.DataSource = filtered;
     }
 
-    private void FilterProducts()
+    /// <summary>
+    /// Filters products by name, SKU or barcode. The barcode lookup uses the
+    /// same resolver as the scanner, so typing a barcode behaves exactly like
+    /// scanning it. A version guard drops results from a superseded keystroke.
+    /// </summary>
+    private async Task FilterProductsAsync()
     {
+        var version = ++_productFilterVersion;
         var term = _productSearch.Text?.Trim();
-        var filtered = string.IsNullOrWhiteSpace(term)
+        var hasTerm = !string.IsNullOrWhiteSpace(term);
+
+        HashSet<Guid>? barcodeProductIds = null;
+        if (hasTerm)
+        {
+            var matches = await _barcodeResolver.ResolveAsync(term!);
+            if (version != _productFilterVersion) return;
+
+            if (matches.Count > 0)
+                barcodeProductIds = matches.Select(m => m.ProductId).ToHashSet();
+        }
+
+        var filtered = !hasTerm
             ? _products
-            : _products.Where(p => p.Name.Contains(term, StringComparison.OrdinalIgnoreCase)
-                || (p.SKU?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
+            : _products.Where(p =>
+                p.Name.Contains(term!, StringComparison.OrdinalIgnoreCase)
+                || (p.SKU?.Contains(term!, StringComparison.OrdinalIgnoreCase) ?? false)
+                || (barcodeProductIds?.Contains(p.Id) ?? false)).ToList();
+
+        if (version != _productFilterVersion) return;
+
+        _filteredProducts = filtered;
         BindProductGrid(filtered);
+    }
+
+    /// <summary>Reloads the catalog when products, variants or barcodes change.</summary>
+    private void OnCatalogChanged(object? sender, CatalogChangedEventArgs e)
+    {
+        if (IsDisposedOrDisposing) return;
+
+        // Stock-only notifications are already applied to the POS cache; the
+        // bound product list does not display stock, so skip the reload storm.
+        if (!e.FullInvalidation) return;
+
+        if (InvokeRequired)
+        {
+            BeginInvoke(new Action(() => OnCatalogChanged(sender, e)));
+            return;
+        }
+
+        if (_catalogReloadPending) return;
+        _catalogReloadPending = true;
+        RunSafe(ReloadCatalogAsync);
+    }
+
+    private async Task ReloadCatalogAsync()
+    {
+        try
+        {
+            await LoadProductsAsync();
+        }
+        finally
+        {
+            _catalogReloadPending = false;
+        }
     }
 
     private void BindProductGrid(List<ProductDto> products)
@@ -939,69 +1009,127 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             return;
         }
 
-        using (var overlay = new BarcodeScannerOverlay(settings.BarcodeCameraDevice))
-        {
-            overlay.ContinuousMode = true;
-            overlay.BarcodeDetected += async code =>
-            {
-                if (string.IsNullOrWhiteSpace(code)) return;
-
-                var variantIds = await _barcodeService.FindVariantIdsByBarcodeAsync(code);
-
-                if (variantIds.Count == 0)
-                {
-                    AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {code}");
-                    _productSearch.Text = code;
-                    return;
-                }
-
-                if (variantIds.Count == 1)
-                {
-                    var item = (await _posProductStore.FindByBarcodeAsync(code)).FirstOrDefault();
-                    if (item is null)
-                    {
-                        AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {code}");
-                        _productSearch.Text = code;
-                        return;
-                    }
-                    var prod = _products.FirstOrDefault(p => p.Id == item.ProductId);
-                    if (prod is null)
-                    {
-                        AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {code}");
-                        _productSearch.Text = code;
-                        return;
-                    }
-                    await AddToCartAsync(prod, item.VariantId, item.Name, item.SalePrice);
-                }
-                else
-                {
-                    // Shared barcode: show picker.
-                    using var picker = new SharedBarcodePickerDialog(
-                        _services.GetRequiredService<DzentoPOS2.Data.Context.AppDbContext>(),
-                        variantIds.AsReadOnly());
-                    if (picker.ShowDialog(this) == DialogResult.OK)
-                    {
-                        var item = (await _posProductStore.FindByBarcodeAsync(code))
-                            .FirstOrDefault(x => x.VariantId == picker.SelectedVariantId);
-                        if (item is not null)
-                        {
-                            var prod = _products.FirstOrDefault(p => p.Id == item.ProductId);
-                            if (prod is not null)
-                                await AddToCartAsync(prod, item.VariantId, item.Name, item.SalePrice);
-                        }
-                    }
-                }
-            };
-            overlay.ShowDialog(this);
-        }
+        using var overlay = new BarcodeScannerOverlay(settings.BarcodeCameraDevice);
+        overlay.ContinuousMode = true;
+        overlay.BarcodeDetected += code =>
+            RunSafe(async () => { await AddByBarcodeAsync(code, showWarning: true); });
+        overlay.ShowDialog(this);
     }
 
-    private async void AddFirstProductToCart()
+    private enum BarcodeAddResult
     {
-        if (_productGrid.CurrentRow?.DataBoundItem is ProductDto p)
-            await AddToCartAsync(p, Guid.Empty, string.Empty, p.SalePrice);
-        else if (_products.Count > 0)
-            await AddToCartAsync(_products[0], Guid.Empty, string.Empty, _products[0].SalePrice);
+        NotFound,
+        Added,
+        Cancelled
+    }
+
+    /// <summary>
+    /// The single barcode entry point. The camera, a keyboard-wedge reader and
+    /// manual typing all resolve through <see cref="IPosBarcodeResolver"/>.
+    /// </summary>
+    private async Task<BarcodeAddResult> AddByBarcodeAsync(string? code, bool showWarning)
+    {
+        var text = code?.Trim();
+        if (string.IsNullOrEmpty(text))
+            return BarcodeAddResult.NotFound;
+
+        var matches = await _barcodeResolver.ResolveAsync(text);
+        if (matches.Count == 0)
+        {
+            if (showWarning)
+            {
+                AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {text}");
+                _productSearch.Text = text;
+            }
+            return BarcodeAddResult.NotFound;
+        }
+
+        if (matches.Count == 1)
+            return await AddResolvedItemAsync(matches[0], showWarning)
+                ? BarcodeAddResult.Added
+                : BarcodeAddResult.NotFound;
+
+        var variantIds = matches.Select(m => m.VariantId).Distinct().ToList();
+        using var picker = new SharedBarcodePickerDialog(
+            _services.GetRequiredService<DzentoPOS2.Data.Context.AppDbContext>(),
+            variantIds.AsReadOnly());
+        if (picker.ShowDialog(this) != DialogResult.OK)
+            return BarcodeAddResult.Cancelled;
+
+        var selected = matches.FirstOrDefault(m => m.VariantId == picker.SelectedVariantId);
+        if (selected is null)
+            return BarcodeAddResult.NotFound;
+
+        return await AddResolvedItemAsync(selected, showWarning)
+            ? BarcodeAddResult.Added
+            : BarcodeAddResult.NotFound;
+    }
+
+    private async Task<bool> AddResolvedItemAsync(PosProductItem item, bool showWarning)
+    {
+        var product = _products.FirstOrDefault(p => p.Id == item.ProductId)
+            ?? await _productService.GetByIdAsync(item.ProductId);
+
+        if (product is null)
+        {
+            if (showWarning)
+                AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {item.PrimaryBarcode}");
+            return false;
+        }
+
+        await AddToCartAsync(product, item.VariantId, item.Name, item.SalePrice);
+        return true;
+    }
+
+    private async Task AddProductToCartAsync(ProductDto product)
+    {
+        // Resolve the default variant first so every path uses the same
+        // VariantId; otherwise a double-click and a scan would create two lines.
+        var items = await _posProductStore.GetAllAsync();
+        var productItems = items.Where(x => x.ProductId == product.Id).ToList();
+
+        if (productItems.Count > 1)
+        {
+            using var picker = new VariantPickerDialog(
+                _services.GetRequiredService<DzentoPOS2.Data.Context.AppDbContext>(),
+                product.Id,
+                _barcodeService);
+            if (picker.ShowDialog(this) == DialogResult.OK && picker.SelectedVariantId != Guid.Empty)
+            {
+                await AddToCartAsync(product, picker.SelectedVariantId, picker.SelectedVariantName, picker.SelectedPrice);
+            }
+            return;
+        }
+
+        var defaultVariantId = productItems.Count == 1
+            ? productItems[0].VariantId
+            : await _barcodeService.GetDefaultVariantIdAsync(product.Id);
+        var variantName = productItems.Count == 1 ? productItems[0].Name : string.Empty;
+        var price = productItems.Count == 1 ? productItems[0].SalePrice : product.SalePrice;
+
+        await AddToCartAsync(product, defaultVariantId, variantName, price);
+    }
+
+    private async Task AddFirstProductToCartAsync()
+    {
+        var term = _productSearch.Text?.Trim();
+
+        // An exact barcode always wins over the highlighted row.
+        if (!string.IsNullOrWhiteSpace(term))
+        {
+            var result = await AddByBarcodeAsync(term, showWarning: false);
+            if (result != BarcodeAddResult.NotFound)
+                return;
+        }
+
+        var product = _productGrid.CurrentRow?.DataBoundItem as ProductDto;
+        if (product is null && _filteredProducts.Count == 1)
+            product = _filteredProducts[0];
+
+        // Never fall back to an arbitrary product: an unmatched search must not
+        // add the first item in the catalog.
+        if (product is not null)
+            await AddProductToCartAsync(product);
     }
 
     private async Task AddToCartAsync(ProductDto product, Guid variantId, string variantName, decimal price)
@@ -1024,6 +1152,17 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             quantity = weightDialog.Weight;
         }
 
+        // Every cart line carries a concrete VariantId. Without this, a
+        // double-click (empty id) and a scan (real id) would not merge.
+        if (variantId == Guid.Empty)
+            variantId = await _barcodeService.GetDefaultVariantIdAsync(product.Id);
+
+        if (variantId == Guid.Empty)
+        {
+            AppMessageBox.Warning(AppStrings.OperationFailed);
+            return;
+        }
+
         // Batch-tracked products: let the cashier pick the batch to consume.
         // An explicit batch is honoured by StockService; the rest of the
         // quantity (if any) falls back to FEFO.
@@ -1037,18 +1176,9 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
                 return;
             }
 
-            var resolvedVariantId = variantId != Guid.Empty
-                ? variantId
-                : await _barcodeService.GetDefaultVariantIdAsync(product.Id);
-            if (resolvedVariantId == Guid.Empty)
-            {
-                AppMessageBox.Warning(AppStrings.OperationFailed);
-                return;
-            }
-
             using var batchDialog = new BatchSelectionDialog(
                 _services.GetRequiredService<DzentoPOS2.Data.Context.AppDbContext>(),
-                resolvedVariantId,
+                variantId,
                 warehouseId.Value,
                 quantity);
 
@@ -1058,23 +1188,15 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             batchId = batchDialog.SelectedBatchId;
         }
 
-        var existing = _cart.FirstOrDefault(i =>
-            i.ProductId == product.Id &&
-            i.VariantId == variantId &&
-            i.BatchId == batchId);
-
-        if (existing != null)
-            existing.Quantity += quantity;
-        else
-            _cart.Add(new CreateSaleItemDto
-            {
-                ProductId = product.Id,
-                VariantId = variantId,
-                VariantName = variantName,
-                Quantity = quantity,
-                Price = price,
-                BatchId = batchId
-            });
+        PosCartMerger.AddOrMerge(_cart, new CreateSaleItemDto
+        {
+            ProductId = product.Id,
+            VariantId = variantId,
+            VariantName = variantName,
+            Quantity = quantity,
+            Price = price,
+            BatchId = batchId
+        });
 
         RefreshCart();
     }

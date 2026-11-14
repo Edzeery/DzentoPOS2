@@ -55,7 +55,7 @@ public sealed class SalePriceOverrideTests
     }
 
     [Fact]
-    public async Task UnflaggedPriceUsesTheVariantListPrice()
+    public async Task SentPriceIsAppliedEvenWithoutTheOverrideFlag()
     {
         await using var scope = _fixture.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -65,7 +65,7 @@ public sealed class SalePriceOverrideTests
 
         var sale = await sales.CreateAsync(new CreateSaleDto
         {
-            PaidAmount = 25,
+            PaidAmount = 999,
             Items =
             {
                 new CreateSaleItemDto
@@ -82,9 +82,69 @@ public sealed class SalePriceOverrideTests
             .AsNoTracking()
             .SingleAsync(x => x.SalesInvoiceId == sale.Id);
 
-        Assert.Equal(25m, stored.Price);
-        Assert.Null(stored.OriginalPrice);
-        Assert.Equal(25m, stored.Total);
+        Assert.Equal(999m, stored.Price);
+        Assert.Equal(25m, stored.OriginalPrice);
+        Assert.Equal(999m, stored.Total);
+    }
+
+    [Fact]
+    public async Task PriceOverrideIsDeniedForAUserWithoutThePermission()
+    {
+        await using var scope = _fixture.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var sales = scope.ServiceProvider.GetRequiredService<ISaleService>();
+        var currentUser = scope.ServiceProvider
+            .GetRequiredService<DzentoPOS2.App.Session.ICurrentUserService>();
+
+        var (product, variant) = await SeedAsync(context, listPrice: 25m);
+
+        currentUser.SetUser(new DzentoPOS2.App.Session.UserSession
+        {
+            UserId = _fixture.Data.UserId,
+            UserName = "cashier",
+            FullName = "Test Cashier",
+            RoleName = "Cashier",
+            BranchId = _fixture.Data.BranchId,
+            BranchName = "Main Branch",
+            IsAdmin = false
+        });
+
+        try
+        {
+            var ex = await Assert.ThrowsAsync<DzentoPOS2.Core.Exceptions.CodedDomainException>(() =>
+                sales.CreateAsync(new CreateSaleDto
+                {
+                    PaidAmount = 40,
+                    Items =
+                    {
+                        new CreateSaleItemDto
+                        {
+                            ProductId = product.Id,
+                            VariantId = variant.Id,
+                            Quantity = 1,
+                            Price = 40,
+                            PriceOverridden = true
+                        }
+                    }
+                }));
+
+            Assert.Equal(
+                DzentoPOS2.Core.Exceptions.DomainErrorCodes.PermissionDenied,
+                ex.Code);
+        }
+        finally
+        {
+            currentUser.SetUser(new DzentoPOS2.App.Session.UserSession
+            {
+                UserId = _fixture.Data.UserId,
+                UserName = "cashier",
+                FullName = "Test Cashier",
+                RoleName = "Cashier",
+                BranchId = _fixture.Data.BranchId,
+                BranchName = "Main Branch",
+                IsAdmin = true
+            });
+        }
     }
 
     private static async Task<(Product Product, ProductVariant Variant)> SeedAsync(

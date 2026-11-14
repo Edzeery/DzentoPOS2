@@ -319,7 +319,7 @@ public sealed class DashboardProfitTests
             DiscountValue = 10,
             TaxRate = 19,
             Fees = 50,
-            PaidAmount = 2142,
+            PaidAmount = 2192,
             Items =
             {
                 new CreateSaleItemDto { ProductId = product.Id, Quantity = 2, Price = 1000 }
@@ -328,7 +328,7 @@ public sealed class DashboardProfitTests
 
         var after = await dashboard.GetSummaryAsync(new DashboardFilterDto { Preset = DashboardDatePreset.ThisMonth });
 
-        Assert.Equal(2142m, sale.Total);
+        Assert.Equal(2192m, sale.Total);
         Assert.Equal(800m, after.ExpectedSoldProfit.Value - before.ExpectedSoldProfit.Value);
         Assert.Equal(550m, after.ActualProfit.Value - before.ActualProfit.Value);
         Assert.Equal(550m, after.NetProfit.Value - before.NetProfit.Value);

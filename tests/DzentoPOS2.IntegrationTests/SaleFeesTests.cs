@@ -40,7 +40,8 @@ public sealed class SaleFeesTests
                 {
                     ProductId = product.Id,
                     VariantId = variant.Id,
-                    Quantity = 1
+                    Quantity = 1,
+                    Price = 100
                 }
             }
         });

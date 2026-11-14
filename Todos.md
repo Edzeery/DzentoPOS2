@@ -2,7 +2,7 @@
 
 > **الخطة النشطة:** [`ROADMAP.md`](ROADMAP.md) — خطة تنفيذ مرتّبة حسب الأولوية (المراحل 1 و2 و2.8 و3 مكتملة ومُتحقَّقة). هذا الملف سجل تاريخي للمهام المكتملة، وبعض الجداول فيه متقادمة/متداخلة (خاصة قسم `N` و`K.5–K.7` التي أُنجزت فعليًا عبر `M`/`N`).
 
-**آخر تحديث:** 2026-11-12
+**آخر تحديث:** 2026-11-14
 **المرجع البصري:** [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md) — [`docs/design-system-plan.md`](docs/design-system-plan.md)
 **قاعدة القبول:** كل بند لا يُعتبر منجزًا إلا إذا تحقّق دليل قابل للقياس (بناء نظيف + فحص آلي عند 375/768/1440).
 
@@ -329,3 +329,21 @@
 | P4.7 | إدخال النموذج في فحص التخطيط المُقيَّم | ✅ | `CrossBranchReportForm` في `UiLayoutAudit.CreateForms` مع `StubCrossBranchReportService`/`StubAuthorizationGuard`؛ تم تحديث سطر `Forms:` المطبوع |
 | P4.8 | اختبارات المرحلة | ✅ | `CrossBranchReportTests` (2): مقارنة كل الفروع عبر صلاحية `BranchesViewAll` مع مطابقة أرقام كل فرع والإجمالي، والرجوع للفرع النشط لمستخدم يملك `ReportsView` دون `BranchesViewAll` |
 | P4.9 | بوابة المرحلة | ✅ | build 0 errors; unit 194/194; integration 135/135; migration audit PASSED (0 محذوف، 0 مغيَّر، 2 صف بذر مضاف); layout audit 120 سيناريو 0 مخالفة (2592 عنصراً، 10 نماذج مُقيَّمة عند 375/768/1440 × RTL/LTR × فاتح/داكن) |
+
+## POS-R — إعادة تصميم نقطة البيع: إصلاحات P0 (فرع `feature/pos-redesign`)
+
+> نقطة الانطلاق `9afd683`. كل بند أعلاه أُنجز في commit صغير مستقل، والبناء نظيف بعد كل commit.
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| R.0 | بيئة عمل معزولة | ✅ | worktree منفصل `pos-redesign` على فرع `feature/pos-redesign` من `9afd683`؛ المستودع الأصلي وملفات Auth غير المتتبَّعة لم تُلمس |
+| R.1 | حفظ المتغيّر والدفعة والتسلسل عند إتمام البيع | ✅ | commit `9cdd539`: `PosCheckoutMapper` + `SalesForm` يمرّر السلة كاملة؛ `PosCheckoutMapperTests` (2) و`PosCheckoutVariantTests` (1) — المتغيّر غير الافتراضي يُحفظ على سطر الفاتورة |
+| R.2 | مصدر واحد لحل الباركود + بحث بالباركود + F2 + تحديث الكتالوج | ✅ | commit `0545695`: `IPosBarcodeResolver`/`PosBarcodeResolver` و`PosCartMerger`، حذف `_products[0]`، `FilterProductsAsync` يسأل الباركود، `ProcessCmdKey` لـF2 داخل حقول النص، والاشتراك في `ICatalogChangeNotifier`؛ `PosCartMergerTests` (4) و`PosBarcodeResolutionTests` (2) — باركودان لمنتج واحد ⇒ سطر واحد بنفس `VariantId` |
+| R.3 | تعديل السعر المصرّح به مع تدقيق | ✅ | commit `5148b0f` + متابعة: `Permissions.SalesOverridePrice`، و`SaleService` يقرأ السعر المرسل ويطلب الصلاحية فقط عند اختلافه عن سعر المتغيّر (`DemandAsync`)، ويحفظ `OriginalPrice`؛ `SalePriceOverrideTests` (3) — السعر المطبّق 40 والأصلي 25 محفوظان، والسعر المرسل 999 يُطبَّق ويُسجَّل الأصل، ومستخدم بلا صلاحية يُرفض برمز `PermissionDenied` |
+| R.4 | الرسوم داخل الإجمالي والمدفوع | ✅ | commit `6b13196`: `InvoiceCalculator` يقبل `fees` ويضيفها بعد الضريبة، و`SalesForm` يربط `_numFees.ValueChanged` ويمرّر القيمة؛ `InvoiceCalculatorTests` (6 فحوص رسوم) و`SaleFeesTests` (1) — فاتورة 100 + ضريبة 10% + رسوم 5 ⇒ الإجمالي 115 والمدفوع 115 والباقي 0 |
+| R.5 | مسار الصور الموحّد | ✅ | commit `124ad8b`: `PosImagePath` يحلّ المسارات النسبية تحت `images` ويرفض الخروج عنها؛ `PosImagePathTests` (6)؛ `PosProductList` يعرض الحرف الأول عند غياب الصورة |
+| R.6 | عدم قصّ صفوف الإجماليات + أرقام غربية | ✅ | commit `1d09c19`: صفوف `AutoSize` بدل `/8`، و`RegionalContext.FormatMoney` يطبّع الثقافة؛ `RegionalContextMoneyTests` (2) — لا أرقام عربية-هندية تحت `ar-DZ` |
+| R.7 | اختبارات الوحدة الكاملة | ✅ | `dotnet test tests\DzentoPOS2.UnitTests` ⇒ **225 ناجح / 0 فاشل** |
+| R.8 | اختبارات التكامل الكاملة | ✅ | `dotnet test tests\DzentoPOS2.IntegrationTests` ⇒ **163 ناجح / 0 فاشل** (تشمل اختبارات القبول: المتغيّر 1، الباركود 2، تعديل السعر 3، الرسوم 1) |
+| R.9 | ترحيل قاعدة البيانات (بانتظار موافقة) | 🟨 | `20261114202407_AddPriceOverrideToSalesInvoiceItems` يضيف عمود `OriginalPrice` nullable إلى `SalesInvoiceItems`؛ **لم يُطبَّق** على قاعدة الإنتاج — يلزم فحص تكرار + نسخة احتياطية + موافقة |
+| R.10 | مؤجَّل إلى P1 | ⬜ | إخفاء سطر الرسوم عند الصفر (حقل الإدخال يجب أن يبقى ظاهراً في P0)؛ نقل الواجهة الثابتة إلى `SalesForm.Designer.cs`؛ ربط `PosProductList` أو إزالته؛ إصلاح 4 أعمدة عند 1440 |

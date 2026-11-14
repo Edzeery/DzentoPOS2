@@ -265,9 +265,10 @@ namespace DzentoPOS2.App.Services.Sales
                     throw new InvalidOperationException("Invalid or inactive variant");
             }
 
-            // Resolve the applied unit price once. A cashier override is honoured
-            // only when explicitly flagged; otherwise the variant's list price is
-            // authoritative even if the caller sent a different Price value.
+            // The POS screen sends the price to apply. It becomes the invoice
+            // price; when it differs from the variant's list price this is a
+            // price override and requires the explicit permission. The list
+            // price is kept on the line for audit.
             var pricing = new List<(decimal Applied, decimal ListPrice, bool Overridden)>(dto.Items.Count);
             foreach (var item in dto.Items)
             {
@@ -277,8 +278,8 @@ namespace DzentoPOS2.App.Services.Sales
                     ? variant.SalePrice.Amount
                     : products[item.ProductId].SalePrice?.Amount ?? 0m;
 
-                var overridden = item.PriceOverridden && item.Price != listPrice;
-                pricing.Add((overridden ? item.Price : listPrice, listPrice, overridden));
+                var applied = item.Price;
+                pricing.Add((applied, listPrice, applied != listPrice));
             }
 
             if (pricing.Any(p => p.Overridden))

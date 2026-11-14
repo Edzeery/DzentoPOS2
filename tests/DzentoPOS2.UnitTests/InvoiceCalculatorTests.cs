@@ -13,7 +13,8 @@ public sealed class InvoiceCalculatorTests
         decimal discount = 0,
         decimal tax = 0,
         decimal paid = 0,
-        int digits = 2)
+        int digits = 2,
+        decimal fees = 0)
     {
         return InvoiceCalculator.Calculate(
             new[] { new InvoiceLine(quantity, price) },
@@ -21,7 +22,8 @@ public sealed class InvoiceCalculatorTests
             discount,
             tax,
             paid,
-            digits);
+            digits,
+            fees);
     }
 
     private static InvoiceTotals CalcLines(
@@ -30,9 +32,10 @@ public sealed class InvoiceCalculatorTests
         decimal discount = 0,
         decimal tax = 0,
         decimal paid = 0,
-        int digits = 2)
+        int digits = 2,
+        decimal fees = 0)
     {
-        return InvoiceCalculator.Calculate(lines, mode, discount, tax, paid, digits);
+        return InvoiceCalculator.Calculate(lines, mode, discount, tax, paid, digits, fees);
     }
 
     // ---- basics -----------------------------------------------------------
@@ -218,6 +221,64 @@ public sealed class InvoiceCalculatorTests
         var totals = Calc(1, 0, tax: 20);
 
         Assert.Equal(0, totals.Total);
+    }
+
+    // ---- fees -------------------------------------------------------------
+
+    [Fact]
+    public void FeesAreAddedToTheTotalAsASeparateAmount()
+    {
+        var totals = Calc(1, 100, fees: 5);
+
+        Assert.Equal(100, totals.Subtotal);
+        Assert.Equal(5, totals.FeesAmount);
+        Assert.Equal(105, totals.Total);
+    }
+
+    [Fact]
+    public void FeesAreChargedAfterTaxAndAreNotTaxed()
+    {
+        var totals = Calc(1, 100, tax: 10, fees: 5);
+
+        Assert.Equal(10, totals.TaxAmount);
+        Assert.Equal(5, totals.FeesAmount);
+        Assert.Equal(115, totals.Total);
+    }
+
+    [Fact]
+    public void FeesAreRoundedToCurrencyDigits()
+    {
+        var totals = Calc(1, 100, digits: 2, fees: 2.345m);
+
+        Assert.Equal(2.35m, totals.FeesAmount);
+        Assert.Equal(102.35m, totals.Total);
+    }
+
+    [Fact]
+    public void PaidAmountMustCoverFeesForNoRemaining()
+    {
+        var covered = Calc(1, 100, fees: 10, paid: 110);
+        Assert.Equal(0, covered.Remaining);
+        Assert.Equal(0, covered.Change);
+        Assert.Equal(110, covered.AppliedPayment);
+
+        var underpaid = Calc(1, 100, fees: 10, paid: 100);
+        Assert.Equal(10, underpaid.Remaining);
+    }
+
+    [Fact]
+    public void ZeroFeesLeaveTheTotalUnchanged()
+    {
+        var totals = Calc(1, 100);
+
+        Assert.Equal(0, totals.FeesAmount);
+        Assert.Equal(100, totals.Total);
+    }
+
+    [Fact]
+    public void NegativeFeesAreRejected()
+    {
+        Assert.ThrowsAny<DomainException>(() => Calc(1, 100, fees: -0.01m));
     }
 
     // ---- payment / change -------------------------------------------------

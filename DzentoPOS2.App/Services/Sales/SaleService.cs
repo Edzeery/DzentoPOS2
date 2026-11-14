@@ -290,6 +290,11 @@ namespace DzentoPOS2.App.Services.Sales
                 .Select((i, index) => new InvoiceLine(i.Quantity, pricing[index].Applied))
                 .ToList();
 
+            var fees = decimal.Round(
+                dto.Fees < 0 ? 0 : dto.Fees,
+                digits,
+                MidpointRounding.AwayFromZero);
+
             // Single source of truth: every stored/recorded amount comes from
             // this calculator result (invoice, payment and cash movement).
             var totals = InvoiceCalculator.Calculate(
@@ -298,7 +303,8 @@ namespace DzentoPOS2.App.Services.Sales
                 dto.DiscountValue,
                 dto.TaxRate,
                 dto.PaidAmount,
-                digits);
+                digits,
+                fees);
 
             if (totals.Remaining > 0 && dto.CustomerId == Guid.Empty)
                 throw new CodedDomainException(
@@ -315,11 +321,6 @@ namespace DzentoPOS2.App.Services.Sales
                 {
                     var invoiceNumber =
                         await _documentNumbers.NextInvoiceNumberAsync();
-
-                    var fees = decimal.Round(
-                        dto.Fees < 0 ? 0 : dto.Fees,
-                        digits,
-                        MidpointRounding.AwayFromZero);
 
                     var invoice = SalesInvoice.Create(
                         invoiceNumber,

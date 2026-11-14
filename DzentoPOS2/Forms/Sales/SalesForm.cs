@@ -388,6 +388,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
 
         _lblFees = MakeLabel(AppStrings.Fees + ":");
         _numFees = MakeNumeric(0, 99999999);
+        _numFees.ValueChanged += (_, _) => UpdateTotals();
 
         _lblTotal = MakeLabel(AppStrings.GrandTotal + ":");
         _lblTotalValue = MakeValueLabel("0.00");
@@ -1365,6 +1366,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             : DiscountMode.Percent;
         var discountValue = (decimal)_numDiscount.Value;
         var taxRate = (decimal)_numTax.Value;
+        var fees = (decimal)_numFees.Value;
         var paid = (decimal)_numPaid.Value;
 
         if (mode == DiscountMode.FixedAmount)
@@ -1386,7 +1388,8 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             discountValue,
             taxRate,
             paid,
-            digits);
+            digits,
+            fees);
     }
 
     private void UpdateTotals()

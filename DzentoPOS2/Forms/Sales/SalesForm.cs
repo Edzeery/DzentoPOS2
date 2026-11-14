@@ -1474,13 +1474,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
                 TaxRate = (decimal)_numTax.Value,
                 Fees = (decimal)_numFees.Value,
                 PaidAmount = (decimal)_numPaid.Value,
-                Items = _cart.Select(c => new CreateSaleItemDto
-                {
-                    ProductId = c.ProductId,
-                    Quantity = c.Quantity,
-                    Price = c.Price,
-                    Description = c.Description
-                }).ToList()
+                Items = PosCheckoutMapper.ToSaleItems(_cart)
             });
 
             _lastInvoice = sale;

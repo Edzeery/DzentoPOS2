@@ -5,10 +5,12 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using DzentoPOS2.App;
 using DzentoPOS2.App.Services.Sales;
 using DzentoPOS2.App.Services.Systems;
+using DzentoPOS2.App.Session;
 using DzentoPOS2.Core.Configuration;
 using DzentoPOS2.Core.Entities.Businesses;
 using DzentoPOS2.Core.Entities.Inventory;
@@ -57,7 +59,7 @@ public static class PosBenchmark
         {
             // 1. Create and seed the database.
             var sw = Stopwatch.StartNew();
-            SeedDatabase(dbPath, products, variantsPerProduct);
+            var branchId = SeedDatabase(dbPath, products, variantsPerProduct);
             long seedMs = sw.ElapsedMilliseconds;
 
             // 2. Build services.
@@ -77,8 +79,11 @@ public static class PosBenchmark
             using var scope = sp.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var notifier = scope.ServiceProvider.GetRequiredService<ICatalogChangeNotifier>();
-            var activeBranch = scope.ServiceProvider.GetRequiredService<IActiveBranchContext>();
-            var store = new PosProductStore(context, notifier, activeBranch, scope.ServiceProvider);
+            var store = new PosProductStore(
+                context,
+                notifier,
+                new FixedBranchContext(branchId),
+                scope.ServiceProvider);
 
             // 3. Cold load.
             sw.Restart();
@@ -173,7 +178,7 @@ public static class PosBenchmark
         }
     }
 
-    private static void SeedDatabase(string dbPath, int products, int variantsPerProduct)
+    private static Guid SeedDatabase(string dbPath, int products, int variantsPerProduct)
     {
         if (File.Exists(dbPath)) File.Delete(dbPath);
 
@@ -263,6 +268,39 @@ public static class PosBenchmark
                 ctx.SaveChanges();
             }
         }
+
+        return branch.Id;
+    }
+
+    /// <summary>
+    /// The benchmark seeds its own database and has no signed-in user, so the
+    /// real <see cref="ActiveBranchContext"/> cannot be initialized. This fixed
+    /// context points the product store at the seeded branch.
+    /// </summary>
+    private sealed class FixedBranchContext : IActiveBranchContext
+    {
+        public FixedBranchContext(Guid branchId)
+        {
+            ActiveBranchId = branchId;
+        }
+
+        public Guid ActiveBranchId { get; }
+        public string ActiveBranchName => "Main";
+        public bool CanSwitchBranch => false;
+
+        public event EventHandler<ActiveBranchChangedEventArgs>? BranchChanged
+        {
+            add { }
+            remove { }
+        }
+
+        public Task<bool> TrySwitchBranchAsync(Guid branchId, CancellationToken cancellationToken = default)
+            => Task.FromResult(false);
+
+        public Task InitializeAsync(ICurrentUserService currentUser, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public void InitializeEmpty() { }
     }
 
     private static string? GetOption(string[] args, string name)

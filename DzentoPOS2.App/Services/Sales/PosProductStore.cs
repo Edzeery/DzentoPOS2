@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using DzentoPOS2.App.Services.Systems;
-using DzentoPOS2.Core.Entities.Inventory;
 using DzentoPOS2.Data.Context;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DzentoPOS2.App.Services.Sales;
@@ -19,333 +17,229 @@ public interface IPosProductStore
     void UpdateStock(Guid variantId, decimal delta);
 }
 
+/// <summary>
+/// In-memory catalog used by the POS screen. The first <see cref="GetAllAsync"/>
+/// reads a <see cref="PosProductSnapshot"/> in the background and every later
+/// call returns the cached instance immediately.
+/// A catalog or branch change invalidates the snapshot. If a load is already
+/// running it is allowed to finish, but its result is discarded because the
+/// version it started from no longer matches; the same task then reads the new
+/// state, so callers never receive a stale snapshot.
+/// </summary>
 public class PosProductStore : IPosProductStore, IDisposable
 {
-    private readonly AppDbContext _context;
     private readonly ICatalogChangeNotifier _notifier;
     private readonly IActiveBranchContext _activeBranch;
     private readonly IServiceProvider _serviceProvider;
-    private List<PosProductItem>? _cache;
-    private Dictionary<string, List<PosProductItem>>? _barcodeIndex;
-    private readonly object _lock = new();
+    private readonly IPosProductSnapshotLoader _loader;
 
-    public PosProductStore(AppDbContext context, ICatalogChangeNotifier notifier, IActiveBranchContext activeBranch, IServiceProvider serviceProvider)
+    private readonly object _sync = new();
+    private PosProductSnapshot? _snapshot;
+    private Task<PosProductSnapshot>? _loadTask;
+    private int _version;
+    private bool _disposed;
+
+    /// <summary>
+    /// The context is accepted for compatibility with existing construction
+    /// sites only. Every load runs on a background thread with its own scope,
+    /// because a DbContext must not be shared between threads.
+    /// </summary>
+    public PosProductStore(
+        AppDbContext context,
+        ICatalogChangeNotifier notifier,
+        IActiveBranchContext activeBranch,
+        IServiceProvider serviceProvider)
+        : this(context, notifier, activeBranch, serviceProvider, PosProductSnapshotLoader.Instance)
     {
-        _context = context;
+    }
+
+    public PosProductStore(
+        AppDbContext context,
+        ICatalogChangeNotifier notifier,
+        IActiveBranchContext activeBranch,
+        IServiceProvider serviceProvider,
+        IPosProductSnapshotLoader loader)
+    {
+        _ = context;
         _notifier = notifier;
         _activeBranch = activeBranch;
         _serviceProvider = serviceProvider;
+        _loader = loader;
+
         _notifier.CatalogChanged += OnCatalogChanged;
         _activeBranch.BranchChanged += OnBranchChanged;
     }
 
-    private CancellationTokenSource? _reloadCts;
-
-    private async void OnBranchChanged(object? sender, ActiveBranchChangedEventArgs e)
+    /// <summary>The snapshot currently served, or null before the first load.</summary>
+    public PosProductSnapshot? CurrentSnapshot
     {
-        try
+        get
         {
-            await ReloadStockAsync();
-        }
-        catch (Exception ex)
-        {
-            // Log but don't crash.
-            System.Diagnostics.Debug.WriteLine($"PosProductStore.ReloadStock failed: {ex.Message}");
+            lock (_sync)
+                return _snapshot;
         }
     }
 
-    public async Task ReloadStockAsync(CancellationToken ct = default)
-    {
-        _reloadCts?.Cancel();
-        _reloadCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        var token = _reloadCts.Token;
-
-        var branchId = _activeBranch.ActiveBranchId;
-
-        try
-        {
-            using var scope = _serviceProvider.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-            var warehouseId = await context.Warehouses
-                .AsNoTracking()
-                .Where(w => w.BranchId == branchId && w.IsActive)
-                .OrderBy(w => w.CreatedAt)
-                .ThenBy(w => w.Id)
-                .Select(w => (Guid?)w.Id)
-                .FirstOrDefaultAsync(token);
-
-            if (warehouseId is null || token.IsCancellationRequested)
-                return;
-
-            var variantIds = _cache?.Select(c => c.VariantId).ToList() ?? new();
-            var stocks = await context.ProductStocks
-                .AsNoTracking()
-                .Where(s => variantIds.Contains(s.VariantId) && s.WarehouseId == warehouseId.Value)
-                .GroupBy(s => s.VariantId)
-                .Select(g => new { VariantId = g.Key, Total = g.Sum(s => s.Quantity.Value) })
-                .ToListAsync(token);
-
-            if (token.IsCancellationRequested)
-                return;
-
-            // Stale check: if branch changed during reload, discard.
-            if (branchId != _activeBranch.ActiveBranchId)
-                return;
-
-            var stockMap = stocks.ToDictionary(s => s.VariantId, s => s.Total);
-
-            lock (_lock)
-            {
-                if (_cache is null) return;
-                for (int i = 0; i < _cache.Count; i++)
-                {
-                    var item = _cache[i];
-                    var newStock = stockMap.TryGetValue(item.VariantId, out var s) ? s : 0m;
-                    _cache[i] = item with { Stock = newStock };
-                }
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            // Expected during rapid switches.
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"PosProductStore.ReloadStock failed: {ex.Message}");
-        }
-    }
-
-    private async Task ReloadStockAsync()
-    {
-        try
-        {
-            var branchId = _activeBranch.ActiveBranchId;
-            var warehouseId = await _context.Warehouses
-                .AsNoTracking()
-                .Where(w => w.BranchId == branchId && w.IsActive)
-                .OrderBy(w => w.CreatedAt)
-                .ThenBy(w => w.Id)
-                .Select(w => (Guid?)w.Id)
-                .FirstOrDefaultAsync();
-
-            if (warehouseId is null) return;
-
-            var stocks = await _context.ProductStocks
-                .AsNoTracking()
-                .Where(s => s.WarehouseId == warehouseId.Value)
-                .GroupBy(s => s.VariantId)
-                .Select(g => new { VariantId = g.Key, Total = g.Sum(s => s.Quantity.Value) })
-                .ToListAsync();
-
-            var stockMap = stocks.ToDictionary(s => s.VariantId, s => s.Total);
-
-            lock (_lock)
-            {
-                if (_cache is null) return;
-                for (int i = 0; i < _cache.Count; i++)
-                {
-                    var item = _cache[i];
-                    var newStock = stockMap.TryGetValue(item.VariantId, out var s) ? s : 0m;
-                    _cache[i] = item with { Stock = newStock };
-                }
-            }
-        }
-        catch { /* best effort */ }
-    }
-
-    private void OnCatalogChanged(object? sender, CatalogChangedEventArgs e)
-    {
-        if (e.FullInvalidation)
-        {
-            lock (_lock)
-            {
-                _cache = null;
-                _barcodeIndex = null;
-            }
-        }
-        else if (e.VariantId.HasValue && e.StockDelta != 0)
-        {
-            lock (_lock)
-            {
-                if (_cache is not null)
-                {
-                    var idx = _cache.FindIndex(x => x.VariantId == e.VariantId.Value);
-                    if (idx >= 0)
-                    {
-                        var item = _cache[idx];
-                        _cache[idx] = item with { Stock = item.Stock + e.StockDelta };
-                    }
-                }
-            }
-        }
-    }
+    /// <summary>Phase breakdown of the last successful load.</summary>
+    public PosLoadTimings? LastLoadTimings => CurrentSnapshot?.Timings;
 
     public async Task<IReadOnlyList<PosProductItem>> GetAllAsync()
     {
-        lock (_lock)
-        {
-            if (_cache is not null)
-                return _cache.AsReadOnly();
-        }
-
-        var items = await LoadFromDatabaseAsync();
-
-        lock (_lock)
-        {
-            _cache = items;
-            BuildBarcodeIndex();
-            return _cache.AsReadOnly();
-        }
+        PosProductSnapshot snapshot = await GetSnapshotAsync().ConfigureAwait(false);
+        return snapshot.Items;
     }
 
     public async Task<PosProductItem?> FindByVariantIdAsync(Guid variantId)
     {
-        var all = await GetAllAsync();
-        return all.FirstOrDefault(x => x.VariantId == variantId);
+        PosProductSnapshot snapshot = await GetSnapshotAsync().ConfigureAwait(false);
+        return snapshot.FindByVariantId(variantId);
     }
 
     public async Task<IReadOnlyList<PosProductItem>> FindByBarcodeAsync(string barcode)
     {
-        if (string.IsNullOrWhiteSpace(barcode)) return Array.Empty<PosProductItem>();
+        if (string.IsNullOrWhiteSpace(barcode))
+            return Array.Empty<PosProductItem>();
 
-        await GetAllAsync();
-
-        lock (_lock)
-        {
-            if (_barcodeIndex is not null && _barcodeIndex.TryGetValue(barcode.Trim(), out var list))
-                return list.AsReadOnly();
-        }
-
-        return Array.Empty<PosProductItem>();
+        PosProductSnapshot snapshot = await GetSnapshotAsync().ConfigureAwait(false);
+        return snapshot.FindByBarcode(barcode);
     }
 
+    /// <summary>
+    /// Drops the cached catalog. A load that is already running sees the new
+    /// version and starts over instead of publishing what it just read.
+    /// </summary>
     public void Invalidate()
     {
-        lock (_lock)
-        {
-            _cache = null;
-            _barcodeIndex = null;
-        }
+        lock (_sync)
+            InvalidateLocked();
     }
 
-    public void UpdateStock(Guid variantId, decimal delta)
-    {
+    public void UpdateStock(Guid variantId, decimal delta) =>
         _notifier.NotifyStockChanged(variantId, delta);
+
+    private Task<PosProductSnapshot> GetSnapshotAsync()
+    {
+        lock (_sync)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+
+            if (_snapshot is not null)
+                return Task.FromResult(_snapshot);
+
+            // Single flight: every caller waits on the same load.
+            return _loadTask ??= Task.Run(LoadLoopAsync);
+        }
     }
 
-    private async Task<List<PosProductItem>> LoadFromDatabaseAsync()
+    private async Task<PosProductSnapshot> LoadLoopAsync()
     {
-        var variants = await _context.ProductVariants
-            .AsNoTracking()
-            .Where(v => v.IsActive)
-            .Include(v => v.Product)
-                .ThenInclude(p => p.Unit)
-            .ToListAsync();
-
-        var variantIds = variants.Select(v => v.Id).ToList();
-        var productIds = variants.Select(v => v.ProductId).Distinct().ToList();
-
-        var barcodes = await _context.ProductBarcodes
-            .AsNoTracking()
-            .Where(b => variantIds.Contains(b.VariantId))
-            .ToListAsync();
-
-        // Stock = default warehouse of the active branch only.
-        var branchId = _activeBranch.ActiveBranchId;
-        var warehouseId = await _context.Warehouses
-            .AsNoTracking()
-            .Where(w => w.BranchId == branchId && w.IsActive)
-            .OrderBy(w => w.CreatedAt)
-            .ThenBy(w => w.Id)
-            .Select(w => (Guid?)w.Id)
-            .FirstOrDefaultAsync();
-
-        List<(Guid VariantId, decimal Total)> stocks;
-        if (warehouseId is not null)
+        while (true)
         {
-            var raw = await _context.ProductStocks
-                .AsNoTracking()
-                .Where(s => variantIds.Contains(s.VariantId) && s.WarehouseId == warehouseId.Value)
-                .GroupBy(s => s.VariantId)
-                .Select(g => new { VariantId = g.Key, Total = g.Sum(s => s.Quantity.Value) })
-                .ToListAsync();
-            stocks = raw.Select(x => (x.VariantId, x.Total)).ToList();
-        }
-        else
-        {
-            stocks = new List<(Guid, decimal)>();
-        }
-
-        var variantCounts = await _context.ProductVariants
-            .AsNoTracking()
-            .Where(v => productIds.Contains(v.ProductId) && v.IsActive)
-            .GroupBy(v => v.ProductId)
-            .Select(g => new { ProductId = g.Key, Count = g.Count() })
-            .ToListAsync();
-
-        var stockMap = stocks.ToDictionary(s => s.VariantId, s => s.Total);
-        var countMap = variantCounts.ToDictionary(c => c.ProductId, c => c.Count);
-
-        var items = new List<PosProductItem>();
-        foreach (var v in variants)
-        {
-            if (v.Product is null || !v.Product.IsActive) continue;
-
-            var barcode = barcodes
-                .Where(b => b.VariantId == v.Id)
-                .OrderByDescending(b => b.IsPrimary)
-                .Select(b => b.Barcode)
-                .FirstOrDefault();
-
-            items.Add(new PosProductItem(
-                v.Id,
-                v.ProductId,
-                v.Name,
-                v.SKU,
-                v.SalePrice.Amount,
-                stockMap.TryGetValue(v.Id, out var stock) ? stock : 0m,
-                v.IsActive && v.Product.IsActive,
-                countMap.TryGetValue(v.ProductId, out var cnt) && cnt > 1,
-                v.Product.UnitId,
-                v.Product.Unit?.Name,
-                v.Product.CategoryId,
-                v.Product.ImagePath,
-                v.Product.ThumbnailPath,
-                barcode));
-        }
-
-        return items;
-    }
-
-    private void BuildBarcodeIndex()
-    {
-        if (_cache is null) return;
-
-        var barcodes = _context.ProductBarcodes
-            .AsNoTracking()
-            .Where(b => _cache.Select(c => c.VariantId).Contains(b.VariantId))
-            .ToList();
-
-        var index = new Dictionary<string, List<PosProductItem>>(StringComparer.OrdinalIgnoreCase);
-        foreach (var barcode in barcodes)
-        {
-            var item = _cache.FirstOrDefault(c => c.VariantId == barcode.VariantId);
-            if (item is null) continue;
-            if (!index.TryGetValue(barcode.Barcode, out var list))
+            int version;
+            Guid branchId;
+            lock (_sync)
             {
-                list = new List<PosProductItem>();
-                index[barcode.Barcode] = list;
+                version = _version;
+                branchId = _activeBranch.ActiveBranchId;
             }
-            if (!list.Contains(item))
-                list.Add(item);
-        }
 
-        _barcodeIndex = index;
+            PosProductSnapshot snapshot;
+            try
+            {
+                // A load owns a fresh scope; the store's caller keeps its own
+                // DbContext and the two never touch the same instance.
+                using IServiceScope scope = _serviceProvider.CreateScope();
+                AppDbContext context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                snapshot = await _loader
+                    .LoadAsync(context, branchId, CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
+            catch
+            {
+                lock (_sync)
+                {
+                    // Let the next caller retry instead of handing out a
+                    // faulted task. A load that fails because its owner was
+                    // disposed completes with an empty catalog.
+                    _loadTask = null;
+
+                    if (_disposed)
+                        return PosProductSnapshot.Empty;
+                }
+
+                throw;
+            }
+
+            lock (_sync)
+            {
+                if (_disposed)
+                    return snapshot;
+
+                if (version == _version && branchId == _activeBranch.ActiveBranchId)
+                {
+                    _snapshot = snapshot;
+                    return snapshot;
+                }
+
+                // The catalog or the branch changed while the rows were read.
+                // The snapshot is stale: drop it and read again.
+            }
+        }
+    }
+
+    private void OnCatalogChanged(object? sender, CatalogChangedEventArgs e)
+    {
+        lock (_sync)
+        {
+            if (_disposed) return;
+
+            if (e.FullInvalidation)
+            {
+                InvalidateLocked();
+                return;
+            }
+
+            // A stock delta is optimistic: the sale already wrote it, so the
+            // cached row is patched instead of reloading the whole catalog.
+            if (e.VariantId.HasValue && e.StockDelta != 0)
+                _snapshot?.ApplyStockDelta(e.VariantId.Value, e.StockDelta);
+        }
+    }
+
+    private void OnBranchChanged(object? sender, ActiveBranchChangedEventArgs e)
+    {
+        // Stock depends on the warehouse of the active branch, so a branch
+        // change invalidates everything.
+        lock (_sync)
+        {
+            if (_disposed) return;
+
+            InvalidateLocked();
+        }
+    }
+
+    private void InvalidateLocked()
+    {
+        _version++;
+        _snapshot = null;
+
+        // An in-flight load notices the version change and reads again, so it
+        // is kept. A finished task is dropped to make the next caller start one.
+        if (_loadTask is null || _loadTask.IsCompleted)
+            _loadTask = null;
     }
 
     public void Dispose()
     {
+        lock (_sync)
+        {
+            if (_disposed) return;
+
+            _disposed = true;
+            _snapshot = null;
+            _loadTask = null;
+        }
+
         _notifier.CatalogChanged -= OnCatalogChanged;
         _activeBranch.BranchChanged -= OnBranchChanged;
     }

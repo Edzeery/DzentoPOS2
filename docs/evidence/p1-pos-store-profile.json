@@ -1,0 +1,55 @@
+{
+  "GeneratedAt": "2026-11-15T13:48:46.1049063+01:00",
+  "Variants": 5000,
+  "Legacy": {
+    "WarehouseMs": 0.584,
+    "VariantsMs": 123.7633,
+    "BarcodesMs": 23.4361,
+    "StocksMs": 7129.909,
+    "CountsMs": 2.8631,
+    "FillMs": 78.0715,
+    "IndexMs": 27.9801,
+    "TotalMs": 7386.7554
+  },
+  "New": {
+    "WarehouseQueryMs": 0.8336,
+    "VariantQueryMs": 19.5536,
+    "StockQueryMs": 32.7739,
+    "BarcodeQueryMs": 11.746,
+    "ProjectionMs": 2.3272,
+    "IndexMs": 0.9763,
+    "TotalMs": 67.8333
+  },
+  "NewRuns": [
+    {
+      "WarehouseQueryMs": 36.9036,
+      "VariantQueryMs": 21.8586,
+      "StockQueryMs": 36.4866,
+      "BarcodeQueryMs": 14.7472,
+      "ProjectionMs": 2.3272,
+      "IndexMs": 0.9763,
+      "TotalMs": 113.3029
+    },
+    {
+      "WarehouseQueryMs": 0.8336,
+      "VariantQueryMs": 19.5536,
+      "StockQueryMs": 32.7739,
+      "BarcodeQueryMs": 11.746,
+      "ProjectionMs": 2.1383,
+      "IndexMs": 0.7853,
+      "TotalMs": 67.8333
+    },
+    {
+      "WarehouseQueryMs": 0.7932,
+      "VariantQueryMs": 15.0167,
+      "StockQueryMs": 20.6394,
+      "BarcodeQueryMs": 10.8198,
+      "ProjectionMs": 3.5231,
+      "IndexMs": 4.8304,
+      "TotalMs": 55.6245
+    }
+  ],
+  "ItemsLegacy": 5000,
+  "ItemsNew": 5000,
+  "Equivalent": true
+}

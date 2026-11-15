@@ -40,6 +40,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DzentoPOS2.LicenseIssuer", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DzentoPOS2.Licensing.Signing", "DzentoPOS2.Licensing.Signing\DzentoPOS2.Licensing.Signing.csproj", "{54C309D6-B1FC-4048-AA50-7902389A0D78}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DzentoPOS2.PosTools", "tools\DzentoPOS2.PosTools\DzentoPOS2.PosTools.csproj", "{A8B19FAC-7478-4A6F-9D01-8EAF7ECDDB65}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -194,6 +196,18 @@ Global
 		{54C309D6-B1FC-4048-AA50-7902389A0D78}.Release|x64.Build.0 = Release|Any CPU
 		{54C309D6-B1FC-4048-AA50-7902389A0D78}.Release|x86.ActiveCfg = Release|Any CPU
 		{54C309D6-B1FC-4048-AA50-7902389A0D78}.Release|x86.Build.0 = Release|Any CPU
+		{A8B19FAC-7478-4A6F-9D01-8EAF7ECDDB65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8B19FAC-7478-4A6F-9D01-8EAF7ECDDB65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8B19FAC-7478-4A6F-9D01-8EAF7ECDDB65}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A8B19FAC-7478-4A6F-9D01-8EAF7ECDDB65}.Debug|x64.Build.0 = Debug|Any CPU
+		{A8B19FAC-7478-4A6F-9D01-8EAF7ECDDB65}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A8B19FAC-7478-4A6F-9D01-8EAF7ECDDB65}.Debug|x86.Build.0 = Debug|Any CPU
+		{A8B19FAC-7478-4A6F-9D01-8EAF7ECDDB65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8B19FAC-7478-4A6F-9D01-8EAF7ECDDB65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8B19FAC-7478-4A6F-9D01-8EAF7ECDDB65}.Release|x64.ActiveCfg = Release|Any CPU
+		{A8B19FAC-7478-4A6F-9D01-8EAF7ECDDB65}.Release|x64.Build.0 = Release|Any CPU
+		{A8B19FAC-7478-4A6F-9D01-8EAF7ECDDB65}.Release|x86.ActiveCfg = Release|Any CPU
+		{A8B19FAC-7478-4A6F-9D01-8EAF7ECDDB65}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -209,6 +223,7 @@ Global
 		{D25669C8-2EA4-435F-8360-5ED8487ED7D8} = {2FE82239-3F12-458F-ABEA-A08DAFDBC6FC}
 		{C7B0597B-8EB2-4479-B49E-7408395FB926} = {2FE82239-3F12-458F-ABEA-A08DAFDBC6FC}
 		{E28D6B19-6D40-4CC5-9DD1-F75955E4D926} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
+		{A8B19FAC-7478-4A6F-9D01-8EAF7ECDDB65} = {07C2787E-EAC7-C090-1BA3-A61EC2A24D84}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5B717117-F75E-4D80-809B-149E7F937E41}

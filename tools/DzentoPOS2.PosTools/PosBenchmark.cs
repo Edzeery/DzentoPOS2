@@ -24,13 +24,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DzentoPOS2.WinForms.Diagnostics;
+namespace DzentoPOS2.PosTools;
 
 /// <summary>
 /// In-app POS performance benchmark. Creates a temporary SQLite database with
 /// 5,000+ variants, measures screen-open, scroll, scan and invalidation times,
 /// and writes a JSON report to docs/evidence/.
-/// Run: DzentoPOS2.WinForms.exe --pos-benchmark [--variants N] [--output path]
+/// Run: dotnet run --project tools/DzentoPOS2.PosTools -- benchmark [--variants N] [--output path]
 /// </summary>
 public static class PosBenchmark
 {

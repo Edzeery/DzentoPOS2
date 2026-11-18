@@ -25,6 +25,7 @@ using DzentoPOS2.WinForms.Configurations;
 using DzentoPOS2.WinForms.Forms.Sales;
 using DzentoPOS2.WinForms.Infrastructure;
 using DzentoPOS2.WinForms.Themes;
+using EZControls.Controls.Inputs;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -147,6 +148,44 @@ internal static class PosScreenshotProbe
                         // invalidate the list; pump until the cache has settled.
                         WaitFor(() => ReadInt(form, "_productList", "Items", "Count") > 0, timeoutMs: 3000);
                         Pump(700);
+
+                        // Commit B: every numeric field and every combo must use
+                        // the 40 px EZ height, the numeric fields must share the
+                        // money separator, and the customer combo must be bound.
+                        int taxHeight = ReadHeight(form, "_numTax");
+                        int discountHeight = ReadHeight(form, "_numDiscount");
+                        int feesHeight = ReadHeight(form, "_numFees");
+                        int paidHeight = ReadHeight(form, "_numPaid");
+                        int customerHeight = ReadHeight(form, "_cmbCustomer");
+                        int discountModeHeight = ReadHeight(form, "_cmbDiscountMode");
+                        string taxText = ReadInputText(form, "_numTax");
+                        string totalText = ReadText(form, "_lblTotalValue") ?? string.Empty;
+                        string customerText = ReadInputText(form, "_cmbCustomer");
+
+                        Console.WriteLine(
+                            $"  inputs: tax={taxHeight}px discount={discountHeight}px fees={feesHeight}px " +
+                            $"paid={paidHeight}px customer={customerHeight}px mode={discountModeHeight}px " +
+                            $"taxText='{taxText}' customerText='{customerText}'");
+
+                        Console.WriteLine(
+                            $"  layout: rightPanel={ReadHeight(form, "_rightPanel")} basketRoot={ReadHeight(form, "_basketRoot")} " +
+                            $"scroll={ReadHeight(form, "_basketScroll")} basket={ReadHeight(form, "_basketLayout")} " +
+                            $"totals={ReadHeight(form, "_totalsLayout")} actions={ReadHeight(form, "_actions")}");
+
+                        if (new[] { taxHeight, discountHeight, feesHeight, paidHeight, customerHeight, discountModeHeight }
+                            .Any(h => h != 40))
+                            throw new InvalidOperationException(
+                                "Input height check failed: not every POS input is 40 px tall.");
+
+                        char totalSeparator = LastNumberSeparator(totalText);
+                        char taxSeparator = LastNumberSeparator(taxText);
+                        if (totalSeparator != '\0' && taxSeparator != '\0' && totalSeparator != taxSeparator)
+                            throw new InvalidOperationException(
+                                $"Number separator check failed: total='{totalText}' tax='{taxText}'.");
+
+                        if (string.IsNullOrWhiteSpace(customerText))
+                            throw new InvalidOperationException(
+                                "Customer combo check failed: the placeholder text is missing.");
 
                         form.PerformLayout();
                         form.Invalidate(true);
@@ -341,13 +380,13 @@ internal static class PosScreenshotProbe
     {
         // 19 % VAT and a 5 % basket discount exercise the tax row and the
         // success-coloured discount row without hiding the hero total.
-        if (ReadField(form, "_numTax") is NumericUpDown tax)
+        if (ReadField(form, "_numTax") is EZNumericBox tax)
             tax.Value = Math.Min(19m, tax.Maximum);
 
-        if (ReadField(form, "_numDiscount") is NumericUpDown discount)
+        if (ReadField(form, "_numDiscount") is EZNumericBox discount)
             discount.Value = Math.Min(5m, discount.Maximum);
 
-        if (ReadField(form, "_cmbDiscountMode") is ComboBox mode && mode.Items.Count > 0)
+        if (ReadField(form, "_cmbDiscountMode") is EZComboBox mode && mode.Items.Length > 0)
             mode.SelectedIndex = 0;
 
         Invoke(form, "UpdateTotals");
@@ -713,11 +752,23 @@ internal static class PosScreenshotProbe
     private static string? ReadText(object target, string name) =>
         ReadField(target, name) is Label label ? label.Text : null;
 
+    private static string ReadInputText(object target, string name) =>
+        ReadField(target, name) is Control control ? control.Text : string.Empty;
+
     private static int ReadSize(object target, string name) =>
         ReadField(target, name) is Control control ? control.Width : 0;
 
+    private static int ReadHeight(object target, string name) =>
+        ReadField(target, name) is Control control ? control.Height : 0;
+
     private static bool ReadVisibility(object target, string name) =>
         ReadField(target, name) is Control control && control.Visible;
+
+    private static char LastNumberSeparator(string text)
+    {
+        int index = text.LastIndexOfAny(new[] { '.', ',' });
+        return index >= 0 ? text[index] : '\0';
+    }
 
     private static int ReadInt(object target, string field, string property, string nested)
     {

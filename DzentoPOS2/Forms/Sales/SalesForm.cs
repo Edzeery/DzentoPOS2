@@ -28,6 +28,9 @@ using EZControls.Controls.Inputs;
 using FontAwesome.Sharp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Globalization;
+using DzentoPOS2.Shared.Helpers;
+using EZControls.Core.Base;
 
 namespace DzentoPOS2.WinForms.Forms.Sales;
 
@@ -561,9 +564,10 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
     {
         // The hero already shows the item count on phones, so the cart header
         // is dropped there to keep one full cart line visible above the pinned
-        // actions; desktop and tablet keep it for the clear-cart action.
+        // actions; desktop and tablet keep it for the clear-cart action.  The
+        // customer row stays 44 px so the 40 px combo never shrinks.
         _cartHeader.Visible = !compact;
-        _basketLayout.RowStyles[0] = new RowStyle(SizeType.Absolute, compact ? 40F : 44F);
+        _basketLayout.RowStyles[0] = new RowStyle(SizeType.Absolute, 44F);
         _basketLayout.RowStyles[1] = new RowStyle(SizeType.Absolute, compact ? 0F : 36F);
 
         // The "Customer name" caption wraps and clips in Arabic at phone width;
@@ -676,6 +680,12 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
 
             ApplyInputTheme(_productSearch);
             ApplyInputTheme(_invoiceSearch);
+            ApplyNumericTheme(_numDiscount);
+            ApplyNumericTheme(_numTax);
+            ApplyNumericTheme(_numFees);
+            ApplyNumericTheme(_numPaid);
+            ApplyComboTheme(_cmbCustomer);
+            ApplyComboTheme(_cmbDiscountMode);
 
             _lblEmptyCart.Text = AppStrings.EmptyCart;
             UpdatePaymentButtons();
@@ -688,13 +698,39 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         UpdateTotals();
     }
 
-    private static void ApplyInputTheme(EZTextBox input)
+    private static void ApplyInputTheme(EZInputBase input)
     {
         input.BackColor = AppColors.InputBackground;
         input.ForeColor = AppColors.Ink;
         input.BorderColor = AppColors.InputBorder;
         input.BorderFocusColor = AppColors.InputBorderFocus;
         input.PlaceholderColor = AppColors.InkMuted;
+    }
+
+    /// <summary>
+    /// The numeric fields use the exact normalised culture of
+    /// <c>RegionalContext.FormatMoney</c>, so the hero total and the inputs
+    /// always show the same decimal separator and Western digits.
+    /// </summary>
+    private static void ApplyNumericTheme(EZNumericBox input)
+    {
+        ApplyInputTheme(input);
+        input.Culture = KpiValueFormatter.NormalizeCulture(CultureInfo.CurrentCulture);
+    }
+
+    private static void ApplyComboTheme(EZComboBox combo)
+    {
+        combo.BackColor = AppColors.InputBackground;
+        combo.ForeColor = AppColors.Ink;
+        combo.BorderColor = AppColors.InputBorder;
+        combo.BorderFocusColor = AppColors.InputBorderFocus;
+        combo.IconColor = AppColors.InkMuted;
+        combo.DropDownBackColor = AppColors.Surface;
+        combo.DropDownForeColor = AppColors.Ink;
+        combo.DropDownBorderColor = AppColors.Border;
+        combo.DropDownHoverBackColor = AppColors.PrimarySoft;
+        combo.DropDownSelectedBackColor = AppColors.Primary;
+        combo.DropDownSelectedForeColor = Color.White;
     }
 
     private void OnThemeChanged(object? sender, EventArgs e)
@@ -764,9 +800,27 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         _toolTip.SetToolTip(_productSearch, AppStrings.SearchProducts + " (F2)");
         _toolTip.SetToolTip(_btnNewSale, AppStrings.NewSale + " (F12 = " + AppStrings.CompleteSale + ")");
 
+        _toolTip.SetToolTip(_cmbCustomer, AppStrings.CustomerName);
+        _toolTip.SetToolTip(_cmbDiscountMode, AppStrings.Discount);
+        _toolTip.SetToolTip(_numDiscount, AppStrings.Discount);
+        _toolTip.SetToolTip(_numTax, AppStrings.TaxRate);
+        _toolTip.SetToolTip(_numFees, AppStrings.Fees);
+        _toolTip.SetToolTip(_numPaid, AppStrings.PaidAmount);
+
+        _cmbCustomer.AccessibleControlName = AppStrings.CustomerName;
+        _cmbCustomer.AccessibleControlDescription = AppStrings.SelectCustomer;
+        _cmbDiscountMode.AccessibleControlName = AppStrings.Discount;
+        _numDiscount.SetAccessibleText(AppStrings.Discount, AppStrings.Discount);
+        _numTax.SetAccessibleText(AppStrings.TaxRate, AppStrings.TaxRate);
+        _numFees.SetAccessibleText(AppStrings.Fees, AppStrings.Fees);
+        _numPaid.SetAccessibleText(AppStrings.PaidAmount, AppStrings.PaidAmount);
+
         int discountModeIndex = _cmbDiscountMode.SelectedIndex;
-        _cmbDiscountMode.Items.Clear();
-        _cmbDiscountMode.Items.AddRange(new object[] { AppStrings.DiscountModePercent, AppStrings.DiscountModeAmount });
+        _cmbDiscountMode.Items = new[]
+        {
+            AppStrings.DiscountModePercent,
+            AppStrings.DiscountModeAmount
+        };
         _cmbDiscountMode.SelectedIndex = discountModeIndex < 0 ? 0 : discountModeIndex;
 
         ApplySessionChipText();
@@ -1362,13 +1416,37 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         _customers = await _customerService.GetAllAsync();
         if (IsDisposedOrDisposing) return;
 
-        _cmbCustomer.Items.Clear();
-        _cmbCustomer.Items.Add(new CustomerItem(Guid.Empty, AppStrings.SelectCustomer));
-        foreach (var c in _customers)
-            _cmbCustomer.Items.Add(new CustomerItem(c.Id, c.FullName));
+        BindCustomerList();
+    }
+
+    /// <summary>
+    /// Projects the customer list onto the styled combo box.  EZComboBox is
+    /// data-bound (its Items collection is text-only), so the display and value
+    /// members keep the original CustomerItem binding.
+    /// </summary>
+    private void BindCustomerList(Guid? selectCustomerId = null)
+    {
+        var items = new List<CustomerItem>
+        {
+            new(Guid.Empty, AppStrings.SelectCustomer)
+        };
+
+        items.AddRange(_customers.Select(c => new CustomerItem(c.Id, c.FullName)));
+
         _cmbCustomer.DisplayMember = nameof(CustomerItem.FullName);
         _cmbCustomer.ValueMember = nameof(CustomerItem.Id);
-        _cmbCustomer.SelectedIndex = 0;
+        _cmbCustomer.DataSource = null;
+        _cmbCustomer.DataSource = items;
+
+        int index = 0;
+        if (selectCustomerId is { } id && id != Guid.Empty)
+        {
+            int found = items.FindIndex(i => i.Id == id);
+            if (found >= 0)
+                index = found;
+        }
+
+        _cmbCustomer.SelectedIndex = index;
     }
 
     private void OnAddCustomerClick(object? sender, EventArgs e) => AddCustomer();
@@ -1387,9 +1465,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
 
         _customers.Add(created);
 
-        var item = new CustomerItem(created.Id, created.FullName);
-        _cmbCustomer.Items.Add(item);
-        _cmbCustomer.SelectedItem = item;
+        BindCustomerList(created.Id);
 
         AppMessageBox.Success(AppStrings.CustomerAdded);
     }

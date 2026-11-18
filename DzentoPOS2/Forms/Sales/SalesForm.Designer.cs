@@ -61,7 +61,7 @@
             _basketLayout = new TableLayoutPanel();
             _customerRow = new TableLayoutPanel();
             _lblCustomer = new Label();
-            _cmbCustomer = new ComboBox();
+            _cmbCustomer = new EZControls.Controls.Inputs.EZComboBox();
             _btnAddCustomer = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
             _cartHeader = new TableLayoutPanel();
             _lblCart = new Label();
@@ -72,23 +72,23 @@
             _lblDiscount = new Label();
             _lblDiscountValue = new Label();
             _discountEditorPanel = new TableLayoutPanel();
-            _numDiscount = new NumericUpDown();
-            _cmbDiscountMode = new ComboBox();
+            _numDiscount = new EZControls.Controls.Inputs.EZNumericBox();
+            _cmbDiscountMode = new EZControls.Controls.Inputs.EZComboBox();
             _lblSubtotal = new Label();
             _lblSubtotalValue = new Label();
             _lblAfterDiscount = new Label();
             _lblAfterDiscountValue = new Label();
             _lblTax = new Label();
-            _numTax = new NumericUpDown();
+            _numTax = new EZControls.Controls.Inputs.EZNumericBox();
             _lblTaxAmount = new Label();
             _lblTaxAmountValue = new Label();
             _lblFees = new Label();
-            _numFees = new NumericUpDown();
+            _numFees = new EZControls.Controls.Inputs.EZNumericBox();
             _lblTotal = new Label();
             _lblTotalValue = new Label();
             _lblPaid = new Label();
             _paidEditorPanel = new TableLayoutPanel();
-            _numPaid = new NumericUpDown();
+            _numPaid = new EZControls.Controls.Inputs.EZNumericBox();
             _btnPayInFull = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
             _lblBalance = new Label();
             _lblBalanceValue = new Label();
@@ -131,11 +131,7 @@
             _cartLines.SuspendLayout();
             _totalsLayout.SuspendLayout();
             _discountEditorPanel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)_numDiscount).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)_numTax).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)_numFees).BeginInit();
             _paidEditorPanel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)_numPaid).BeginInit();
             _actions.SuspendLayout();
             _actionRow.SuspendLayout();
             _utilityRow.SuspendLayout();
@@ -625,15 +621,20 @@
             // _cmbCustomer
             // 
             _cmbCustomer.BackColor = SystemColors.Window;
+            _cmbCustomer.BorderRadius = 10;
+            _cmbCustomer.BorderSize = 2;
             _cmbCustomer.Dock = DockStyle.Fill;
             _cmbCustomer.DropDownStyle = ComboBoxStyle.DropDownList;
             _cmbCustomer.Font = new Font("Segoe UI", 10F);
             _cmbCustomer.ForeColor = SystemColors.WindowText;
+            _cmbCustomer.ItemHeight = 36;
             _cmbCustomer.Location = new Point(102, 0);
-            _cmbCustomer.Margin = new Padding(0, 0, 6, 0);
+            _cmbCustomer.Margin = new Padding(0, 2, 6, 2);
+            _cmbCustomer.MaxDropDownItems = 6;
             _cmbCustomer.Name = "_cmbCustomer";
-            _cmbCustomer.Size = new Size(287, 25);
+            _cmbCustomer.Size = new Size(287, 40);
             _cmbCustomer.TabIndex = 1;
+            _cmbCustomer.AccessibleControlName = "Customer";
             // 
             // _btnAddCustomer
             // 
@@ -771,17 +772,22 @@
             _totalsLayout.Name = "_totalsLayout";
             _totalsLayout.Padding = new Padding(0, 4, 0, 0);
             _totalsLayout.RowCount = 10;
-            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-            _totalsLayout.Size = new Size(436, 304);
+            //  Row 0 discount label | 1 discount editor | 2 subtotal
+            //  3 after discount | 4 tax rate | 5 tax amount | 6 fees
+            //  7 total | 8 paid | 9 balance.  Editor rows are 40 px so the
+            //  styled inputs keep the unified 40 px height; label rows are
+            //  trimmed to 26 px to pay for the extra input height.
+            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
+            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
+            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
+            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
+            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
+            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 26F));
+            _totalsLayout.Size = new Size(436, 324);
             _totalsLayout.TabIndex = 3;
             // 
             // _lblDiscount
@@ -826,37 +832,45 @@
             _discountEditorPanel.Name = "_discountEditorPanel";
             _discountEditorPanel.RowCount = 1;
             _discountEditorPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            _discountEditorPanel.Size = new Size(436, 30);
+            _discountEditorPanel.Size = new Size(436, 40);
             _discountEditorPanel.TabIndex = 1;
             // 
             // _numDiscount
             // 
             _numDiscount.BackColor = SystemColors.Window;
+            _numDiscount.BorderRadius = 10;
+            _numDiscount.BorderSize = 2;
             _numDiscount.DecimalPlaces = 2;
             _numDiscount.Dock = DockStyle.Fill;
             _numDiscount.Font = new Font("Segoe UI", 10F);
             _numDiscount.ForeColor = SystemColors.WindowText;
-            _numDiscount.Location = new Point(6, 2);
-            _numDiscount.Margin = new Padding(6, 2, 4, 2);
+            _numDiscount.Location = new Point(6, 0);
+            _numDiscount.Margin = new Padding(6, 0, 4, 0);
             _numDiscount.Maximum = new decimal(new int[] { 99999999, 0, 0, 0 });
             _numDiscount.Name = "_numDiscount";
-            _numDiscount.Size = new Size(260, 25);
+            _numDiscount.Size = new Size(260, 40);
             _numDiscount.TabIndex = 0;
             _numDiscount.TextAlign = HorizontalAlignment.Right;
+            _numDiscount.AccessibleName = "Discount";
             _numDiscount.ValueChanged += OnDiscountValueChanged;
             // 
             // _cmbDiscountMode
             // 
             _cmbDiscountMode.BackColor = SystemColors.Window;
+            _cmbDiscountMode.BorderRadius = 10;
+            _cmbDiscountMode.BorderSize = 2;
             _cmbDiscountMode.Dock = DockStyle.Fill;
             _cmbDiscountMode.DropDownStyle = ComboBoxStyle.DropDownList;
             _cmbDiscountMode.Font = new Font("Segoe UI", 9F);
             _cmbDiscountMode.ForeColor = SystemColors.WindowText;
-            _cmbDiscountMode.Location = new Point(272, 2);
-            _cmbDiscountMode.Margin = new Padding(2, 2, 6, 2);
+            _cmbDiscountMode.ItemHeight = 36;
+            _cmbDiscountMode.Location = new Point(272, 0);
+            _cmbDiscountMode.Margin = new Padding(2, 0, 6, 0);
+            _cmbDiscountMode.MaxDropDownItems = 4;
             _cmbDiscountMode.Name = "_cmbDiscountMode";
-            _cmbDiscountMode.Size = new Size(158, 23);
+            _cmbDiscountMode.Size = new Size(158, 40);
             _cmbDiscountMode.TabIndex = 1;
+            _cmbDiscountMode.AccessibleControlName = "Discount mode";
             _cmbDiscountMode.SelectedIndexChanged += OnDiscountModeChanged;
             // 
             // _lblSubtotal
@@ -932,16 +946,19 @@
             // _numTax
             // 
             _numTax.BackColor = SystemColors.Window;
+            _numTax.BorderRadius = 10;
+            _numTax.BorderSize = 2;
             _numTax.DecimalPlaces = 2;
             _numTax.Dock = DockStyle.Fill;
             _numTax.Font = new Font("Segoe UI", 10F);
             _numTax.ForeColor = SystemColors.WindowText;
             _numTax.Location = new Point(189, 126);
-            _numTax.Margin = new Padding(6, 2, 6, 2);
+            _numTax.Margin = new Padding(6, 0, 6, 0);
             _numTax.Name = "_numTax";
-            _numTax.Size = new Size(241, 25);
+            _numTax.Size = new Size(241, 40);
             _numTax.TabIndex = 7;
             _numTax.TextAlign = HorizontalAlignment.Right;
+            _numTax.AccessibleName = "Tax rate";
             _numTax.ValueChanged += OnTaxValueChanged;
             // 
             // _lblTaxAmount
@@ -989,17 +1006,20 @@
             // _numFees
             // 
             _numFees.BackColor = SystemColors.Window;
+            _numFees.BorderRadius = 10;
+            _numFees.BorderSize = 2;
             _numFees.DecimalPlaces = 2;
             _numFees.Dock = DockStyle.Fill;
             _numFees.Font = new Font("Segoe UI", 10F);
             _numFees.ForeColor = SystemColors.WindowText;
             _numFees.Location = new Point(189, 186);
-            _numFees.Margin = new Padding(6, 2, 6, 2);
+            _numFees.Margin = new Padding(6, 0, 6, 0);
             _numFees.Maximum = new decimal(new int[] { 99999999, 0, 0, 0 });
             _numFees.Name = "_numFees";
-            _numFees.Size = new Size(241, 25);
+            _numFees.Size = new Size(241, 40);
             _numFees.TabIndex = 11;
             _numFees.TextAlign = HorizontalAlignment.Right;
+            _numFees.AccessibleName = "Fees";
             _numFees.ValueChanged += OnFeesValueChanged;
             // 
             // _lblTotal
@@ -1057,23 +1077,26 @@
             _paidEditorPanel.Name = "_paidEditorPanel";
             _paidEditorPanel.RowCount = 1;
             _paidEditorPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            _paidEditorPanel.Size = new Size(253, 30);
+            _paidEditorPanel.Size = new Size(253, 40);
             _paidEditorPanel.TabIndex = 15;
             // 
             // _numPaid
             // 
             _numPaid.BackColor = SystemColors.Window;
+            _numPaid.BorderRadius = 10;
+            _numPaid.BorderSize = 2;
             _numPaid.DecimalPlaces = 2;
             _numPaid.Dock = DockStyle.Fill;
             _numPaid.Font = new Font("Segoe UI", 10F);
             _numPaid.ForeColor = SystemColors.WindowText;
-            _numPaid.Location = new Point(6, 2);
-            _numPaid.Margin = new Padding(6, 2, 4, 2);
+            _numPaid.Location = new Point(6, 0);
+            _numPaid.Margin = new Padding(6, 0, 4, 0);
             _numPaid.Maximum = new decimal(new int[] { 99999999, 0, 0, 0 });
             _numPaid.Name = "_numPaid";
-            _numPaid.Size = new Size(197, 25);
+            _numPaid.Size = new Size(197, 40);
             _numPaid.TabIndex = 0;
             _numPaid.TextAlign = HorizontalAlignment.Right;
+            _numPaid.AccessibleName = "Paid amount";
             _numPaid.ValueChanged += OnPaidValueChanged;
             // 
             // _btnPayInFull
@@ -1528,11 +1551,7 @@
             _cartLines.ResumeLayout(false);
             _totalsLayout.ResumeLayout(false);
             _discountEditorPanel.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)_numDiscount).EndInit();
-            ((System.ComponentModel.ISupportInitialize)_numTax).EndInit();
-            ((System.ComponentModel.ISupportInitialize)_numFees).EndInit();
             _paidEditorPanel.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)_numPaid).EndInit();
             _actions.ResumeLayout(false);
             _actionRow.ResumeLayout(false);
             _utilityRow.ResumeLayout(false);
@@ -1575,7 +1594,7 @@
         private System.Windows.Forms.TableLayoutPanel _basketLayout;
         private System.Windows.Forms.TableLayoutPanel _customerRow;
         private System.Windows.Forms.Label _lblCustomer;
-        private System.Windows.Forms.ComboBox _cmbCustomer;
+        private EZControls.Controls.Inputs.EZComboBox _cmbCustomer;
         private DzentoPOS2.WinForms.Controls.ThemedIconButton _btnAddCustomer;
         private System.Windows.Forms.TableLayoutPanel _cartHeader;
         private System.Windows.Forms.Label _lblCart;
@@ -1586,23 +1605,23 @@
         private System.Windows.Forms.Label _lblDiscount;
         private System.Windows.Forms.Label _lblDiscountValue;
         private System.Windows.Forms.TableLayoutPanel _discountEditorPanel;
-        private System.Windows.Forms.NumericUpDown _numDiscount;
-        private System.Windows.Forms.ComboBox _cmbDiscountMode;
+        private EZControls.Controls.Inputs.EZNumericBox _numDiscount;
+        private EZControls.Controls.Inputs.EZComboBox _cmbDiscountMode;
         private System.Windows.Forms.Label _lblSubtotal;
         private System.Windows.Forms.Label _lblSubtotalValue;
         private System.Windows.Forms.Label _lblAfterDiscount;
         private System.Windows.Forms.Label _lblAfterDiscountValue;
         private System.Windows.Forms.Label _lblTax;
-        private System.Windows.Forms.NumericUpDown _numTax;
+        private EZControls.Controls.Inputs.EZNumericBox _numTax;
         private System.Windows.Forms.Label _lblTaxAmount;
         private System.Windows.Forms.Label _lblTaxAmountValue;
         private System.Windows.Forms.Label _lblFees;
-        private System.Windows.Forms.NumericUpDown _numFees;
+        private EZControls.Controls.Inputs.EZNumericBox _numFees;
         private System.Windows.Forms.Label _lblTotal;
         private System.Windows.Forms.Label _lblTotalValue;
         private System.Windows.Forms.Label _lblPaid;
         private System.Windows.Forms.TableLayoutPanel _paidEditorPanel;
-        private System.Windows.Forms.NumericUpDown _numPaid;
+        private EZControls.Controls.Inputs.EZNumericBox _numPaid;
         private DzentoPOS2.WinForms.Controls.ThemedIconButton _btnPayInFull;
         private System.Windows.Forms.Label _lblBalance;
         private System.Windows.Forms.Label _lblBalanceValue;

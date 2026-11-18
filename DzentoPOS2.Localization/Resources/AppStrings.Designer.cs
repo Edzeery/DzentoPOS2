@@ -2404,6 +2404,24 @@ namespace DzentoPOS2.Localization.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cash.
+        /// </summary>
+        public static string Cash {
+            get {
+                return ResourceManager.GetString("Cash", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Card.
+        /// </summary>
+        public static string Card {
+            get {
+                return ResourceManager.GetString("Card", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Pay Out.
         /// </summary>
         public static string PayOut {

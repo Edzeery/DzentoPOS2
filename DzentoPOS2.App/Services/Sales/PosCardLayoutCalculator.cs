@@ -11,7 +11,18 @@ public enum PosViewMode { Cards, List }
 
 public static class PosCardLayoutCalculator
 {
-    public const int CardGap = 8;
+    /// <summary>Space between two product cards (and between two rows).</summary>
+    public const int CardGap = 12;
+
+    /// <summary>
+    /// Preferred card width. The column count is derived from it instead of a
+    /// fixed breakpoint, so the grid adapts to the real product column width.
+    /// </summary>
+    public const int TargetCardWidth = 190;
+
+    /// <summary>Never show more than four cards on one row.</summary>
+    public const int MaxColumns = 4;
+
     public const int CardPadding = 8;
     public const int ImageSizeNarrow = 64;
     public const int ImageSizeMedium = 48;
@@ -20,35 +31,37 @@ public static class PosCardLayoutCalculator
     /// <summary>Returns (columns, itemWidth, itemHeight, gap) for the given width and mode.</summary>
     public static (int Columns, int ItemWidth, int ItemHeight, int Gap) GetGrid(int availableWidth, PosViewMode mode)
     {
+        availableWidth = Math.Max(1, availableWidth);
+
         if (mode == PosViewMode.List)
         {
             int height = availableWidth < 768 ? 72 : (availableWidth < 1440 ? 64 : 56);
-            return (1, Math.Max(1, availableWidth), height, 0);
+            return (1, availableWidth, height, 0);
         }
 
-        // Cards mode
-        int columns;
-        int itemHeight;
-        if (availableWidth < 768)
+        // Cards mode: floor((width + gap) / (targetWidth + gap)), clamped to
+        // 1..4. At 1440 px this is four columns; the card keeps the row filled
+        // because its width is the leftover space divided by the column count.
+        int gap = CardGap;
+        int columns = (availableWidth + gap) / (TargetCardWidth + gap);
+        columns = Math.Clamp(columns, 1, MaxColumns);
+
+        int itemWidth = (availableWidth - gap * (columns - 1)) / columns;
+        if (itemWidth < 120)
         {
             columns = 1;
-            itemHeight = 104;
-        }
-        else if (availableWidth < 1440)
-        {
-            columns = 2;
-            itemHeight = 96;
-        }
-        else
-        {
-            columns = 4;
-            itemHeight = 112;
+            itemWidth = availableWidth;
         }
 
-        int gap = CardGap;
-        int totalGap = gap * (columns - 1);
-        int itemWidth = (availableWidth - totalGap) / columns;
-        if (itemWidth < 120) { columns = 1; itemWidth = availableWidth; }
+        // A short, horizontal card: image on the leading side, text and price
+        // next to it. The height only needs to fit the three text lines.
+        int itemHeight = columns switch
+        {
+            1 => 108,
+            2 => 104,
+            3 => 100,
+            _ => 108
+        };
 
         return (columns, itemWidth, itemHeight, gap);
     }

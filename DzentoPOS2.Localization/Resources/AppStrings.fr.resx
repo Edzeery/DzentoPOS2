@@ -777,6 +777,12 @@
   <data name="PaymentMethod" xml:space="preserve">
     <value>Mode de paiement</value>
   </data>
+  <data name="Cash" xml:space="preserve">
+    <value>Espèces</value>
+  </data>
+  <data name="Card" xml:space="preserve">
+    <value>Carte</value>
+  </data>
   <data name="Address" xml:space="preserve">
     <value>Adresse</value>
   </data>

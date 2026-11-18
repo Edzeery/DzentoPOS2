@@ -347,3 +347,17 @@
 | R.8 | اختبارات التكامل الكاملة | ✅ | `dotnet test tests\DzentoPOS2.IntegrationTests` ⇒ **163 ناجح / 0 فاشل** (تشمل اختبارات القبول: المتغيّر 1، الباركود 2، تعديل السعر 3، الرسوم 1) |
 | R.9 | ترحيل قاعدة البيانات (بانتظار موافقة) | 🟨 | `20261114202407_AddPriceOverrideToSalesInvoiceItems` يضيف عمود `OriginalPrice` nullable إلى `SalesInvoiceItems`؛ **لم يُطبَّق** على قاعدة الإنتاج — يلزم فحص تكرار + نسخة احتياطية + موافقة |
 | R.10 | مؤجَّل إلى P1 | ⬜ | إخفاء سطر الرسوم عند الصفر (حقل الإدخال يجب أن يبقى ظاهراً في P0)؛ نقل الواجهة الثابتة إلى `SalesForm.Designer.cs`؛ ربط `PosProductList` أو إزالته؛ إصلاح 4 أعمدة عند 1440 |
+
+## POS-R P1 — Commit 3: إعادة بناء تخطيط/مصمّم SalesForm (فرع `feature/pos-redesign`)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| C3.1 | مصمّم SalesForm كامل (SystemColors neutrals + ApplyTheme runtime) | ✅ | `SalesForm.Designer.cs` (1193 سطر): شجرة controles كاملة، `_basketScroll.Controls.Add(_basketLayout)`، `_totalsLayout.AutoSize = true`، `_heroTotalPanel`/`_totalsLayout` لا قصّ |
+| C3.2 | PosProductList بطاقات (4 أعمدة @1440) + barcode badge + keyboard nav + empty state | ✅ | `PosCardLayoutCalculator` (12px/190px/4 cols) + tests؛ `PosProductList` |
+| C3.3 | سلة FlowLayoutPanel + CartLineRow + compact <430/<380 | ✅ | `CartLineRow.ApplyCompactLayout`، `UpdateCartRowWidths` |
+| C3.4 | PriceOverrideDialog (double-click name/price/total) | ✅ | `PriceOverrideDialog.cs` (permission-gated) |
+| C3.5 | تصميم-time ctor + DesignMode guards | ✅ | `[ActivatorUtilitiesConstructor]` + `null!` fields |
+| C3.6 | card payment (PaymentMethod="Card"; paid==total, remaining==0) | ✅ | `PosPaymentPolicy` + tests؛ combo + OnPaymentMethodChanged |
+| C3.7 | F12 gating + F2 in text fields | ✅ | `ProcessCmdKey` + UpdateCheckoutState |
+| C3.8 | صور P1 (12 لقطة + scrolled) | ✅ | `docs/evidence/pos-sales-*` (375/768/1440 × light/dark × LTR/RTL) |
+| C3.9 | Build/tests green | ✅ | unit 264/264 + integration 165/165 + build 0 errors |

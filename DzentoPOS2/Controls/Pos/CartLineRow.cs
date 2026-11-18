@@ -35,10 +35,22 @@ public partial class CartLineRow : UserControl, IThemeAware
     /// <summary>Raised when the cashier asks to remove the line.</summary>
     public event EventHandler? RemoveRequested;
 
+    /// <summary>
+    /// Raised when the cashier double-clicks the name, the unit price or the
+    /// line total to override the price.
+    /// </summary>
+    public event EventHandler? PriceEditRequested;
+
     public CartLineRow()
     {
         InitializeComponent();
         DoubleBuffered = true;
+
+        // The labels are not focusable, so the double-click of the row lands on
+        // them instead of the control; forward it as a price-edit request.
+        _title.DoubleClick += OnPriceEditRequested;
+        _price.DoubleClick += OnPriceEditRequested;
+        _total.DoubleClick += OnPriceEditRequested;
 
         if (DesignTime.IsRuntime(this))
             ApplyTheme();
@@ -248,4 +260,7 @@ public partial class CartLineRow : UserControl, IThemeAware
     }
 
     private void OnRemoveClick(object? sender, EventArgs e) => RemoveRequested?.Invoke(this, EventArgs.Empty);
+
+    private void OnPriceEditRequested(object? sender, EventArgs e) =>
+        PriceEditRequested?.Invoke(this, EventArgs.Empty);
 }

@@ -369,3 +369,11 @@
 | C3.15 | عزل صفحة الفواتير عن شجرة POS | ✅ | `_pageLayout` داخل `_tabNewSale` فقط؛ `OnTabSelected` يفرض ظهور/إخفاء الصفحتين؛ الصفحة الفارغة `_lblNoInvoices` |
 | C3.16 | F2/F12 حسب التبويب | ✅ | F2 يركّز بحث الفواتير في تبويب المبيعات؛ F12 لا يُتمّ بيعاً خارج تبويب POS |
 | C3.17 | فحص آلي للتبويبين + لقطات | ✅ | probe يلتقط `pos-invoices-*` في 375/768/1440 × الوضعين × en/ar ويرفض أي تسريب أو عدم تطابق حالة الفراغ |
+| C4.1 | EZNumericBox على EZInputBase | ✅ | `EZControls/Controls/Inputs/EZNumericBox.cs`: 40px، نصف قطر/حدود/حلقة تركيز من الثيم، داكن، RTL، أرقام غربية، تحديد كامل عند التركيز، Minimum/Maximum/DecimalPlaces/Value + ValueChanged، بلا أسهم/عجلة، Enter/Esc، AccessibleName + ToolTip، آمن في DesignMode |
+| C4.2 | استبدال قوائم POS بـEZComboBox | ✅ | الزبون، نوع الخصم، طريقة الدفع في Designer.cs +runtime؛ 고객リスト عبر DataSource/DislayMember/ValueMember محفوظ |
+| C4.3 | حقول POS الرقمية بـEZNumericBox | ✅ | الخصم، الضريبة، الرسوم، المدفوع؛ كل سطر محرر 40px، تسميات 26px، All في Designer.cs |
+| C4.4 | توحيد فاصلة الأرقام | ✅ | RegionalContext/KpiValueFormatter.NormalizeCulture في حقول POS؛ الحقل والمجموع يظهران `0.00`/`0,00` موحداً عبر RegionalContext |
+| C4.5 | temas للقوائم والحقول | ✅ | ApplyComboTheme/ApplyNumericTheme في ApplyTheme؛ ألوان تحويم/تحديد من الثيم؛ عنصر ~36px عبر ItemHeight=36 |
+| C4.6 | حالات الفراغ والوصول | ✅ | AccessibleName/ToolTip لكل حقل POS؛ نص بديل "اختر العميل" للعميل |
+| C4.7 | بناء/اختبارات + لقطات Commit B | ✅ | build 0 أخطاء؛ unit 264/264؛ integration 165/165؛ لقطات POS+فواتير في 375/768/1440 للوضعين |
+| C4.8 | --ui-audit | ℹ️ | غير موجود في المستودع؛ التحقق hand-من أن EZTextBox/EZComboBox لبقية الشاشات لم يتغير (بناء ناجح + اختبارات ناجحة) |

@@ -132,6 +132,12 @@ public class ImageService : IImageService
             g.DrawImage(src, 0, 0, w, h);
         }
         var jpegCodec = ImageCodecInfo.GetImageEncoders().FirstOrDefault(c => c.FormatID == ImageFormat.Jpeg.Guid);
+        if (jpegCodec is null)
+        {
+            bmp.Save(path, ImageFormat.Jpeg);
+            return;
+        }
+
         var ep = new EncoderParameters(1);
         ep.Param[0] = new EncoderParameter(Encoder.Quality, 85L);
         bmp.Save(path, jpegCodec, ep);

@@ -112,7 +112,9 @@ public sealed class RegionalContext
     {
         var code = string.IsNullOrWhiteSpace(currencyCode) ? CurrencyCode : currencyCode;
         var digits = RegionalCatalog.GetDecimalDigits(code);
-        return amount.ToString("N" + digits, CultureInfo.CurrentCulture) + " " +
+        // Western digits even when the current culture uses Arabic-Indic ones.
+        var culture = KpiValueFormatter.NormalizeCulture(CultureInfo.CurrentCulture);
+        return amount.ToString("N" + digits, culture) + " " +
                RegionalCatalog.GetSymbol(code);
     }
 

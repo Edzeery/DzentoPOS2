@@ -19,6 +19,7 @@ using DzentoPOS2.Shared.Contracts.DTOs.Partners;
 using DzentoPOS2.Shared.Contracts.DTOs.Sales;
 using DzentoPOS2.WinForms.Configurations;
 using DzentoPOS2.WinForms.Controls;
+using DzentoPOS2.WinForms.Controls.Pos;
 using DzentoPOS2.WinForms.Themes;
 using DzentoPOS2.WinForms.Helpers;
 using DzentoPOS2.WinForms.Forms.Accounting;
@@ -27,93 +28,91 @@ using EZControls.Controls.Inputs;
 using FontAwesome.Sharp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Globalization;
+using DzentoPOS2.Shared.Helpers;
+using EZControls.Core.Base;
 
 namespace DzentoPOS2.WinForms.Forms.Sales;
 
+/// <summary>
+/// Point of sale screen. The layout lives in the designer file; this file owns
+/// the data flow: catalog, cart, totals, payment and printing.
+/// </summary>
 public partial class SalesForm : LocalizableFormBase, IBranchAware
 {
-    /// <summary>Top gap kept above the totals block of the basket.</summary>
-    private const int TotalsPadding = 6;
+    // The design-time constructor leaves these unset on purpose; the runtime
+    // constructor (the one DI uses) always assigns them before InitializeComponent.
+    private readonly ISaleService _saleService = null!;
+    private readonly IProductService _productService = null!;
+    private readonly IPosProductStore _posProductStore = null!;
+    private readonly IPosHoldService _holdService = null!;
+    private readonly ICustomerService _customerService = null!;
+    private readonly ICurrentSettingsService _currentSettings = null!;
+    private readonly ICashSessionService _cashSessionService = null!;
+    private readonly IBarcodeService _barcodeService = null!;
+    private readonly IPosBarcodeResolver _barcodeResolver = null!;
+    private readonly ICatalogChangeNotifier _catalogNotifier = null!;
+    private readonly IBranchSwitchGuard _branchGuard = null!;
+    private readonly IBranchSwitchGuardRegistry _branchGuardRegistry = null!;
+    private readonly IServiceProvider _services = null!;
 
-    private readonly ISaleService _saleService;
-    private readonly IProductService _productService;
-    private readonly IPosProductStore _posProductStore;
-    private readonly ICustomerService _customerService;
-    private readonly ICurrentSettingsService _currentSettings;
-    private readonly ICashSessionService _cashSessionService;
-    private readonly IBarcodeService _barcodeService;
-    private readonly IBranchSwitchGuard _branchGuard;
-    private readonly IBranchSwitchGuardRegistry _branchGuardRegistry;
-    private readonly IServiceProvider _services;
-
-    private readonly Panel _leftPanel;
-    private readonly Panel _rightPanel;
-    private readonly Panel _drawerBanner;
-    private readonly Label _drawerBannerLabel;
-    private readonly ThemedIconButton _btnOpenDrawer;
-    private readonly TableLayoutPanel _saleLayout;
-    private readonly TableLayoutPanel _cartLayout;
-    private readonly TableLayoutPanel _totalsLayout;
-    private readonly EZTextBox _productSearch;
-    private readonly EZTextBox _invoiceSearch;
-    private readonly ThemedIconButton _btnScanBarcode;
-    private readonly ThemedIconButton _btnCalculator;
-    private readonly ThemedIconButton _btnAddCustomer;
-    private readonly ComboBox _cmbCustomer;
-    private readonly Label _lblCustomer;
-    private readonly Label _lblCart;
-    private readonly DataGridView _productGrid;
-    private readonly DataGridView _cartGrid;
-    private readonly DataGridView _invoiceGrid;
-    private readonly Label _lblSubtotal;
-    private readonly Label _lblSubtotalValue;
-    private readonly Label _lblDiscount;
-    private readonly ComboBox _cmbDiscountMode;
-    private readonly NumericUpDown _numDiscount;
-    private readonly Label _lblAfterDiscount;
-    private readonly Label _lblAfterDiscountValue;
-    private readonly Label _lblTax;
-    private readonly NumericUpDown _numTax;
-    private readonly NumericUpDown _numFees;
-    private readonly Label _lblTaxAmount;
-    private readonly Label _lblFees;
-    private readonly Label _lblTaxAmountValue;
-    private readonly Label _lblTotal;
-    private readonly Label _lblTotalValue;
-    private readonly Label _lblPaid;
-    private readonly NumericUpDown _numPaid;
-    private readonly ThemedIconButton _btnPayInFull;
-    private readonly Label _lblBalance;
-    private readonly Label _lblBalanceValue;
-    private readonly ThemedIconButton _btnCompleteSale;
-    private readonly ThemedIconButton _btnRemoveFromCart;
-    private readonly ThemedIconButton _btnPrintLast;
-    private readonly ThemedIconButton _btnNewSale;
-    private readonly ThemedIconButton _btnDeleteInvoice;
-    private readonly TabControl _tabs;
-    private readonly TabPage _tabNewSale;
-    private readonly TabPage _tabInvoices;
-
-    private List<ProductDto> _products = new();
     private List<CustomerDto> _customers = new();
     private List<CreateSaleItemDto> _cart = new();
     private List<SaleDto> _invoices = new();
+
+    /// <summary>Full product rows, loaded only when the calculator asks for them.</summary>
+    private List<ProductDto> _products = new();
+
+    private readonly Dictionary<Guid, ProductDto> _productCache = new();
+    private readonly Dictionary<Guid, PosProductItem> _catalogByVariant = new();
+    private readonly PosCartRowTracker _cartRowTracker = new();
+    private readonly List<CartLineRow> _cartRowViews = new();
+
+    private IReadOnlyList<PosProductItem> _catalog = Array.Empty<PosProductItem>();
+    private IReadOnlyList<PosProductItem> _filteredItems = Array.Empty<PosProductItem>();
+    private Guid? _selectedCategoryId;
+    private bool _sessionOpen;
+
     private PaidMode _paidMode = PaidMode.FullPayment;
     private bool _updatingTotals;
+    private bool _canOverridePrice;
     private bool _saleStacked;
+    private bool _saleCompact;
     private int _saleCartSize;
     private int _saleCartHeight;
-    private bool _layoutPending;
-    private SaleDto? _lastInvoice;
 
+    /// <summary>Card sales settle the exact total; cash sales keep the typed paid amount.</summary>
+    private PosPaymentMethod _paymentMethod = PosPaymentMethod.Cash;
+
+    private bool _layoutPending;
+    private bool _resizingCartRows;
+    private SaleDto? _lastInvoice;
+    private bool _catalogReloadPending;
+    private int _productFilterVersion;
+    private bool _themeSubscribed;
+
+    /// <summary>
+    /// Design-time constructor. It only builds the layout and never touches
+    /// services, the database or the file system, so Visual Studio can open the
+    /// form on its design surface.
+    /// </summary>
+    public SalesForm()
+    {
+        InitializeComponent();
+    }
+
+    [ActivatorUtilitiesConstructor]
     public SalesForm(
         ISaleService saleService,
         IProductService productService,
         IPosProductStore posProductStore,
+        IPosHoldService holdService,
         ICustomerService customerService,
         ICurrentSettingsService currentSettings,
         ICashSessionService cashSessionService,
         IBarcodeService barcodeService,
+        IPosBarcodeResolver barcodeResolver,
+        ICatalogChangeNotifier catalogNotifier,
         IBranchSwitchGuard branchGuard,
         IBranchSwitchGuardRegistry branchGuardRegistry,
         IServiceProvider services,
@@ -123,504 +122,131 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         _saleService = saleService;
         _productService = productService;
         _posProductStore = posProductStore;
+        _holdService = holdService;
         _customerService = customerService;
         _currentSettings = currentSettings;
         _cashSessionService = cashSessionService;
         _barcodeService = barcodeService;
+        _barcodeResolver = barcodeResolver;
+        _catalogNotifier = catalogNotifier;
         _branchGuard = branchGuard;
         _branchGuardRegistry = branchGuardRegistry;
         _services = services;
 
-        // Register guard with registry.
+        InitializeComponent();
+
         _branchGuardRegistry.Register(_branchGuard);
-        Disposed += (_, _) => _branchGuardRegistry.Unregister(_branchGuard);
+        _catalogNotifier.CatalogChanged += OnCatalogChanged;
 
-        Size = new Size(1200, 700);
-        BackColor = AppColors.Background;
+        KeyPreview = true;
 
-        _tabs = new TabControl { Dock = DockStyle.Fill, Font = new Font("Segoe UI", 10F), Padding = new Point(18, 8), SizeMode = TabSizeMode.FillToRight };
-        DzentoPOS2.WinForms.Themes.TabsStyler.Apply(_tabs);
-        _tabNewSale = new TabPage { Text = AppStrings.NewSale, BackColor = AppColors.Background };
-        _tabInvoices = new TabPage { Text = AppStrings.Sales, BackColor = AppColors.Background };
-
-        // LEFT PANEL - Product search + grid
-        _leftPanel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(8) };
-
-        _productSearch = new EZTextBox
+        Disposed += (_, _) =>
         {
-            Dock = DockStyle.Top,
+            _branchGuardRegistry.Unregister(_branchGuard);
+            _catalogNotifier.CatalogChanged -= OnCatalogChanged;
 
-            Height = 36,
-            Font = new Font("Segoe UI", 11F),
-            PlaceholderText = AppStrings.SearchProducts
-        };
-        _productSearch.TextChanged += (_, _) => FilterProducts();
-        _productSearch.KeyDown += (_, e) =>
-        {
-            if (e.KeyCode == Keys.Enter)
+            if (_themeSubscribed)
             {
-                e.SuppressKeyPress = true;
-                AddFirstProductToCart();
+                ThemeManager.ThemeChanged -= OnThemeChanged;
+                _themeSubscribed = false;
             }
         };
+    }
 
-        _btnScanBarcode = ButtonFactory.Tool(IconChar.Barcode, AppStrings.ScanBarcode, ButtonTone.Primary, ButtonFactory.ButtonSize.Medium);
-        _btnScanBarcode.Size = new Size(150, 38);
-        _btnScanBarcode.Dock = DockStyle.Right;
-        _btnScanBarcode.Margin = new Padding(0, 0, 0, 4);
-        _btnScanBarcode.Click += (_, _) => ScanBarcode();
+    /// <summary>
+    /// F2 focuses the barcode/search box from anywhere, F12 sends the sale.
+    /// ProcessCmdKey runs before the focused control, so a text box or the
+    /// product list cannot swallow either key.  Both keys are gated by the
+    /// selected tab: on the invoices tab F2 focuses the invoice search and
+    /// F12 never completes a sale.
+    /// </summary>
+    protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+    {
+        bool posTab = _tabs.SelectedIndex == 0;
 
-        var searchBar = new Panel
+        if (keyData == Keys.F2)
         {
-            Dock = DockStyle.Top,
-            Height = 48,
-            Padding = new Padding(0, 0, 0, 8),
-            BackColor = Color.Transparent
-        };
-        _productSearch.Dock = DockStyle.Fill;
-        _productSearch.Margin = new Padding(0, 0, 8, 0);
-        _productSearch.Height = 38;
-        searchBar.Controls.Add(_productSearch);
-        searchBar.Controls.Add(_btnScanBarcode);
+            if (IsDisposedOrDisposing) return true;
 
-        _productGrid = new DataGridView { Dock = DockStyle.Fill, ReadOnly = true, MultiSelect = false };
-        DataGridViewStyleHelper.ApplyModernStyle(_productGrid);
-        _productGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-        _productGrid.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
-        _productGrid.CellDoubleClick += async (_, e) =>
-        {
-            if (e.RowIndex < 0 || _productGrid.Rows[e.RowIndex].DataBoundItem is not ProductDto p)
-                return;
-
-            // Check if product has multiple variants via the POS store.
-            var items = await _posProductStore.GetAllAsync();
-            var productItems = items.Where(x => x.ProductId == p.Id).ToList();
-
-            if (productItems.Count > 1)
+            if (!posTab)
             {
-                // Open variant picker.
-                using var picker = new VariantPickerDialog(
-                    _services.GetRequiredService<DzentoPOS2.Data.Context.AppDbContext>(),
-                    p.Id,
-                    _barcodeService);
-                if (picker.ShowDialog(this) == DialogResult.OK && picker.SelectedVariantId != Guid.Empty)
-                {
-                    await AddToCartAsync(p, picker.SelectedVariantId, picker.SelectedVariantName, picker.SelectedPrice);
-                }
+                _invoiceSearch.Focus();
+                _invoiceSearch.SelectAllText();
+                return true;
             }
-            else
-            {
-                // Single variant: add directly.
-                var variantId = productItems.Count == 1 ? productItems[0].VariantId : Guid.Empty;
-                var variantName = productItems.Count == 1 ? productItems[0].Name : string.Empty;
-                var price = productItems.Count == 1 ? productItems[0].SalePrice : p.SalePrice;
-                await AddToCartAsync(p, variantId, variantName, price);
-            }
-        };
 
-        _leftPanel.Controls.Add(_productGrid);
-        _leftPanel.Controls.Add(searchBar);
+            _productSearch.Focus();
+            _productSearch.SelectAllText();
+            return true;
+        }
 
-        // RIGHT PANEL - Cart + totals
-        _rightPanel = new Panel { Dock = DockStyle.Fill, Padding = new Padding(8) };
-
-        _lblCustomer = new Label
+        if (keyData == Keys.F12)
         {
-            Text = AppStrings.CustomerName + ":",
-            Location = new Point(8, 8),
-            Size = new Size(100, 22),
-            Font = new Font("Segoe UI", 9F)
-        };
+            // The button is the single source of truth: it already reflects the
+            // cart and the cash session, so F12 cannot bypass either rule.  It
+            // is also inert outside the POS tab.
+            if (posTab && !IsDisposedOrDisposing && _btnCompleteSale.Enabled)
+                RunSafe(CompleteSaleAsync);
 
-        _cmbCustomer = new ComboBox
+            return true;
+        }
+
+        return base.ProcessCmdKey(ref msg, keyData);
+    }
+
+    /// <summary>
+    /// Keeps the two pages strictly isolated.  The POS tree only exists on the
+    /// "New Sale" tab; the invoice toolbar, grid and empty-state only exist on
+    /// the "Sales" tab.  Forcing the flags on every switch also clears any
+    /// stale paint left behind by a previous layout pass.
+    /// </summary>
+    private void OnTabSelected(object? sender, EventArgs e)
+    {
+        if (DesignTime.IsActive(this)) return;
+
+        bool posTab = _tabs.SelectedIndex == 0;
+
+        _tabNewSale.SuspendLayout();
+        try
         {
-            Location = new Point(110, 4),
-            Size = new Size(246, 28),
-            Font = new Font("Segoe UI", 10F),
-            DropDownStyle = ComboBoxStyle.DropDownList
-        };
-
-        _btnAddCustomer = ButtonFactory.Tool(IconChar.UserPlus, AppStrings.AddCustomer, ButtonTone.Primary, ButtonFactory.ButtonSize.Small);
-        _btnAddCustomer.Dock = DockStyle.Fill;
-        _btnAddCustomer.Margin = Padding.Empty;
-        _btnAddCustomer.Click += (_, _) => AddCustomer();
-
-        var customerRow = new TableLayoutPanel
+            _pageLayout.Visible = posTab;
+            _invoiceToolbar.Visible = !posTab;
+            _invoiceGrid.Visible = !posTab;
+        }
+        finally
         {
-            Dock = DockStyle.Top,
-            Height = 42,
-            ColumnCount = 3,
-            RowCount = 1,
-            Margin = Padding.Empty,
-            Padding = Padding.Empty
-        };
-        customerRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F));
-        customerRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 70F));
-        customerRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 44F));
-        customerRow.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            _tabNewSale.ResumeLayout(true);
+        }
 
-        _lblCustomer.Dock = DockStyle.Fill;
-        _lblCustomer.Location = Point.Empty;
-        _lblCustomer.Size = new Size(100, 22);
-        _lblCustomer.TextAlign = ContentAlignment.MiddleLeft;
-        _lblCustomer.Margin = Padding.Empty;
-
-        _cmbCustomer.Dock = DockStyle.Fill;
-        _cmbCustomer.Location = Point.Empty;
-        _cmbCustomer.Size = new Size(246, 28);
-        _cmbCustomer.Margin = Padding.Empty;
-
-        _btnAddCustomer.Dock = DockStyle.Fill;
-        _btnAddCustomer.Location = Point.Empty;
-        _btnAddCustomer.Size = new Size(36, 30);
-        _btnAddCustomer.Margin = Padding.Empty;
-
-        customerRow.Controls.Add(_lblCustomer, 0, 0);
-        customerRow.Controls.Add(_cmbCustomer, 1, 0);
-        customerRow.Controls.Add(_btnAddCustomer, 2, 0);
-
-        _cartGrid = new DataGridView
+        if (posTab)
         {
-            Dock = DockStyle.Fill,
-            ReadOnly = false,
-            MultiSelect = false,
-            AllowUserToAddRows = false,
-            EditMode = DataGridViewEditMode.EditOnEnter
-        };
-        DataGridViewStyleHelper.ApplyModernStyle(_cartGrid);
-        _cartGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
-        _cartGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-        _cartGrid.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
-        _cartGrid.CellEndEdit += (_, _) => OnCartCellEdited();
-        _cartGrid.CellContentClick += (_, e) => OnCartCellContentClick(e);
-        _cartGrid.KeyDown += (_, e) =>
+            ApplySaleLayout();
+        }
+        else
         {
-            if (e.KeyCode == Keys.Delete)
-            {
-                e.Handled = true;
-                RemoveFromCart();
-            }
-        };
-
-        _btnRemoveFromCart = ButtonFactory.Tool(IconChar.Trash, AppStrings.Delete, ButtonTone.Neutral, ButtonFactory.ButtonSize.Small);
-        _btnRemoveFromCart.Dock = DockStyle.Right;
-        _btnRemoveFromCart.Size = new Size(90, 28);
-        _btnRemoveFromCart.Margin = Padding.Empty;
-        _btnRemoveFromCart.Click += (_, _) => ClearCart();
-
-        // Cart header: title on the leading edge, clear button on the trailing one.
-        var cartHeader = new Panel { Dock = DockStyle.Top, Height = 34, Padding = new Padding(0, 0, 0, 6) };
-        _lblCart = new Label
-        {
-            Text = AppStrings.Cart,
-            Dock = DockStyle.Fill,
-            Margin = Padding.Empty,
-            Font = new Font("Segoe UI", 10.5F, FontStyle.Bold),
-            ForeColor = AppColors.Ink,
-            TextAlign = ContentAlignment.MiddleLeft
-        };
-        cartHeader.Controls.Add(_lblCart);
-        cartHeader.Controls.Add(_btnRemoveFromCart);
-
-        // The grid is added first so the header keeps the top edge.
-        var cartArea = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, 4, 0, 0) };
-        cartArea.Controls.Add(_cartGrid);
-        cartArea.Controls.Add(cartHeader);
-
-        // Totals: label column grows, value column keeps a fixed width.
-        var totals = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 2,
-            RowCount = 9,
-            Margin = Padding.Empty,
-            Padding = new Padding(0, TotalsPadding, 0, 0)
-        };
-        _totalsLayout = totals;
-        totals.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        totals.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
-        for (int i = 0; i < 9; i++)
-            totals.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
-
-        _lblSubtotal = MakeLabel(AppStrings.Subtotal + ":");
-        _lblSubtotalValue = MakeValueLabel("0.00");
-
-        _lblDiscount = MakeLabel(AppStrings.Discount + ":");
-        _cmbDiscountMode = new ComboBox
-        {
-            Dock = DockStyle.Fill,
-            DropDownStyle = ComboBoxStyle.DropDownList,
-            Font = new Font("Segoe UI", 9F),
-            Margin = new Padding(0, 0, 4, 0)
-        };
-        _cmbDiscountMode.Items.AddRange(new object[] { AppStrings.DiscountModePercent, AppStrings.DiscountModeAmount });
-        _cmbDiscountMode.SelectedIndex = 0;
-        _cmbDiscountMode.SelectedIndexChanged += (_, _) => UpdateTotals();
-
-        _numDiscount = MakeNumeric(0, 99999999);
-        _numDiscount.ValueChanged += (_, _) => UpdateTotals();
-
-        var discountValuePanel = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 2,
-            RowCount = 1,
-            Margin = Padding.Empty,
-            Padding = Padding.Empty
-        };
-        discountValuePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 58F));
-        discountValuePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 42F));
-        discountValuePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        _cmbDiscountMode.Dock = DockStyle.Fill;
-        _numDiscount.Dock = DockStyle.Fill;
-        discountValuePanel.Controls.Add(_cmbDiscountMode, 1, 0);
-        discountValuePanel.Controls.Add(_numDiscount, 0, 0);
-
-        _lblAfterDiscount = MakeLabel(AppStrings.AfterDiscount + ":");
-        _lblAfterDiscountValue = MakeValueLabel("0.00");
-
-        _lblTax = MakeLabel(AppStrings.TaxRate + " (%):");
-        _numTax = MakeNumeric(0, 100);
-        _numTax.ValueChanged += (_, _) => UpdateTotals();
-
-        _lblTaxAmount = MakeLabel(AppStrings.TaxAmount + ":");
-        _lblTaxAmountValue = MakeValueLabel("0.00");
-
-        _lblFees = MakeLabel(AppStrings.Fees + ":");
-        _numFees = MakeNumeric(0, 99999999);
-
-        _lblTotal = MakeLabel(AppStrings.GrandTotal + ":");
-        _lblTotalValue = MakeValueLabel("0.00");
-        _lblTotalValue.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-        _lblTotalValue.ForeColor = AppColors.Primary;
-
-        _lblPaid = MakeLabel(AppStrings.PaidAmount + ":");
-        _numPaid = MakeNumeric(0, 99999999);
-        _numPaid.ValueChanged += (_, _) => OnPaidChanged();
-
-        _btnPayInFull = ButtonFactory.Tool(IconChar.MoneyBillWave, AppStrings.PayInFull, ButtonTone.Success, ButtonFactory.ButtonSize.Small);
-        _btnPayInFull.Dock = DockStyle.Fill;
-        _btnPayInFull.Margin = Padding.Empty;
-        _btnPayInFull.Click += (_, _) => SetFullPayment();
-
-        var paidValuePanel = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 2,
-            RowCount = 1,
-            Margin = Padding.Empty,
-            Padding = Padding.Empty
-        };
-        paidValuePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        paidValuePanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 44F));
-        paidValuePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        _numPaid.Dock = DockStyle.Fill;
-        paidValuePanel.Controls.Add(_numPaid, 0, 0);
-        paidValuePanel.Controls.Add(_btnPayInFull, 1, 0);
-
-        _lblBalance = MakeLabel(AppStrings.RemainingAmount + ":");
-        _lblBalanceValue = MakeValueLabel("0.00");
-
-        totals.Controls.Add(_lblSubtotal, 0, 0);
-        totals.Controls.Add(_lblSubtotalValue, 1, 0);
-        totals.Controls.Add(_lblDiscount, 0, 1);
-        totals.Controls.Add(discountValuePanel, 1, 1);
-        totals.Controls.Add(_lblAfterDiscount, 0, 2);
-        totals.Controls.Add(_lblAfterDiscountValue, 1, 2);
-        totals.Controls.Add(_lblTax, 0, 3);
-        totals.Controls.Add(_numTax, 1, 3);
-        totals.Controls.Add(_lblTaxAmount, 0, 4);
-        totals.Controls.Add(_lblTaxAmountValue, 1, 4);
-        totals.Controls.Add(_lblFees, 0, 5);
-        totals.Controls.Add(_numFees, 1, 5);
-        totals.Controls.Add(_lblTotal, 0, 6);
-        totals.Controls.Add(_lblTotalValue, 1, 6);
-        totals.Controls.Add(_lblPaid, 0, 7);
-        totals.Controls.Add(paidValuePanel, 1, 7);
-        totals.Controls.Add(_lblBalance, 0, 8);
-        totals.Controls.Add(_lblBalanceValue, 1, 8);
-
-        _btnCalculator = ButtonFactory.Tool(IconChar.Calculator, AppStrings.Calculator, ButtonTone.Primary, ButtonFactory.ButtonSize.Medium);
-        _btnCalculator.Dock = DockStyle.Fill;
-        _btnCalculator.Margin = new Padding(0, 0, 6, 0);
-        _btnCalculator.Click += (_, _) => OpenCalculator();
-
-        _btnCompleteSale = ButtonFactory.ToolSolid(IconChar.CheckCircle, AppStrings.CompleteSale, ButtonTone.Primary, ButtonFactory.ButtonSize.Large);
-        _btnCompleteSale.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
-        _btnCompleteSale.Dock = DockStyle.Fill;
-        _btnCompleteSale.Margin = Padding.Empty;
-        _btnCompleteSale.Click += (_, _) => RunSafe(CompleteSaleAsync);
-
-        _btnPrintLast = ButtonFactory.Tool(IconChar.Print, AppStrings.Print, ButtonTone.Neutral, ButtonFactory.ButtonSize.Medium);
-        _btnPrintLast.Dock = DockStyle.Fill;
-        _btnPrintLast.Margin = new Padding(0, 0, 6, 0);
-        _btnPrintLast.Enabled = false;
-        _btnPrintLast.Click += (_, _) => PrintLastInvoice();
-
-        var actions = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 3,
-            RowCount = 1,
-            Margin = Padding.Empty,
-            Padding = new Padding(0, 6, 0, 0)
-        };
-        actions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F));
-        actions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 30F));
-        actions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40F));
-        actions.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        actions.Controls.Add(_btnCalculator, 0, 0);
-        actions.Controls.Add(_btnPrintLast, 1, 0);
-        actions.Controls.Add(_btnCompleteSale, 2, 0);
-
-        // Basket layout: customer row, cart grid, totals, actions.
-        _cartLayout = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 1,
-            RowCount = 4,
-            Margin = Padding.Empty,
-            Padding = Padding.Empty
-        };
-        _cartLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        _cartLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
-        _cartLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        _cartLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 250F));
-        _cartLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 62F));
-
-        customerRow.Dock = DockStyle.Fill;
-        _cartLayout.Controls.Add(customerRow, 0, 0);
-        _cartLayout.Controls.Add(cartArea, 0, 1);
-        _cartLayout.Controls.Add(totals, 0, 2);
-        _cartLayout.Controls.Add(actions, 0, 3);
-
-        // Drawer banner: shown only while no cash session is open, so the user
-        // always sees why the sale button is disabled.
-        _drawerBannerLabel = new Label
-        {
-            Dock = DockStyle.Fill,
-            AutoSize = false,
-            TextAlign = ContentAlignment.MiddleLeft,
-            Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
-            ForeColor = Color.FromArgb(48, 33, 0),
-            BackColor = Color.Transparent,
-            Margin = Padding.Empty,
-            Text = AppStrings.DrawerNotOpen
-        };
-
-        _btnOpenDrawer = ButtonFactory.Tool(
-            IconChar.CashRegister,
-            AppStrings.OpenCashDrawer,
-            ButtonTone.Primary,
-            ButtonFactory.ButtonSize.Small);
-        _btnOpenDrawer.Dock = DockStyle.Right;
-        _btnOpenDrawer.Size = new Size(170, 30);
-        _btnOpenDrawer.Margin = Padding.Empty;
-        _btnOpenDrawer.Click += (_, _) => RunSafe(OpenDrawerAsync);
-
-        _drawerBanner = new Panel
-        {
-            Dock = DockStyle.Fill,
-            Height = 44,
-            Padding = new Padding(10, 6, 6, 6),
-            Margin = Padding.Empty,
-            Visible = false,
-            BackColor = AppColors.Warning
-        };
-        _drawerBanner.Controls.Add(_drawerBannerLabel);
-        _drawerBanner.Controls.Add(_btnOpenDrawer);
-
-        var cartRoot = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 1,
-            RowCount = 2,
-            Margin = Padding.Empty,
-            Padding = Padding.Empty
-        };
-        cartRoot.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        cartRoot.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-        cartRoot.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-        cartRoot.Controls.Add(_drawerBanner, 0, 0);
-        cartRoot.Controls.Add(_cartLayout, 0, 1);
-
-        _rightPanel.Controls.Add(cartRoot);
-
-        // Sale layout: products and basket side by side, stacked when narrow.
-        _saleLayout = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 2,
-            RowCount = 1,
-            Margin = Padding.Empty,
-            Padding = Padding.Empty
-        };
-        _tabNewSale.Controls.Add(_saleLayout);
-        ApplySaleLayout();
-        _tabNewSale.Resize += OnSaleTabResized;
-
-        // INVOICES TAB
-        _invoiceGrid = new DataGridView { Dock = DockStyle.Fill, ReadOnly = true, MultiSelect = false };
-        DataGridViewStyleHelper.ApplyModernStyle(_invoiceGrid);
-        _invoiceGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
-        _invoiceGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-        _invoiceGrid.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
-
-        _invoiceSearch = new EZTextBox
-        {
-            Dock = DockStyle.Fill,
-            Height = 36,
-            Font = new Font("Segoe UI", 11F),
-            PlaceholderText = AppStrings.SearchInvoices
-        };
-        _invoiceSearch.TextChanged += (_, _) => FilterInvoices();
-
-        _btnNewSale = ButtonFactory.Tool(IconChar.Plus, AppStrings.NewSale, ButtonTone.Primary, ButtonFactory.ButtonSize.Medium);
-        _btnNewSale.Dock = DockStyle.Fill;
-        _btnNewSale.Margin = new Padding(0, 0, 8, 0);
-        _btnNewSale.Click += (_, _) => _tabs.SelectedIndex = 0;
-
-        _btnDeleteInvoice = ButtonFactory.ToolDelete(AppStrings.Delete, ButtonFactory.ButtonSize.Medium);
-        _btnDeleteInvoice.Dock = DockStyle.Fill;
-        _btnDeleteInvoice.Margin = Padding.Empty;
-        _btnDeleteInvoice.Click += (_, _) => RunSafe(DeleteInvoiceAsync);
-
-        // Toolbar: the search field grows, the actions keep a fixed width.
-        // A table layout mirrors itself in RTL, so the actions stay on the
-        // trailing edge in both languages.
-        var invoiceToolbar = new TableLayoutPanel
-        {
-            Dock = DockStyle.Top,
-            Height = 58,
-            ColumnCount = 3,
-            RowCount = 1,
-            BackColor = AppColors.Surface,
-            Padding = new Padding(12, 10, 12, 10),
-            Margin = Padding.Empty
-        };
-        invoiceToolbar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-        invoiceToolbar.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 140F));
-        invoiceToolbar.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
-        invoiceToolbar.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-
-        _invoiceSearch.Margin = new Padding(0, 0, 8, 0);
-        invoiceToolbar.Controls.Add(_invoiceSearch, 0, 0);
-        invoiceToolbar.Controls.Add(_btnNewSale, 1, 0);
-        invoiceToolbar.Controls.Add(_btnDeleteInvoice, 2, 0);
-
-        _tabInvoices.Controls.Add(_invoiceGrid);
-        _tabInvoices.Controls.Add(invoiceToolbar);
-
-        _tabs.TabPages.AddRange(new[] { _tabNewSale, _tabInvoices });
-        Controls.Add(_tabs);
+            FilterInvoices();
+            _invoiceGrid.Invalidate();
+            _tabInvoices.Invalidate(true);
+        }
     }
 
     protected override void OnLoad(EventArgs e)
     {
+        // The design surface must never start initialization or theme work.
+        if (DesignTime.IsActive(this))
+            return;
+
         base.OnLoad(e);
 
-        _ = ApplyPermissionsAsync();
+        if (!_themeSubscribed)
+        {
+            ThemeManager.ThemeChanged += OnThemeChanged;
+            _themeSubscribed = true;
+        }
 
+        ApplyTheme();
+
+        _ = ApplyPermissionsAsync();
         RunSafe(InitializeAsync);
     }
 
@@ -638,8 +264,13 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             if (guard is null) return;
 
             bool canDelete = await guard.IsAllowedAsync(Permissions.SalesDelete);
-            if (!IsDisposedOrDisposing)
-                _btnDeleteInvoice.Enabled = canDelete;
+            bool canOverridePrice = await guard.IsAllowedAsync(Permissions.SalesOverridePrice);
+            if (IsDisposedOrDisposing) return;
+
+            _btnDeleteInvoice.Enabled = canDelete;
+            _canOverridePrice = canOverridePrice;
+            if (_cart.Count > 0)
+                RefreshCart();
         }
         catch (Exception ex)
         {
@@ -656,14 +287,17 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         if (IsDisposedOrDisposing) return;
         await LoadInvoicesAsync();
         if (IsDisposedOrDisposing) return;
-        await RefreshDrawerBannerAsync();
+        await RefreshSessionStatusAsync();
+        if (IsDisposedOrDisposing) return;
+        RefreshCart();
     }
 
     /// <summary>
-    /// Shows the "open a drawer first" banner and gates the sale button while
-    /// no cash session is open.
+    /// Updates the session chip and the checkout gate. A sale needs an open
+    /// cash session and at least one cart line; both F12 and the button use the
+    /// enabled state of the button.
     /// </summary>
-    private async Task RefreshDrawerBannerAsync()
+    private async Task RefreshSessionStatusAsync()
     {
         CashSessionDto? session = null;
         try
@@ -675,18 +309,26 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             session = null;
         }
 
-        bool missing = session == null;
+        _sessionOpen = session != null;
 
         if (IsDisposedOrDisposing) return;
 
-        _drawerBanner.Visible = missing;
-        _btnCompleteSale.Enabled = !missing;
+        ApplySessionChipText();
+        UpdateCheckoutState();
+    }
+
+    private void ApplySessionChipText()
+    {
+        _sessionChip.SetStatus(
+            _sessionOpen ? PosSessionState.Open : PosSessionState.Closed,
+            _sessionOpen ? AppStrings.SessionOpen : AppStrings.DrawerClosed,
+            _sessionOpen ? null : AppStrings.OpenSession);
     }
 
     private async Task OpenDrawerAsync()
     {
         if (OfferOpenDrawer())
-            await RefreshDrawerBannerAsync();
+            await RefreshSessionStatusAsync();
     }
 
     private bool OfferOpenDrawer()
@@ -698,29 +340,111 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         return dialog.OpenedSession != null;
     }
 
+    private void OnCardPaymentClick(object? sender, EventArgs e)
+    {
+        _paymentMethod = PosPaymentMethod.Card;
+        _numPaid.Enabled = false;
+        _btnPayInFull.Enabled = false;
+        UpdatePaymentButtons();
+        UpdateTotals();
+    }
+
     /// <summary>
-    /// Places the product list and the basket next to each other, and stacks them
-    /// when the page gets too narrow. The grid never slides under the basket
-    /// panel any more, which used to hide the product search field.
+    /// Credit keeps the sale on cash but leaves the paid amount at zero so the
+    /// remaining balance is stored against the customer.
+    /// </summary>
+    private void OnCreditClick(object? sender, EventArgs e)
+    {
+        _paymentMethod = PosPaymentMethod.Cash;
+        _numPaid.Enabled = true;
+        _btnPayInFull.Enabled = true;
+        _paidMode = PaidMode.Custom;
+        _updatingTotals = true;
+        try { _numPaid.Value = 0; }
+        finally { _updatingTotals = false; }
+        UpdatePaymentButtons();
+        UpdateTotals();
+    }
+
+    private void UpdatePaymentButtons()
+    {
+        bool card = _paymentMethod == PosPaymentMethod.Card;
+        _btnCard.Tone = card ? ButtonTone.Primary : ButtonTone.Neutral;
+        _btnCard.Solid = card;
+        _btnCard.ApplyTheme();
+        _btnPayInFull.Enabled = !card;
+    }
+
+    private void OnHoldClick(object? sender, EventArgs e)
+    {
+        if (_cart.Count == 0) return;
+        var selectedCustomer = _cmbCustomer.SelectedItem as CustomerItem;
+        _holdService.Hold(_cart, selectedCustomer?.Id ?? Guid.Empty);
+        _cart.Clear();
+        RefreshCart();
+        UpdateTotals();
+        AppMessageBox.Success("Held");
+    }
+
+    private void OnCancelSaleClick(object? sender, EventArgs e)
+    {
+        if (_cart.Count == 0) return;
+        if (!AppMessageBox.Confirm(AppStrings.Delete, AppStrings.CompleteSale)) return;
+        _cart.Clear();
+        _numDiscount.Value = 0;
+        _numTax.Value = 0;
+        _numFees.Value = 0;
+        _numPaid.Value = 0;
+        _cmbDiscountMode.SelectedIndex = 0;
+        _paymentMethod = PosPaymentMethod.Cash;
+        _paidMode = PaidMode.FullPayment;
+        UpdatePaymentButtons();
+        RefreshCart();
+        UpdateTotals();
+    }
+
+    /// <summary>
+    /// Places the product column and the basket next to each other, and stacks
+    /// them when the page gets too narrow. The card width itself is decided by
+    /// <see cref="PosCardLayoutCalculator"/>, not by this breakpoint.
     /// </summary>
     private void ApplySaleLayout()
     {
         int available = _tabNewSale.ClientSize.Width;
+        int height = _tabNewSale.ClientSize.Height;
         if (available <= 0) return;
 
-        bool stacked = available < 780;
-        int cartSize = Math.Clamp((int)(available * 0.40), 340, 460);
+        bool stacked = available < 900;
+        bool compact = available < 640;
+        int cartSize = Math.Clamp((int)(available * 0.38), 340, 480);
         int cartHeight = stacked
-            ? Math.Clamp((int)(_tabNewSale.ClientSize.Height * 0.62), 360, 470)
+            ? compact
+                // On a phone the catalog must keep at least three rows of
+                // chrome plus one card row. The basket gives up height instead
+                // and scrolls its own lines and totals above the pinned actions.
+                ? Math.Min(420, Math.Max(280, height - 180 - 300))
+                : Math.Min(
+                    Math.Clamp((int)(height * 0.62), 340, 560),
+                    Math.Max(260, height - 160))
             : 0;
 
-        if (stacked == _saleStacked && cartSize == _saleCartSize && cartHeight == _saleCartHeight) return;
+        if (stacked == _saleStacked
+            && compact == _saleCompact
+            && cartSize == _saleCartSize
+            && cartHeight == _saleCartHeight)
+        {
+            UpdateCartRowWidths();
+            return;
+        }
 
         _saleStacked = stacked;
+        _saleCompact = compact;
         _saleCartSize = cartSize;
         _saleCartHeight = cartHeight;
 
-        ApplyCartLayout(stacked);
+        ApplyHeroLayout(compact);
+        ApplyProductChrome(compact);
+        ApplyCartLayout(compact);
 
         _saleLayout.SuspendLayout();
         _saleLayout.Controls.Clear();
@@ -749,23 +473,116 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         }
 
         _saleLayout.ResumeLayout(true);
+        UpdateCartRowWidths();
     }
 
     /// <summary>
-    /// Keeps the basket usable when it is stacked under the product list: the
-    /// totals rows shrink so the cart grid always keeps a visible height.
+    /// The hero strip sits above both columns. On wide screens the total keeps
+    /// the full height at the start, with the discount and the cart count
+    /// stacked beside it; on phones the three cards stack so the 38 pt total
+    /// keeps its line height on a 375 px viewport.
+    /// </summary>
+    private void ApplyHeroLayout(bool compact)
+    {
+        _pageLayout.RowStyles[0] = new RowStyle(SizeType.Absolute, compact ? 180F : 110F);
+
+        _heroStrip.SuspendLayout();
+        _heroStrip.ColumnStyles.Clear();
+        _heroStrip.RowStyles.Clear();
+
+        if (compact)
+        {
+            _heroStrip.ColumnCount = 1;
+            _heroStrip.RowCount = 3;
+            _heroStrip.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            _heroStrip.RowStyles.Add(new RowStyle(SizeType.Absolute, 86F));
+            _heroStrip.RowStyles.Add(new RowStyle(SizeType.Absolute, 58F));
+            _heroStrip.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
+
+            _heroStrip.SetCellPosition(_heroTotalCard, new TableLayoutPanelCellPosition(0, 0));
+            _heroStrip.SetRowSpan(_heroTotalCard, 1);
+            _heroStrip.SetCellPosition(_discountCard, new TableLayoutPanelCellPosition(0, 1));
+            _heroStrip.SetCellPosition(_statsCard, new TableLayoutPanelCellPosition(0, 2));
+
+            _heroTotalCard.Margin = new Padding(0, 0, 0, 4);
+            _discountCard.Margin = new Padding(0, 0, 0, 4);
+            _statsCard.Margin = new Padding(0);
+            _lblHeroStats.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+        }
+        else
+        {
+            _heroStrip.ColumnCount = 2;
+            _heroStrip.RowCount = 2;
+            _heroStrip.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 55F));
+            _heroStrip.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 45F));
+            _heroStrip.RowStyles.Add(new RowStyle(SizeType.Absolute, 66F));
+            _heroStrip.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+
+            _heroStrip.SetCellPosition(_heroTotalCard, new TableLayoutPanelCellPosition(0, 0));
+            _heroStrip.SetRowSpan(_heroTotalCard, 2);
+            _heroStrip.SetCellPosition(_discountCard, new TableLayoutPanelCellPosition(1, 0));
+            _heroStrip.SetCellPosition(_statsCard, new TableLayoutPanelCellPosition(1, 1));
+
+            _heroTotalCard.Margin = new Padding(0, 0, 8, 0);
+            _discountCard.Margin = new Padding(8, 0, 0, 0);
+            _statsCard.Margin = new Padding(8, 0, 0, 0);
+            _lblHeroStats.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+        }
+
+        _heroStrip.ResumeLayout(true);
+        _heroStrip.Invalidate(true);
+    }
+
+    /// <summary>
+    /// Phone-width chrome. The scan button loses its label so the search field
+    /// keeps a usable width and the category strip gets room for its horizontal
+    /// scrollbar.
+    /// </summary>
+    private void ApplyProductChrome(bool compact)
+    {
+        int scanWidth = compact ? 52 : 150;
+
+        if ((int)_searchBar.ColumnStyles[1].Width != scanWidth)
+            _searchBar.ColumnStyles[1] = new ColumnStyle(SizeType.Absolute, scanWidth);
+
+        _btnScanBarcode.Text = compact ? string.Empty : "  " + AppStrings.ScanBarcode;
+        _toolTip.SetToolTip(_btnScanBarcode, AppStrings.ScanBarcode);
+
+        // Row 2 of the product column is the category strip; row 1 is the
+        // search bar. Keep the phone strip taller for its scrollbar.
+        float categoryHeight = compact ? 56F : 44F;
+        if (_productColumn.RowStyles[2].Height != categoryHeight)
+            _productColumn.RowStyles[2] = new RowStyle(SizeType.Absolute, categoryHeight);
+    }
+
+    /// <summary>
+    /// At tablet and phone widths the calculator and print buttons become
+    /// icon-only; the four payment actions and the big checkout button keep
+    /// their labels.
     /// </summary>
     private void ApplyCartLayout(bool compact)
     {
-        int totalsBlock = compact ? 240 : 250;
-        int totalsRow = (totalsBlock - TotalsPadding) / 8;
-        int actionsBlock = compact ? 56 : 62;
+        // The hero already shows the item count on phones, so the cart header
+        // is dropped there to keep one full cart line visible above the pinned
+        // actions; desktop and tablet keep it for the clear-cart action.  The
+        // customer row stays 44 px so the 40 px combo never shrinks.
+        _cartHeader.Visible = !compact;
+        _basketLayout.RowStyles[0] = new RowStyle(SizeType.Absolute, 44F);
+        _basketLayout.RowStyles[1] = new RowStyle(SizeType.Absolute, compact ? 0F : 36F);
 
-        for (int i = 0; i < _totalsLayout.RowStyles.Count; i++)
-            _totalsLayout.RowStyles[i] = new RowStyle(SizeType.Absolute, totalsRow);
+        // The "Customer name" caption wraps and clips in Arabic at phone width;
+        // the combo already says "Select customer", so the caption is dropped.
+        _lblCustomer.Visible = !compact;
+        _customerRow.ColumnStyles[0] = new ColumnStyle(
+            SizeType.Percent, compact ? 0F : 26F);
+        _customerRow.ColumnStyles[1] = new ColumnStyle(
+            SizeType.Percent, compact ? 100F : 74F);
 
-        _cartLayout.RowStyles[2] = new RowStyle(SizeType.Absolute, totalsBlock);
-        _cartLayout.RowStyles[3] = new RowStyle(SizeType.Absolute, actionsBlock);
+        _btnCalculator.Text = compact ? string.Empty : "  " + AppStrings.Calculator;
+        _btnPrintLast.Text = compact ? string.Empty : "  " + AppStrings.Print;
+
+        _toolTip.SetToolTip(_btnCalculator, AppStrings.Calculator);
+        _toolTip.SetToolTip(_btnPrintLast, AppStrings.Print);
     }
 
     /// <summary>
@@ -774,7 +591,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
     /// </summary>
     private void OnSaleTabResized(object? sender, EventArgs e)
     {
-        if (_layoutPending) return;
+        if (_layoutPending || DesignTime.IsActive(this)) return;
 
         _layoutPending = true;
         BeginInvoke(new Action(() =>
@@ -784,147 +601,362 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         }));
     }
 
+    private void OnBasketScrollSizeChanged(object? sender, EventArgs e) => UpdateCartRowWidths();
+
+    private void OnCartLinesSizeChanged(object? sender, EventArgs e) => UpdateCartRowWidths();
+
+    /// <summary>
+    /// The cart rows are hosted by an auto-sized flow panel inside a scrolling
+    /// panel, so their width has to follow the visible basket width. The guard
+    /// stops the width change from re-entering the layout.
+    /// </summary>
+    private void UpdateCartRowWidths()
+    {
+        if (_resizingCartRows || IsDisposedOrDisposing) return;
+
+        _resizingCartRows = true;
+        try
+        {
+            int width = _basketScroll.ClientSize.Width;
+            if (_basketScroll.VerticalScroll.Visible)
+                width -= SystemInformation.VerticalScrollBarWidth;
+
+            if (width <= 0)
+                width = _basketLayout.Width;
+
+            width = Math.Max(220, width);
+
+            foreach (CartLineRow row in _cartRowViews)
+                row.Width = width;
+
+            _lblEmptyCart.Width = width;
+        }
+        finally
+        {
+            _resizingCartRows = false;
+        }
+    }
+
+    private void ApplyTheme()
+    {
+        if (IsDisposedOrDisposing) return;
+
+        SuspendLayout();
+        try
+        {
+            ThemeManager.ApplyToControl(this);
+
+            BackColor = AppColors.Background;
+            _tabNewSale.BackColor = AppColors.Background;
+            _tabInvoices.BackColor = AppColors.Background;
+
+            _leftPanel.BackColor = AppColors.Background;
+            _rightPanel.BackColor = AppColors.Surface;
+            _basketScroll.BackColor = AppColors.Surface;
+            _basketLayout.BackColor = AppColors.Surface;
+            _cartLines.BackColor = AppColors.Surface;
+            _cartHeader.BackColor = AppColors.Surface;
+            _customerRow.BackColor = AppColors.Surface;
+            _totalsLayout.BackColor = AppColors.Surface;
+            _discountEditorPanel.BackColor = AppColors.Surface;
+            _paidEditorPanel.BackColor = AppColors.Surface;
+            _productHeader.BackColor = AppColors.Background;
+            _heroStrip.BackColor = AppColors.Background;
+            _heroTotalCard.BackColor = AppColors.Surface;
+            _discountCard.BackColor = AppColors.Surface;
+            _statsCard.BackColor = AppColors.Surface;
+
+            _lblHeroTotal.ForeColor = AppColors.Primary;
+            _lblHeroDiscount.ForeColor = AppColors.Success;
+            _lblHeroStats.ForeColor = AppColors.Ink;
+            _lblHeroTotalCaption.ForeColor = AppColors.InkMuted;
+            _lblHeroDiscountCaption.ForeColor = AppColors.InkMuted;
+            _lblProductCount.ForeColor = AppColors.InkMuted;
+            _lblTotalValue.ForeColor = AppColors.Primary;
+            _lblDiscountValue.ForeColor = AppColors.InkMuted;
+            _lblEmptyCart.ForeColor = AppColors.InkMuted;
+            _lblNoInvoices.ForeColor = AppColors.InkMuted;
+            _lblNoInvoices.BackColor = AppColors.Background;
+
+            ApplyInputTheme(_productSearch);
+            ApplyInputTheme(_invoiceSearch);
+            ApplyNumericTheme(_numDiscount);
+            ApplyNumericTheme(_numTax);
+            ApplyNumericTheme(_numFees);
+            ApplyNumericTheme(_numPaid);
+            ApplyComboTheme(_cmbCustomer);
+            ApplyComboTheme(_cmbDiscountMode);
+
+            _lblEmptyCart.Text = AppStrings.EmptyCart;
+            UpdatePaymentButtons();
+        }
+        finally
+        {
+            ResumeLayout(true);
+        }
+
+        UpdateTotals();
+    }
+
+    private static void ApplyInputTheme(EZInputBase input)
+    {
+        input.BackColor = AppColors.InputBackground;
+        input.ForeColor = AppColors.Ink;
+        input.BorderColor = AppColors.InputBorder;
+        input.BorderFocusColor = AppColors.InputBorderFocus;
+        input.PlaceholderColor = AppColors.InkMuted;
+    }
+
+    /// <summary>
+    /// The numeric fields use the exact normalised culture of
+    /// <c>RegionalContext.FormatMoney</c>, so the hero total and the inputs
+    /// always show the same decimal separator and Western digits.
+    /// </summary>
+    private static void ApplyNumericTheme(EZNumericBox input)
+    {
+        ApplyInputTheme(input);
+        input.Culture = KpiValueFormatter.NormalizeCulture(CultureInfo.CurrentCulture);
+    }
+
+    private static void ApplyComboTheme(EZComboBox combo)
+    {
+        combo.BackColor = AppColors.InputBackground;
+        combo.ForeColor = AppColors.Ink;
+        combo.BorderColor = AppColors.InputBorder;
+        combo.BorderFocusColor = AppColors.InputBorderFocus;
+        combo.IconColor = AppColors.InkMuted;
+        combo.DropDownBackColor = AppColors.Surface;
+        combo.DropDownForeColor = AppColors.Ink;
+        combo.DropDownBorderColor = AppColors.Border;
+        combo.DropDownHoverBackColor = AppColors.PrimarySoft;
+        combo.DropDownSelectedBackColor = AppColors.Primary;
+        combo.DropDownSelectedForeColor = Color.White;
+    }
+
+    private void OnThemeChanged(object? sender, EventArgs e)
+    {
+        if (IsDisposedOrDisposing) return;
+
+        if (InvokeRequired)
+        {
+            if (IsHandleCreated)
+                BeginInvoke(new Action(ApplyTheme));
+            return;
+        }
+
+        ApplyTheme();
+    }
+
     protected override void LoadText()
     {
         Text = AppStrings.PointOfSale;
         _tabNewSale.Text = AppStrings.NewSale;
         _tabInvoices.Text = AppStrings.Sales;
-        _productSearch.PlaceholderText = AppStrings.SearchProducts;
+        _productSearch.PlaceholderText = AppStrings.SearchProducts + " (F2)";
         _invoiceSearch.PlaceholderText = AppStrings.SearchInvoices;
         _btnScanBarcode.Text = "  " + AppStrings.ScanBarcode;
+        _btnScanBarcode.AccessibleDescription = AppStrings.ScanBarcode;
         _lblCustomer.Text = AppStrings.CustomerName + ":";
-        _lblCart.Text = AppStrings.Cart;
-        _btnAddCustomer.Text = "  " + AppStrings.AddCustomer;
+        _lblCart.Text = AppStrings.Cart + (_cart.Count > 0 ? $" ({_cart.Count})" : string.Empty);
+        _btnAddCustomer.Text = string.Empty;
         _btnAddCustomer.AccessibleDescription = AppStrings.AddCustomer;
-        _btnCalculator.Text = "  " + AppStrings.Calculator;
+        _btnClearCart.Text = "  " + AppStrings.Delete;
+        _btnClearCart.AccessibleDescription = AppStrings.Delete;
         _lblSubtotal.Text = AppStrings.Subtotal + ":";
         _lblDiscount.Text = AppStrings.Discount + ":";
         _lblAfterDiscount.Text = AppStrings.AfterDiscount + ":";
         _lblTax.Text = AppStrings.TaxRate + " (%):";
         _lblTaxAmount.Text = AppStrings.TaxAmount + ":";
+        _lblFees.Text = AppStrings.Fees + ":";
         _lblTotal.Text = AppStrings.GrandTotal + ":";
         _lblPaid.Text = AppStrings.PaidAmount + ":";
-        _btnPayInFull.Text = "  " + AppStrings.PayInFull;
+        _btnPayInFull.Text = string.Empty;
         _btnPayInFull.AccessibleDescription = AppStrings.PayInFull;
         _btnCompleteSale.Text = "  " + AppStrings.CompleteSale;
+        _btnCompleteSale.AccessibleDescription = AppStrings.CompleteSale;
         _btnPrintLast.Text = "  " + AppStrings.Print;
-        _btnRemoveFromCart.Text = "  " + AppStrings.Delete;
+        _btnCalculator.Text = "  " + AppStrings.Calculator;
         _btnNewSale.Text = "  " + AppStrings.NewSale;
         _btnDeleteInvoice.Text = "  " + AppStrings.Delete;
-        _drawerBannerLabel.Text = AppStrings.DrawerNotOpen;
-        _btnOpenDrawer.Text = "  " + AppStrings.OpenCashDrawer;
-        _btnOpenDrawer.AccessibleDescription = AppStrings.OpenCashDrawer;
+        _lblEmptyCart.Text = AppStrings.EmptyCart;
+        _lblNoInvoices.Text = AppStrings.NoInvoices;
 
-        var discountModeIndex = _cmbDiscountMode.SelectedIndex;
-        _cmbDiscountMode.Items.Clear();
-        _cmbDiscountMode.Items.AddRange(new object[] { AppStrings.DiscountModePercent, AppStrings.DiscountModeAmount });
+        _lblHeroTotalCaption.Text = AppStrings.GrandTotal;
+        _lblHeroDiscountCaption.Text = AppStrings.Discount;
+        _lblBalance.Text = AppStrings.RemainingAmount + ":";
+        _btnCard.Text = "  " + AppStrings.Card;
+        _btnCredit.Text = "  " + AppStrings.Credit;
+        _btnHold.Text = "  " + AppStrings.Hold;
+        _btnCancelSale.Text = "  " + AppStrings.Cancel;
+        _btnViewToggle.AccessibleDescription = AppStrings.Products;
+
+        _toolTip.SetToolTip(_btnAddCustomer, AppStrings.AddCustomer);
+        _toolTip.SetToolTip(_btnPayInFull, AppStrings.PayInFull);
+        _toolTip.SetToolTip(_btnClearCart, AppStrings.Delete);
+        _toolTip.SetToolTip(_btnScanBarcode, AppStrings.ScanBarcode);
+        _toolTip.SetToolTip(_btnCalculator, AppStrings.Calculator);
+        _toolTip.SetToolTip(_btnPrintLast, AppStrings.Print);
+        _toolTip.SetToolTip(_btnCompleteSale, AppStrings.CompleteSale);
+        _toolTip.SetToolTip(_productSearch, AppStrings.SearchProducts + " (F2)");
+        _toolTip.SetToolTip(_btnNewSale, AppStrings.NewSale + " (F12 = " + AppStrings.CompleteSale + ")");
+
+        _toolTip.SetToolTip(_cmbCustomer, AppStrings.CustomerName);
+        _toolTip.SetToolTip(_cmbDiscountMode, AppStrings.Discount);
+        _toolTip.SetToolTip(_numDiscount, AppStrings.Discount);
+        _toolTip.SetToolTip(_numTax, AppStrings.TaxRate);
+        _toolTip.SetToolTip(_numFees, AppStrings.Fees);
+        _toolTip.SetToolTip(_numPaid, AppStrings.PaidAmount);
+
+        _cmbCustomer.AccessibleControlName = AppStrings.CustomerName;
+        _cmbCustomer.AccessibleControlDescription = AppStrings.SelectCustomer;
+        _cmbDiscountMode.AccessibleControlName = AppStrings.Discount;
+        _numDiscount.SetAccessibleText(AppStrings.Discount, AppStrings.Discount);
+        _numTax.SetAccessibleText(AppStrings.TaxRate, AppStrings.TaxRate);
+        _numFees.SetAccessibleText(AppStrings.Fees, AppStrings.Fees);
+        _numPaid.SetAccessibleText(AppStrings.PaidAmount, AppStrings.PaidAmount);
+
+        int discountModeIndex = _cmbDiscountMode.SelectedIndex;
+        _cmbDiscountMode.Items = new[]
+        {
+            AppStrings.DiscountModePercent,
+            AppStrings.DiscountModeAmount
+        };
         _cmbDiscountMode.SelectedIndex = discountModeIndex < 0 ? 0 : discountModeIndex;
+
+        ApplySessionChipText();
+        ApplyProductChrome(_saleCompact);
+        ApplyCartLayout(_saleCompact);
+        RefreshCartRowTexts();
+
+        // FormLocalizationHelper forces every FlowLayoutPanel to RightToLeft in
+        // Arabic; the cart is a vertical stack and must stay TopDown.
+        _cartLines.FlowDirection = FlowDirection.TopDown;
     }
+
+    // =========================
+    // Catalog
+    // =========================
 
     private async Task LoadProductsAsync()
     {
-        _products = await _productService.GetAllAsync();
-        if (IsDisposedOrDisposing) return;
-        BindProductGrid(_products);
-    }
-
-    private async Task LoadCustomersAsync()
-    {
-        _customers = await _customerService.GetAllAsync();
-        if (IsDisposedOrDisposing) return;
-        _cmbCustomer.Items.Clear();
-        _cmbCustomer.Items.Add(new CustomerItem(Guid.Empty, AppStrings.SelectCustomer));
-        foreach (var c in _customers)
-            _cmbCustomer.Items.Add(new CustomerItem(c.Id, c.FullName));
-        _cmbCustomer.DisplayMember = nameof(CustomerItem.FullName);
-        _cmbCustomer.ValueMember = nameof(CustomerItem.Id);
-        _cmbCustomer.SelectedIndex = 0;
-    }
-
-    /// <summary>Creates a customer from the sales screen and selects it right away.</summary>
-    private void AddCustomer()
-    {
+        _catalog = await _posProductStore.GetAllAsync();
         if (IsDisposedOrDisposing) return;
 
-        using var dialog = new CustomerEditDialog(_customerService, _languageService);
+        _catalogByVariant.Clear();
+        foreach (PosProductItem item in _catalog)
+            _catalogByVariant[item.VariantId] = item;
 
-        if (dialog.ShowDialog(this) != DialogResult.OK) return;
-
-        var created = dialog.CreatedCustomer;
-        if (created is null) return;
-
-        _customers.Add(created);
-
-        var item = new CustomerItem(created.Id, created.FullName);
-        _cmbCustomer.Items.Add(item);
-        _cmbCustomer.SelectedItem = item;
-
-        AppMessageBox.Success(AppStrings.CustomerAdded);
-    }
-
-    private async Task LoadInvoicesAsync()
-    {
-        _invoices = await _saleService.GetAllAsync();
-        if (IsDisposedOrDisposing) return;
-        _invoiceGrid.DataSource = null;
-        _invoiceGrid.Columns.Clear();
-        _invoiceGrid.AutoGenerateColumns = false;
-        _invoiceGrid.Columns.AddRange(new[]
-        {
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.InvoiceNumber, DataPropertyName = "InvoiceNumber", Width = 150 },
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.CustomerName, DataPropertyName = "CustomerName", Width = 150 },
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Subtotal + " (" + CurrencyCode + ")", DataPropertyName = "Subtotal", Width = 110, DefaultCellStyle = { Format = "N2", Alignment = DataGridViewContentAlignment.MiddleRight } },
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Discount, DataPropertyName = "DiscountDisplay", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight } },
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.TaxAmount + " (" + CurrencyCode + ")", DataPropertyName = "TaxAmount", Width = 100, DefaultCellStyle = { Format = "N2", Alignment = DataGridViewContentAlignment.MiddleRight } },
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Total + " (" + CurrencyCode + ")", DataPropertyName = "Total", Width = 110, DefaultCellStyle = { Format = "N2", Alignment = DataGridViewContentAlignment.MiddleRight } },
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.PaidAmount + " (" + CurrencyCode + ")", DataPropertyName = "PaidAmount", Width = 100, DefaultCellStyle = { Format = "N2", Alignment = DataGridViewContentAlignment.MiddleRight } },
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.RemainingAmount + " (" + CurrencyCode + ")", DataPropertyName = "RemainingAmount", Width = 110, DefaultCellStyle = { Format = "N2", Alignment = DataGridViewContentAlignment.MiddleRight } },
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Change + " (" + CurrencyCode + ")", DataPropertyName = "ChangeAmount", Width = 100, DefaultCellStyle = { Format = "N2", Alignment = DataGridViewContentAlignment.MiddleRight } },
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Date, DataPropertyName = "CreatedAt", Width = 130, DefaultCellStyle = { Format = "yyyy/MM/dd HH:mm" } }
-        });
-        _invoiceGrid.DataSource = _invoices;
-        FilterInvoices();
+        RebuildCategoryBar();
+        await FilterProductsAsync();
     }
 
     /// <summary>
-    /// Filters the invoices list by invoice number, customer name or date.
-    /// The filter runs on the loaded rows, so it reacts immediately.
+    /// Builds the chips from the catalog itself. Duplicate ids are ignored and
+    /// blank category names never create an unreadable chip.
     /// </summary>
-    private void FilterInvoices()
+    private void RebuildCategoryBar()
     {
-        var term = _invoiceSearch.Text?.Trim();
-        var filtered = string.IsNullOrWhiteSpace(term)
-            ? _invoices
-            : _invoices.Where(i =>
-                (i.InvoiceNumber?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
-                || (i.CustomerName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
-                || i.CreatedAt.ToString("yyyy/MM/dd").Contains(term, StringComparison.OrdinalIgnoreCase)).ToList();
+        var options = _catalog
+            .Where(i => i.CategoryId != Guid.Empty && !string.IsNullOrWhiteSpace(i.CategoryName))
+            .GroupBy(i => i.CategoryId)
+            .Select(g => new PosCategoryOption(g.Key, g.First().CategoryName!))
+            .OrderBy(o => o.Name, StringComparer.CurrentCultureIgnoreCase)
+            .ToList();
 
-        _invoiceGrid.DataSource = filtered;
+        _categoryBar.SetCategories(options);
     }
 
-    private void FilterProducts()
+    private void OnCategorySelected(object? sender, PosCategoryFilterChangedEventArgs e)
     {
-        var term = _productSearch.Text?.Trim();
-        var filtered = string.IsNullOrWhiteSpace(term)
-            ? _products
-            : _products.Where(p => p.Name.Contains(term, StringComparison.OrdinalIgnoreCase)
-                || (p.SKU?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
-        BindProductGrid(filtered);
+        _selectedCategoryId = e.CategoryId;
+        RunSafe(FilterProductsAsync);
     }
 
-    private void BindProductGrid(List<ProductDto> products)
+    /// <summary>
+    /// Filters the in-memory catalog by name, SKU, barcode and category. The
+    /// barcode lookup uses the same resolver as the scanner; a version guard
+    /// drops the result of a superseded keystroke.
+    /// </summary>
+    private async Task FilterProductsAsync()
     {
-        _productGrid.DataSource = null;
-        _productGrid.Columns.Clear();
-        _productGrid.AutoGenerateColumns = false;
-        _productGrid.Columns.AddRange(new[]
+        int version = ++_productFilterVersion;
+        string? term = PosProductFilter.Normalize(_productSearch.Text);
+
+        HashSet<Guid>? barcodeProductIds = null;
+        if (term is not null)
         {
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.ProductLabel, DataPropertyName = "Name", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, MinimumWidth = 120 },
-            new DataGridViewTextBoxColumn { HeaderText = "SKU", DataPropertyName = "SKU", Width = 100 },
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.SalePrice + " (" + CurrencyCode + ")", DataPropertyName = "SalePrice", Width = 100, DefaultCellStyle = { Format = "N2", Alignment = DataGridViewContentAlignment.MiddleRight } }
-        });
-        _productGrid.DataSource = products;
+            var matches = await _barcodeResolver.ResolveAsync(term);
+            if (version != _productFilterVersion || IsDisposedOrDisposing) return;
+
+            if (matches.Count > 0)
+                barcodeProductIds = matches.Select(m => m.ProductId).ToHashSet();
+        }
+
+        IReadOnlyList<PosProductItem> filtered = PosProductFilter.Apply(
+            _catalog,
+            term,
+            _selectedCategoryId,
+            barcodeProductIds);
+
+        if (version != _productFilterVersion || IsDisposedOrDisposing) return;
+
+        _filteredItems = filtered;
+        _productList.Items = filtered;
+
+        if (_lblProductCount is not null)
+            _lblProductCount.Text = $"{filtered.Count} {AppStrings.Products}";
+    }
+
+    /// <summary>Reloads the catalog when products, variants or barcodes change.</summary>
+    private void OnCatalogChanged(object? sender, CatalogChangedEventArgs e)
+    {
+        if (IsDisposedOrDisposing) return;
+
+        // Stock-only notifications already update the cached item; the screen
+        // shows stock in the cards, so a full reload is only needed for the
+        // catalog itself.
+        if (!e.FullInvalidation) return;
+
+        if (InvokeRequired)
+        {
+            BeginInvoke(new Action(() => OnCatalogChanged(sender, e)));
+            return;
+        }
+
+        if (_catalogReloadPending) return;
+        _catalogReloadPending = true;
+        RunSafe(ReloadCatalogAsync);
+    }
+
+    private async Task ReloadCatalogAsync()
+    {
+        try
+        {
+            _products.Clear();
+            await LoadProductsAsync();
+        }
+        finally
+        {
+            _catalogReloadPending = false;
+        }
+    }
+
+    // =========================
+    // Adding products
+    // =========================
+
+    private void OnProductItemActivated(object? sender, PosProductItem item) =>
+        RunSafe(() => AddVariantToCartAsync(item));
+
+    private void OnProductSearchTextChanged(object? sender, EventArgs e) =>
+        RunSafe(FilterProductsAsync);
+
+    private void OnProductSearchKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.KeyCode != Keys.Enter) return;
+
+        e.SuppressKeyPress = true;
+        RunSafe(AddFirstProductToCartAsync);
     }
 
     private void ScanBarcode()
@@ -939,77 +971,156 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             return;
         }
 
-        using (var overlay = new BarcodeScannerOverlay(settings.BarcodeCameraDevice))
-        {
-            overlay.ContinuousMode = true;
-            overlay.BarcodeDetected += async code =>
-            {
-                if (string.IsNullOrWhiteSpace(code)) return;
-
-                var variantIds = await _barcodeService.FindVariantIdsByBarcodeAsync(code);
-
-                if (variantIds.Count == 0)
-                {
-                    AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {code}");
-                    _productSearch.Text = code;
-                    return;
-                }
-
-                if (variantIds.Count == 1)
-                {
-                    var item = (await _posProductStore.FindByBarcodeAsync(code)).FirstOrDefault();
-                    if (item is null)
-                    {
-                        AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {code}");
-                        _productSearch.Text = code;
-                        return;
-                    }
-                    var prod = _products.FirstOrDefault(p => p.Id == item.ProductId);
-                    if (prod is null)
-                    {
-                        AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {code}");
-                        _productSearch.Text = code;
-                        return;
-                    }
-                    await AddToCartAsync(prod, item.VariantId, item.Name, item.SalePrice);
-                }
-                else
-                {
-                    // Shared barcode: show picker.
-                    using var picker = new SharedBarcodePickerDialog(
-                        _services.GetRequiredService<DzentoPOS2.Data.Context.AppDbContext>(),
-                        variantIds.AsReadOnly());
-                    if (picker.ShowDialog(this) == DialogResult.OK)
-                    {
-                        var item = (await _posProductStore.FindByBarcodeAsync(code))
-                            .FirstOrDefault(x => x.VariantId == picker.SelectedVariantId);
-                        if (item is not null)
-                        {
-                            var prod = _products.FirstOrDefault(p => p.Id == item.ProductId);
-                            if (prod is not null)
-                                await AddToCartAsync(prod, item.VariantId, item.Name, item.SalePrice);
-                        }
-                    }
-                }
-            };
-            overlay.ShowDialog(this);
-        }
+        using var overlay = new BarcodeScannerOverlay(settings.BarcodeCameraDevice);
+        overlay.ContinuousMode = true;
+        overlay.BarcodeDetected += code =>
+            RunSafe(async () => { await AddByBarcodeAsync(code, showWarning: true); });
+        overlay.ShowDialog(this);
     }
 
-    private async void AddFirstProductToCart()
+    private enum BarcodeAddResult
     {
-        if (_productGrid.CurrentRow?.DataBoundItem is ProductDto p)
-            await AddToCartAsync(p, Guid.Empty, string.Empty, p.SalePrice);
-        else if (_products.Count > 0)
-            await AddToCartAsync(_products[0], Guid.Empty, string.Empty, _products[0].SalePrice);
+        NotFound,
+        Added,
+        Cancelled
     }
 
-    private async Task AddToCartAsync(ProductDto product, Guid variantId, string variantName, decimal price)
+    /// <summary>
+    /// The single barcode entry point. The camera, a keyboard-wedge reader and
+    /// manual typing all resolve through <see cref="IPosBarcodeResolver"/>.
+    /// </summary>
+    private async Task<BarcodeAddResult> AddByBarcodeAsync(string? code, bool showWarning)
+    {
+        var text = code?.Trim();
+        if (string.IsNullOrEmpty(text))
+            return BarcodeAddResult.NotFound;
+
+        var matches = await _barcodeResolver.ResolveAsync(text);
+        if (matches.Count == 0)
+        {
+            if (showWarning)
+            {
+                AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {text}");
+                _productSearch.Text = text;
+            }
+            return BarcodeAddResult.NotFound;
+        }
+
+        if (matches.Count == 1)
+            return await AddResolvedItemAsync(matches[0], showWarning)
+                ? BarcodeAddResult.Added
+                : BarcodeAddResult.NotFound;
+
+        var variantIds = matches.Select(m => m.VariantId).Distinct().ToList();
+        using var picker = new SharedBarcodePickerDialog(
+            _services.GetRequiredService<DzentoPOS2.Data.Context.AppDbContext>(),
+            variantIds.AsReadOnly());
+        if (picker.ShowDialog(this) != DialogResult.OK)
+            return BarcodeAddResult.Cancelled;
+
+        var selected = matches.FirstOrDefault(m => m.VariantId == picker.SelectedVariantId);
+        if (selected is null)
+            return BarcodeAddResult.NotFound;
+
+        return await AddResolvedItemAsync(selected, showWarning)
+            ? BarcodeAddResult.Added
+            : BarcodeAddResult.NotFound;
+    }
+
+    private async Task<bool> AddResolvedItemAsync(PosProductItem item, bool showWarning)
+    {
+        var product = await GetProductAsync(item.ProductId);
+
+        if (product is null)
+        {
+            if (showWarning)
+                AppMessageBox.Warning($"{AppStrings.BarcodeNotFound}: {item.PrimaryBarcode}");
+            return false;
+        }
+
+        bool added = await AddToCartAsync(product, item.VariantId, item.Name, item.SalePrice);
+        if (added)
+            ShowScanConfirmation(item);
+
+        return added;
+    }
+
+    /// <summary>Adds the variant behind a product card.</summary>
+    private async Task AddVariantToCartAsync(PosProductItem item)
+    {
+        var product = await GetProductAsync(item.ProductId);
+        if (product is null)
+        {
+            AppMessageBox.Warning(AppStrings.OperationFailed);
+            return;
+        }
+
+        if (await AddToCartAsync(product, item.VariantId, item.Name, item.SalePrice))
+            ShowScanConfirmation(item);
+    }
+
+    private async Task<ProductDto?> GetProductAsync(Guid productId)
+    {
+        if (_productCache.TryGetValue(productId, out ProductDto? cached))
+            return cached;
+
+        ProductDto? product = _products.FirstOrDefault(p => p.Id == productId)
+            ?? await _productService.GetByIdAsync(productId);
+
+        if (product is not null)
+            _productCache[productId] = product;
+
+        return product;
+    }
+
+    private void ShowScanConfirmation(PosProductItem item)
+    {
+        string detail = FormatMoney(item.SalePrice);
+        if (!string.IsNullOrWhiteSpace(item.PrimaryBarcode))
+            detail += "   " + item.PrimaryBarcode;
+
+        _scanStrip.ShowConfirmation(
+            string.IsNullOrWhiteSpace(item.Name) ? detail : item.Name,
+            detail,
+            durationMs: 2500);
+    }
+
+    private async Task AddFirstProductToCartAsync()
+    {
+        var term = _productSearch.Text?.Trim();
+
+        // An exact barcode always wins over the highlighted card.
+        if (!string.IsNullOrWhiteSpace(term))
+        {
+            var result = await AddByBarcodeAsync(term, showWarning: false);
+            if (result != BarcodeAddResult.NotFound)
+                return;
+        }
+
+        PosProductItem? item = _productList.SelectedItem;
+        if (item is null && _filteredItems.Count == 1)
+            item = _filteredItems[0];
+
+        // Never fall back to an arbitrary product: an unmatched search must not
+        // add the first item in the catalog.
+        if (item is not null)
+            await AddVariantToCartAsync(item);
+    }
+
+    /// <summary>
+    /// Adds one line to the cart. Returns false when the cashier cancelled a
+    /// weight or batch prompt, or when the product is no longer sellable.
+    /// </summary>
+    private async Task<bool> AddToCartAsync(
+        ProductDto product,
+        Guid variantId,
+        string variantName,
+        decimal price)
     {
         if (!product.IsActive)
         {
             AppMessageBox.Warning(AppStrings.OperationFailed);
-            return;
+            return false;
         }
 
         decimal quantity = 1m;
@@ -1020,8 +1131,19 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         {
             using var weightDialog = new WeightEntryDialog(price, product.Name);
             if (weightDialog.ShowDialog(this) != DialogResult.OK || weightDialog.Weight <= 0)
-                return;
+                return false;
             quantity = weightDialog.Weight;
+        }
+
+        // Every cart line carries a concrete VariantId. Without this, a
+        // double-click (empty id) and a scan (real id) would not merge.
+        if (variantId == Guid.Empty)
+            variantId = await _barcodeService.GetDefaultVariantIdAsync(product.Id);
+
+        if (variantId == Guid.Empty)
+        {
+            AppMessageBox.Warning(AppStrings.OperationFailed);
+            return false;
         }
 
         // Batch-tracked products: let the cashier pick the batch to consume.
@@ -1034,49 +1156,34 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             if (warehouseId is null)
             {
                 AppMessageBox.Warning(AppStrings.OperationFailed);
-                return;
-            }
-
-            var resolvedVariantId = variantId != Guid.Empty
-                ? variantId
-                : await _barcodeService.GetDefaultVariantIdAsync(product.Id);
-            if (resolvedVariantId == Guid.Empty)
-            {
-                AppMessageBox.Warning(AppStrings.OperationFailed);
-                return;
+                return false;
             }
 
             using var batchDialog = new BatchSelectionDialog(
                 _services.GetRequiredService<DzentoPOS2.Data.Context.AppDbContext>(),
-                resolvedVariantId,
+                variantId,
                 warehouseId.Value,
                 quantity);
 
             if (batchDialog.ShowDialog(this) != DialogResult.OK)
-                return;
+                return false;
 
             batchId = batchDialog.SelectedBatchId;
         }
 
-        var existing = _cart.FirstOrDefault(i =>
-            i.ProductId == product.Id &&
-            i.VariantId == variantId &&
-            i.BatchId == batchId);
-
-        if (existing != null)
-            existing.Quantity += quantity;
-        else
-            _cart.Add(new CreateSaleItemDto
-            {
-                ProductId = product.Id,
-                VariantId = variantId,
-                VariantName = variantName,
-                Quantity = quantity,
-                Price = price,
-                BatchId = batchId
-            });
+        PosCartMerger.AddOrMerge(_cart, new CreateSaleItemDto
+        {
+            ProductId = product.Id,
+            VariantId = variantId,
+            VariantName = variantName,
+            Quantity = quantity,
+            Price = price,
+            OriginalPrice = price,
+            BatchId = batchId
+        });
 
         RefreshCart();
+        return true;
     }
 
     private async Task<Guid?> GetActiveWarehouseIdAsync()
@@ -1095,19 +1202,20 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             .FirstOrDefaultAsync();
     }
 
-    private void RemoveFromCart()
-    {
-        if (_cartGrid.CurrentRow?.Index is int idx && idx >= 0 && idx < _cart.Count)
-        {
-            _cart.RemoveAt(idx);
-            RefreshCart();
-        }
-    }
+    // =========================
+    // Cart rows
+    // =========================
 
     private void ClearCart()
     {
         if (_cart.Count == 0) return;
-        var result = MessageBox.Show(AppStrings.DeleteSaleConfirm, AppStrings.DeleteConfirmation, MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+        var result = MessageBox.Show(
+            AppStrings.DeleteSaleConfirm,
+            AppStrings.DeleteConfirmation,
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Question);
+
         if (result == DialogResult.Yes)
         {
             _cart.Clear();
@@ -1115,91 +1223,304 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         }
     }
 
+    /// <summary>
+    /// Applies the cart diff to the row list. Only added, removed and changed
+    /// rows are touched, so a quantity step does not rebuild the basket.
+    /// </summary>
     private void RefreshCart()
     {
-        var display = _cart.Select(i =>
-        {
-            var product = _products.FirstOrDefault(p => p.Id == i.ProductId);
-            var displayName = !string.IsNullOrWhiteSpace(i.VariantName)
-                ? i.VariantName
-                : (product?.Name ?? (string.IsNullOrWhiteSpace(i.Description) ? "-" : i.Description));
-            return new
-            {
-                ProductName = displayName,
-                i.Quantity,
-                i.Price,
-                Total = i.Quantity * i.Price
-            };
-        }).ToList();
+        PosCartRowDiff diff = _cartRowTracker.Apply(_cart);
 
-        _cartGrid.DataSource = null;
-        _cartGrid.Columns.Clear();
-        _cartGrid.AutoGenerateColumns = false;
-        _cartGrid.Columns.AddRange(new DataGridViewColumn[]
+        if (diff.FullReset || diff.OrderChanged)
         {
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.ProductLabel, DataPropertyName = "ProductName", AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill, MinimumWidth = 90, ReadOnly = true },
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Quantity, DataPropertyName = "Quantity", Width = 70 },
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Price + " (" + CurrencyCode + ")", DataPropertyName = "Price", Width = 80, DefaultCellStyle = { Format = "N2" } },
-            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Total + " (" + CurrencyCode + ")", DataPropertyName = "Total", Width = 90, DefaultCellStyle = { Format = "N2" }, ReadOnly = true },
-            new DataGridViewButtonColumn { HeaderText = AppStrings.Delete, Text = "X", UseColumnTextForButtonValue = true, Width = 40 }
-        });
-        _cartGrid.DataSource = display;
+            RebuildCartRows();
+        }
+        else
+        {
+            for (int i = diff.RemovedRows.Count - 1; i >= 0; i--)
+                RemoveCartRowAt(diff.RemovedRows[i]);
+
+            foreach (int index in diff.AddedRows)
+                InsertCartRow(index);
+
+            foreach (int index in diff.ChangedRows)
+                UpdateCartRow(index);
+        }
+
+        _lblEmptyCart.Visible = _cart.Count == 0;
+        _lblEmptyCart.Text = AppStrings.EmptyCart;
+        _btnClearCart.Enabled = _cart.Count > 0;
+        _lblCart.Text = AppStrings.Cart + (_cart.Count > 0 ? $" ({_cart.Count})" : string.Empty);
 
         // Update branch switch guard based on cart state.
         _branchGuard.CanSwitchBranch = _cart.Count == 0;
 
+        UpdateCartRowWidths();
         UpdateTotals();
     }
 
-    private void OnCartCellEdited()
+    private void RebuildCartRows()
     {
-        if (_cartGrid.CurrentRow?.Index is int idx && idx >= 0 && idx < _cart.Count)
+        foreach (CartLineRow row in _cartRowViews)
         {
-            try
-            {
-                var qtyVal = _cartGrid.Rows[idx].Cells["Quantity"].Value;
-                if (qtyVal is decimal qty)
-                {
-                    if (qty <= 0) qty = 1;
-                    _cart[idx].Quantity = qty;
-                }
-                else if (qtyVal != null && decimal.TryParse(qtyVal.ToString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var qv) && qv > 0)
-                    _cart[idx].Quantity = qv;
-                else if (qtyVal != null && decimal.TryParse(qtyVal.ToString(), out var qv2) && qv2 > 0)
-                    _cart[idx].Quantity = qv2;
-
-                var priceVal = _cartGrid.Rows[idx].Cells["Price"].Value;
-                if (priceVal is decimal pr)
-                {
-                    if (pr < 0) pr = 0;
-                    _cart[idx].Price = pr;
-                }
-                else if (priceVal != null && decimal.TryParse(priceVal.ToString(), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var pv) && pv >= 0)
-                    _cart[idx].Price = pv;
-                else if (priceVal != null && decimal.TryParse(priceVal.ToString(), out var pv2) && pv2 >= 0)
-                    _cart[idx].Price = pv2;
-
-                RefreshCart();
-            }
-            catch
-            {
-                RefreshCart();
-            }
+            _cartLines.Controls.Remove(row);
+            row.Dispose();
         }
+
+        _cartRowViews.Clear();
+
+        for (int i = 0; i < _cart.Count; i++)
+            InsertCartRow(i);
+
+        UpdateCartRowWidths();
     }
 
-    private void OnCartCellContentClick(DataGridViewCellEventArgs e)
+    private void InsertCartRow(int index)
     {
-        if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
-        if (_cartGrid.Columns[e.ColumnIndex] is DataGridViewButtonColumn && e.ColumnIndex == _cartGrid.Columns.Count - 1)
+        if (index < 0 || index >= _cart.Count) return;
+
+        CreateSaleItemDto line = _cart[index];
+        var row = new CartLineRow
         {
-            if (e.RowIndex >= 0 && e.RowIndex < _cart.Count)
-            {
-                _cart.RemoveAt(e.RowIndex);
-                RefreshCart();
-            }
-        }
+            Height = 56,
+            Margin = new Padding(0, 0, 0, 6),
+            Tag = line
+        };
+
+        row.QuantityChanged += (_, e) => OnCartQuantityChanged(row, e.Quantity);
+        row.RemoveRequested += (_, _) => OnCartRemoveRequested(row);
+        row.PriceEditRequested += (_, _) => EditCartPrice(row);
+
+        FillCartRow(row, line);
+        _cartRowViews.Insert(index, row);
+        _cartLines.Controls.Add(row);
+
+        if (index < _cartLines.Controls.Count - 1)
+            _cartLines.Controls.SetChildIndex(row, index);
     }
+
+    private void RemoveCartRowAt(int index)
+    {
+        if (index < 0 || index >= _cartRowViews.Count) return;
+
+        CartLineRow row = _cartRowViews[index];
+        _cartRowViews.RemoveAt(index);
+        _cartLines.Controls.Remove(row);
+        row.Dispose();
+    }
+
+    private void UpdateCartRow(int index)
+    {
+        if (index < 0 || index >= _cart.Count || index >= _cartRowViews.Count) return;
+
+        CartLineRow row = _cartRowViews[index];
+        row.Tag = _cart[index];
+        FillCartRow(row, _cart[index]);
+    }
+
+    private void FillCartRow(CartLineRow row, CreateSaleItemDto line)
+    {
+        // Weighed lines carry a fractional quantity (e.g. 0.750 kg); the
+        // stepper must not clamp it up to a whole unit.
+        row.MinimumQuantity = line.Quantity > 0 && line.Quantity < 1 ? line.Quantity : 1;
+
+        row.SetLine(
+            DisplayNameFor(line),
+            BuildCartSubtitle(line),
+            line.Quantity,
+            line.Price,
+            CurrencyCode,
+            canRemove: true);
+    }
+
+    private string DisplayNameFor(CreateSaleItemDto line)
+    {
+        if (!string.IsNullOrWhiteSpace(line.VariantName))
+            return line.VariantName;
+
+        if (_catalogByVariant.TryGetValue(line.VariantId, out PosProductItem? item)
+            && !string.IsNullOrWhiteSpace(item.Name))
+        {
+            return item.Name;
+        }
+
+        if (_productCache.TryGetValue(line.ProductId, out ProductDto? product))
+            return product.Name;
+
+        return string.IsNullOrWhiteSpace(line.Description) ? "-" : line.Description;
+    }
+
+    private string? BuildCartSubtitle(CreateSaleItemDto line)
+    {
+        if (_catalogByVariant.TryGetValue(line.VariantId, out PosProductItem? item))
+            return string.IsNullOrWhiteSpace(item.SKU) ? item.PrimaryBarcode : item.SKU;
+
+        return null;
+    }
+
+    private void OnCartQuantityChanged(CartLineRow row, decimal quantity)
+    {
+        if (row.Tag is not CreateSaleItemDto line) return;
+
+        int index = _cart.IndexOf(line);
+        if (index < 0) return;
+
+        line.Quantity = quantity;
+        RefreshCart();
+    }
+
+    private void OnCartRemoveRequested(CartLineRow row)
+    {
+        if (row.Tag is not CreateSaleItemDto line) return;
+
+        int index = _cart.IndexOf(line);
+        if (index < 0) return;
+
+        _cart.RemoveAt(index);
+        RefreshCart();
+    }
+
+    /// <summary>Price override is permission-gated, as it was on the grid.</summary>
+    private void EditCartPrice(CartLineRow row)
+    {
+        if (!_canOverridePrice) return;
+        if (row.Tag is not CreateSaleItemDto line) return;
+
+        using var dialog = new PriceOverrideDialog(DisplayNameFor(line), line.Price, CurrencyCode);
+        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+
+        line.Price = dialog.Price;
+        line.PriceOverridden = line.Price != line.OriginalPrice;
+        RefreshCart();
+    }
+
+    /// <summary>
+    /// Re-applies the localized text to the existing rows after a language
+    /// change without rebuilding them.
+    /// </summary>
+    private void RefreshCartRowTexts()
+    {
+        for (int i = 0; i < _cartRowViews.Count && i < _cart.Count; i++)
+            UpdateCartRow(i);
+
+        _lblEmptyCart.Text = AppStrings.EmptyCart;
+        _lblCart.Text = AppStrings.Cart + (_cart.Count > 0 ? $" ({_cart.Count})" : string.Empty);
+    }
+
+    // =========================
+    // Customers and invoices
+    // =========================
+
+    private async Task LoadCustomersAsync()
+    {
+        _customers = await _customerService.GetAllAsync();
+        if (IsDisposedOrDisposing) return;
+
+        BindCustomerList();
+    }
+
+    /// <summary>
+    /// Projects the customer list onto the styled combo box.  EZComboBox is
+    /// data-bound (its Items collection is text-only), so the display and value
+    /// members keep the original CustomerItem binding.
+    /// </summary>
+    private void BindCustomerList(Guid? selectCustomerId = null)
+    {
+        var items = new List<CustomerItem>
+        {
+            new(Guid.Empty, AppStrings.SelectCustomer)
+        };
+
+        items.AddRange(_customers.Select(c => new CustomerItem(c.Id, c.FullName)));
+
+        _cmbCustomer.DisplayMember = nameof(CustomerItem.FullName);
+        _cmbCustomer.ValueMember = nameof(CustomerItem.Id);
+        _cmbCustomer.DataSource = null;
+        _cmbCustomer.DataSource = items;
+
+        int index = 0;
+        if (selectCustomerId is { } id && id != Guid.Empty)
+        {
+            int found = items.FindIndex(i => i.Id == id);
+            if (found >= 0)
+                index = found;
+        }
+
+        _cmbCustomer.SelectedIndex = index;
+    }
+
+    private void OnAddCustomerClick(object? sender, EventArgs e) => AddCustomer();
+
+    /// <summary>Creates a customer from the sales screen and selects it right away.</summary>
+    private void AddCustomer()
+    {
+        if (IsDisposedOrDisposing) return;
+
+        using var dialog = new CustomerEditDialog(_customerService, _languageService);
+
+        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+
+        var created = dialog.CreatedCustomer;
+        if (created is null) return;
+
+        _customers.Add(created);
+
+        BindCustomerList(created.Id);
+
+        AppMessageBox.Success(AppStrings.CustomerAdded);
+    }
+
+    private async Task LoadInvoicesAsync()
+    {
+        _invoices = await _saleService.GetAllAsync();
+        if (IsDisposedOrDisposing) return;
+
+        _invoiceGrid.DataSource = null;
+        _invoiceGrid.Columns.Clear();
+        _invoiceGrid.AutoGenerateColumns = false;
+        _invoiceGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
+        _invoiceGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+        _invoiceGrid.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
+        _invoiceGrid.Columns.AddRange(new[]
+        {
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.InvoiceNumber, DataPropertyName = "InvoiceNumber", Width = 150 },
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.CustomerName, DataPropertyName = "CustomerName", Width = 150 },
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Subtotal + " (" + CurrencyCode + ")", DataPropertyName = "Subtotal", Width = 110, DefaultCellStyle = { Format = "N2", Alignment = DataGridViewContentAlignment.MiddleRight } },
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Discount, DataPropertyName = "DiscountDisplay", Width = 120, DefaultCellStyle = { Alignment = DataGridViewContentAlignment.MiddleRight } },
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.TaxAmount + " (" + CurrencyCode + ")", DataPropertyName = "TaxAmount", Width = 100, DefaultCellStyle = { Format = "N2", Alignment = DataGridViewContentAlignment.MiddleRight } },
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Total + " (" + CurrencyCode + ")", DataPropertyName = "Total", Width = 110, DefaultCellStyle = { Format = "N2", Alignment = DataGridViewContentAlignment.MiddleRight } },
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.PaidAmount + " (" + CurrencyCode + ")", DataPropertyName = "PaidAmount", Width = 100, DefaultCellStyle = { Format = "N2", Alignment = DataGridViewContentAlignment.MiddleRight } },
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.RemainingAmount + " (" + CurrencyCode + ")", DataPropertyName = "RemainingAmount", Width = 110, DefaultCellStyle = { Format = "N2", Alignment = DataGridViewContentAlignment.MiddleRight } },
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Change + " (" + CurrencyCode + ")", DataPropertyName = "ChangeAmount", Width = 100, DefaultCellStyle = { Format = "N2", Alignment = DataGridViewContentAlignment.MiddleRight } },
+            new DataGridViewTextBoxColumn { HeaderText = AppStrings.Date, DataPropertyName = "CreatedAt", Width = 130, DefaultCellStyle = { Format = "yyyy/MM/dd HH:mm" } }
+        });
+        _invoiceGrid.DataSource = _invoices;
+        FilterInvoices();
+    }
+
+    private void OnInvoiceSearchTextChanged(object? sender, EventArgs e) => FilterInvoices();
+
+    /// <summary>
+    /// Filters the invoices list by invoice number, customer name or date.
+    /// The filter runs on the loaded rows, so it reacts immediately.
+    /// </summary>
+    private void FilterInvoices()
+    {
+        var term = _invoiceSearch.Text?.Trim();
+        var filtered = string.IsNullOrWhiteSpace(term)
+            ? _invoices
+            : _invoices.Where(i =>
+                (i.InvoiceNumber?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
+                || (i.CustomerName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
+                || i.CreatedAt.ToString("yyyy/MM/dd").Contains(term, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        _invoiceGrid.DataSource = filtered;
+        _lblNoInvoices.Visible = filtered.Count == 0;
+    }
+
+    // =========================
+    // Totals and payment
+    // =========================
 
     /// <summary>Preview shared with the printed receipt and the saved invoice.</summary>
     private InvoiceTotals? CalculateTotals()
@@ -1213,6 +1534,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             : DiscountMode.Percent;
         var discountValue = (decimal)_numDiscount.Value;
         var taxRate = (decimal)_numTax.Value;
+        var fees = (decimal)_numFees.Value;
         var paid = (decimal)_numPaid.Value;
 
         if (mode == DiscountMode.FixedAmount)
@@ -1234,11 +1556,22 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             discountValue,
             taxRate,
             paid,
-            digits);
+            digits,
+            fees);
     }
+
+    private void OnDiscountModeChanged(object? sender, EventArgs e) => UpdateTotals();
+
+    private void OnDiscountValueChanged(object? sender, EventArgs e) => UpdateTotals();
+
+    private void OnTaxValueChanged(object? sender, EventArgs e) => UpdateTotals();
+
+    private void OnFeesValueChanged(object? sender, EventArgs e) => UpdateTotals();
 
     private void UpdateTotals()
     {
+        if (_updatingTotals || _lblTotalValue is null) return;
+
         var totals = CalculateTotals();
 
         var subtotal = totals?.Subtotal ?? 0;
@@ -1248,18 +1581,42 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         var total = totals?.Total ?? 0;
 
         _lblSubtotalValue.Text = FormatMoney(subtotal);
+        _lblDiscountValue.Text = FormatMoney(discountAmount);
+        _lblDiscountValue.ForeColor = discountAmount > 0 ? AppColors.Success : AppColors.InkMuted;
         _lblAfterDiscountValue.Text = FormatMoney(afterDiscount);
         _lblTaxAmountValue.Text = FormatMoney(taxAmount);
         _lblTotalValue.Text = FormatMoney(total);
 
+        if (_lblHeroTotal is not null)
+        {
+            _lblHeroTotal.Text = FormatMoney(total);
+            _lblHeroDiscount.Text = FormatMoney(discountAmount);
+            _lblHeroDiscount.ForeColor = discountAmount > 0 ? AppColors.Success : AppColors.InkMuted;
+            _lblHeroStats.Text = $"{_cart.Count} {AppStrings.Cart}";
+        }
+
         var percentMode = _cmbDiscountMode.SelectedIndex != 1;
-        _lblDiscount.Text = discountAmount > 0
-            ? $"{AppStrings.Discount}:  {FormatMoney(discountAmount)}" + (percentMode ? $"  ({_numDiscount.Value:0.##}%)" : string.Empty)
+        _lblDiscount.Text = discountAmount > 0 && percentMode && _numDiscount.Value > 0
+            ? $"{AppStrings.Discount} ({_numDiscount.Value:0.##}%):"
             : AppStrings.Discount + ":";
 
         // Full payment follows the total on every change; custom keeps the
         // value the cashier typed.
         if (_paidMode == PaidMode.FullPayment)
+        {
+            _updatingTotals = true;
+            try
+            {
+                _numPaid.Value = Math.Min(Math.Max(total, _numPaid.Minimum), _numPaid.Maximum);
+            }
+            finally
+            {
+                _updatingTotals = false;
+            }
+        }
+
+        // Card payments always settle the exact total.
+        if (SelectedPaymentMethod == PosPaymentMethod.Card)
         {
             _updatingTotals = true;
             try
@@ -1288,9 +1645,19 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             _lblBalanceValue.Text = FormatMoney(change);
             _lblBalanceValue.ForeColor = change > 0 ? AppColors.Success : AppColors.Ink;
         }
+
+        UpdateCheckoutState();
     }
 
-    private void OnPaidChanged()
+    private void UpdateCheckoutState()
+    {
+        if (_btnCompleteSale is null) return;
+
+        // Empty cart and closed session both disable checkout; F12 reads this.
+        _btnCompleteSale.Enabled = _sessionOpen && _cart.Count > 0;
+    }
+
+    private void OnPaidValueChanged(object? sender, EventArgs e)
     {
         if (_updatingTotals) return;
 
@@ -1305,16 +1672,30 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         UpdateTotals();
     }
 
+    private void OnPayInFullClick(object? sender, EventArgs e) => SetFullPayment();
+
     private void SetFullPayment()
     {
         _paidMode = PaidMode.FullPayment;
         UpdateTotals();
     }
 
+    private PosPaymentMethod SelectedPaymentMethod => _paymentMethod;
+
+    private void OnCalculatorClick(object? sender, EventArgs e) => RunSafe(OpenCalculatorAsync);
+
     /// <summary>Opens the calculator and routes its result to the sales screen.</summary>
-    private void OpenCalculator()
+    private async Task OpenCalculatorAsync()
     {
         if (IsDisposedOrDisposing) return;
+
+        // The calculator is the only consumer of the full ProductDto list, so
+        // it is loaded on demand instead of on every screen open.
+        if (_products.Count == 0)
+        {
+            _products = await _productService.GetAllAsync();
+            if (IsDisposedOrDisposing) return;
+        }
 
         var cartTotal = _cart.Sum(i => i.Quantity * i.Price);
 
@@ -1395,6 +1776,12 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
 
     private string FormatMoney(decimal amount) => _currentSettings.Regional.FormatMoney(amount);
 
+    // =========================
+    // Checkout and printing
+    // =========================
+
+    private void OnCompleteSaleClick(object? sender, EventArgs e) => RunSafe(CompleteSaleAsync);
+
     private async Task CompleteSaleAsync()
     {
         if (_cart.Count == 0)
@@ -1417,6 +1804,9 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             return;
         }
 
+        var paymentMethod = SelectedPaymentMethod;
+        var paidAmount = PosPaymentPolicy.NormalizePaid(paymentMethod, totals.Total, (decimal)_numPaid.Value);
+
         var discountMode = _cmbDiscountMode.SelectedIndex == 1
             ? DiscountMode.FixedAmount
             : DiscountMode.Percent;
@@ -1429,7 +1819,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
                 return;
             }
 
-            if (totals.Remaining > 0)
+            if (PosPaymentPolicy.RequiresCustomer(paymentMethod, totals.Total, paidAmount))
             {
                 if (customerId == Guid.Empty)
                 {
@@ -1441,7 +1831,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
                     string.Format(
                         AppStrings.CreditSaleConfirm,
                         customerName,
-                        FormatMoney(totals.Remaining)),
+                        FormatMoney(totals.Total - paidAmount)),
                     AppStrings.CompleteSale);
 
                 if (!confirmed)
@@ -1453,7 +1843,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             {
                 // No drawer: make the reason visible and offer to open one. The
                 // service still rejects the sale if the user cancels.
-                await RefreshDrawerBannerAsync();
+                await RefreshSessionStatusAsync();
                 AppMessageBox.Warning(AppStrings.DrawerNotOpen);
 
                 if (!OfferOpenDrawer())
@@ -1463,7 +1853,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
                 if (openSession == null)
                     return;
 
-                await RefreshDrawerBannerAsync();
+                await RefreshSessionStatusAsync();
             }
 
             var sale = await _saleService.CreateAsync(new CreateSaleDto
@@ -1473,21 +1863,33 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
                 DiscountValue = (decimal)_numDiscount.Value,
                 TaxRate = (decimal)_numTax.Value,
                 Fees = (decimal)_numFees.Value,
-                PaidAmount = (decimal)_numPaid.Value,
-                Items = _cart.Select(c => new CreateSaleItemDto
-                {
-                    ProductId = c.ProductId,
-                    Quantity = c.Quantity,
-                    Price = c.Price,
-                    Description = c.Description
-                }).ToList()
+                PaidAmount = paidAmount,
+                PaymentMethod = PosPaymentPolicy.ToApiValue(paymentMethod),
+                Items = PosCheckoutMapper.ToSaleItems(_cart)
             });
 
             _lastInvoice = sale;
-            if (_btnPrintLast != null)
-                _btnPrintLast.Enabled = true;
+            _btnPrintLast.Enabled = true;
 
-            AppMessageBox.Success(AppStrings.DataSaved);
+            var deliveredCodes = sale.Items
+                .Where(i => !string.IsNullOrWhiteSpace(i.DigitalCode))
+                .Select(i => $"{i.VariantName}: {i.DigitalCode}")
+                .ToList();
+
+            if (deliveredCodes.Count > 0)
+            {
+                MessageBox.Show(
+                    AppStrings.DigitalCodeDeliveryHint
+                        + Environment.NewLine + Environment.NewLine
+                        + string.Join(Environment.NewLine, deliveredCodes),
+                    AppStrings.DigitalCodeDeliveredTitle,
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            else
+            {
+                AppMessageBox.Success(AppStrings.DataSaved);
+            }
 
             _cart.Clear();
             _numDiscount.Value = 0;
@@ -1495,7 +1897,11 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             _numFees.Value = 0;
             _numPaid.Value = 0;
             _cmbDiscountMode.SelectedIndex = 0;
+            _paymentMethod = PosPaymentMethod.Cash;
+            _numPaid.Enabled = true;
+            _btnPayInFull.Enabled = true;
             _paidMode = PaidMode.FullPayment;
+            UpdatePaymentButtons();
             RefreshCart();
             await LoadInvoicesAsync();
             _tabs.SelectedIndex = 1;
@@ -1506,19 +1912,44 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         }
     }
 
+    private void OnDeleteInvoiceClick(object? sender, EventArgs e) => RunSafe(DeleteInvoiceAsync);
+
     private async Task DeleteInvoiceAsync()
     {
         if (_invoiceGrid.CurrentRow?.DataBoundItem is not SaleDto invoice) return;
+
         var result = MessageBox.Show(
             $"{AppStrings.DeleteSaleConfirm}\n{invoice.InvoiceNumber}",
             AppStrings.DeleteConfirmation,
             MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
         if (result == DialogResult.Yes)
         {
             await _saleService.DeleteAsync(invoice.Id);
             await LoadInvoicesAsync();
         }
     }
+
+    private void OnNewSaleClick(object? sender, EventArgs e) => _tabs.SelectedIndex = 0;
+
+    private void OnClearCartClick(object? sender, EventArgs e) => ClearCart();
+
+    private void OnScanBarcodeClick(object? sender, EventArgs e) => ScanBarcode();
+
+    private void OnViewModeToggleClick(object? sender, EventArgs e)
+    {
+        _productList.ViewMode = _productList.ViewMode == PosViewMode.Cards
+            ? PosViewMode.List
+            : PosViewMode.Cards;
+
+        _btnViewToggle.IconChar = _productList.ViewMode == PosViewMode.Cards
+            ? FontAwesome.Sharp.IconChar.Th
+            : FontAwesome.Sharp.IconChar.List;
+    }
+
+    private void OnSessionActionClicked(object? sender, EventArgs e) => RunSafe(OpenDrawerAsync);
+
+    private void OnPrintLastClick(object? sender, EventArgs e) => PrintLastInvoice();
 
     private void PrintLastInvoice()
     {
@@ -1556,35 +1987,6 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             AppMessageBox.Error(ex, "PrintLastInvoice");
         }
     }
-
-    private static Label MakeLabel(string text) => new()
-    {
-        Text = text,
-        Dock = DockStyle.Fill,
-        Margin = Padding.Empty,
-        Font = new Font("Segoe UI", 9F),
-        TextAlign = ContentAlignment.MiddleLeft
-    };
-
-    private static Label MakeValueLabel(string text) => new()
-    {
-        Text = text,
-        Dock = DockStyle.Fill,
-        Margin = Padding.Empty,
-        Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-        TextAlign = ContentAlignment.MiddleRight
-    };
-
-    private static NumericUpDown MakeNumeric(decimal min, decimal max) => new()
-    {
-        Dock = DockStyle.Fill,
-        Margin = Padding.Empty,
-        Font = new Font("Segoe UI", 10F),
-        DecimalPlaces = 2,
-        Minimum = min,
-        Maximum = max,
-        Value = 0
-    };
 
     /// <summary>Uniform customer entry so the combo always exposes a Guid value.</summary>
     private sealed record CustomerItem(Guid Id, string FullName);

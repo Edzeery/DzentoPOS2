@@ -47,6 +47,7 @@ namespace DzentoPOS2.Core.Constants
         public const string SalesReturn = "permissions.sales.return";
         public const string SalesDelete = "permissions.sales.delete";
         public const string SalesDiscountOverride = "permissions.sales.discountoverride";
+        public const string SalesOverridePrice = "permissions.sales.overrideprice";
 
         // Purchases
         public const string PurchasesView = "permissions.purchases.view";
@@ -86,6 +87,10 @@ namespace DzentoPOS2.Core.Constants
         public const string UnitsCreate = "permissions.units.create";
         public const string UnitsEdit = "permissions.units.edit";
         public const string UnitsDelete = "permissions.units.delete";
+
+        // Digital codes (prepaid cards / activation keys)
+        public const string DigitalCodesView = "permissions.digitalcodes.view";
+        public const string DigitalCodesManage = "permissions.digitalcodes.manage";
 
         // Settings
         public const string SettingsView = "permissions.settings.view";

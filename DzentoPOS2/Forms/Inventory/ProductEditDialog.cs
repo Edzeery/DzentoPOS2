@@ -290,12 +290,13 @@ public class ProductEditDialog : ThemedDialog
         }
     }
 
-    private async Task ManageVariantsAsync()
+    private Task ManageVariantsAsync()
     {
-        if (_existing == null || _contextFactory == null) return;
+        if (_existing == null || _contextFactory == null) return Task.CompletedTask;
         using var ctx = _contextFactory.CreateDbContext();
         using var dlg = new ProductVariantsDialog(ctx, _existing.Id);
         dlg.ShowDialog(this);
+        return Task.CompletedTask;
     }
 
     private async Task ManageBarcodesAsync()

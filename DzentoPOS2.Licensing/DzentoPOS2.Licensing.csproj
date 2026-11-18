@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Vendor-only library: referenced by the customer application and by the
+         separate licence issuer. It contains no secrets; the private key never
+         lives here. -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DzentoPOS2.Core\DzentoPOS2.Core.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -24,4 +24,6 @@ public record PosProductItem(
     Guid CategoryId,
     string? ImagePath,
     string? ThumbnailPath,
-    string? PrimaryBarcode);
+    string? PrimaryBarcode,
+    int BarcodeCount = 0,
+    string? CategoryName = null);

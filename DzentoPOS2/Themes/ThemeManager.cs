@@ -260,7 +260,11 @@ namespace DzentoPOS2.WinForms.Themes
                 {
                     txt.BackColor = AppColors.InputBackground;
                     txt.ForeColor = AppColors.Ink;
-                    txt.BorderStyle = BorderStyle.FixedSingle;
+                    // EZInputBase draws its own rounded border; forcing the
+                    // native border here would paint a second rectangle inside
+                    // the search and invoice fields.
+                    if (txt.Parent is not EZControls.Core.Base.EZInputBase)
+                        txt.BorderStyle = BorderStyle.FixedSingle;
                 }
                 // =========================
                 // COMBOBOX

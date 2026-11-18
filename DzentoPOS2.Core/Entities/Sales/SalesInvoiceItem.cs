@@ -27,6 +27,12 @@ namespace DzentoPOS2.Core.Entities.Sales
         /// <summary>Product list (sale) price frozen at sale time.</summary>
         public decimal ListPrice { get; set; }
 
+        /// <summary>
+        /// Variant list price when the cashier overrode the unit price; null
+        /// when the line was sold at the list price.
+        /// </summary>
+        public decimal? OriginalPrice { get; set; }
+
         /// <summary>This line's share of the invoice-level discount.</summary>
         public decimal DiscountAmount { get; set; }
 
@@ -45,6 +51,9 @@ namespace DzentoPOS2.Core.Entities.Sales
 
         /// <summary>Warranty expiry date (computed from sale date + variant.WarrantyMonths).</summary>
         public DateTime? WarrantyExpiry { get; set; }
+
+        /// <summary>Digital code delivered on this line (snapshot for the receipt).</summary>
+        public string? DigitalCode { get; set; }
 
         /// <summary>Free text of the line (empty for regular product lines).</summary>
         public string Description { get; set; } = string.Empty;

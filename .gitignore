@@ -53,3 +53,9 @@ user-settings.json
 ## OS files
 .DS_Store
 Thumbs.db
+
+## Vendor licence secrets — never commit the private key, its password or the ledger
+.dzento-vendor/
+vendor-private*.pem
+vendor.pem
+issued-licenses.csv

@@ -279,7 +279,7 @@ public class ProductVariantsDialog : ThemedDialog
             .ToListAsync();
 
         foreach (var v in variants)
-            _grid.Rows.Add(v.Id, v.Name, v.SKU, v.SalePrice?.Amount ?? 0m, v.CostPrice?.Amount ?? 0m);
+            _grid.Rows.Add(v.Id, v.Name, v.SKU ?? string.Empty, v.SalePrice?.Amount ?? 0m, v.CostPrice?.Amount ?? 0m);
 
         DataGridViewStyleHelper.ApplyModernStyle(_grid, true);
         await LoadAttributesAsync();

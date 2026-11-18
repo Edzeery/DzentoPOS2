@@ -1,0 +1,18 @@
+{
+  "GeneratedAt": "2026-11-15T13:44:55.5900995+01:00",
+  "Variants": 5000,
+  "LegacyUiThreadBlockMs": 8967,
+  "NewReloadWallMs": 95,
+  "PumpedFrames": 7,
+  "LongestFrameMs": 0.1058,
+  "P95FrameMs": 0.1058,
+  "SnapshotTimings": {
+    "WarehouseQueryMs": 8.6662,
+    "VariantQueryMs": 20.5302,
+    "StockQueryMs": 37.92,
+    "BarcodeQueryMs": 19.0248,
+    "ProjectionMs": 3.188,
+    "IndexMs": 0.8416,
+    "TotalMs": 90.1753
+  }
+}

@@ -112,7 +112,7 @@ public class SerialUnitPickerDialog : ThemedDialog
                 UnitId = u.Id,
                 SerialNumber = u.SerialNumber ?? "",
                 IMEI = u.Imei1 ?? "",
-                Display = $"{u.SerialNumber ?? "(no serial)"} | {u.Imei1 ?? ""}"
+                Display = $"{u.SerialNumber ?? AppStrings.NoSerial} | {u.Imei1 ?? ""}"
             });
         }
     }

@@ -44,12 +44,7 @@ internal static class Program
         }
 
         // POS performance benchmark:
-        //   DzentoPOS2.WinForms.exe --pos-benchmark [--variants N] [--output path]
-        if (args.Any(a => string.Equals(a, "--pos-benchmark", StringComparison.OrdinalIgnoreCase)))
-        {
-            Environment.ExitCode = PosBenchmark.Run(args);
-            return;
-        }
+        //   tools/DzentoPOS2.PosTools (dotnet run -- benchmark)
 
         // POS screenshot generator:
         //   DzentoPOS2.WinForms.exe --pos-screenshot [--output dir]

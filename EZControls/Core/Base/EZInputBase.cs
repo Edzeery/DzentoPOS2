@@ -326,7 +326,7 @@ public abstract class EZInputBase : EZControlBase, IEZValidatable
             // Mask the 1 px outer edge with the parent color so the rounded
             // corners blend correctly over any parent background.
             Color parentColor = Parent?.BackColor ?? BackColor;
-            using Pen maskPen = new(parentColor, 2);
+            using Pen maskPen = new(parentColor, 1);
             g.DrawPath(maskPen, surfacePath);
 
             // Draw the rounded border.
@@ -450,6 +450,18 @@ public abstract class EZInputBase : EZControlBase, IEZValidatable
     private void SetPlaceholder()
     {
         if (InnerTextBox is null) return;
+
+        // SetPlaceholder also runs when the language changes. A placeholder
+        // already on screen lives in InnerTextBox.Text, so it has to be
+        // removed first or the stale hint text wins over the new one.
+        if (_isPlaceholderActive)
+        {
+            _isPlaceholderActive = false;
+            InnerTextBox.Text = string.Empty;
+            InnerTextBox.ForeColor = ForeColor;
+            InnerTextBox.UseSystemPasswordChar = _passwordChar;
+        }
+
         if (!string.IsNullOrWhiteSpace(InnerTextBox.Text)) return;
         if (string.IsNullOrWhiteSpace(_placeholderText)) return;
 

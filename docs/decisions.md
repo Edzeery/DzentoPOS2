@@ -105,3 +105,72 @@ Recorded in Phase 0. Each decision is a small ADR: context, decision, consequenc
   variant-backed cost source before the column disappears; the duplication is
   bounded to one release per phase; `--migration-audit`
   (`docs/migration-evidence-2026-11-06.md`) is the objective gate for each phase.
+
+## ADR-13 — Offline licence: signed key + device fingerprint + gradual restriction
+
+- **Context:** The licensing entities (`LicensePlan`, `License`, `DeviceActivation`)
+  and their repositories existed from the start, but nothing validated keys, bound
+  a licence to a machine, enforced plan limits or restricted an expired install.
+  The product must work fully offline in shops with no reliable internet.
+- **Decision:**
+  - **Key format:** `base64url(payloadJson) + "." + base64url(signature)`, where the
+    signature is **RSA-SHA256 (PKCS#1)** over the exact payload bytes. The vendor
+    keeps the private key; each install embeds only the public key
+    (`LicensePublicKey.Pem`, compiled into the assembly). A key therefore cannot be
+    forged and no licence server is required.
+  - **Device binding:** the payload carries a fingerprint computed by
+    `IDeviceIdentifier` (`WindowsDeviceIdentifier` hashes the registry
+    `MachineGuid`; a portable fallback covers tests). A key copied to another
+    machine fails validation with `license.device_mismatch`.
+  - **Gradual restriction:** valid → `Active`; within `ExpiringSoonDays` → warning;
+    past expiry but inside `GraceDays` → still writable (`GracePeriod`); after both
+    → `Expired` and writes are blocked (`EnsureWritableAsync`). Limits block
+    *creation* at the plan ceiling (`license.branch_limit` / `license.user_limit`)
+    rather than corrupting existing data.
+  - **Unlicensed = trial:** with no key the app runs under the `Basic` plan's
+    limits. `LicenseOptions.Enforce` defaults to `false` so tests and development
+    are unconstrained; the shipped `appsettings.json` sets it to `true`.
+  - **Enforcement is optional per service:** `ILicenseService` is an optional
+    constructor parameter of `BranchService`/`UserService`/`SaleService`, so
+    existing direct-construction tests keep compiling and unit tests can bypass it.
+- **Consequences:** All guard checks funnel through one service; issuing keys is a
+  vendor-only operation. Revocation is
+  offline/device-scoped (`DeactivateAsync`) because there is no phone-home; that is
+  an accepted limitation. Full details in `docs/licensing.md`.
+
+## ADR-14 — Licence issuer is a separate vendor-only tool; public key is embedded
+
+- **Context:** ADR-13 put the key-generation and signing code inside the same
+  application that ships to customers, and read the public key from
+  `appsettings.json`. Anyone could replace `PublicKeyPem` with their own key and
+  sign licences for themselves — effectively a full bypass.
+- **Decision:**
+  - **Split the trust boundary.** A separate, vendor-only project
+    `tools/DzentoPOS2.LicenseIssuer` owns key generation and signing. It is never
+    shipped or installed at a customer site. The customer product no longer
+    contains `Sign` or the vendor tooling (`--license-keygen` / `--license-issue` /
+    `--license-verify` were removed from the app).
+  - **Shared, verify-only library.** `DzentoPOS2.Licensing` holds the payload,
+    validation result and codec. The customer app references it and can only
+    `Verify` / `Validate`; the library contains no key material and no signing
+    entry point. Serialization/token packing are shared so signed bytes match
+    exactly.
+  - **Vendor-only signing library.** `DzentoPOS2.Licensing.Signing` holds
+    `GenerateKeyPair` / `GenerateEncryptedKeyPair` / `Sign` / `SignEncrypted`. Only
+    the issuer and the automated tests reference it — **never** the customer app —
+    so a customer build physically cannot sign a licence.
+  - **Public key compiled in.** The customer app embeds the vendor public key in
+    code (`LicensePublicKey.Pem`) instead of reading it from configuration, closing
+    the public-key-swap bypass. `LicenseOptions.PublicKeyPem` defaults to the
+    embedded key and is not configuration-bound; tests inject their own options.
+  - **Private key at rest is encrypted.** `--generate` writes the private key as a
+    password-protected PKCS#8 PEM (AES-256-CBC, PBKDF2-SHA256). It is kept on the
+    vendor machine (outside the repository) with its password; `--issue` decrypts
+    it in memory only.
+  - **Issuance ledger.** Each issued key is appended to `issued-licenses.csv` next
+    to the private key so the vendor can trace who received which key.
+- **Consequences:** The only secret is the private key file plus its password;
+  losing them means rotating the pair and re-issuing every customer. Because the
+  public key is now baked into the binary, key rotation requires a rebuild and a
+  new release. The issuer is included in the solution for developer convenience but
+  must be excluded from customer packaging.

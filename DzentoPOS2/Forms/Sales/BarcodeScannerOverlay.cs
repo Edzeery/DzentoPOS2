@@ -27,17 +27,17 @@ public sealed partial class BarcodeScannerOverlay : Form
     private readonly System.Windows.Forms.Timer _timer = new() { Interval = FrameIntervalMs };
     private readonly List<CameraItem> _devices = new();
 
-    private PictureBox _preview;
-    private Panel _previewHost;
-    private Label _lblStatus;
-    private Label _lblHint;
-    private ThemedComboBox _cmbDevice;
-    private ThemedComboBox _cmbSource;
-    private TextBox _txtCameraUrl;
-    private ThemedButton _btnRefresh;
-    private ThemedButton _btnTestConnection;
-    private ThemedButton _btnClose;
-    private Button _btnCloseOverlay;
+    private PictureBox _preview = null!;
+    private Panel _previewHost = null!;
+    private Label _lblStatus = null!;
+    private Label _lblHint = null!;
+    private ThemedComboBox _cmbDevice = null!;
+    private ThemedComboBox _cmbSource = null!;
+    private TextBox _txtCameraUrl = null!;
+    private ThemedButton _btnRefresh = null!;
+    private ThemedButton _btnTestConnection = null!;
+    private ThemedButton _btnClose = null!;
+    private Button _btnCloseOverlay = null!;
 
     private Bitmap? _frame;
     private int _detected;
@@ -49,7 +49,6 @@ public sealed partial class BarcodeScannerOverlay : Form
     private int _scanLineY;
     private bool _isIpSource;
     private readonly System.Diagnostics.Stopwatch _sw = System.Diagnostics.Stopwatch.StartNew();
-    private int _closeRequested;
     private bool _continuousScan;
 
     [System.Runtime.InteropServices.DllImport("dwmapi.dll")]

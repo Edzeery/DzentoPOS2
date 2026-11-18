@@ -28,6 +28,9 @@ namespace DzentoPOS2.Data.Configurations.Sales
             builder.Property(x => x.ListPrice)
                 .HasPrecision(18, 2);
 
+            builder.Property(x => x.OriginalPrice)
+                .HasPrecision(18, 2);
+
             builder.Property(x => x.DiscountAmount)
                 .HasPrecision(18, 2);
 
@@ -44,6 +47,9 @@ namespace DzentoPOS2.Data.Configurations.Sales
                 .HasMaxLength(20);
 
             builder.Property(x => x.WarrantyExpiry);
+
+            builder.Property(x => x.DigitalCode)
+                .HasMaxLength(200);
 
             builder.Property(x => x.Description)
                 .IsRequired()

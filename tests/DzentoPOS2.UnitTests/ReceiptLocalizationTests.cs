@@ -31,7 +31,27 @@ public sealed class ReceiptLocalizationTests
         var start = source.IndexOf("private void PrintLastInvoice()", StringComparison.Ordinal);
         Assert.True(start >= 0, "PrintLastInvoice not found.");
 
-        var end = source.IndexOf("private static Label MakeLabel", start, StringComparison.Ordinal);
+        // Isolate the method body by brace matching; the members that follow it
+        // change as the form evolves, so a fixed end marker is brittle.
+        int open = source.IndexOf('{', start);
+        Assert.True(open > start, "Could not find the receipt builder body.");
+
+        int depth = 0;
+        int end = -1;
+        for (int i = open; i < source.Length; i++)
+        {
+            if (source[i] == '{') depth++;
+            else if (source[i] == '}')
+            {
+                depth--;
+                if (depth == 0)
+                {
+                    end = i + 1;
+                    break;
+                }
+            }
+        }
+
         Assert.True(end > start, "Could not isolate the receipt builder.");
 
         var region = source[start..end];

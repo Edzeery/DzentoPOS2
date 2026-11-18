@@ -1,0 +1,28 @@
+{
+  "GeneratedAt": "2026-11-15T11:35:29.984803+01:00",
+  "TotalVariants": 5000,
+  "Products": 500,
+  "VariantsPerProduct": 10,
+  "SeedMs": 109464,
+  "ColdLoadMs": 7356,
+  "ScrollP50Ms": 7.9985,
+  "ScrollP95Ms": 13.4094,
+  "ScrollP99Ms": 13.6903,
+  "ScrollMaxMs": 22.1433,
+  "ScanP50Ms": 0.0004,
+  "ScanP95Ms": 0.0076,
+  "InvalidateReloadMs": 6887,
+  "Thresholds": {
+    "ColdLoadMs": 500,
+    "ScrollP95Ms": 16,
+    "ScanP95Ms": 100,
+    "InvalidateReloadMs": 500
+  },
+  "PassFail": {
+    "ColdLoad": false,
+    "ScrollP95": true,
+    "ScanP95": true,
+    "InvalidateReload": false,
+    "AllPassed": false
+  }
+}

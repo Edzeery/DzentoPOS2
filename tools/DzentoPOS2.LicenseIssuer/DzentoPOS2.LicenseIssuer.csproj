@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>DzentoPOS2.LicenseIssuer</AssemblyName>
+    <RootNamespace>DzentoPOS2.LicenseIssuer</RootNamespace>
+    <!-- VENDOR-ONLY TOOL. It is intentionally NOT part of the customer
+         distribution and must never be shipped or installed at a customer
+         site. It is the only place that holds / uses the signing (private) key
+         and that compiles LicenseKeyCodec.Sign. -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\DzentoPOS2.Licensing\DzentoPOS2.Licensing.csproj" />
+    <ProjectReference Include="..\..\DzentoPOS2.Licensing.Signing\DzentoPOS2.Licensing.Signing.csproj" />
+  </ItemGroup>
+
+</Project>

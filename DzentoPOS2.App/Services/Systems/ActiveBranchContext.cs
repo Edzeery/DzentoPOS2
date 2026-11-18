@@ -85,7 +85,12 @@ public class ActiveBranchContext : IActiveBranchContext
             if (_initialized) return;
         }
 
+        // BranchId on ICurrentUserService is obsolete in favour of
+        // IActiveBranchContext, but the resolver still needs the user's
+        // assigned branch as the initial fallback before the context exists.
+#pragma warning disable CS0618
         var branch = await _branchResolver.ResolveAsync(currentUser.BranchId, cancellationToken);
+#pragma warning restore CS0618
 
         // Cache the switch permission once. The UI reads CanSwitchBranch
         // synchronously; it must never query the database from a getter.

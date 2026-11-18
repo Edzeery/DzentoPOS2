@@ -1,6 +1,8 @@
 ﻿# قائمة المهام — DzentoPOS2
 
-**آخر تحديث:** 2026-10-31
+> **الخطة النشطة:** [`ROADMAP.md`](ROADMAP.md) — خطة تنفيذ مرتّبة حسب الأولوية (المراحل 1 و2 و2.8 و3 مكتملة ومُتحقَّقة). هذا الملف سجل تاريخي للمهام المكتملة، وبعض الجداول فيه متقادمة/متداخلة (خاصة قسم `N` و`K.5–K.7` التي أُنجزت فعليًا عبر `M`/`N`).
+
+**آخر تحديث:** 2026-11-14
 **المرجع البصري:** [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md) — [`docs/design-system-plan.md`](docs/design-system-plan.md)
 **قاعدة القبول:** كل بند لا يُعتبر منجزًا إلا إذا تحقّق دليل قابل للقياس (بناء نظيف + فحص آلي عند 375/768/1440).
 
@@ -327,3 +329,51 @@
 | P4.7 | إدخال النموذج في فحص التخطيط المُقيَّم | ✅ | `CrossBranchReportForm` في `UiLayoutAudit.CreateForms` مع `StubCrossBranchReportService`/`StubAuthorizationGuard`؛ تم تحديث سطر `Forms:` المطبوع |
 | P4.8 | اختبارات المرحلة | ✅ | `CrossBranchReportTests` (2): مقارنة كل الفروع عبر صلاحية `BranchesViewAll` مع مطابقة أرقام كل فرع والإجمالي، والرجوع للفرع النشط لمستخدم يملك `ReportsView` دون `BranchesViewAll` |
 | P4.9 | بوابة المرحلة | ✅ | build 0 errors; unit 194/194; integration 135/135; migration audit PASSED (0 محذوف، 0 مغيَّر، 2 صف بذر مضاف); layout audit 120 سيناريو 0 مخالفة (2592 عنصراً، 10 نماذج مُقيَّمة عند 375/768/1440 × RTL/LTR × فاتح/داكن) |
+
+## POS-R — إعادة تصميم نقطة البيع: إصلاحات P0 (فرع `feature/pos-redesign`)
+
+> نقطة الانطلاق `9afd683`. كل بند أعلاه أُنجز في commit صغير مستقل، والبناء نظيف بعد كل commit.
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| R.0 | بيئة عمل معزولة | ✅ | worktree منفصل `pos-redesign` على فرع `feature/pos-redesign` من `9afd683`؛ المستودع الأصلي وملفات Auth غير المتتبَّعة لم تُلمس |
+| R.1 | حفظ المتغيّر والدفعة والتسلسل عند إتمام البيع | ✅ | commit `9cdd539`: `PosCheckoutMapper` + `SalesForm` يمرّر السلة كاملة؛ `PosCheckoutMapperTests` (2) و`PosCheckoutVariantTests` (1) — المتغيّر غير الافتراضي يُحفظ على سطر الفاتورة |
+| R.2 | مصدر واحد لحل الباركود + بحث بالباركود + F2 + تحديث الكتالوج | ✅ | commit `0545695`: `IPosBarcodeResolver`/`PosBarcodeResolver` و`PosCartMerger`، حذف `_products[0]`، `FilterProductsAsync` يسأل الباركود، `ProcessCmdKey` لـF2 داخل حقول النص، والاشتراك في `ICatalogChangeNotifier`؛ `PosCartMergerTests` (4) و`PosBarcodeResolutionTests` (2) — باركودان لمنتج واحد ⇒ سطر واحد بنفس `VariantId` |
+| R.3 | تعديل السعر المصرّح به مع تدقيق | ✅ | commit `5148b0f` + متابعة: `Permissions.SalesOverridePrice`، و`SaleService` يقرأ السعر المرسل ويطلب الصلاحية فقط عند اختلافه عن سعر المتغيّر (`DemandAsync`)، ويحفظ `OriginalPrice`؛ `SalePriceOverrideTests` (3) — السعر المطبّق 40 والأصلي 25 محفوظان، والسعر المرسل 999 يُطبَّق ويُسجَّل الأصل، ومستخدم بلا صلاحية يُرفض برمز `PermissionDenied` |
+| R.4 | الرسوم داخل الإجمالي والمدفوع | ✅ | commit `6b13196`: `InvoiceCalculator` يقبل `fees` ويضيفها بعد الضريبة، و`SalesForm` يربط `_numFees.ValueChanged` ويمرّر القيمة؛ `InvoiceCalculatorTests` (6 فحوص رسوم) و`SaleFeesTests` (1) — فاتورة 100 + ضريبة 10% + رسوم 5 ⇒ الإجمالي 115 والمدفوع 115 والباقي 0 |
+| R.5 | مسار الصور الموحّد | ✅ | commit `124ad8b`: `PosImagePath` يحلّ المسارات النسبية تحت `images` ويرفض الخروج عنها؛ `PosImagePathTests` (6)؛ `PosProductList` يعرض الحرف الأول عند غياب الصورة |
+| R.6 | عدم قصّ صفوف الإجماليات + أرقام غربية | ✅ | commit `1d09c19`: صفوف `AutoSize` بدل `/8`، و`RegionalContext.FormatMoney` يطبّع الثقافة؛ `RegionalContextMoneyTests` (2) — لا أرقام عربية-هندية تحت `ar-DZ` |
+| R.7 | اختبارات الوحدة الكاملة | ✅ | `dotnet test tests\DzentoPOS2.UnitTests` ⇒ **225 ناجح / 0 فاشل** |
+| R.8 | اختبارات التكامل الكاملة | ✅ | `dotnet test tests\DzentoPOS2.IntegrationTests` ⇒ **163 ناجح / 0 فاشل** (تشمل اختبارات القبول: المتغيّر 1، الباركود 2، تعديل السعر 3، الرسوم 1) |
+| R.9 | ترحيل قاعدة البيانات (بانتظار موافقة) | 🟨 | `20261114202407_AddPriceOverrideToSalesInvoiceItems` يضيف عمود `OriginalPrice` nullable إلى `SalesInvoiceItems`؛ **لم يُطبَّق** على قاعدة الإنتاج — يلزم فحص تكرار + نسخة احتياطية + موافقة |
+| R.10 | مؤجَّل إلى P1 | ⬜ | إخفاء سطر الرسوم عند الصفر (حقل الإدخال يجب أن يبقى ظاهراً في P0)؛ نقل الواجهة الثابتة إلى `SalesForm.Designer.cs`؛ ربط `PosProductList` أو إزالته؛ إصلاح 4 أعمدة عند 1440 |
+
+## POS-R P1 — Commit 3: إعادة بناء تخطيط/مصمّم SalesForm (فرع `feature/pos-redesign`)
+
+| # | المهمة | الحالة | دليل الإنجاز |
+|---|---|---|---|
+| C3.1 | مصمّم SalesForm كامل (SystemColors neutrals + ApplyTheme runtime) | ✅ | `SalesForm.Designer.cs`: شجرة controles كاملة تشمل hero strip + product header + صفوف الأزرار الثلاثة + صفوف الإجماليات العشرة؛ لا بناء controls وقت التشغيل |
+| C3.2 | PosProductList بطاقات (4 أعمدة @1440) + barcode badge + keyboard nav + empty state | ✅ | `PosCardLayoutCalculator` (12px/190px/4 cols) + tests؛ `PosProductList` |
+| C3.3 | سلة FlowLayoutPanel + CartLineRow + compact <430/<380 | ✅ | `CartLineRow.ApplyCompactLayout`، `UpdateCartRowWidths` |
+| C3.4 | PriceOverrideDialog (double-click name/price/total) | ✅ | `PriceOverrideDialog.cs` (permission-gated) |
+| C3.5 | تصميم-time ctor + DesignMode guards | ✅ | `[ActivatorUtilitiesConstructor]` + `null!` fields |
+| C3.6 | card payment (PaymentMethod="Card"; paid==total, remaining==0) | ✅ | `PosPaymentPolicy` + tests؛ أزرار Card/Credit (`_paymentMethod` enum) بدل الـ combo |
+| C3.7 | F12 gating + F2 in text fields | ✅ | `ProcessCmdKey` + UpdateCheckoutState |
+| C3.8 | صور P1 (12 لقطة + scrolled) | ✅ | `docs/evidence/pos-sales-*` (375/768/1440 × light/dark × LTR/RTL) |
+| C3.9 | Build/tests green | ✅ | unit 264/264 + integration 165/165 + build 0 errors |
+| C3.10 | إصلاح قصّ hero/actions/product header (dock order) | ✅ | `_pageLayout` (110/180px hero + fill)؛ hero + header + 3 صفوف أزرار داخل المصمّم |
+| C3.11 | محاذاة الإجماليات (10 صفوف 30px) + hero 38pt/discount 26pt | ✅ | `_totalsLayout` 10 صفوف ثابتة 42/58 + `_lblHeroTotal` 38pt Bold |
+| C3.12 | إزالة الحدّ المزدوج لحقل البحث | ✅ | `ThemeManager` لا يفرض `FixedSingle` على `TextBox` داخل `EZInputBase` |
+| C3.13 | بديل صورة محايد للمنتج بلا صورة | ✅ | `PosProductList.DrawImagePlaceholder` (إطار + دائرة + جبال) |
+| C3.14 | تحميل SalesForm على DesignSurface | ✅ | `BeginLoad(typeof(SalesForm))` + شجرة كاملة + لقطة تصميم |
+| C3.15 | عزل صفحة الفواتير عن شجرة POS | ✅ | `_pageLayout` داخل `_tabNewSale` فقط؛ `OnTabSelected` يفرض ظهور/إخفاء الصفحتين؛ الصفحة الفارغة `_lblNoInvoices` |
+| C3.16 | F2/F12 حسب التبويب | ✅ | F2 يركّز بحث الفواتير في تبويب المبيعات؛ F12 لا يُتمّ بيعاً خارج تبويب POS |
+| C3.17 | فحص آلي للتبويبين + لقطات | ✅ | probe يلتقط `pos-invoices-*` في 375/768/1440 × الوضعين × en/ar ويرفض أي تسريب أو عدم تطابق حالة الفراغ |
+| C4.1 | EZNumericBox على EZInputBase | ✅ | `EZControls/Controls/Inputs/EZNumericBox.cs`: 40px، نصف قطر/حدود/حلقة تركيز من الثيم، داكن، RTL، أرقام غربية، تحديد كامل عند التركيز، Minimum/Maximum/DecimalPlaces/Value + ValueChanged، بلا أسهم/عجلة، Enter/Esc، AccessibleName + ToolTip، آمن في DesignMode |
+| C4.2 | استبدال قوائم POS بـEZComboBox | ✅ | الزبون، نوع الخصم، طريقة الدفع في Designer.cs +runtime؛ 고객リスト عبر DataSource/DislayMember/ValueMember محفوظ |
+| C4.3 | حقول POS الرقمية بـEZNumericBox | ✅ | الخصم، الضريبة، الرسوم، المدفوع؛ كل سطر محرر 40px، تسميات 26px، All في Designer.cs |
+| C4.4 | توحيد فاصلة الأرقام | ✅ | RegionalContext/KpiValueFormatter.NormalizeCulture في حقول POS؛ الحقل والمجموع يظهران `0.00`/`0,00` موحداً عبر RegionalContext |
+| C4.5 | temas للقوائم والحقول | ✅ | ApplyComboTheme/ApplyNumericTheme في ApplyTheme؛ ألوان تحويم/تحديد من الثيم؛ عنصر ~36px عبر ItemHeight=36 |
+| C4.6 | حالات الفراغ والوصول | ✅ | AccessibleName/ToolTip لكل حقل POS؛ نص بديل "اختر العميل" للعميل |
+| C4.7 | بناء/اختبارات + لقطات Commit B | ✅ | build 0 أخطاء؛ unit 264/264؛ integration 165/165؛ لقطات POS+فواتير في 375/768/1440 للوضعين |
+| C4.8 | --ui-audit | ℹ️ | غير موجود في المستودع؛ التحقق hand-من أن EZTextBox/EZComboBox لبقية الشاشات لم يتغير (بناء ناجح + اختبارات ناجحة) |

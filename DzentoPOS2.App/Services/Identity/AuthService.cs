@@ -275,7 +275,7 @@ namespace DzentoPOS2.App.Services.Identity
                 var keyResult = await GenerateRecoveryKeyInternalAsync(user);
                 if (!keyResult.Success)
                 {
-                    return Result<string>.Failed(keyResult.Message);
+                    return Result<string>.Failed(keyResult.Message ?? AppStrings.ErrorMsg);
                 }
 
                 _userRepository.Update(user);
@@ -296,7 +296,7 @@ namespace DzentoPOS2.App.Services.Identity
             }
         }
 
-        private async Task<Result<string>> GenerateRecoveryKeyInternalAsync(User user)
+        private Task<Result<string>> GenerateRecoveryKeyInternalAsync(User user)
         {
             try
             {
@@ -316,12 +316,12 @@ namespace DzentoPOS2.App.Services.Identity
 
                 user.RecoveryKeyHash = PasswordHelper.Hash(plainKey);
 
-                return Result<string>.Succeeded(plainKey);
+                return Task.FromResult(Result<string>.Succeeded(plainKey));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to generate recovery key.");
-                return Result<string>.Failed(AppStrings.ErrorMsg);
+                return Task.FromResult(Result<string>.Failed(AppStrings.ErrorMsg));
             }
         }
 

@@ -56,6 +56,9 @@ namespace DzentoPOS2.Data.Seed
                     Permissions.UnitsCreate,
                     Permissions.UnitsEdit,
 
+                    Permissions.DigitalCodesView,
+                    Permissions.DigitalCodesManage,
+
                     Permissions.InventoryView,
                     Permissions.InventoryAdjust,
 
@@ -63,6 +66,7 @@ namespace DzentoPOS2.Data.Seed
                     Permissions.SalesCreate,
                     Permissions.SalesReturn,
                     Permissions.SalesDiscountOverride,
+                    Permissions.SalesOverridePrice,
 
                     Permissions.CustomersView,
                     Permissions.CustomersCreate,

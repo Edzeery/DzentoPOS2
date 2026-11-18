@@ -20,6 +20,9 @@ namespace DzentoPOS2.Shared.Contracts.DTOs.Sales
         /// <summary>Warranty expiry date.</summary>
         public DateTime? WarrantyExpiry { get; set; }
 
+        /// <summary>Digital code delivered on this line (for digital-kind products).</summary>
+        public string? DigitalCode { get; set; }
+
         public string ProductName { get; set; } = string.Empty;
         public string SKU { get; set; } = string.Empty;
         public decimal Quantity { get; set; }
@@ -27,6 +30,9 @@ namespace DzentoPOS2.Shared.Contracts.DTOs.Sales
         public decimal Total { get; set; }
         public decimal UnitCost { get; set; }
         public decimal ListPrice { get; set; }
+
+        /// <summary>Variant list price when the line price was overridden.</summary>
+        public decimal? OriginalPrice { get; set; }
         public decimal DiscountAmount { get; set; }
         public bool IsCostEstimated { get; set; }
         public string Description { get; set; } = string.Empty;

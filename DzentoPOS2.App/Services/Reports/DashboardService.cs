@@ -66,7 +66,7 @@ namespace DzentoPOS2.App.Services.Reports
             var rangeEndUtc = resolved.EndUtc;
             var compareStartUtc = resolved.PreviousStartUtc;
             var compareEndUtc = resolved.PreviousEndUtc;
-            var chartStartUtc = (filter.Preset == DashboardDatePreset.ThisMonth)
+            var chartStartUtc = (filter?.Preset == DashboardDatePreset.ThisMonth)
                 ? _regional.StartOfLocalDayUtc(localNow.Date.AddDays(-29))
                 : rangeStartUtc;
 

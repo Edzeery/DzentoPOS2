@@ -18,3 +18,11 @@ dotnet_diagnostic.WFO1000.severity = none
 
 [DzentoPOS2/**/*.cs]
 dotnet_diagnostic.WFO1000.severity = none
+
+# -----------------------------------------------------------------------------
+# Generated WinForms designer files
+# -----------------------------------------------------------------------------
+# Every *.Designer.cs keeps a boilerplate `components` field that is assigned
+# but never read (CS0414). It is not actionable in generated code.
+[*Designer.cs]
+dotnet_diagnostic.CS0414.severity = none

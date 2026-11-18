@@ -202,7 +202,7 @@ public sealed class BranchIsolationTests
     }
 
     [Fact]
-    public async Task CartGuard_BlocksSwitch()
+    public void CartGuard_BlocksSwitch()
     {
         // This test verifies the guard logic, not the full UI
         var guard = new DzentoPOS2.App.Services.Systems.BranchSwitchGuard();

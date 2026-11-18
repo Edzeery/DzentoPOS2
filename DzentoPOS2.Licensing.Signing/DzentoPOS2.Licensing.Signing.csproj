@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- VENDOR-ONLY. This library can generate key pairs and sign licences.
+         It is referenced by the licence issuer and by the automated tests, but
+         NEVER by the customer application (DzentoPOS2.App / DzentoPOS2). The
+         customer build therefore contains no signing capability and no secret. -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DzentoPOS2.Licensing\DzentoPOS2.Licensing.csproj" />
+  </ItemGroup>
+
+</Project>

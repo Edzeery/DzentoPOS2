@@ -49,7 +49,11 @@ public class SubscriptionLeakTests
         public Guid ActiveBranchId => Guid.Empty;
         public string ActiveBranchName => "";
         public bool CanSwitchBranch => true;
-        public event EventHandler<ActiveBranchChangedEventArgs>? BranchChanged;
+        public event EventHandler<ActiveBranchChangedEventArgs>? BranchChanged
+        {
+            add { }
+            remove { }
+        }
         public Task<bool> TrySwitchBranchAsync(Guid branchId, System.Threading.CancellationToken cancellationToken = default) => Task.FromResult(true);
         public Task InitializeAsync(ICurrentUserService currentUser, System.Threading.CancellationToken cancellationToken = default) => Task.CompletedTask;
         public void InitializeEmpty() { }

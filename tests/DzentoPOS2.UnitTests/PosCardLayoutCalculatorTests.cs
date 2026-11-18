@@ -28,15 +28,33 @@ public class PosCardLayoutCalculatorTests
     }
 
     [Theory]
-    [InlineData(375)]
-    [InlineData(768)]
-    [InlineData(1440)]
-    public void GetGrid_Cards_NarrowHasOneColumn(int width)
+    [InlineData(375, 1)]
+    // floor((width + 12) / 202), clamped to 4.
+    [InlineData(190, 1)]
+    [InlineData(202, 1)]
+    [InlineData(403, 2)]
+    [InlineData(768, 3)]
+    [InlineData(1190, 4)]
+    [InlineData(1440, 4)]
+    [InlineData(2400, 4)]
+    public void GetGrid_Cards_UsesApprovedColumnFormula(int width, int expectedColumns)
     {
         var (cols, _, _, _) = PosCardLayoutCalculator.GetGrid(width, PosViewMode.Cards);
-        if (width < 768) Assert.Equal(1, cols);
-        else if (width < 1440) Assert.Equal(2, cols);
-        else Assert.Equal(4, cols);
+        Assert.Equal(expectedColumns, cols);
+    }
+
+    [Theory]
+    [InlineData(375, 1)]
+    [InlineData(1190, 4)]
+    [InlineData(1440, 4)]
+    public void GetGrid_Cards_UsesTwelvePixelGap(int width, int expectedColumns)
+    {
+        var (cols, itemW, _, gap) = PosCardLayoutCalculator.GetGrid(width, PosViewMode.Cards);
+
+        Assert.Equal(expectedColumns, cols);
+        Assert.Equal(PosCardLayoutCalculator.CardGap, gap);
+        Assert.Equal(12, gap);
+        Assert.True(cols * itemW + (cols - 1) * gap <= width);
     }
 
     [Theory]

@@ -1,6 +1,7 @@
 using DzentoPOS2.App.Services.Events;
 using DzentoPOS2.App.Authorization;
 using DzentoPOS2.App.Services.Inventory;
+using DzentoPOS2.App.Services.Licensing;
 using DzentoPOS2.App.Services.Systems;
 using DzentoPOS2.App.Session;
 using DzentoPOS2.Core.Constants;
@@ -34,6 +35,8 @@ namespace DzentoPOS2.App.Services.Sales
         private readonly IPermissionService _permissionService;
     private readonly IPosProductStore _posProductStore;
     private readonly IActiveBranchContext _activeBranch;
+    private readonly ILicenseService? _license;
+    private readonly IDigitalCodeService? _digitalCodeService;
 
         public SaleService(
             ISalesInvoiceRepository invoiceRepo,
@@ -50,7 +53,9 @@ namespace DzentoPOS2.App.Services.Sales
             DzentoPOS2.App.Authorization.IAuthorizationGuard authorizationGuard,
             IPermissionService permissionService,
             IPosProductStore posProductStore,
-        IActiveBranchContext activeBranch)
+        IActiveBranchContext activeBranch,
+        ILicenseService? license = null,
+        IDigitalCodeService? digitalCodeService = null)
         {
             _invoiceRepo = invoiceRepo;
             _unitOfWork = unitOfWork;
@@ -67,6 +72,8 @@ namespace DzentoPOS2.App.Services.Sales
             _permissionService = permissionService;
             _posProductStore = posProductStore;
             _activeBranch = activeBranch;
+            _license = license;
+            _digitalCodeService = digitalCodeService;
         }
 
         public async Task<List<SaleDto>> GetAllAsync(Guid? branchId = null, bool viewAll = false)
@@ -161,6 +168,9 @@ namespace DzentoPOS2.App.Services.Sales
             await _authorizationGuard.DemandAsync(
                 DzentoPOS2.Core.Constants.Permissions.SalesCreate);
 
+            if (_license is not null)
+                await _license.EnsureWritableAsync();
+
             // The whole body is wrapped so that a failure during the
             // pre-transaction lookups (which used to run outside any guard)
             // still rolls back and clears the shared change tracker. Otherwise
@@ -181,10 +191,6 @@ namespace DzentoPOS2.App.Services.Sales
         {
             if (dto.Items.Count == 0)
                 throw new InvalidOperationException("Sale must have at least one item");
-
-            var lines = dto.Items
-                .Select(i => new InvoiceLine(i.Quantity, i.Price))
-                .ToList();
 
             var branchId = await _storeContext.GetDefaultBranchIdAsync();
             var warehouseId = await _storeContext.GetDefaultWarehouseIdAsync(branchId);
@@ -259,6 +265,37 @@ namespace DzentoPOS2.App.Services.Sales
                     throw new InvalidOperationException("Invalid or inactive variant");
             }
 
+            // The POS screen sends the price to apply. It becomes the invoice
+            // price; when it differs from the variant's list price this is a
+            // price override and requires the explicit permission. The list
+            // price is kept on the line for audit.
+            var pricing = new List<(decimal Applied, decimal ListPrice, bool Overridden)>(dto.Items.Count);
+            foreach (var item in dto.Items)
+            {
+                var variantId = item.VariantId != Guid.Empty ? item.VariantId : defaultVariantIds[item.ProductId];
+                var variant = variants[variantId];
+                var listPrice = variant.SalePrice.Amount > 0
+                    ? variant.SalePrice.Amount
+                    : products[item.ProductId].SalePrice?.Amount ?? 0m;
+
+                var applied = item.Price;
+                pricing.Add((applied, listPrice, applied != listPrice));
+            }
+
+            if (pricing.Any(p => p.Overridden))
+            {
+                await _authorizationGuard.DemandAsync(Permissions.SalesOverridePrice);
+            }
+
+            var lines = dto.Items
+                .Select((i, index) => new InvoiceLine(i.Quantity, pricing[index].Applied))
+                .ToList();
+
+            var fees = decimal.Round(
+                dto.Fees < 0 ? 0 : dto.Fees,
+                digits,
+                MidpointRounding.AwayFromZero);
+
             // Single source of truth: every stored/recorded amount comes from
             // this calculator result (invoice, payment and cash movement).
             var totals = InvoiceCalculator.Calculate(
@@ -267,7 +304,8 @@ namespace DzentoPOS2.App.Services.Sales
                 dto.DiscountValue,
                 dto.TaxRate,
                 dto.PaidAmount,
-                digits);
+                digits,
+                fees);
 
             if (totals.Remaining > 0 && dto.CustomerId == Guid.Empty)
                 throw new CodedDomainException(
@@ -285,11 +323,6 @@ namespace DzentoPOS2.App.Services.Sales
                     var invoiceNumber =
                         await _documentNumbers.NextInvoiceNumberAsync();
 
-                    var fees = decimal.Round(
-                        dto.Fees < 0 ? 0 : dto.Fees,
-                        digits,
-                        MidpointRounding.AwayFromZero);
-
                     var invoice = SalesInvoice.Create(
                         invoiceNumber,
                         dto.CustomerId,
@@ -302,7 +335,8 @@ namespace DzentoPOS2.App.Services.Sales
                         fees);
 
                     var lineGrosses = dto.Items
-                        .Select(i => decimal.Round(i.Quantity * i.Price, digits, MidpointRounding.AwayFromZero))
+                        .Select((i, index) => decimal.Round(
+                            i.Quantity * pricing[index].Applied, digits, MidpointRounding.AwayFromZero))
                         .ToList();
 
                     var shares = ProfitCalculator.DistributeDiscount(lineGrosses, totals.DiscountAmount, digits).ToList();
@@ -314,14 +348,9 @@ namespace DzentoPOS2.App.Services.Sales
                         var variantId = item.VariantId != Guid.Empty ? item.VariantId : defaultVariantIds[item.ProductId];
                         var variant = variants[variantId];
 
-                        // Price and cost come from the variant. A variant without an
-                        // explicit sale price inherits the product price; a variant
-                        // without an explicit cost is marked estimated and may be
-                        // blocked from sale by policy.
-                        var salePrice = variant.SalePrice.Amount > 0
-                            ? variant.SalePrice.Amount
-                            : product.SalePrice?.Amount ?? 0m;
-
+                        // Cost comes from the variant. A variant without an
+                        // explicit cost is marked estimated and may be blocked
+                        // from sale by policy.
                         // For serialized items, use the serial unit's actual cost.
                         decimal costAmount = variant.CostPrice.Amount;
                         bool isCostEstimated = costAmount == 0;
@@ -353,10 +382,13 @@ namespace DzentoPOS2.App.Services.Sales
                             VariantId = variantId,
                             VariantName = variant.Name,
                             Quantity = item.Quantity,
-                            Price = salePrice,
+                            Price = pricing[itemIndex].Applied,
                             Total = lineGrosses[itemIndex],
                             UnitCost = costAmount,
                             ListPrice = product.SalePrice?.Amount ?? 0m,
+                            OriginalPrice = pricing[itemIndex].Overridden
+                                ? pricing[itemIndex].ListPrice
+                                : null,
                             DiscountAmount = shares[itemIndex],
                             IsCostEstimated = isCostEstimated,
                             SerialNumber = serialNumber,
@@ -441,6 +473,37 @@ namespace DzentoPOS2.App.Services.Sales
                                     SalesInvoiceItemId = serialUnit.SalesInvoiceItemId ?? Guid.Empty,
                                     SerialUnitId = serialUnit.Id
                                 });
+                            }
+                        }
+                    }
+
+                    // Hand out digital codes for digital-kind products. Best
+                    // effort: an exhausted pool never blocks the sale.
+                    if (_digitalCodeService is not null)
+                    {
+                        for (var index = 0; index < dto.Items.Count; index++)
+                        {
+                            var item = dto.Items[index];
+                            if (products[item.ProductId].ProductKind != ProductKind.DigitalCode)
+                                continue;
+
+                            var variantForCode = item.VariantId != Guid.Empty
+                                ? item.VariantId
+                                : defaultVariantIds[item.ProductId];
+
+                            var invoiceItem = invoice.Items.ElementAt(index);
+
+                            var allocated = await _digitalCodeService.AllocateForSaleAsync(
+                                variantForCode,
+                                invoice.Id,
+                                invoiceItem.Id,
+                                (int)Math.Max(1m, item.Quantity),
+                                saleDate);
+
+                            if (allocated.Count > 0)
+                            {
+                                invoiceItem.DigitalCode =
+                                    string.Join(", ", allocated.Select(c => c.Code));
                             }
                         }
                     }
@@ -560,6 +623,10 @@ namespace DzentoPOS2.App.Services.Sales
                         .ToList(),
                     MovementType.SaleVoidIn,
                     _currentUser.UserId);
+
+                // Release any digital codes this invoice delivered back to the pool.
+                if (_digitalCodeService is not null)
+                    await _digitalCodeService.ReturnForSaleAsync(invoice.Id);
 
                 invoice.Void(_currentUser.UserId, reason, _clock.UtcNow);
 
@@ -682,11 +749,13 @@ namespace DzentoPOS2.App.Services.Sales
                     SerialNumber = i.SerialNumber,
                     IMEI = i.IMEI,
                     WarrantyExpiry = i.WarrantyExpiry,
+                    DigitalCode = i.DigitalCode,
                     Quantity = i.Quantity,
                     Price = i.Price,
                     Total = i.Total,
                     UnitCost = i.UnitCost,
                     ListPrice = i.ListPrice,
+                    OriginalPrice = i.OriginalPrice,
                     DiscountAmount = i.DiscountAmount,
                     IsCostEstimated = i.IsCostEstimated,
                     Description = i.Description ?? string.Empty

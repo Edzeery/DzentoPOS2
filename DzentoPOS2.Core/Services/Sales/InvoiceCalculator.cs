@@ -24,7 +24,8 @@ public sealed record InvoiceTotals(
     decimal TenderedAmount,
     decimal AppliedPayment,
     decimal Remaining,
-    decimal Change);
+    decimal Change,
+    decimal FeesAmount = 0);
 
 /// <summary>
 /// Pure invoice math. This is the single source of truth for every amount the
@@ -39,7 +40,8 @@ public static class InvoiceCalculator
         decimal discountValue,
         decimal taxRate,
         decimal tenderedAmount,
-        int currencyDecimalDigits)
+        int currencyDecimalDigits,
+        decimal fees = 0)
     {
         if (lines is null || lines.Count == 0)
             throw new CodedDomainException(DomainErrorCodes.SaleRequiresItem, "Sale must have at least one item");
@@ -55,6 +57,9 @@ public static class InvoiceCalculator
 
         if (tenderedAmount < 0)
             throw new CodedDomainException(DomainErrorCodes.InvalidPayment, "Paid amount cannot be negative");
+
+        if (fees < 0)
+            throw new CodedDomainException(DomainErrorCodes.InvalidPayment, "Fees cannot be negative");
 
         if (currencyDecimalDigits < 0 || currencyDecimalDigits > 4)
             throw new CodedDomainException(DomainErrorCodes.InvalidCurrency, "Currency decimal digits are invalid");
@@ -95,7 +100,8 @@ public static class InvoiceCalculator
 
         var afterDiscount = subtotal - discountAmount;
         var taxAmount = Round(afterDiscount * taxRate / 100m, currencyDecimalDigits);
-        var total = afterDiscount + taxAmount;
+        var feesAmount = Round(fees, currencyDecimalDigits);
+        var total = afterDiscount + taxAmount + feesAmount;
 
         var tendered = Round(tenderedAmount, currencyDecimalDigits);
         var appliedPayment = Math.Min(tendered, total);
@@ -111,7 +117,8 @@ public static class InvoiceCalculator
             tendered,
             appliedPayment,
             remaining,
-            change);
+            change,
+            feesAmount);
     }
 
     private static decimal Round(decimal value, int digits)

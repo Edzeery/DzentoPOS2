@@ -19,6 +19,15 @@ namespace DzentoPOS2.Shared.Contracts.DTOs.Sales
         public decimal Quantity { get; set; }
         public decimal Price { get; set; }
 
+        /// <summary>
+        /// True when the cashier changed the unit price. The service then uses
+        /// <see cref="Price"/> instead of the variant's list price.
+        /// </summary>
+        public bool PriceOverridden { get; set; }
+
+        /// <summary>Variant list price at the time the override was entered.</summary>
+        public decimal OriginalPrice { get; set; }
+
         /// <summary>Free text shown on the invoice line (used for custom lines).</summary>
         public string Description { get; set; } = string.Empty;
     }

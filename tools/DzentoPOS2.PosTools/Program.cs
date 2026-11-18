@@ -6,6 +6,8 @@ namespace DzentoPOS2.PosTools;
 ///
 ///   dotnet run --project tools/DzentoPOS2.PosTools -- benchmark [--variants N] [--output path]
 ///   dotnet run --project tools/DzentoPOS2.PosTools -- probe [--db path] [--out dir] [--width W] [--height H]
+///   dotnet run --project tools/DzentoPOS2.PosTools -- capture [--out dir] [--widths 375,768,1440]
+///       [--themes light,dark] [--langs en,ar]
 /// </summary>
 internal static class Program
 {
@@ -21,6 +23,7 @@ internal static class Program
         {
             "benchmark" or "--pos-benchmark" => PosBenchmark.Run(rest),
             "probe" or "--pos-probe" => PosFormProbe.Run(rest),
+            "capture" or "--pos-capture" => PosScreenshotProbe.Run(rest),
             _ => PrintUsage()
         };
     }
@@ -30,6 +33,7 @@ internal static class Program
         Console.WriteLine("dzento-pos-tools <command> [options]");
         Console.WriteLine("  benchmark [--variants N] [--output path]");
         Console.WriteLine("  probe     [--db path] [--out dir] [--width W] [--height H]");
+        Console.WriteLine("  capture   [--out dir] [--widths 375,768,1440] [--themes light,dark] [--langs en,ar]");
         return 1;
     }
 }

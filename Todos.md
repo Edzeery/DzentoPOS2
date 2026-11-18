@@ -352,12 +352,20 @@
 
 | # | المهمة | الحالة | دليل الإنجاز |
 |---|---|---|---|
-| C3.1 | مصمّم SalesForm كامل (SystemColors neutrals + ApplyTheme runtime) | ✅ | `SalesForm.Designer.cs` (1193 سطر): شجرة controles كاملة، `_basketScroll.Controls.Add(_basketLayout)`، `_totalsLayout.AutoSize = true`، `_heroTotalPanel`/`_totalsLayout` لا قصّ |
+| C3.1 | مصمّم SalesForm كامل (SystemColors neutrals + ApplyTheme runtime) | ✅ | `SalesForm.Designer.cs`: شجرة controles كاملة تشمل hero strip + product header + صفوف الأزرار الثلاثة + صفوف الإجماليات العشرة؛ لا بناء controls وقت التشغيل |
 | C3.2 | PosProductList بطاقات (4 أعمدة @1440) + barcode badge + keyboard nav + empty state | ✅ | `PosCardLayoutCalculator` (12px/190px/4 cols) + tests؛ `PosProductList` |
 | C3.3 | سلة FlowLayoutPanel + CartLineRow + compact <430/<380 | ✅ | `CartLineRow.ApplyCompactLayout`، `UpdateCartRowWidths` |
 | C3.4 | PriceOverrideDialog (double-click name/price/total) | ✅ | `PriceOverrideDialog.cs` (permission-gated) |
 | C3.5 | تصميم-time ctor + DesignMode guards | ✅ | `[ActivatorUtilitiesConstructor]` + `null!` fields |
-| C3.6 | card payment (PaymentMethod="Card"; paid==total, remaining==0) | ✅ | `PosPaymentPolicy` + tests؛ combo + OnPaymentMethodChanged |
+| C3.6 | card payment (PaymentMethod="Card"; paid==total, remaining==0) | ✅ | `PosPaymentPolicy` + tests؛ أزرار Card/Credit (`_paymentMethod` enum) بدل الـ combo |
 | C3.7 | F12 gating + F2 in text fields | ✅ | `ProcessCmdKey` + UpdateCheckoutState |
 | C3.8 | صور P1 (12 لقطة + scrolled) | ✅ | `docs/evidence/pos-sales-*` (375/768/1440 × light/dark × LTR/RTL) |
 | C3.9 | Build/tests green | ✅ | unit 264/264 + integration 165/165 + build 0 errors |
+| C3.10 | إصلاح قصّ hero/actions/product header (dock order) | ✅ | `_pageLayout` (110/180px hero + fill)؛ hero + header + 3 صفوف أزرار داخل المصمّم |
+| C3.11 | محاذاة الإجماليات (10 صفوف 30px) + hero 38pt/discount 26pt | ✅ | `_totalsLayout` 10 صفوف ثابتة 42/58 + `_lblHeroTotal` 38pt Bold |
+| C3.12 | إزالة الحدّ المزدوج لحقل البحث | ✅ | `ThemeManager` لا يفرض `FixedSingle` على `TextBox` داخل `EZInputBase` |
+| C3.13 | بديل صورة محايد للمنتج بلا صورة | ✅ | `PosProductList.DrawImagePlaceholder` (إطار + دائرة + جبال) |
+| C3.14 | تحميل SalesForm على DesignSurface | ✅ | `BeginLoad(typeof(SalesForm))` + شجرة كاملة + لقطة تصميم |
+| C3.15 | عزل صفحة الفواتير عن شجرة POS | ✅ | `_pageLayout` داخل `_tabNewSale` فقط؛ `OnTabSelected` يفرض ظهور/إخفاء الصفحتين؛ الصفحة الفارغة `_lblNoInvoices` |
+| C3.16 | F2/F12 حسب التبويب | ✅ | F2 يركّز بحث الفواتير في تبويب المبيعات؛ F12 لا يُتمّ بيعاً خارج تبويب POS |
+| C3.17 | فحص آلي للتبويبين + لقطات | ✅ | probe يلتقط `pos-invoices-*` في 375/768/1440 × الوضعين × en/ar ويرفض أي تسريب أو عدم تطابق حالة الفراغ |

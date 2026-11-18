@@ -29,1216 +29,1596 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this._tabs = new System.Windows.Forms.TabControl();
-            this._tabNewSale = new System.Windows.Forms.TabPage();
-            this._saleLayout = new System.Windows.Forms.TableLayoutPanel();
-            this._leftPanel = new System.Windows.Forms.Panel();
-            this._productColumn = new System.Windows.Forms.TableLayoutPanel();
-            this._productList = new DzentoPOS2.WinForms.Controls.Pos.PosProductList();
-            this._scanStrip = new DzentoPOS2.WinForms.Controls.Pos.ScanConfirmationStrip();
-            this._categoryBar = new DzentoPOS2.WinForms.Controls.Pos.CategoryChipBar();
-            this._searchBar = new System.Windows.Forms.TableLayoutPanel();
-            this._btnScanBarcode = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
-            this._productSearch = new EZControls.Controls.Inputs.EZTextBox();
-            this._rightPanel = new System.Windows.Forms.Panel();
-            this._basketRoot = new System.Windows.Forms.TableLayoutPanel();
-            this._sessionChip = new DzentoPOS2.WinForms.Controls.Pos.SessionStatusChip();
-            this._basketScroll = new System.Windows.Forms.Panel();
-            this._basketLayout = new System.Windows.Forms.TableLayoutPanel();
-            this._totalsLayout = new System.Windows.Forms.TableLayoutPanel();
-            this._heroTotalPanel = new System.Windows.Forms.TableLayoutPanel();
-            this._lblTotalValue = new System.Windows.Forms.Label();
-            this._lblTotal = new System.Windows.Forms.Label();
-            this._paidEditorPanel = new System.Windows.Forms.TableLayoutPanel();
-            this._btnPayInFull = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
-            this._numPaid = new System.Windows.Forms.NumericUpDown();
-            this._lblBalanceValue = new System.Windows.Forms.Label();
-            this._lblBalance = new System.Windows.Forms.Label();
-            this._lblPaymentMethod = new System.Windows.Forms.Label();
-            this._cmbPaymentMethod = new System.Windows.Forms.ComboBox();
-            this._lblPaid = new System.Windows.Forms.Label();
-            this._numFees = new System.Windows.Forms.NumericUpDown();
-            this._lblFees = new System.Windows.Forms.Label();
-            this._lblTaxAmountValue = new System.Windows.Forms.Label();
-            this._lblTaxAmount = new System.Windows.Forms.Label();
-            this._numTax = new System.Windows.Forms.NumericUpDown();
-            this._lblTax = new System.Windows.Forms.Label();
-            this._lblAfterDiscountValue = new System.Windows.Forms.Label();
-            this._lblAfterDiscount = new System.Windows.Forms.Label();
-            this._discountEditorPanel = new System.Windows.Forms.TableLayoutPanel();
-            this._cmbDiscountMode = new System.Windows.Forms.ComboBox();
-            this._numDiscount = new System.Windows.Forms.NumericUpDown();
-            this._lblDiscountValue = new System.Windows.Forms.Label();
-            this._lblDiscount = new System.Windows.Forms.Label();
-            this._lblSubtotalValue = new System.Windows.Forms.Label();
-            this._lblSubtotal = new System.Windows.Forms.Label();
-            this._cartLines = new System.Windows.Forms.FlowLayoutPanel();
-            this._lblEmptyCart = new System.Windows.Forms.Label();
-            this._cartHeader = new System.Windows.Forms.Panel();
-            this._btnClearCart = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
-            this._lblCart = new System.Windows.Forms.Label();
-            this._customerRow = new System.Windows.Forms.TableLayoutPanel();
-            this._btnAddCustomer = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
-            this._cmbCustomer = new System.Windows.Forms.ComboBox();
-            this._lblCustomer = new System.Windows.Forms.Label();
-            this._actions = new System.Windows.Forms.TableLayoutPanel();
-            this._btnCompleteSale = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
-            this._btnPrintLast = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
-            this._btnCalculator = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
-            this._tabInvoices = new System.Windows.Forms.TabPage();
-            this._invoiceGrid = new System.Windows.Forms.DataGridView();
-            this._invoiceToolbar = new System.Windows.Forms.TableLayoutPanel();
-            this._btnDeleteInvoice = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
-            this._btnNewSale = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
-            this._invoiceSearch = new EZControls.Controls.Inputs.EZTextBox();
-            this._toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this._tabs.SuspendLayout();
-            this._tabNewSale.SuspendLayout();
-            this._saleLayout.SuspendLayout();
-            this._leftPanel.SuspendLayout();
-            this._productColumn.SuspendLayout();
-            this._searchBar.SuspendLayout();
-            this._rightPanel.SuspendLayout();
-            this._basketRoot.SuspendLayout();
-            this._basketScroll.SuspendLayout();
-            this._basketLayout.SuspendLayout();
-            this._totalsLayout.SuspendLayout();
-            this._heroTotalPanel.SuspendLayout();
-            this._paidEditorPanel.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this._numPaid)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._numFees)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._numTax)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this._numDiscount)).BeginInit();
-            this._cartHeader.SuspendLayout();
-            this._customerRow.SuspendLayout();
-            this._actions.SuspendLayout();
-            this._tabInvoices.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this._invoiceGrid)).BeginInit();
-            this._invoiceToolbar.SuspendLayout();
-            this.SuspendLayout();
+            components = new System.ComponentModel.Container();
+            _tabs = new TabControl();
+            _tabNewSale = new TabPage();
+            _pageLayout = new TableLayoutPanel();
+            _heroStrip = new TableLayoutPanel();
+            _heroTotalCard = new Panel();
+            _lblHeroTotal = new Label();
+            _lblHeroTotalCaption = new Label();
+            _discountCard = new Panel();
+            _lblHeroDiscount = new Label();
+            _lblHeroDiscountCaption = new Label();
+            _statsCard = new Panel();
+            _lblHeroStats = new Label();
+            _saleLayout = new TableLayoutPanel();
+            _leftPanel = new Panel();
+            _productColumn = new TableLayoutPanel();
+            _productHeader = new TableLayoutPanel();
+            _lblProductCount = new Label();
+            _btnViewToggle = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
+            _searchBar = new TableLayoutPanel();
+            _productSearch = new EZControls.Controls.Inputs.EZTextBox();
+            _btnScanBarcode = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
+            _categoryBar = new DzentoPOS2.WinForms.Controls.Pos.CategoryChipBar();
+            _scanStrip = new DzentoPOS2.WinForms.Controls.Pos.ScanConfirmationStrip();
+            _productList = new DzentoPOS2.WinForms.Controls.Pos.PosProductList();
+            _rightPanel = new Panel();
+            _basketRoot = new TableLayoutPanel();
+            _sessionChip = new DzentoPOS2.WinForms.Controls.Pos.SessionStatusChip();
+            _basketScroll = new Panel();
+            _basketLayout = new TableLayoutPanel();
+            _customerRow = new TableLayoutPanel();
+            _lblCustomer = new Label();
+            _cmbCustomer = new ComboBox();
+            _btnAddCustomer = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
+            _cartHeader = new TableLayoutPanel();
+            _lblCart = new Label();
+            _btnClearCart = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
+            _cartLines = new FlowLayoutPanel();
+            _lblEmptyCart = new Label();
+            _totalsLayout = new TableLayoutPanel();
+            _lblDiscount = new Label();
+            _lblDiscountValue = new Label();
+            _discountEditorPanel = new TableLayoutPanel();
+            _numDiscount = new NumericUpDown();
+            _cmbDiscountMode = new ComboBox();
+            _lblSubtotal = new Label();
+            _lblSubtotalValue = new Label();
+            _lblAfterDiscount = new Label();
+            _lblAfterDiscountValue = new Label();
+            _lblTax = new Label();
+            _numTax = new NumericUpDown();
+            _lblTaxAmount = new Label();
+            _lblTaxAmountValue = new Label();
+            _lblFees = new Label();
+            _numFees = new NumericUpDown();
+            _lblTotal = new Label();
+            _lblTotalValue = new Label();
+            _lblPaid = new Label();
+            _paidEditorPanel = new TableLayoutPanel();
+            _numPaid = new NumericUpDown();
+            _btnPayInFull = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
+            _lblBalance = new Label();
+            _lblBalanceValue = new Label();
+            _actions = new TableLayoutPanel();
+            _btnCompleteSale = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
+            _actionRow = new TableLayoutPanel();
+            _btnCard = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
+            _btnCredit = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
+            _btnHold = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
+            _btnCancelSale = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
+            _utilityRow = new TableLayoutPanel();
+            _btnPrintLast = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
+            _btnCalculator = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
+            _tabInvoices = new TabPage();
+            _invoiceGrid = new DataGridView();
+            _lblNoInvoices = new Label();
+            _invoiceToolbar = new TableLayoutPanel();
+            _invoiceSearch = new EZControls.Controls.Inputs.EZTextBox();
+            _btnNewSale = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
+            _btnDeleteInvoice = new DzentoPOS2.WinForms.Controls.ThemedIconButton();
+            _toolTip = new ToolTip(components);
+            _tabs.SuspendLayout();
+            _tabNewSale.SuspendLayout();
+            _pageLayout.SuspendLayout();
+            _heroStrip.SuspendLayout();
+            _heroTotalCard.SuspendLayout();
+            _discountCard.SuspendLayout();
+            _statsCard.SuspendLayout();
+            _saleLayout.SuspendLayout();
+            _leftPanel.SuspendLayout();
+            _productColumn.SuspendLayout();
+            _productHeader.SuspendLayout();
+            _searchBar.SuspendLayout();
+            _rightPanel.SuspendLayout();
+            _basketRoot.SuspendLayout();
+            _basketScroll.SuspendLayout();
+            _basketLayout.SuspendLayout();
+            _customerRow.SuspendLayout();
+            _cartHeader.SuspendLayout();
+            _cartLines.SuspendLayout();
+            _totalsLayout.SuspendLayout();
+            _discountEditorPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)_numDiscount).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)_numTax).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)_numFees).BeginInit();
+            _paidEditorPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)_numPaid).BeginInit();
+            _actions.SuspendLayout();
+            _actionRow.SuspendLayout();
+            _utilityRow.SuspendLayout();
+            _tabInvoices.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)_invoiceGrid).BeginInit();
+            _invoiceToolbar.SuspendLayout();
+            SuspendLayout();
             // 
             // _tabs
             // 
-            this._tabs.Controls.Add(this._tabNewSale);
-            this._tabs.Controls.Add(this._tabInvoices);
-            this._tabs.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._tabs.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this._tabs.Location = new System.Drawing.Point(0, 0);
-            this._tabs.Name = "_tabs";
-            this._tabs.Padding = new System.Drawing.Point(18, 8);
-            this._tabs.SelectedIndex = 0;
-            this._tabs.Size = new System.Drawing.Size(1440, 820);
-            this._tabs.SizeMode = System.Windows.Forms.TabSizeMode.FillToRight;
-            this._tabs.TabIndex = 0;
+            _tabs.Controls.Add(_tabNewSale);
+            _tabs.Controls.Add(_tabInvoices);
+            _tabs.Dock = DockStyle.Fill;
+            _tabs.Font = new Font("Segoe UI", 10F);
+            _tabs.Location = new Point(0, 0);
+            _tabs.Name = "_tabs";
+            _tabs.Padding = new Point(18, 8);
+            _tabs.SelectedIndex = 0;
+            _tabs.Size = new Size(1440, 820);
+            _tabs.SizeMode = TabSizeMode.FillToRight;
+            _tabs.TabIndex = 0;
+            _tabs.SelectedIndexChanged += OnTabSelected;
             // 
             // _tabNewSale
             // 
-            this._tabNewSale.BackColor = System.Drawing.SystemColors.Control;
-            this._tabNewSale.Controls.Add(this._saleLayout);
-            this._tabNewSale.Location = new System.Drawing.Point(4, 36);
-            this._tabNewSale.Name = "_tabNewSale";
-            this._tabNewSale.Padding = new System.Windows.Forms.Padding(3);
-            this._tabNewSale.Size = new System.Drawing.Size(1432, 780);
-            this._tabNewSale.TabIndex = 0;
-            this._tabNewSale.Text = "New Sale";
-            this._tabNewSale.Resize += new System.EventHandler(this.OnSaleTabResized);
+            _tabNewSale.BackColor = SystemColors.Control;
+            _tabNewSale.Controls.Add(_pageLayout);
+            _tabNewSale.Location = new Point(4, 36);
+            _tabNewSale.Name = "_tabNewSale";
+            _tabNewSale.Padding = new Padding(3);
+            _tabNewSale.Size = new Size(1432, 780);
+            _tabNewSale.TabIndex = 0;
+            _tabNewSale.Text = "New Sale";
+            _tabNewSale.Resize += OnSaleTabResized;
+            // 
+            // _pageLayout
+            // 
+            _pageLayout.ColumnCount = 1;
+            _pageLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            _pageLayout.Controls.Add(_heroStrip, 0, 0);
+            _pageLayout.Controls.Add(_saleLayout, 0, 1);
+            _pageLayout.Dock = DockStyle.Fill;
+            _pageLayout.Location = new Point(3, 3);
+            _pageLayout.Margin = new Padding(0);
+            _pageLayout.Name = "_pageLayout";
+            _pageLayout.RowCount = 2;
+            _pageLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 110F));
+            _pageLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            _pageLayout.Size = new Size(1426, 774);
+            _pageLayout.TabIndex = 0;
+            // 
+            // _heroStrip
+            // 
+            _heroStrip.ColumnCount = 2;
+            _heroStrip.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 55F));
+            _heroStrip.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 45F));
+            _heroStrip.Controls.Add(_heroTotalCard, 0, 0);
+            _heroStrip.Controls.Add(_discountCard, 1, 0);
+            _heroStrip.Controls.Add(_statsCard, 1, 1);
+            _heroStrip.Dock = DockStyle.Fill;
+            _heroStrip.Location = new Point(0, 0);
+            _heroStrip.Margin = new Padding(0);
+            _heroStrip.Name = "_heroStrip";
+            _heroStrip.Padding = new Padding(12, 4, 12, 4);
+            _heroStrip.RowCount = 2;
+            _heroStrip.RowStyles.Add(new RowStyle(SizeType.Absolute, 66F));
+            _heroStrip.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+            _heroStrip.Size = new Size(1426, 110);
+            _heroStrip.TabIndex = 0;
+            // 
+            // _heroTotalCard
+            // 
+            _heroTotalCard.BackColor = SystemColors.Window;
+            _heroTotalCard.Controls.Add(_lblHeroTotal);
+            _heroTotalCard.Controls.Add(_lblHeroTotalCaption);
+            _heroTotalCard.Dock = DockStyle.Fill;
+            _heroTotalCard.Location = new Point(12, 4);
+            _heroTotalCard.Margin = new Padding(0, 0, 8, 0);
+            _heroTotalCard.Name = "_heroTotalCard";
+            _heroTotalCard.Padding = new Padding(10, 6, 10, 6);
+            _heroStrip.SetRowSpan(_heroTotalCard, 2);
+            _heroTotalCard.Size = new Size(763, 102);
+            _heroTotalCard.TabIndex = 0;
+            // 
+            // _lblHeroTotal
+            // 
+            _lblHeroTotal.Dock = DockStyle.Fill;
+            _lblHeroTotal.Font = new Font("Segoe UI", 38F, FontStyle.Bold);
+            _lblHeroTotal.ForeColor = SystemColors.HotTrack;
+            _lblHeroTotal.Location = new Point(10, 22);
+            _lblHeroTotal.Margin = new Padding(0);
+            _lblHeroTotal.Name = "_lblHeroTotal";
+            _lblHeroTotal.Size = new Size(743, 74);
+            _lblHeroTotal.TabIndex = 1;
+            _lblHeroTotal.Text = "0.00";
+            _lblHeroTotal.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // _lblHeroTotalCaption
+            // 
+            _lblHeroTotalCaption.Dock = DockStyle.Top;
+            _lblHeroTotalCaption.Font = new Font("Segoe UI", 9.5F);
+            _lblHeroTotalCaption.ForeColor = SystemColors.GrayText;
+            _lblHeroTotalCaption.Location = new Point(10, 6);
+            _lblHeroTotalCaption.Margin = new Padding(0);
+            _lblHeroTotalCaption.Name = "_lblHeroTotalCaption";
+            _lblHeroTotalCaption.Size = new Size(743, 16);
+            _lblHeroTotalCaption.TabIndex = 0;
+            _lblHeroTotalCaption.Text = "Grand total";
+            _lblHeroTotalCaption.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // _discountCard
+            // 
+            _discountCard.BackColor = SystemColors.Window;
+            _discountCard.Controls.Add(_lblHeroDiscount);
+            _discountCard.Controls.Add(_lblHeroDiscountCaption);
+            _discountCard.Dock = DockStyle.Fill;
+            _discountCard.Location = new Point(791, 4);
+            _discountCard.Margin = new Padding(8, 0, 0, 0);
+            _discountCard.Name = "_discountCard";
+            _discountCard.Padding = new Padding(10, 2, 10, 2);
+            _discountCard.Size = new Size(623, 66);
+            _discountCard.TabIndex = 1;
+            // 
+            // _lblHeroDiscount
+            // 
+            _lblHeroDiscount.Dock = DockStyle.Fill;
+            _lblHeroDiscount.Font = new Font("Segoe UI", 26F, FontStyle.Bold);
+            _lblHeroDiscount.ForeColor = SystemColors.HotTrack;
+            _lblHeroDiscount.Location = new Point(10, 14);
+            _lblHeroDiscount.Margin = new Padding(0);
+            _lblHeroDiscount.Name = "_lblHeroDiscount";
+            _lblHeroDiscount.Size = new Size(603, 50);
+            _lblHeroDiscount.TabIndex = 1;
+            _lblHeroDiscount.Text = "0.00";
+            _lblHeroDiscount.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // _lblHeroDiscountCaption
+            // 
+            _lblHeroDiscountCaption.Dock = DockStyle.Top;
+            _lblHeroDiscountCaption.Font = new Font("Segoe UI", 8.5F);
+            _lblHeroDiscountCaption.ForeColor = SystemColors.GrayText;
+            _lblHeroDiscountCaption.Location = new Point(10, 2);
+            _lblHeroDiscountCaption.Margin = new Padding(0);
+            _lblHeroDiscountCaption.Name = "_lblHeroDiscountCaption";
+            _lblHeroDiscountCaption.Size = new Size(603, 12);
+            _lblHeroDiscountCaption.TabIndex = 0;
+            _lblHeroDiscountCaption.Text = "Discount";
+            _lblHeroDiscountCaption.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // _statsCard
+            // 
+            _statsCard.BackColor = SystemColors.Window;
+            _statsCard.Controls.Add(_lblHeroStats);
+            _statsCard.Dock = DockStyle.Fill;
+            _statsCard.Location = new Point(791, 70);
+            _statsCard.Margin = new Padding(8, 0, 0, 0);
+            _statsCard.Name = "_statsCard";
+            _statsCard.Padding = new Padding(10, 0, 10, 0);
+            _statsCard.Size = new Size(623, 36);
+            _statsCard.TabIndex = 2;
+            // 
+            // _lblHeroStats
+            // 
+            _lblHeroStats.Dock = DockStyle.Fill;
+            _lblHeroStats.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+            _lblHeroStats.ForeColor = SystemColors.ControlText;
+            _lblHeroStats.Location = new Point(10, 0);
+            _lblHeroStats.Margin = new Padding(0);
+            _lblHeroStats.Name = "_lblHeroStats";
+            _lblHeroStats.Size = new Size(603, 36);
+            _lblHeroStats.TabIndex = 0;
+            _lblHeroStats.Text = "0 items";
+            _lblHeroStats.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // _saleLayout
             // 
-            this._saleLayout.ColumnCount = 2;
-            this._saleLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this._saleLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 460F));
-            this._saleLayout.Controls.Add(this._leftPanel, 0, 0);
-            this._saleLayout.Controls.Add(this._rightPanel, 1, 0);
-            this._saleLayout.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._saleLayout.Location = new System.Drawing.Point(3, 3);
-            this._saleLayout.Margin = new System.Windows.Forms.Padding(0);
-            this._saleLayout.Name = "_saleLayout";
-            this._saleLayout.Padding = new System.Windows.Forms.Padding(0);
-            this._saleLayout.RowCount = 1;
-            this._saleLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this._saleLayout.Size = new System.Drawing.Size(1426, 774);
-            this._saleLayout.TabIndex = 0;
+            _saleLayout.ColumnCount = 2;
+            _saleLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            _saleLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 460F));
+            _saleLayout.Controls.Add(_leftPanel, 0, 0);
+            _saleLayout.Controls.Add(_rightPanel, 1, 0);
+            _saleLayout.Dock = DockStyle.Fill;
+            _saleLayout.Location = new Point(0, 110);
+            _saleLayout.Margin = new Padding(0);
+            _saleLayout.Name = "_saleLayout";
+            _saleLayout.RowCount = 1;
+            _saleLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            _saleLayout.Size = new Size(1426, 664);
+            _saleLayout.TabIndex = 1;
             // 
             // _leftPanel
             // 
-            this._leftPanel.Controls.Add(this._productColumn);
-            this._leftPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._leftPanel.Location = new System.Drawing.Point(0, 0);
-            this._leftPanel.Margin = new System.Windows.Forms.Padding(0);
-            this._leftPanel.Name = "_leftPanel";
-            this._leftPanel.Padding = new System.Windows.Forms.Padding(12);
-            this._leftPanel.Size = new System.Drawing.Size(966, 774);
-            this._leftPanel.TabIndex = 0;
-            this._leftPanel.Tag = "background";
+            _leftPanel.Controls.Add(_productColumn);
+            _leftPanel.Dock = DockStyle.Fill;
+            _leftPanel.Location = new Point(0, 0);
+            _leftPanel.Margin = new Padding(0);
+            _leftPanel.Name = "_leftPanel";
+            _leftPanel.Padding = new Padding(12);
+            _leftPanel.Size = new Size(966, 664);
+            _leftPanel.TabIndex = 0;
+            _leftPanel.Tag = "background";
             // 
             // _productColumn
             // 
-            this._productColumn.ColumnCount = 1;
-            this._productColumn.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this._productColumn.Controls.Add(this._productList, 0, 3);
-            this._productColumn.Controls.Add(this._scanStrip, 0, 2);
-            this._productColumn.Controls.Add(this._categoryBar, 0, 1);
-            this._productColumn.Controls.Add(this._searchBar, 0, 0);
-            this._productColumn.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._productColumn.Location = new System.Drawing.Point(12, 12);
-            this._productColumn.Margin = new System.Windows.Forms.Padding(0);
-            this._productColumn.Name = "_productColumn";
-            this._productColumn.Padding = new System.Windows.Forms.Padding(0);
-            this._productColumn.RowCount = 4;
-            this._productColumn.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 48F));
-            this._productColumn.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 44F));
-            this._productColumn.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this._productColumn.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this._productColumn.Size = new System.Drawing.Size(942, 750);
-            this._productColumn.TabIndex = 0;
+            _productColumn.ColumnCount = 1;
+            _productColumn.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            _productColumn.Controls.Add(_productHeader, 0, 0);
+            _productColumn.Controls.Add(_searchBar, 0, 1);
+            _productColumn.Controls.Add(_categoryBar, 0, 2);
+            _productColumn.Controls.Add(_scanStrip, 0, 3);
+            _productColumn.Controls.Add(_productList, 0, 4);
+            _productColumn.Dock = DockStyle.Fill;
+            _productColumn.Location = new Point(12, 12);
+            _productColumn.Margin = new Padding(0);
+            _productColumn.Name = "_productColumn";
+            _productColumn.RowCount = 5;
+            _productColumn.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            _productColumn.RowStyles.Add(new RowStyle(SizeType.Absolute, 48F));
+            _productColumn.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
+            _productColumn.RowStyles.Add(new RowStyle());
+            _productColumn.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            _productColumn.Size = new Size(942, 640);
+            _productColumn.TabIndex = 0;
             // 
-            // _productList
+            // _productHeader
             // 
-            this._productList.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._productList.Location = new System.Drawing.Point(0, 92);
-            this._productList.Margin = new System.Windows.Forms.Padding(0);
-            this._productList.Name = "_productList";
-            this._productList.Size = new System.Drawing.Size(942, 658);
-            this._productList.TabIndex = 3;
-            this._productList.TabStop = true;
-            this._productList.ItemDoubleClicked += new System.EventHandler<DzentoPOS2.App.Services.Sales.PosProductItem>(this.OnProductItemActivated);
+            _productHeader.ColumnCount = 2;
+            _productHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            _productHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
+            _productHeader.Controls.Add(_lblProductCount, 0, 0);
+            _productHeader.Controls.Add(_btnViewToggle, 1, 0);
+            _productHeader.Dock = DockStyle.Fill;
+            _productHeader.Location = new Point(0, 0);
+            _productHeader.Margin = new Padding(0, 0, 0, 4);
+            _productHeader.Name = "_productHeader";
+            _productHeader.RowCount = 1;
+            _productHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            _productHeader.Size = new Size(942, 26);
+            _productHeader.TabIndex = 0;
             // 
-            // _scanStrip
+            // _lblProductCount
             // 
-            this._scanStrip.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._scanStrip.Location = new System.Drawing.Point(0, 92);
-            this._scanStrip.Margin = new System.Windows.Forms.Padding(0, 0, 0, 6);
-            this._scanStrip.MinimumSize = new System.Drawing.Size(0, 46);
-            this._scanStrip.Name = "_scanStrip";
-            this._scanStrip.Size = new System.Drawing.Size(942, 46);
-            this._scanStrip.TabIndex = 2;
-            this._scanStrip.Visible = false;
+            _lblProductCount.Dock = DockStyle.Fill;
+            _lblProductCount.Font = new Font("Segoe UI", 9.5F);
+            _lblProductCount.ForeColor = SystemColors.GrayText;
+            _lblProductCount.Location = new Point(0, 0);
+            _lblProductCount.Margin = new Padding(0);
+            _lblProductCount.Name = "_lblProductCount";
+            _lblProductCount.Size = new Size(902, 26);
+            _lblProductCount.TabIndex = 0;
+            _lblProductCount.Text = "0 products";
+            _lblProductCount.TextAlign = ContentAlignment.MiddleLeft;
             // 
-            // _categoryBar
+            // _btnViewToggle
             // 
-            this._categoryBar.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._categoryBar.Location = new System.Drawing.Point(0, 48);
-            this._categoryBar.Margin = new System.Windows.Forms.Padding(0, 0, 0, 8);
-            this._categoryBar.Name = "_categoryBar";
-            this._categoryBar.Size = new System.Drawing.Size(942, 36);
-            this._categoryBar.TabIndex = 1;
-            this._categoryBar.CategorySelected += new System.EventHandler<DzentoPOS2.WinForms.Controls.Pos.PosCategoryFilterChangedEventArgs>(this.OnCategorySelected);
+            _btnViewToggle.BackColor = SystemColors.Control;
+            _btnViewToggle.Cursor = Cursors.Hand;
+            _btnViewToggle.Dock = DockStyle.Fill;
+            _btnViewToggle.FlatAppearance.BorderColor = SystemColors.ControlDark;
+            _btnViewToggle.FlatStyle = FlatStyle.Flat;
+            _btnViewToggle.Font = new Font("Segoe UI Semibold", 10F);
+            _btnViewToggle.IconChar = FontAwesome.Sharp.IconChar.TableCells;
+            _btnViewToggle.IconColor = SystemColors.ControlText;
+            _btnViewToggle.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            _btnViewToggle.IconSize = 14;
+            _btnViewToggle.Location = new Point(902, 0);
+            _btnViewToggle.Margin = new Padding(0);
+            _btnViewToggle.Name = "_btnViewToggle";
+            _btnViewToggle.Size = new Size(40, 26);
+            _btnViewToggle.Solid = false;
+            _btnViewToggle.TabIndex = 1;
+            _btnViewToggle.TextImageRelation = TextImageRelation.ImageBeforeText;
+            _btnViewToggle.Tone = WinForms.Controls.ButtonTone.Neutral;
+            _btnViewToggle.UseVisualStyleBackColor = false;
+            _btnViewToggle.Click += OnViewModeToggleClick;
             // 
             // _searchBar
             // 
-            this._searchBar.ColumnCount = 2;
-            this._searchBar.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this._searchBar.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 150F));
-            this._searchBar.Controls.Add(this._btnScanBarcode, 1, 0);
-            this._searchBar.Controls.Add(this._productSearch, 0, 0);
-            this._searchBar.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._searchBar.Location = new System.Drawing.Point(0, 0);
-            this._searchBar.Margin = new System.Windows.Forms.Padding(0);
-            this._searchBar.Name = "_searchBar";
-            this._searchBar.Padding = new System.Windows.Forms.Padding(0, 0, 0, 8);
-            this._searchBar.RowCount = 1;
-            this._searchBar.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this._searchBar.Size = new System.Drawing.Size(942, 48);
-            this._searchBar.TabIndex = 0;
-            // 
-            // _btnScanBarcode
-            // 
-            this._btnScanBarcode.BackColor = System.Drawing.SystemColors.Control;
-            this._btnScanBarcode.Cursor = System.Windows.Forms.Cursors.Hand;
-            this._btnScanBarcode.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._btnScanBarcode.FlatAppearance.BorderColor = System.Drawing.SystemColors.ControlDark;
-            this._btnScanBarcode.FlatAppearance.BorderSize = 1;
-            this._btnScanBarcode.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this._btnScanBarcode.Font = new System.Drawing.Font("Segoe UI Semibold", 10F);
-            this._btnScanBarcode.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._btnScanBarcode.IconChar = FontAwesome.Sharp.IconChar.Barcode;
-            this._btnScanBarcode.IconColor = System.Drawing.SystemColors.ControlText;
-            this._btnScanBarcode.IconSize = 17;
-            this._btnScanBarcode.Location = new System.Drawing.Point(792, 0);
-            this._btnScanBarcode.Margin = new System.Windows.Forms.Padding(0, 0, 0, 8);
-            this._btnScanBarcode.Name = "_btnScanBarcode";
-            this._btnScanBarcode.Size = new System.Drawing.Size(150, 40);
-            this._btnScanBarcode.TabIndex = 1;
-            this._btnScanBarcode.Text = "  Scan";
-            this._btnScanBarcode.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this._btnScanBarcode.Tone = DzentoPOS2.WinForms.Controls.ButtonTone.Primary;
-            this._btnScanBarcode.Click += new System.EventHandler(this.OnScanBarcodeClick);
+            _searchBar.ColumnCount = 2;
+            _searchBar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            _searchBar.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
+            _searchBar.Controls.Add(_productSearch, 0, 0);
+            _searchBar.Controls.Add(_btnScanBarcode, 1, 0);
+            _searchBar.Dock = DockStyle.Fill;
+            _searchBar.Location = new Point(0, 30);
+            _searchBar.Margin = new Padding(0);
+            _searchBar.Name = "_searchBar";
+            _searchBar.RowCount = 1;
+            _searchBar.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            _searchBar.Size = new Size(942, 48);
+            _searchBar.TabIndex = 1;
             // 
             // _productSearch
             // 
-            this._productSearch.BackColor = System.Drawing.SystemColors.Window;
-            this._productSearch.BorderColor = System.Drawing.SystemColors.ControlDark;
-            this._productSearch.BorderFocusColor = System.Drawing.SystemColors.Highlight;
-            this._productSearch.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._productSearch.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this._productSearch.ForeColor = System.Drawing.SystemColors.WindowText;
-            this._productSearch.Location = new System.Drawing.Point(0, 0);
-            this._productSearch.Margin = new System.Windows.Forms.Padding(0, 0, 8, 8);
-            this._productSearch.Name = "_productSearch";
-            this._productSearch.PlaceholderColor = System.Drawing.SystemColors.GrayText;
-            this._productSearch.PlaceholderText = "Search products or scan a barcode (F2)";
-            this._productSearch.Size = new System.Drawing.Size(784, 40);
-            this._productSearch.TabIndex = 0;
-            this._productSearch.TextChanged += new System.EventHandler(this.OnProductSearchTextChanged);
-            this._productSearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.OnProductSearchKeyDown);
+            _productSearch.BackColor = SystemColors.Window;
+            _productSearch.BorderColor = SystemColors.ControlDark;
+            _productSearch.BorderErrorColor = Color.Firebrick;
+            _productSearch.BorderFocusColor = SystemColors.Highlight;
+            _productSearch.BorderRadius = 10;
+            _productSearch.BorderSize = 2;
+            _productSearch.Dock = DockStyle.Fill;
+            _productSearch.Font = new Font("Segoe UI", 11F);
+            _productSearch.ForeColor = SystemColors.WindowText;
+            _productSearch.Location = new Point(0, 0);
+            _productSearch.Margin = new Padding(0, 0, 8, 0);
+            _productSearch.Name = "_productSearch";
+            _productSearch.Padding = new Padding(10, 6, 10, 6);
+            _productSearch.PlaceholderColor = SystemColors.GrayText;
+            _productSearch.PlaceholderText = "Search products or scan a barcode (F2)";
+            _productSearch.Size = new Size(784, 48);
+            _productSearch.TabIndex = 0;
+            _productSearch.TextChanged += OnProductSearchTextChanged;
+            _productSearch.KeyDown += OnProductSearchKeyDown;
+            // 
+            // _btnScanBarcode
+            // 
+            _btnScanBarcode.BackColor = SystemColors.Control;
+            _btnScanBarcode.Cursor = Cursors.Hand;
+            _btnScanBarcode.Dock = DockStyle.Fill;
+            _btnScanBarcode.FlatAppearance.BorderColor = SystemColors.ControlDark;
+            _btnScanBarcode.FlatStyle = FlatStyle.Flat;
+            _btnScanBarcode.Font = new Font("Segoe UI Semibold", 10F);
+            _btnScanBarcode.ForeColor = SystemColors.ControlText;
+            _btnScanBarcode.IconChar = FontAwesome.Sharp.IconChar.Barcode;
+            _btnScanBarcode.IconColor = SystemColors.ControlText;
+            _btnScanBarcode.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            _btnScanBarcode.IconSize = 17;
+            _btnScanBarcode.Location = new Point(792, 0);
+            _btnScanBarcode.Margin = new Padding(0);
+            _btnScanBarcode.Name = "_btnScanBarcode";
+            _btnScanBarcode.Size = new Size(150, 48);
+            _btnScanBarcode.Solid = false;
+            _btnScanBarcode.TabIndex = 1;
+            _btnScanBarcode.Text = "  Scan";
+            _btnScanBarcode.TextImageRelation = TextImageRelation.ImageBeforeText;
+            _btnScanBarcode.Tone = WinForms.Controls.ButtonTone.Primary;
+            _btnScanBarcode.UseVisualStyleBackColor = false;
+            _btnScanBarcode.Click += OnScanBarcodeClick;
+            // 
+            // _categoryBar
+            // 
+            _categoryBar.BackColor = Color.Transparent;
+            _categoryBar.Dock = DockStyle.Fill;
+            _categoryBar.Font = new Font("Segoe UI", 10F);
+            _categoryBar.Location = new Point(0, 78);
+            _categoryBar.Margin = new Padding(0, 0, 0, 8);
+            _categoryBar.Name = "_categoryBar";
+            _categoryBar.Size = new Size(942, 36);
+            _categoryBar.TabIndex = 2;
+            _categoryBar.CategorySelected += OnCategorySelected;
+            // 
+            // _scanStrip
+            // 
+            _scanStrip.BackColor = Color.FromArgb(234, 246, 237);
+            _scanStrip.Dock = DockStyle.Fill;
+            _scanStrip.Location = new Point(0, 122);
+            _scanStrip.Margin = new Padding(0, 0, 0, 6);
+            _scanStrip.MinimumSize = new Size(0, 46);
+            _scanStrip.Name = "_scanStrip";
+            _scanStrip.Padding = new Padding(1);
+            _scanStrip.Size = new Size(942, 46);
+            _scanStrip.TabIndex = 3;
+            _scanStrip.Visible = false;
+            // 
+            // _productList
+            // 
+            _productList.BackColor = Color.FromArgb(245, 247, 250);
+            _productList.Dock = DockStyle.Fill;
+            _productList.ForeColor = Color.FromArgb(29, 29, 31);
+            _productList.Location = new Point(0, 174);
+            _productList.Margin = new Padding(0);
+            _productList.Name = "_productList";
+            _productList.ScrollOffset = 0;
+            _productList.Size = new Size(942, 466);
+            _productList.TabIndex = 4;
+            _productList.ViewMode = App.Services.Sales.PosViewMode.Cards;
+            _productList.ItemDoubleClicked += OnProductItemActivated;
             // 
             // _rightPanel
             // 
-            this._rightPanel.Controls.Add(this._basketRoot);
-            this._rightPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._rightPanel.Location = new System.Drawing.Point(966, 0);
-            this._rightPanel.Margin = new System.Windows.Forms.Padding(0);
-            this._rightPanel.Name = "_rightPanel";
-            this._rightPanel.Padding = new System.Windows.Forms.Padding(12);
-            this._rightPanel.Size = new System.Drawing.Size(460, 774);
-            this._rightPanel.TabIndex = 1;
+            _rightPanel.Controls.Add(_basketRoot);
+            _rightPanel.Dock = DockStyle.Fill;
+            _rightPanel.Location = new Point(966, 0);
+            _rightPanel.Margin = new Padding(0);
+            _rightPanel.Name = "_rightPanel";
+            _rightPanel.Padding = new Padding(12);
+            _rightPanel.Size = new Size(460, 664);
+            _rightPanel.TabIndex = 1;
             // 
             // _basketRoot
             // 
-            this._basketRoot.ColumnCount = 1;
-            this._basketRoot.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this._basketRoot.Controls.Add(this._sessionChip, 0, 0);
-            this._basketRoot.Controls.Add(this._basketScroll, 0, 1);
-            this._basketRoot.Controls.Add(this._actions, 0, 2);
-            this._basketRoot.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._basketRoot.Location = new System.Drawing.Point(12, 12);
-            this._basketRoot.Margin = new System.Windows.Forms.Padding(0);
-            this._basketRoot.Name = "_basketRoot";
-            this._basketRoot.Padding = new System.Windows.Forms.Padding(0);
-            this._basketRoot.RowCount = 3;
-            this._basketRoot.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this._basketRoot.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this._basketRoot.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 62F));
-            this._basketRoot.Size = new System.Drawing.Size(436, 750);
-            this._basketRoot.TabIndex = 0;
+            _basketRoot.ColumnCount = 1;
+            _basketRoot.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            _basketRoot.Controls.Add(_sessionChip, 0, 0);
+            _basketRoot.Controls.Add(_basketScroll, 0, 1);
+            _basketRoot.Controls.Add(_actions, 0, 2);
+            _basketRoot.Dock = DockStyle.Fill;
+            _basketRoot.Location = new Point(12, 12);
+            _basketRoot.Margin = new Padding(0);
+            _basketRoot.Name = "_basketRoot";
+            _basketRoot.RowCount = 3;
+            _basketRoot.RowStyles.Add(new RowStyle());
+            _basketRoot.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            _basketRoot.RowStyles.Add(new RowStyle(SizeType.Absolute, 136F));
+            _basketRoot.Size = new Size(436, 640);
+            _basketRoot.TabIndex = 0;
             // 
             // _sessionChip
             // 
-            this._sessionChip.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._sessionChip.Location = new System.Drawing.Point(0, 0);
-            this._sessionChip.Margin = new System.Windows.Forms.Padding(0, 0, 0, 8);
-            this._sessionChip.MinimumSize = new System.Drawing.Size(0, 38);
-            this._sessionChip.Name = "_sessionChip";
-            this._sessionChip.Size = new System.Drawing.Size(436, 38);
-            this._sessionChip.TabIndex = 0;
-            this._sessionChip.ActionClicked += new System.EventHandler(this.OnSessionActionClicked);
+            _sessionChip.BackColor = Color.FromArgb(243, 243, 244);
+            _sessionChip.Dock = DockStyle.Fill;
+            _sessionChip.Location = new Point(0, 0);
+            _sessionChip.Margin = new Padding(0, 0, 0, 8);
+            _sessionChip.MinimumSize = new Size(0, 38);
+            _sessionChip.Name = "_sessionChip";
+            _sessionChip.Padding = new Padding(10, 4, 10, 4);
+            _sessionChip.Size = new Size(436, 38);
+            _sessionChip.TabIndex = 0;
+            _sessionChip.ActionClicked += OnSessionActionClicked;
             // 
             // _basketScroll
             // 
-            this._basketScroll.AutoScroll = true;
-            this._basketScroll.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._basketScroll.Location = new System.Drawing.Point(0, 46);
-            this._basketScroll.Margin = new System.Windows.Forms.Padding(0);
-            this._basketScroll.Name = "_basketScroll";
-            this._basketScroll.Size = new System.Drawing.Size(436, 642);
-            this._basketScroll.TabIndex = 1;
-            this._basketScroll.ClientSizeChanged += new System.EventHandler(this.OnBasketScrollSizeChanged);
-            this._basketScroll.Controls.Add(this._basketLayout);
+            _basketScroll.AutoScroll = true;
+            _basketScroll.Controls.Add(_basketLayout);
+            _basketScroll.Dock = DockStyle.Fill;
+            _basketScroll.Location = new Point(0, 46);
+            _basketScroll.Margin = new Padding(0);
+            _basketScroll.Name = "_basketScroll";
+            _basketScroll.Size = new Size(436, 458);
+            _basketScroll.TabIndex = 1;
+            _basketScroll.ClientSizeChanged += OnBasketScrollSizeChanged;
             // 
             // _basketLayout
             // 
-            this._basketLayout.AutoSize = true;
-            this._basketLayout.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this._basketLayout.ColumnCount = 1;
-            this._basketLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this._basketLayout.Controls.Add(this._totalsLayout, 0, 3);
-            this._basketLayout.Controls.Add(this._cartLines, 0, 2);
-            this._basketLayout.Controls.Add(this._cartHeader, 0, 1);
-            this._basketLayout.Controls.Add(this._customerRow, 0, 0);
-            this._basketLayout.Dock = System.Windows.Forms.DockStyle.Top;
-            this._basketLayout.Location = new System.Drawing.Point(0, 0);
-            this._basketLayout.Margin = new System.Windows.Forms.Padding(0);
-            this._basketLayout.Name = "_basketLayout";
-            this._basketLayout.Padding = new System.Windows.Forms.Padding(0);
-            this._basketLayout.RowCount = 4;
-            this._basketLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 44F));
-            this._basketLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 36F));
-            this._basketLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this._basketLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this._basketLayout.Size = new System.Drawing.Size(436, 354);
-            this._basketLayout.TabIndex = 0;
-            // 
-            // _totalsLayout
-            // 
-            this._totalsLayout.AutoSize = true;
-            this._totalsLayout.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this._totalsLayout.ColumnCount = 2;
-            this._totalsLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 56F));
-            this._totalsLayout.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 44F));
-            this._totalsLayout.Controls.Add(this._lblBalanceValue, 1, 10);
-            this._totalsLayout.Controls.Add(this._lblBalance, 0, 10);
-            this._totalsLayout.Controls.Add(this._paidEditorPanel, 1, 9);
-            this._totalsLayout.Controls.Add(this._lblPaid, 0, 9);
-            this._totalsLayout.Controls.Add(this._cmbPaymentMethod, 1, 8);
-            this._totalsLayout.Controls.Add(this._lblPaymentMethod, 0, 8);
-            this._totalsLayout.Controls.Add(this._heroTotalPanel, 0, 7);
-            this._totalsLayout.Controls.Add(this._numFees, 1, 6);
-            this._totalsLayout.Controls.Add(this._lblFees, 0, 6);
-            this._totalsLayout.Controls.Add(this._lblTaxAmountValue, 1, 5);
-            this._totalsLayout.Controls.Add(this._lblTaxAmount, 0, 5);
-            this._totalsLayout.Controls.Add(this._numTax, 1, 4);
-            this._totalsLayout.Controls.Add(this._lblTax, 0, 4);
-            this._totalsLayout.Controls.Add(this._lblAfterDiscountValue, 1, 3);
-            this._totalsLayout.Controls.Add(this._lblAfterDiscount, 0, 3);
-            this._totalsLayout.Controls.Add(this._discountEditorPanel, 0, 2);
-            this._totalsLayout.Controls.Add(this._lblDiscountValue, 1, 1);
-            this._totalsLayout.Controls.Add(this._lblDiscount, 0, 1);
-            this._totalsLayout.Controls.Add(this._lblSubtotalValue, 1, 0);
-            this._totalsLayout.Controls.Add(this._lblSubtotal, 0, 0);
-            this._totalsLayout.Dock = System.Windows.Forms.DockStyle.Top;
-            this._totalsLayout.Location = new System.Drawing.Point(0, 150);
-            this._totalsLayout.Margin = new System.Windows.Forms.Padding(0, 6, 0, 0);
-            this._totalsLayout.Name = "_totalsLayout";
-            this._totalsLayout.Padding = new System.Windows.Forms.Padding(0, 6, 0, 0);
-            this._totalsLayout.RowCount = 11;
-            this._totalsLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this._totalsLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this._totalsLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this._totalsLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this._totalsLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this._totalsLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this._totalsLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this._totalsLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this._totalsLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this._totalsLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this._totalsLayout.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.AutoSize));
-            this._totalsLayout.SetColumnSpan(this._heroTotalPanel, 2);
-            this._totalsLayout.SetColumnSpan(this._discountEditorPanel, 2);
-            this._totalsLayout.Size = new System.Drawing.Size(436, 204);
-            this._totalsLayout.TabIndex = 3;
-            // 
-            // _heroTotalPanel
-            // 
-            this._heroTotalPanel.ColumnCount = 2;
-            this._heroTotalPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize));
-            this._heroTotalPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this._heroTotalPanel.Controls.Add(this._lblTotalValue, 1, 0);
-            this._heroTotalPanel.Controls.Add(this._lblTotal, 0, 0);
-            this._heroTotalPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._heroTotalPanel.Location = new System.Drawing.Point(0, 138);
-            this._heroTotalPanel.Margin = new System.Windows.Forms.Padding(0, 4, 0, 4);
-            this._heroTotalPanel.Name = "_heroTotalPanel";
-            this._heroTotalPanel.Padding = new System.Windows.Forms.Padding(0, 6, 0, 4);
-            this._heroTotalPanel.RowCount = 1;
-            this._heroTotalPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this._heroTotalPanel.Size = new System.Drawing.Size(436, 58);
-            this._heroTotalPanel.TabIndex = 7;
-            // 
-            // _lblTotalValue
-            // 
-            this._lblTotalValue.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._lblTotalValue.Font = new System.Drawing.Font("Segoe UI", 36F, System.Drawing.FontStyle.Bold);
-            this._lblTotalValue.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._lblTotalValue.Location = new System.Drawing.Point(110, 6);
-            this._lblTotalValue.Margin = new System.Windows.Forms.Padding(0);
-            this._lblTotalValue.MinimumSize = new System.Drawing.Size(0, 60);
-            this._lblTotalValue.Name = "_lblTotalValue";
-            this._lblTotalValue.Size = new System.Drawing.Size(326, 60);
-            this._lblTotalValue.TabIndex = 1;
-            this._lblTotalValue.Text = "0.00";
-            this._lblTotalValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // _lblTotal
-            // 
-            this._lblTotal.AutoSize = true;
-            this._lblTotal.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._lblTotal.Font = new System.Drawing.Font("Segoe UI Semibold", 11F);
-            this._lblTotal.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._lblTotal.Location = new System.Drawing.Point(0, 6);
-            this._lblTotal.Margin = new System.Windows.Forms.Padding(0);
-            this._lblTotal.Name = "_lblTotal";
-            this._lblTotal.Size = new System.Drawing.Size(110, 60);
-            this._lblTotal.TabIndex = 0;
-            this._lblTotal.Text = "Total:";
-            this._lblTotal.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            this._lblTotal.MinimumSize = new System.Drawing.Size(0, 60);
-            // 
-            // _paidEditorPanel
-            // 
-            this._paidEditorPanel.ColumnCount = 2;
-            this._paidEditorPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this._paidEditorPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-            this._paidEditorPanel.Controls.Add(this._btnPayInFull, 1, 0);
-            this._paidEditorPanel.Controls.Add(this._numPaid, 0, 0);
-            this._paidEditorPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._paidEditorPanel.Location = new System.Drawing.Point(244, 196);
-            this._paidEditorPanel.Margin = new System.Windows.Forms.Padding(0);
-            this._paidEditorPanel.Name = "_paidEditorPanel";
-            this._paidEditorPanel.Padding = new System.Windows.Forms.Padding(0);
-            this._paidEditorPanel.RowCount = 1;
-            this._paidEditorPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this._paidEditorPanel.Size = new System.Drawing.Size(192, 30);
-            this._paidEditorPanel.TabIndex = 8;
-            // 
-            // _btnPayInFull
-            // 
-            this._btnPayInFull.BackColor = System.Drawing.SystemColors.Control;
-            this._btnPayInFull.Cursor = System.Windows.Forms.Cursors.Hand;
-            this._btnPayInFull.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._btnPayInFull.FlatAppearance.BorderColor = System.Drawing.SystemColors.ControlDark;
-            this._btnPayInFull.FlatAppearance.BorderSize = 1;
-            this._btnPayInFull.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this._btnPayInFull.IconChar = FontAwesome.Sharp.IconChar.MoneyBillWave;
-            this._btnPayInFull.IconColor = System.Drawing.SystemColors.ControlText;
-            this._btnPayInFull.IconSize = 15;
-            this._btnPayInFull.Location = new System.Drawing.Point(152, 0);
-            this._btnPayInFull.Margin = new System.Windows.Forms.Padding(0);
-            this._btnPayInFull.Name = "_btnPayInFull";
-            this._btnPayInFull.Size = new System.Drawing.Size(40, 30);
-            this._btnPayInFull.TabIndex = 1;
-            this._btnPayInFull.Text = "";
-            this._btnPayInFull.Tone = DzentoPOS2.WinForms.Controls.ButtonTone.Success;
-            this._btnPayInFull.Click += new System.EventHandler(this.OnPayInFullClick);
-            // 
-            // _numPaid
-            // 
-            this._numPaid.BackColor = System.Drawing.SystemColors.Window;
-            this._numPaid.DecimalPlaces = 2;
-            this._numPaid.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._numPaid.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this._numPaid.ForeColor = System.Drawing.SystemColors.WindowText;
-            this._numPaid.Location = new System.Drawing.Point(0, 0);
-            this._numPaid.Margin = new System.Windows.Forms.Padding(0, 0, 4, 0);
-            this._numPaid.Maximum = new decimal(new int[] { 99999999, 0, 0, 0 });
-            this._numPaid.Name = "_numPaid";
-            this._numPaid.Size = new System.Drawing.Size(148, 30);
-            this._numPaid.TabIndex = 0;
-            this._numPaid.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this._numPaid.ValueChanged += new System.EventHandler(this.OnPaidValueChanged);
-            // 
-            // _lblBalanceValue
-            // 
-            this._lblBalanceValue.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._lblBalanceValue.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this._lblBalanceValue.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._lblBalanceValue.Location = new System.Drawing.Point(244, 228);
-            this._lblBalanceValue.Margin = new System.Windows.Forms.Padding(0);
-            this._lblBalanceValue.MinimumSize = new System.Drawing.Size(0, 22);
-            this._lblBalanceValue.Name = "_lblBalanceValue";
-            this._lblBalanceValue.Size = new System.Drawing.Size(192, 22);
-            this._lblBalanceValue.TabIndex = 9;
-            this._lblBalanceValue.Text = "0.00";
-            this._lblBalanceValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // _lblBalance
-            // 
-            this._lblBalance.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._lblBalance.Font = new System.Drawing.Font("Segoe UI", 9.5F);
-            this._lblBalance.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._lblBalance.Location = new System.Drawing.Point(0, 228);
-            this._lblBalance.Margin = new System.Windows.Forms.Padding(0);
-            this._lblBalance.MinimumSize = new System.Drawing.Size(0, 22);
-            this._lblBalance.Name = "_lblBalance";
-            this._lblBalance.Size = new System.Drawing.Size(244, 22);
-            this._lblBalance.TabIndex = 9;
-            this._lblBalance.Text = "Remaining:";
-            this._lblBalance.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // _lblPaid
-            // 
-            this._lblPaid.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._lblPaid.Font = new System.Drawing.Font("Segoe UI", 9.5F);
-            this._lblPaid.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._lblPaid.Location = new System.Drawing.Point(0, 196);
-            this._lblPaid.Margin = new System.Windows.Forms.Padding(0);
-            this._lblPaid.MinimumSize = new System.Drawing.Size(0, 22);
-            this._lblPaid.Name = "_lblPaid";
-            this._lblPaid.Size = new System.Drawing.Size(244, 30);
-            this._lblPaid.TabIndex = 8;
-            this._lblPaid.Text = "Paid:";
-            this._lblPaid.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // _lblPaymentMethod
-            // 
-            this._lblPaymentMethod.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._lblPaymentMethod.Font = new System.Drawing.Font("Segoe UI", 9.5F);
-            this._lblPaymentMethod.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._lblPaymentMethod.Location = new System.Drawing.Point(0, 196);
-            this._lblPaymentMethod.Margin = new System.Windows.Forms.Padding(0);
-            this._lblPaymentMethod.MinimumSize = new System.Drawing.Size(0, 22);
-            this._lblPaymentMethod.Name = "_lblPaymentMethod";
-            this._lblPaymentMethod.Size = new System.Drawing.Size(244, 22);
-            this._lblPaymentMethod.TabIndex = 11;
-            this._lblPaymentMethod.Text = "Payment Method:";
-            this._lblPaymentMethod.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // _cmbPaymentMethod
-            // 
-            this._cmbPaymentMethod.BackColor = System.Drawing.SystemColors.Window;
-            this._cmbPaymentMethod.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._cmbPaymentMethod.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this._cmbPaymentMethod.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this._cmbPaymentMethod.ForeColor = System.Drawing.SystemColors.WindowText;
-            this._cmbPaymentMethod.Location = new System.Drawing.Point(244, 196);
-            this._cmbPaymentMethod.Margin = new System.Windows.Forms.Padding(0);
-            this._cmbPaymentMethod.Name = "_cmbPaymentMethod";
-            this._cmbPaymentMethod.Size = new System.Drawing.Size(192, 23);
-            this._cmbPaymentMethod.TabIndex = 12;
-            this._cmbPaymentMethod.SelectedIndexChanged += new System.EventHandler(this.OnPaymentMethodChanged);
-            // 
-            // _numFees
-            // 
-            this._numFees.BackColor = System.Drawing.SystemColors.Window;
-            this._numFees.DecimalPlaces = 2;
-            this._numFees.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._numFees.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this._numFees.ForeColor = System.Drawing.SystemColors.WindowText;
-            this._numFees.Location = new System.Drawing.Point(244, 166);
-            this._numFees.Margin = new System.Windows.Forms.Padding(0);
-            this._numFees.Maximum = new decimal(new int[] { 99999999, 0, 0, 0 });
-            this._numFees.Name = "_numFees";
-            this._numFees.Size = new System.Drawing.Size(192, 30);
-            this._numFees.TabIndex = 6;
-            this._numFees.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this._numFees.ValueChanged += new System.EventHandler(this.OnFeesValueChanged);
-            // 
-            // _lblFees
-            // 
-            this._lblFees.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._lblFees.Font = new System.Drawing.Font("Segoe UI", 9.5F);
-            this._lblFees.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._lblFees.Location = new System.Drawing.Point(0, 166);
-            this._lblFees.Margin = new System.Windows.Forms.Padding(0);
-            this._lblFees.MinimumSize = new System.Drawing.Size(0, 30);
-            this._lblFees.Name = "_lblFees";
-            this._lblFees.Size = new System.Drawing.Size(244, 30);
-            this._lblFees.TabIndex = 6;
-            this._lblFees.Text = "Fees:";
-            this._lblFees.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // _lblTaxAmountValue
-            // 
-            this._lblTaxAmountValue.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._lblTaxAmountValue.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this._lblTaxAmountValue.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._lblTaxAmountValue.Location = new System.Drawing.Point(244, 136);
-            this._lblTaxAmountValue.Margin = new System.Windows.Forms.Padding(0);
-            this._lblTaxAmountValue.MinimumSize = new System.Drawing.Size(0, 22);
-            this._lblTaxAmountValue.Name = "_lblTaxAmountValue";
-            this._lblTaxAmountValue.Size = new System.Drawing.Size(192, 22);
-            this._lblTaxAmountValue.TabIndex = 5;
-            this._lblTaxAmountValue.Text = "0.00";
-            this._lblTaxAmountValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // _lblTaxAmount
-            // 
-            this._lblTaxAmount.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._lblTaxAmount.Font = new System.Drawing.Font("Segoe UI", 9.5F);
-            this._lblTaxAmount.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._lblTaxAmount.Location = new System.Drawing.Point(0, 136);
-            this._lblTaxAmount.Margin = new System.Windows.Forms.Padding(0);
-            this._lblTaxAmount.MinimumSize = new System.Drawing.Size(0, 22);
-            this._lblTaxAmount.Name = "_lblTaxAmount";
-            this._lblTaxAmount.Size = new System.Drawing.Size(244, 22);
-            this._lblTaxAmount.TabIndex = 5;
-            this._lblTaxAmount.Text = "Tax amount:";
-            this._lblTaxAmount.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // _numTax
-            // 
-            this._numTax.BackColor = System.Drawing.SystemColors.Window;
-            this._numTax.DecimalPlaces = 2;
-            this._numTax.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._numTax.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this._numTax.ForeColor = System.Drawing.SystemColors.WindowText;
-            this._numTax.Location = new System.Drawing.Point(244, 106);
-            this._numTax.Margin = new System.Windows.Forms.Padding(0);
-            this._numTax.Name = "_numTax";
-            this._numTax.Size = new System.Drawing.Size(192, 30);
-            this._numTax.TabIndex = 4;
-            this._numTax.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this._numTax.ValueChanged += new System.EventHandler(this.OnTaxValueChanged);
-            // 
-            // _lblTax
-            // 
-            this._lblTax.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._lblTax.Font = new System.Drawing.Font("Segoe UI", 9.5F);
-            this._lblTax.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._lblTax.Location = new System.Drawing.Point(0, 106);
-            this._lblTax.Margin = new System.Windows.Forms.Padding(0);
-            this._lblTax.MinimumSize = new System.Drawing.Size(0, 30);
-            this._lblTax.Name = "_lblTax";
-            this._lblTax.Size = new System.Drawing.Size(244, 30);
-            this._lblTax.TabIndex = 4;
-            this._lblTax.Text = "Tax rate (%):";
-            this._lblTax.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // _lblAfterDiscountValue
-            // 
-            this._lblAfterDiscountValue.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._lblAfterDiscountValue.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this._lblAfterDiscountValue.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._lblAfterDiscountValue.Location = new System.Drawing.Point(244, 76);
-            this._lblAfterDiscountValue.Margin = new System.Windows.Forms.Padding(0);
-            this._lblAfterDiscountValue.MinimumSize = new System.Drawing.Size(0, 22);
-            this._lblAfterDiscountValue.Name = "_lblAfterDiscountValue";
-            this._lblAfterDiscountValue.Size = new System.Drawing.Size(192, 22);
-            this._lblAfterDiscountValue.TabIndex = 3;
-            this._lblAfterDiscountValue.Text = "0.00";
-            this._lblAfterDiscountValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // _lblAfterDiscount
-            // 
-            this._lblAfterDiscount.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._lblAfterDiscount.Font = new System.Drawing.Font("Segoe UI", 9.5F);
-            this._lblAfterDiscount.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._lblAfterDiscount.Location = new System.Drawing.Point(0, 76);
-            this._lblAfterDiscount.Margin = new System.Windows.Forms.Padding(0);
-            this._lblAfterDiscount.MinimumSize = new System.Drawing.Size(0, 22);
-            this._lblAfterDiscount.Name = "_lblAfterDiscount";
-            this._lblAfterDiscount.Size = new System.Drawing.Size(244, 22);
-            this._lblAfterDiscount.TabIndex = 3;
-            this._lblAfterDiscount.Text = "After discount:";
-            this._lblAfterDiscount.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // _discountEditorPanel
-            // 
-            this._discountEditorPanel.ColumnCount = 2;
-            this._discountEditorPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 52F));
-            this._discountEditorPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 48F));
-            this._discountEditorPanel.Controls.Add(this._cmbDiscountMode, 1, 0);
-            this._discountEditorPanel.Controls.Add(this._numDiscount, 0, 0);
-            this._discountEditorPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._discountEditorPanel.Location = new System.Drawing.Point(0, 46);
-            this._discountEditorPanel.Margin = new System.Windows.Forms.Padding(0);
-            this._discountEditorPanel.Name = "_discountEditorPanel";
-            this._discountEditorPanel.Padding = new System.Windows.Forms.Padding(0);
-            this._discountEditorPanel.RowCount = 1;
-            this._discountEditorPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this._discountEditorPanel.Size = new System.Drawing.Size(436, 30);
-            this._discountEditorPanel.TabIndex = 2;
-            // 
-            // _cmbDiscountMode
-            // 
-            this._cmbDiscountMode.BackColor = System.Drawing.SystemColors.Window;
-            this._cmbDiscountMode.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._cmbDiscountMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this._cmbDiscountMode.Font = new System.Drawing.Font("Segoe UI", 9F);
-            this._cmbDiscountMode.ForeColor = System.Drawing.SystemColors.WindowText;
-            this._cmbDiscountMode.Location = new System.Drawing.Point(226, 0);
-            this._cmbDiscountMode.Margin = new System.Windows.Forms.Padding(0);
-            this._cmbDiscountMode.Name = "_cmbDiscountMode";
-            this._cmbDiscountMode.Size = new System.Drawing.Size(210, 23);
-            this._cmbDiscountMode.TabIndex = 1;
-            this._cmbDiscountMode.SelectedIndexChanged += new System.EventHandler(this.OnDiscountModeChanged);
-            // 
-            // _numDiscount
-            // 
-            this._numDiscount.BackColor = System.Drawing.SystemColors.Window;
-            this._numDiscount.DecimalPlaces = 2;
-            this._numDiscount.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._numDiscount.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this._numDiscount.ForeColor = System.Drawing.SystemColors.WindowText;
-            this._numDiscount.Location = new System.Drawing.Point(0, 0);
-            this._numDiscount.Margin = new System.Windows.Forms.Padding(0, 0, 4, 0);
-            this._numDiscount.Maximum = new decimal(new int[] { 99999999, 0, 0, 0 });
-            this._numDiscount.Name = "_numDiscount";
-            this._numDiscount.Size = new System.Drawing.Size(222, 30);
-            this._numDiscount.TabIndex = 0;
-            this._numDiscount.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this._numDiscount.ValueChanged += new System.EventHandler(this.OnDiscountValueChanged);
-            // 
-            // _lblDiscountValue
-            // 
-            this._lblDiscountValue.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._lblDiscountValue.Font = new System.Drawing.Font("Segoe UI", 26F, System.Drawing.FontStyle.Bold);
-            this._lblDiscountValue.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._lblDiscountValue.Location = new System.Drawing.Point(244, 0);
-            this._lblDiscountValue.Margin = new System.Windows.Forms.Padding(0);
-            this._lblDiscountValue.MinimumSize = new System.Drawing.Size(0, 46);
-            this._lblDiscountValue.Name = "_lblDiscountValue";
-            this._lblDiscountValue.Size = new System.Drawing.Size(192, 46);
-            this._lblDiscountValue.TabIndex = 1;
-            this._lblDiscountValue.Text = "0.00";
-            this._lblDiscountValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // _lblDiscount
-            // 
-            this._lblDiscount.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._lblDiscount.Font = new System.Drawing.Font("Segoe UI", 9.5F);
-            this._lblDiscount.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._lblDiscount.Location = new System.Drawing.Point(0, 0);
-            this._lblDiscount.Margin = new System.Windows.Forms.Padding(0);
-            this._lblDiscount.MinimumSize = new System.Drawing.Size(0, 46);
-            this._lblDiscount.Name = "_lblDiscount";
-            this._lblDiscount.Size = new System.Drawing.Size(244, 46);
-            this._lblDiscount.TabIndex = 0;
-            this._lblDiscount.Text = "Discount:";
-            this._lblDiscount.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // _lblSubtotalValue
-            // 
-            this._lblSubtotalValue.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._lblSubtotalValue.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-            this._lblSubtotalValue.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._lblSubtotalValue.Location = new System.Drawing.Point(244, 0);
-            this._lblSubtotalValue.Margin = new System.Windows.Forms.Padding(0);
-            this._lblSubtotalValue.MinimumSize = new System.Drawing.Size(0, 22);
-            this._lblSubtotalValue.Name = "_lblSubtotalValue";
-            this._lblSubtotalValue.Size = new System.Drawing.Size(192, 22);
-            this._lblSubtotalValue.TabIndex = 1;
-            this._lblSubtotalValue.Text = "0.00";
-            this._lblSubtotalValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            // 
-            // _lblSubtotal
-            // 
-            this._lblSubtotal.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._lblSubtotal.Font = new System.Drawing.Font("Segoe UI", 9.5F);
-            this._lblSubtotal.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._lblSubtotal.Location = new System.Drawing.Point(0, 0);
-            this._lblSubtotal.Margin = new System.Windows.Forms.Padding(0);
-            this._lblSubtotal.MinimumSize = new System.Drawing.Size(0, 22);
-            this._lblSubtotal.Name = "_lblSubtotal";
-            this._lblSubtotal.Size = new System.Drawing.Size(244, 22);
-            this._lblSubtotal.TabIndex = 0;
-            this._lblSubtotal.Text = "Subtotal:";
-            this._lblSubtotal.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            // 
-            // _cartLines
-            // 
-            this._cartLines.AutoSize = true;
-            this._cartLines.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this._cartLines.Controls.Add(this._lblEmptyCart);
-            this._cartLines.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._cartLines.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this._cartLines.Location = new System.Drawing.Point(0, 80);
-            this._cartLines.Margin = new System.Windows.Forms.Padding(0);
-            this._cartLines.Name = "_cartLines";
-            this._cartLines.Padding = new System.Windows.Forms.Padding(0);
-            this._cartLines.Size = new System.Drawing.Size(436, 64);
-            this._cartLines.TabIndex = 2;
-            this._cartLines.WrapContents = false;
-            this._cartLines.SizeChanged += new System.EventHandler(this.OnCartLinesSizeChanged);
-            // 
-            // _lblEmptyCart
-            // 
-            this._lblEmptyCart.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this._lblEmptyCart.ForeColor = System.Drawing.SystemColors.GrayText;
-            this._lblEmptyCart.Location = new System.Drawing.Point(0, 0);
-            this._lblEmptyCart.Margin = new System.Windows.Forms.Padding(0);
-            this._lblEmptyCart.Name = "_lblEmptyCart";
-            this._lblEmptyCart.Size = new System.Drawing.Size(436, 56);
-            this._lblEmptyCart.TabIndex = 0;
-            this._lblEmptyCart.Text = "The cart is empty. Scan a barcode or pick a product.";
-            this._lblEmptyCart.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // _cartHeader
-            // 
-            this._cartHeader.Controls.Add(this._lblCart);
-            this._cartHeader.Controls.Add(this._btnClearCart);
-            this._cartHeader.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._cartHeader.Location = new System.Drawing.Point(0, 44);
-            this._cartHeader.Margin = new System.Windows.Forms.Padding(0);
-            this._cartHeader.Name = "_cartHeader";
-            this._cartHeader.Padding = new System.Windows.Forms.Padding(0, 0, 0, 6);
-            this._cartHeader.Size = new System.Drawing.Size(436, 36);
-            this._cartHeader.TabIndex = 1;
-            // 
-            // _btnClearCart
-            // 
-            this._btnClearCart.BackColor = System.Drawing.SystemColors.Control;
-            this._btnClearCart.Cursor = System.Windows.Forms.Cursors.Hand;
-            this._btnClearCart.Dock = System.Windows.Forms.DockStyle.Right;
-            this._btnClearCart.FlatAppearance.BorderColor = System.Drawing.SystemColors.ControlDark;
-            this._btnClearCart.FlatAppearance.BorderSize = 1;
-            this._btnClearCart.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this._btnClearCart.Font = new System.Drawing.Font("Segoe UI Semibold", 9.5F);
-            this._btnClearCart.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._btnClearCart.IconChar = FontAwesome.Sharp.IconChar.Trash;
-            this._btnClearCart.IconColor = System.Drawing.SystemColors.ControlText;
-            this._btnClearCart.IconSize = 14;
-            this._btnClearCart.Location = new System.Drawing.Point(336, 0);
-            this._btnClearCart.Margin = new System.Windows.Forms.Padding(0);
-            this._btnClearCart.Name = "_btnClearCart";
-            this._btnClearCart.Size = new System.Drawing.Size(100, 30);
-            this._btnClearCart.TabIndex = 1;
-            this._btnClearCart.Text = "  Clear";
-            this._btnClearCart.Tone = DzentoPOS2.WinForms.Controls.ButtonTone.Neutral;
-            this._btnClearCart.Click += new System.EventHandler(this.OnClearCartClick);
-            // 
-            // _lblCart
-            // 
-            this._lblCart.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._lblCart.Font = new System.Drawing.Font("Segoe UI Semibold", 10.5F);
-            this._lblCart.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._lblCart.Location = new System.Drawing.Point(0, 0);
-            this._lblCart.Margin = new System.Windows.Forms.Padding(0);
-            this._lblCart.Name = "_lblCart";
-            this._lblCart.Size = new System.Drawing.Size(436, 30);
-            this._lblCart.TabIndex = 0;
-            this._lblCart.Text = "Cart";
-            this._lblCart.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            _basketLayout.AutoSize = true;
+            _basketLayout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            _basketLayout.ColumnCount = 1;
+            _basketLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            _basketLayout.Controls.Add(_customerRow, 0, 0);
+            _basketLayout.Controls.Add(_cartHeader, 0, 1);
+            _basketLayout.Controls.Add(_cartLines, 0, 2);
+            _basketLayout.Controls.Add(_totalsLayout, 0, 3);
+            _basketLayout.Dock = DockStyle.Top;
+            _basketLayout.Location = new Point(0, 0);
+            _basketLayout.Margin = new Padding(0);
+            _basketLayout.Name = "_basketLayout";
+            _basketLayout.RowCount = 4;
+            _basketLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
+            _basketLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 36F));
+            _basketLayout.RowStyles.Add(new RowStyle());
+            _basketLayout.RowStyles.Add(new RowStyle());
+            _basketLayout.Size = new Size(436, 446);
+            _basketLayout.TabIndex = 0;
             // 
             // _customerRow
             // 
-            this._customerRow.ColumnCount = 3;
-            this._customerRow.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 26F));
-            this._customerRow.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 74F));
-            this._customerRow.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-            this._customerRow.Controls.Add(this._btnAddCustomer, 2, 0);
-            this._customerRow.Controls.Add(this._cmbCustomer, 1, 0);
-            this._customerRow.Controls.Add(this._lblCustomer, 0, 0);
-            this._customerRow.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._customerRow.Location = new System.Drawing.Point(0, 0);
-            this._customerRow.Margin = new System.Windows.Forms.Padding(0);
-            this._customerRow.Name = "_customerRow";
-            this._customerRow.Padding = new System.Windows.Forms.Padding(0);
-            this._customerRow.RowCount = 1;
-            this._customerRow.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this._customerRow.Size = new System.Drawing.Size(436, 44);
-            this._customerRow.TabIndex = 0;
-            // 
-            // _btnAddCustomer
-            // 
-            this._btnAddCustomer.BackColor = System.Drawing.SystemColors.Control;
-            this._btnAddCustomer.Cursor = System.Windows.Forms.Cursors.Hand;
-            this._btnAddCustomer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._btnAddCustomer.FlatAppearance.BorderColor = System.Drawing.SystemColors.ControlDark;
-            this._btnAddCustomer.FlatAppearance.BorderSize = 1;
-            this._btnAddCustomer.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this._btnAddCustomer.IconChar = FontAwesome.Sharp.IconChar.UserPlus;
-            this._btnAddCustomer.IconColor = System.Drawing.SystemColors.ControlText;
-            this._btnAddCustomer.IconSize = 16;
-            this._btnAddCustomer.Location = new System.Drawing.Point(396, 0);
-            this._btnAddCustomer.Margin = new System.Windows.Forms.Padding(0);
-            this._btnAddCustomer.Name = "_btnAddCustomer";
-            this._btnAddCustomer.Size = new System.Drawing.Size(40, 44);
-            this._btnAddCustomer.TabIndex = 2;
-            this._btnAddCustomer.Text = "";
-            this._btnAddCustomer.Tone = DzentoPOS2.WinForms.Controls.ButtonTone.Primary;
-            this._btnAddCustomer.Click += new System.EventHandler(this.OnAddCustomerClick);
-            // 
-            // _cmbCustomer
-            // 
-            this._cmbCustomer.BackColor = System.Drawing.SystemColors.Window;
-            this._cmbCustomer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._cmbCustomer.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this._cmbCustomer.Font = new System.Drawing.Font("Segoe UI", 10F);
-            this._cmbCustomer.ForeColor = System.Drawing.SystemColors.WindowText;
-            this._cmbCustomer.Location = new System.Drawing.Point(113, 0);
-            this._cmbCustomer.Margin = new System.Windows.Forms.Padding(0, 0, 6, 0);
-            this._cmbCustomer.Name = "_cmbCustomer";
-            this._cmbCustomer.Size = new System.Drawing.Size(277, 25);
-            this._cmbCustomer.TabIndex = 1;
+            _customerRow.ColumnCount = 3;
+            _customerRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 26F));
+            _customerRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 74F));
+            _customerRow.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
+            _customerRow.Controls.Add(_lblCustomer, 0, 0);
+            _customerRow.Controls.Add(_cmbCustomer, 1, 0);
+            _customerRow.Controls.Add(_btnAddCustomer, 2, 0);
+            _customerRow.Dock = DockStyle.Fill;
+            _customerRow.Location = new Point(0, 0);
+            _customerRow.Margin = new Padding(0);
+            _customerRow.Name = "_customerRow";
+            _customerRow.RowCount = 1;
+            _customerRow.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            _customerRow.Size = new Size(436, 44);
+            _customerRow.TabIndex = 0;
             // 
             // _lblCustomer
             // 
-            this._lblCustomer.AutoEllipsis = true;
-            this._lblCustomer.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._lblCustomer.Font = new System.Drawing.Font("Segoe UI", 9.5F);
-            this._lblCustomer.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._lblCustomer.Location = new System.Drawing.Point(0, 0);
-            this._lblCustomer.Margin = new System.Windows.Forms.Padding(0);
-            this._lblCustomer.Name = "_lblCustomer";
-            this._lblCustomer.Size = new System.Drawing.Size(113, 44);
-            this._lblCustomer.TabIndex = 0;
-            this._lblCustomer.Text = "Customer:";
-            this._lblCustomer.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            _lblCustomer.AutoEllipsis = true;
+            _lblCustomer.Dock = DockStyle.Fill;
+            _lblCustomer.Font = new Font("Segoe UI", 9.5F);
+            _lblCustomer.ForeColor = SystemColors.ControlText;
+            _lblCustomer.Location = new Point(0, 0);
+            _lblCustomer.Margin = new Padding(0);
+            _lblCustomer.Name = "_lblCustomer";
+            _lblCustomer.Size = new Size(102, 44);
+            _lblCustomer.TabIndex = 0;
+            _lblCustomer.Text = "Customer:";
+            _lblCustomer.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // _cmbCustomer
+            // 
+            _cmbCustomer.BackColor = SystemColors.Window;
+            _cmbCustomer.Dock = DockStyle.Fill;
+            _cmbCustomer.DropDownStyle = ComboBoxStyle.DropDownList;
+            _cmbCustomer.Font = new Font("Segoe UI", 10F);
+            _cmbCustomer.ForeColor = SystemColors.WindowText;
+            _cmbCustomer.Location = new Point(102, 0);
+            _cmbCustomer.Margin = new Padding(0, 0, 6, 0);
+            _cmbCustomer.Name = "_cmbCustomer";
+            _cmbCustomer.Size = new Size(287, 25);
+            _cmbCustomer.TabIndex = 1;
+            // 
+            // _btnAddCustomer
+            // 
+            _btnAddCustomer.BackColor = SystemColors.Control;
+            _btnAddCustomer.Cursor = Cursors.Hand;
+            _btnAddCustomer.Dock = DockStyle.Fill;
+            _btnAddCustomer.FlatAppearance.BorderColor = SystemColors.ControlDark;
+            _btnAddCustomer.FlatStyle = FlatStyle.Flat;
+            _btnAddCustomer.Font = new Font("Segoe UI Semibold", 10F);
+            _btnAddCustomer.IconChar = FontAwesome.Sharp.IconChar.UserPlus;
+            _btnAddCustomer.IconColor = SystemColors.ControlText;
+            _btnAddCustomer.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            _btnAddCustomer.IconSize = 16;
+            _btnAddCustomer.Location = new Point(395, 0);
+            _btnAddCustomer.Margin = new Padding(0);
+            _btnAddCustomer.Name = "_btnAddCustomer";
+            _btnAddCustomer.Size = new Size(41, 44);
+            _btnAddCustomer.Solid = false;
+            _btnAddCustomer.TabIndex = 2;
+            _btnAddCustomer.TextImageRelation = TextImageRelation.ImageBeforeText;
+            _btnAddCustomer.Tone = WinForms.Controls.ButtonTone.Neutral;
+            _btnAddCustomer.UseVisualStyleBackColor = false;
+            _btnAddCustomer.Click += OnAddCustomerClick;
+            // 
+            // _cartHeader
+            // 
+            _cartHeader.ColumnCount = 2;
+            _cartHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            _cartHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100F));
+            _cartHeader.Controls.Add(_lblCart, 0, 0);
+            _cartHeader.Controls.Add(_btnClearCart, 1, 0);
+            _cartHeader.Dock = DockStyle.Fill;
+            _cartHeader.Location = new Point(0, 44);
+            _cartHeader.Margin = new Padding(0);
+            _cartHeader.Name = "_cartHeader";
+            _cartHeader.RowCount = 1;
+            _cartHeader.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            _cartHeader.Size = new Size(436, 36);
+            _cartHeader.TabIndex = 1;
+            // 
+            // _lblCart
+            // 
+            _lblCart.Dock = DockStyle.Fill;
+            _lblCart.Font = new Font("Segoe UI Semibold", 10.5F);
+            _lblCart.ForeColor = SystemColors.ControlText;
+            _lblCart.Location = new Point(0, 0);
+            _lblCart.Margin = new Padding(0, 0, 0, 4);
+            _lblCart.Name = "_lblCart";
+            _lblCart.Size = new Size(336, 32);
+            _lblCart.TabIndex = 0;
+            _lblCart.Text = "Cart";
+            _lblCart.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // _btnClearCart
+            // 
+            _btnClearCart.BackColor = SystemColors.Control;
+            _btnClearCart.Cursor = Cursors.Hand;
+            _btnClearCart.Dock = DockStyle.Fill;
+            _btnClearCart.FlatAppearance.BorderColor = SystemColors.ControlDark;
+            _btnClearCart.FlatStyle = FlatStyle.Flat;
+            _btnClearCart.Font = new Font("Segoe UI Semibold", 9F);
+            _btnClearCart.ForeColor = SystemColors.ControlText;
+            _btnClearCart.IconChar = FontAwesome.Sharp.IconChar.Trash;
+            _btnClearCart.IconColor = SystemColors.ControlText;
+            _btnClearCart.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            _btnClearCart.IconSize = 13;
+            _btnClearCart.Location = new Point(336, 0);
+            _btnClearCart.Margin = new Padding(0, 0, 0, 4);
+            _btnClearCart.Name = "_btnClearCart";
+            _btnClearCart.Size = new Size(100, 32);
+            _btnClearCart.Solid = false;
+            _btnClearCart.TabIndex = 1;
+            _btnClearCart.Text = "  Clear";
+            _btnClearCart.TextImageRelation = TextImageRelation.ImageBeforeText;
+            _btnClearCart.Tone = WinForms.Controls.ButtonTone.Neutral;
+            _btnClearCart.UseVisualStyleBackColor = false;
+            _btnClearCart.Click += OnClearCartClick;
+            // 
+            // _cartLines
+            // 
+            _cartLines.AutoSize = true;
+            _cartLines.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            _cartLines.Controls.Add(_lblEmptyCart);
+            _cartLines.Dock = DockStyle.Fill;
+            _cartLines.FlowDirection = FlowDirection.TopDown;
+            _cartLines.Location = new Point(0, 80);
+            _cartLines.Margin = new Padding(0);
+            _cartLines.Name = "_cartLines";
+            _cartLines.Size = new Size(436, 56);
+            _cartLines.TabIndex = 2;
+            _cartLines.WrapContents = false;
+            _cartLines.SizeChanged += OnCartLinesSizeChanged;
+            // 
+            // _lblEmptyCart
+            // 
+            _lblEmptyCart.Font = new Font("Segoe UI", 10F);
+            _lblEmptyCart.ForeColor = SystemColors.GrayText;
+            _lblEmptyCart.Location = new Point(0, 0);
+            _lblEmptyCart.Margin = new Padding(0);
+            _lblEmptyCart.Name = "_lblEmptyCart";
+            _lblEmptyCart.Size = new Size(436, 56);
+            _lblEmptyCart.TabIndex = 0;
+            _lblEmptyCart.Text = "The cart is empty. Scan a barcode or pick a product.";
+            _lblEmptyCart.TextAlign = ContentAlignment.MiddleCenter;
+            // 
+            // _totalsLayout
+            // 
+            _totalsLayout.AutoSize = true;
+            _totalsLayout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            _totalsLayout.ColumnCount = 2;
+            _totalsLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 42F));
+            _totalsLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 58F));
+            _totalsLayout.Controls.Add(_lblDiscount, 0, 0);
+            _totalsLayout.Controls.Add(_lblDiscountValue, 1, 0);
+            _totalsLayout.Controls.Add(_discountEditorPanel, 0, 1);
+            _totalsLayout.Controls.Add(_lblSubtotal, 0, 2);
+            _totalsLayout.Controls.Add(_lblSubtotalValue, 1, 2);
+            _totalsLayout.Controls.Add(_lblAfterDiscount, 0, 3);
+            _totalsLayout.Controls.Add(_lblAfterDiscountValue, 1, 3);
+            _totalsLayout.Controls.Add(_lblTax, 0, 4);
+            _totalsLayout.Controls.Add(_numTax, 1, 4);
+            _totalsLayout.Controls.Add(_lblTaxAmount, 0, 5);
+            _totalsLayout.Controls.Add(_lblTaxAmountValue, 1, 5);
+            _totalsLayout.Controls.Add(_lblFees, 0, 6);
+            _totalsLayout.Controls.Add(_numFees, 1, 6);
+            _totalsLayout.Controls.Add(_lblTotal, 0, 7);
+            _totalsLayout.Controls.Add(_lblTotalValue, 1, 7);
+            _totalsLayout.Controls.Add(_lblPaid, 0, 8);
+            _totalsLayout.Controls.Add(_paidEditorPanel, 1, 8);
+            _totalsLayout.Controls.Add(_lblBalance, 0, 9);
+            _totalsLayout.Controls.Add(_lblBalanceValue, 1, 9);
+            _totalsLayout.Dock = DockStyle.Top;
+            _totalsLayout.Location = new Point(0, 142);
+            _totalsLayout.Margin = new Padding(0, 6, 0, 0);
+            _totalsLayout.Name = "_totalsLayout";
+            _totalsLayout.Padding = new Padding(0, 4, 0, 0);
+            _totalsLayout.RowCount = 10;
+            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            _totalsLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            _totalsLayout.Size = new Size(436, 304);
+            _totalsLayout.TabIndex = 3;
+            // 
+            // _lblDiscount
+            // 
+            _lblDiscount.Dock = DockStyle.Fill;
+            _lblDiscount.Font = new Font("Segoe UI", 9.5F);
+            _lblDiscount.ForeColor = SystemColors.ControlText;
+            _lblDiscount.Location = new Point(0, 4);
+            _lblDiscount.Margin = new Padding(0);
+            _lblDiscount.Name = "_lblDiscount";
+            _lblDiscount.Padding = new Padding(6, 0, 6, 0);
+            _lblDiscount.Size = new Size(183, 30);
+            _lblDiscount.TabIndex = 0;
+            _lblDiscount.Text = "Discount:";
+            _lblDiscount.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // _lblDiscountValue
+            // 
+            _lblDiscountValue.Dock = DockStyle.Fill;
+            _lblDiscountValue.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            _lblDiscountValue.ForeColor = SystemColors.ControlText;
+            _lblDiscountValue.Location = new Point(183, 4);
+            _lblDiscountValue.Margin = new Padding(0);
+            _lblDiscountValue.Name = "_lblDiscountValue";
+            _lblDiscountValue.Padding = new Padding(6, 0, 6, 0);
+            _lblDiscountValue.Size = new Size(253, 30);
+            _lblDiscountValue.TabIndex = 1;
+            _lblDiscountValue.Text = "0.00";
+            _lblDiscountValue.TextAlign = ContentAlignment.MiddleRight;
+            // 
+            // _discountEditorPanel
+            // 
+            _discountEditorPanel.ColumnCount = 2;
+            _totalsLayout.SetColumnSpan(_discountEditorPanel, 2);
+            _discountEditorPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 62F));
+            _discountEditorPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 38F));
+            _discountEditorPanel.Controls.Add(_numDiscount, 0, 0);
+            _discountEditorPanel.Controls.Add(_cmbDiscountMode, 1, 0);
+            _discountEditorPanel.Dock = DockStyle.Fill;
+            _discountEditorPanel.Location = new Point(0, 34);
+            _discountEditorPanel.Margin = new Padding(0);
+            _discountEditorPanel.Name = "_discountEditorPanel";
+            _discountEditorPanel.RowCount = 1;
+            _discountEditorPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            _discountEditorPanel.Size = new Size(436, 30);
+            _discountEditorPanel.TabIndex = 1;
+            // 
+            // _numDiscount
+            // 
+            _numDiscount.BackColor = SystemColors.Window;
+            _numDiscount.DecimalPlaces = 2;
+            _numDiscount.Dock = DockStyle.Fill;
+            _numDiscount.Font = new Font("Segoe UI", 10F);
+            _numDiscount.ForeColor = SystemColors.WindowText;
+            _numDiscount.Location = new Point(6, 2);
+            _numDiscount.Margin = new Padding(6, 2, 4, 2);
+            _numDiscount.Maximum = new decimal(new int[] { 99999999, 0, 0, 0 });
+            _numDiscount.Name = "_numDiscount";
+            _numDiscount.Size = new Size(260, 25);
+            _numDiscount.TabIndex = 0;
+            _numDiscount.TextAlign = HorizontalAlignment.Right;
+            _numDiscount.ValueChanged += OnDiscountValueChanged;
+            // 
+            // _cmbDiscountMode
+            // 
+            _cmbDiscountMode.BackColor = SystemColors.Window;
+            _cmbDiscountMode.Dock = DockStyle.Fill;
+            _cmbDiscountMode.DropDownStyle = ComboBoxStyle.DropDownList;
+            _cmbDiscountMode.Font = new Font("Segoe UI", 9F);
+            _cmbDiscountMode.ForeColor = SystemColors.WindowText;
+            _cmbDiscountMode.Location = new Point(272, 2);
+            _cmbDiscountMode.Margin = new Padding(2, 2, 6, 2);
+            _cmbDiscountMode.Name = "_cmbDiscountMode";
+            _cmbDiscountMode.Size = new Size(158, 23);
+            _cmbDiscountMode.TabIndex = 1;
+            _cmbDiscountMode.SelectedIndexChanged += OnDiscountModeChanged;
+            // 
+            // _lblSubtotal
+            // 
+            _lblSubtotal.Dock = DockStyle.Fill;
+            _lblSubtotal.Font = new Font("Segoe UI", 9.5F);
+            _lblSubtotal.ForeColor = SystemColors.ControlText;
+            _lblSubtotal.Location = new Point(0, 64);
+            _lblSubtotal.Margin = new Padding(0);
+            _lblSubtotal.Name = "_lblSubtotal";
+            _lblSubtotal.Padding = new Padding(6, 0, 6, 0);
+            _lblSubtotal.Size = new Size(183, 30);
+            _lblSubtotal.TabIndex = 2;
+            _lblSubtotal.Text = "Subtotal:";
+            _lblSubtotal.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // _lblSubtotalValue
+            // 
+            _lblSubtotalValue.Dock = DockStyle.Fill;
+            _lblSubtotalValue.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            _lblSubtotalValue.ForeColor = SystemColors.ControlText;
+            _lblSubtotalValue.Location = new Point(183, 64);
+            _lblSubtotalValue.Margin = new Padding(0);
+            _lblSubtotalValue.Name = "_lblSubtotalValue";
+            _lblSubtotalValue.Padding = new Padding(6, 0, 6, 0);
+            _lblSubtotalValue.Size = new Size(253, 30);
+            _lblSubtotalValue.TabIndex = 3;
+            _lblSubtotalValue.Text = "0.00";
+            _lblSubtotalValue.TextAlign = ContentAlignment.MiddleRight;
+            // 
+            // _lblAfterDiscount
+            // 
+            _lblAfterDiscount.Dock = DockStyle.Fill;
+            _lblAfterDiscount.Font = new Font("Segoe UI", 9.5F);
+            _lblAfterDiscount.ForeColor = SystemColors.ControlText;
+            _lblAfterDiscount.Location = new Point(0, 94);
+            _lblAfterDiscount.Margin = new Padding(0);
+            _lblAfterDiscount.Name = "_lblAfterDiscount";
+            _lblAfterDiscount.Padding = new Padding(6, 0, 6, 0);
+            _lblAfterDiscount.Size = new Size(183, 30);
+            _lblAfterDiscount.TabIndex = 4;
+            _lblAfterDiscount.Text = "After discount:";
+            _lblAfterDiscount.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // _lblAfterDiscountValue
+            // 
+            _lblAfterDiscountValue.Dock = DockStyle.Fill;
+            _lblAfterDiscountValue.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            _lblAfterDiscountValue.ForeColor = SystemColors.ControlText;
+            _lblAfterDiscountValue.Location = new Point(183, 94);
+            _lblAfterDiscountValue.Margin = new Padding(0);
+            _lblAfterDiscountValue.Name = "_lblAfterDiscountValue";
+            _lblAfterDiscountValue.Padding = new Padding(6, 0, 6, 0);
+            _lblAfterDiscountValue.Size = new Size(253, 30);
+            _lblAfterDiscountValue.TabIndex = 5;
+            _lblAfterDiscountValue.Text = "0.00";
+            _lblAfterDiscountValue.TextAlign = ContentAlignment.MiddleRight;
+            // 
+            // _lblTax
+            // 
+            _lblTax.Dock = DockStyle.Fill;
+            _lblTax.Font = new Font("Segoe UI", 9.5F);
+            _lblTax.ForeColor = SystemColors.ControlText;
+            _lblTax.Location = new Point(0, 124);
+            _lblTax.Margin = new Padding(0);
+            _lblTax.Name = "_lblTax";
+            _lblTax.Padding = new Padding(6, 0, 6, 0);
+            _lblTax.Size = new Size(183, 30);
+            _lblTax.TabIndex = 6;
+            _lblTax.Text = "Tax rate (%):";
+            _lblTax.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // _numTax
+            // 
+            _numTax.BackColor = SystemColors.Window;
+            _numTax.DecimalPlaces = 2;
+            _numTax.Dock = DockStyle.Fill;
+            _numTax.Font = new Font("Segoe UI", 10F);
+            _numTax.ForeColor = SystemColors.WindowText;
+            _numTax.Location = new Point(189, 126);
+            _numTax.Margin = new Padding(6, 2, 6, 2);
+            _numTax.Name = "_numTax";
+            _numTax.Size = new Size(241, 25);
+            _numTax.TabIndex = 7;
+            _numTax.TextAlign = HorizontalAlignment.Right;
+            _numTax.ValueChanged += OnTaxValueChanged;
+            // 
+            // _lblTaxAmount
+            // 
+            _lblTaxAmount.Dock = DockStyle.Fill;
+            _lblTaxAmount.Font = new Font("Segoe UI", 9.5F);
+            _lblTaxAmount.ForeColor = SystemColors.ControlText;
+            _lblTaxAmount.Location = new Point(0, 154);
+            _lblTaxAmount.Margin = new Padding(0);
+            _lblTaxAmount.Name = "_lblTaxAmount";
+            _lblTaxAmount.Padding = new Padding(6, 0, 6, 0);
+            _lblTaxAmount.Size = new Size(183, 30);
+            _lblTaxAmount.TabIndex = 8;
+            _lblTaxAmount.Text = "Tax amount:";
+            _lblTaxAmount.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // _lblTaxAmountValue
+            // 
+            _lblTaxAmountValue.Dock = DockStyle.Fill;
+            _lblTaxAmountValue.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            _lblTaxAmountValue.ForeColor = SystemColors.ControlText;
+            _lblTaxAmountValue.Location = new Point(183, 154);
+            _lblTaxAmountValue.Margin = new Padding(0);
+            _lblTaxAmountValue.Name = "_lblTaxAmountValue";
+            _lblTaxAmountValue.Padding = new Padding(6, 0, 6, 0);
+            _lblTaxAmountValue.Size = new Size(253, 30);
+            _lblTaxAmountValue.TabIndex = 9;
+            _lblTaxAmountValue.Text = "0.00";
+            _lblTaxAmountValue.TextAlign = ContentAlignment.MiddleRight;
+            // 
+            // _lblFees
+            // 
+            _lblFees.Dock = DockStyle.Fill;
+            _lblFees.Font = new Font("Segoe UI", 9.5F);
+            _lblFees.ForeColor = SystemColors.ControlText;
+            _lblFees.Location = new Point(0, 184);
+            _lblFees.Margin = new Padding(0);
+            _lblFees.Name = "_lblFees";
+            _lblFees.Padding = new Padding(6, 0, 6, 0);
+            _lblFees.Size = new Size(183, 30);
+            _lblFees.TabIndex = 10;
+            _lblFees.Text = "Fees:";
+            _lblFees.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // _numFees
+            // 
+            _numFees.BackColor = SystemColors.Window;
+            _numFees.DecimalPlaces = 2;
+            _numFees.Dock = DockStyle.Fill;
+            _numFees.Font = new Font("Segoe UI", 10F);
+            _numFees.ForeColor = SystemColors.WindowText;
+            _numFees.Location = new Point(189, 186);
+            _numFees.Margin = new Padding(6, 2, 6, 2);
+            _numFees.Maximum = new decimal(new int[] { 99999999, 0, 0, 0 });
+            _numFees.Name = "_numFees";
+            _numFees.Size = new Size(241, 25);
+            _numFees.TabIndex = 11;
+            _numFees.TextAlign = HorizontalAlignment.Right;
+            _numFees.ValueChanged += OnFeesValueChanged;
+            // 
+            // _lblTotal
+            // 
+            _lblTotal.Dock = DockStyle.Fill;
+            _lblTotal.Font = new Font("Segoe UI Semibold", 10F);
+            _lblTotal.ForeColor = SystemColors.ControlText;
+            _lblTotal.Location = new Point(0, 214);
+            _lblTotal.Margin = new Padding(0);
+            _lblTotal.Name = "_lblTotal";
+            _lblTotal.Padding = new Padding(6, 0, 6, 0);
+            _lblTotal.Size = new Size(183, 30);
+            _lblTotal.TabIndex = 12;
+            _lblTotal.Text = "Total:";
+            _lblTotal.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // _lblTotalValue
+            // 
+            _lblTotalValue.Dock = DockStyle.Fill;
+            _lblTotalValue.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Bold);
+            _lblTotalValue.ForeColor = SystemColors.HotTrack;
+            _lblTotalValue.Location = new Point(183, 214);
+            _lblTotalValue.Margin = new Padding(0);
+            _lblTotalValue.Name = "_lblTotalValue";
+            _lblTotalValue.Padding = new Padding(6, 0, 6, 0);
+            _lblTotalValue.Size = new Size(253, 30);
+            _lblTotalValue.TabIndex = 13;
+            _lblTotalValue.Text = "0.00";
+            _lblTotalValue.TextAlign = ContentAlignment.MiddleRight;
+            // 
+            // _lblPaid
+            // 
+            _lblPaid.Dock = DockStyle.Fill;
+            _lblPaid.Font = new Font("Segoe UI", 9.5F);
+            _lblPaid.ForeColor = SystemColors.ControlText;
+            _lblPaid.Location = new Point(0, 244);
+            _lblPaid.Margin = new Padding(0);
+            _lblPaid.Name = "_lblPaid";
+            _lblPaid.Padding = new Padding(6, 0, 6, 0);
+            _lblPaid.Size = new Size(183, 30);
+            _lblPaid.TabIndex = 14;
+            _lblPaid.Text = "Paid:";
+            _lblPaid.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // _paidEditorPanel
+            // 
+            _paidEditorPanel.ColumnCount = 2;
+            _paidEditorPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            _paidEditorPanel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 46F));
+            _paidEditorPanel.Controls.Add(_numPaid, 0, 0);
+            _paidEditorPanel.Controls.Add(_btnPayInFull, 1, 0);
+            _paidEditorPanel.Dock = DockStyle.Fill;
+            _paidEditorPanel.Location = new Point(183, 244);
+            _paidEditorPanel.Margin = new Padding(0);
+            _paidEditorPanel.Name = "_paidEditorPanel";
+            _paidEditorPanel.RowCount = 1;
+            _paidEditorPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            _paidEditorPanel.Size = new Size(253, 30);
+            _paidEditorPanel.TabIndex = 15;
+            // 
+            // _numPaid
+            // 
+            _numPaid.BackColor = SystemColors.Window;
+            _numPaid.DecimalPlaces = 2;
+            _numPaid.Dock = DockStyle.Fill;
+            _numPaid.Font = new Font("Segoe UI", 10F);
+            _numPaid.ForeColor = SystemColors.WindowText;
+            _numPaid.Location = new Point(6, 2);
+            _numPaid.Margin = new Padding(6, 2, 4, 2);
+            _numPaid.Maximum = new decimal(new int[] { 99999999, 0, 0, 0 });
+            _numPaid.Name = "_numPaid";
+            _numPaid.Size = new Size(197, 25);
+            _numPaid.TabIndex = 0;
+            _numPaid.TextAlign = HorizontalAlignment.Right;
+            _numPaid.ValueChanged += OnPaidValueChanged;
+            // 
+            // _btnPayInFull
+            // 
+            _btnPayInFull.BackColor = SystemColors.Control;
+            _btnPayInFull.Cursor = Cursors.Hand;
+            _btnPayInFull.Dock = DockStyle.Fill;
+            _btnPayInFull.FlatAppearance.BorderColor = SystemColors.ControlDark;
+            _btnPayInFull.FlatStyle = FlatStyle.Flat;
+            _btnPayInFull.Font = new Font("Segoe UI Semibold", 10F);
+            _btnPayInFull.IconChar = FontAwesome.Sharp.IconChar.MoneyBill;
+            _btnPayInFull.IconColor = SystemColors.ControlText;
+            _btnPayInFull.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            _btnPayInFull.IconSize = 16;
+            _btnPayInFull.Location = new Point(209, 2);
+            _btnPayInFull.Margin = new Padding(2, 2, 6, 2);
+            _btnPayInFull.Name = "_btnPayInFull";
+            _btnPayInFull.Size = new Size(38, 26);
+            _btnPayInFull.Solid = false;
+            _btnPayInFull.TabIndex = 1;
+            _btnPayInFull.TextImageRelation = TextImageRelation.ImageBeforeText;
+            _btnPayInFull.Tone = WinForms.Controls.ButtonTone.Success;
+            _btnPayInFull.UseVisualStyleBackColor = false;
+            _btnPayInFull.Click += OnPayInFullClick;
+            // 
+            // _lblBalance
+            // 
+            _lblBalance.Dock = DockStyle.Fill;
+            _lblBalance.Font = new Font("Segoe UI", 9.5F);
+            _lblBalance.ForeColor = SystemColors.ControlText;
+            _lblBalance.Location = new Point(0, 274);
+            _lblBalance.Margin = new Padding(0);
+            _lblBalance.Name = "_lblBalance";
+            _lblBalance.Padding = new Padding(6, 0, 6, 0);
+            _lblBalance.Size = new Size(183, 30);
+            _lblBalance.TabIndex = 16;
+            _lblBalance.Text = "Remaining:";
+            _lblBalance.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // _lblBalanceValue
+            // 
+            _lblBalanceValue.Dock = DockStyle.Fill;
+            _lblBalanceValue.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            _lblBalanceValue.ForeColor = SystemColors.ControlText;
+            _lblBalanceValue.Location = new Point(183, 274);
+            _lblBalanceValue.Margin = new Padding(0);
+            _lblBalanceValue.Name = "_lblBalanceValue";
+            _lblBalanceValue.Padding = new Padding(6, 0, 6, 0);
+            _lblBalanceValue.Size = new Size(253, 30);
+            _lblBalanceValue.TabIndex = 17;
+            _lblBalanceValue.Text = "0.00";
+            _lblBalanceValue.TextAlign = ContentAlignment.MiddleRight;
             // 
             // _actions
             // 
-            this._actions.ColumnCount = 3;
-            this._actions.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
-            this._actions.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 30F));
-            this._actions.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 40F));
-            this._actions.Controls.Add(this._btnCompleteSale, 2, 0);
-            this._actions.Controls.Add(this._btnPrintLast, 1, 0);
-            this._actions.Controls.Add(this._btnCalculator, 0, 0);
-            this._actions.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._actions.Location = new System.Drawing.Point(0, 688);
-            this._actions.Margin = new System.Windows.Forms.Padding(0);
-            this._actions.Name = "_actions";
-            this._actions.Padding = new System.Windows.Forms.Padding(0, 6, 0, 0);
-            this._actions.RowCount = 1;
-            this._actions.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this._actions.Size = new System.Drawing.Size(436, 62);
-            this._actions.TabIndex = 2;
+            _actions.ColumnCount = 1;
+            _actions.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            _actions.Controls.Add(_btnCompleteSale, 0, 0);
+            _actions.Controls.Add(_actionRow, 0, 1);
+            _actions.Controls.Add(_utilityRow, 0, 2);
+            _actions.Dock = DockStyle.Fill;
+            _actions.Location = new Point(0, 504);
+            _actions.Margin = new Padding(0);
+            _actions.Name = "_actions";
+            _actions.Padding = new Padding(0, 6, 0, 0);
+            _actions.RowCount = 3;
+            _actions.RowStyles.Add(new RowStyle(SizeType.Absolute, 46F));
+            _actions.RowStyles.Add(new RowStyle(SizeType.Absolute, 44F));
+            _actions.RowStyles.Add(new RowStyle(SizeType.Absolute, 36F));
+            _actions.Size = new Size(436, 136);
+            _actions.TabIndex = 2;
             // 
             // _btnCompleteSale
             // 
-            this._btnCompleteSale.BackColor = System.Drawing.SystemColors.Control;
-            this._btnCompleteSale.Cursor = System.Windows.Forms.Cursors.Hand;
-            this._btnCompleteSale.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._btnCompleteSale.FlatAppearance.BorderColor = System.Drawing.SystemColors.ControlDark;
-            this._btnCompleteSale.FlatAppearance.BorderSize = 0;
-            this._btnCompleteSale.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this._btnCompleteSale.Font = new System.Drawing.Font("Segoe UI Semibold", 11F, System.Drawing.FontStyle.Bold);
-            this._btnCompleteSale.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._btnCompleteSale.IconChar = FontAwesome.Sharp.IconChar.CheckCircle;
-            this._btnCompleteSale.IconColor = System.Drawing.SystemColors.ControlText;
-            this._btnCompleteSale.IconSize = 18;
-            this._btnCompleteSale.Location = new System.Drawing.Point(261, 6);
-            this._btnCompleteSale.Margin = new System.Windows.Forms.Padding(0);
-            this._btnCompleteSale.Name = "_btnCompleteSale";
-            this._btnCompleteSale.Size = new System.Drawing.Size(175, 56);
-            this._btnCompleteSale.Solid = true;
-            this._btnCompleteSale.TabIndex = 2;
-            this._btnCompleteSale.Text = "  Complete sale";
-            this._btnCompleteSale.Tone = DzentoPOS2.WinForms.Controls.ButtonTone.Primary;
-            this._btnCompleteSale.Click += new System.EventHandler(this.OnCompleteSaleClick);
+            _btnCompleteSale.BackColor = SystemColors.Control;
+            _btnCompleteSale.Cursor = Cursors.Hand;
+            _btnCompleteSale.Dock = DockStyle.Fill;
+            _btnCompleteSale.FlatAppearance.BorderColor = SystemColors.ControlDark;
+            _btnCompleteSale.FlatAppearance.BorderSize = 0;
+            _btnCompleteSale.FlatStyle = FlatStyle.Flat;
+            _btnCompleteSale.Font = new Font("Segoe UI Semibold", 11.5F, FontStyle.Bold);
+            _btnCompleteSale.ForeColor = SystemColors.ControlText;
+            _btnCompleteSale.IconChar = FontAwesome.Sharp.IconChar.CheckCircle;
+            _btnCompleteSale.IconColor = SystemColors.ControlText;
+            _btnCompleteSale.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            _btnCompleteSale.IconSize = 18;
+            _btnCompleteSale.Location = new Point(0, 6);
+            _btnCompleteSale.Margin = new Padding(0, 0, 0, 4);
+            _btnCompleteSale.Name = "_btnCompleteSale";
+            _btnCompleteSale.Size = new Size(436, 42);
+            _btnCompleteSale.Solid = true;
+            _btnCompleteSale.TabIndex = 2;
+            _btnCompleteSale.Text = "  Complete sale";
+            _btnCompleteSale.TextImageRelation = TextImageRelation.ImageBeforeText;
+            _btnCompleteSale.Tone = WinForms.Controls.ButtonTone.Primary;
+            _btnCompleteSale.UseVisualStyleBackColor = false;
+            _btnCompleteSale.Click += OnCompleteSaleClick;
+            // 
+            // _actionRow
+            // 
+            _actionRow.ColumnCount = 4;
+            _actionRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            _actionRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            _actionRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            _actionRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            _actionRow.Controls.Add(_btnCard, 0, 0);
+            _actionRow.Controls.Add(_btnCredit, 1, 0);
+            _actionRow.Controls.Add(_btnHold, 2, 0);
+            _actionRow.Controls.Add(_btnCancelSale, 3, 0);
+            _actionRow.Dock = DockStyle.Fill;
+            _actionRow.Location = new Point(0, 52);
+            _actionRow.Margin = new Padding(0);
+            _actionRow.Name = "_actionRow";
+            _actionRow.RowCount = 1;
+            _actionRow.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            _actionRow.Size = new Size(436, 44);
+            _actionRow.TabIndex = 3;
+            // 
+            // _btnCard
+            // 
+            _btnCard.BackColor = SystemColors.Control;
+            _btnCard.Cursor = Cursors.Hand;
+            _btnCard.Dock = DockStyle.Fill;
+            _btnCard.FlatAppearance.BorderColor = SystemColors.ControlDark;
+            _btnCard.FlatStyle = FlatStyle.Flat;
+            _btnCard.Font = new Font("Segoe UI Semibold", 9F);
+            _btnCard.ForeColor = SystemColors.ControlText;
+            _btnCard.IconChar = FontAwesome.Sharp.IconChar.CreditCard;
+            _btnCard.IconColor = SystemColors.ControlText;
+            _btnCard.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            _btnCard.IconSize = 15;
+            _btnCard.Location = new Point(0, 0);
+            _btnCard.Margin = new Padding(0, 0, 4, 4);
+            _btnCard.Name = "_btnCard";
+            _btnCard.Size = new Size(105, 40);
+            _btnCard.Solid = false;
+            _btnCard.TabIndex = 0;
+            _btnCard.Text = "  Card";
+            _btnCard.TextImageRelation = TextImageRelation.ImageBeforeText;
+            _btnCard.Tone = WinForms.Controls.ButtonTone.Primary;
+            _btnCard.UseVisualStyleBackColor = false;
+            _btnCard.Click += OnCardPaymentClick;
+            // 
+            // _btnCredit
+            // 
+            _btnCredit.BackColor = SystemColors.Control;
+            _btnCredit.Cursor = Cursors.Hand;
+            _btnCredit.Dock = DockStyle.Fill;
+            _btnCredit.FlatAppearance.BorderColor = SystemColors.ControlDark;
+            _btnCredit.FlatStyle = FlatStyle.Flat;
+            _btnCredit.Font = new Font("Segoe UI Semibold", 9F);
+            _btnCredit.ForeColor = SystemColors.ControlText;
+            _btnCredit.IconChar = FontAwesome.Sharp.IconChar.UserClock;
+            _btnCredit.IconColor = SystemColors.ControlText;
+            _btnCredit.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            _btnCredit.IconSize = 15;
+            _btnCredit.Location = new Point(109, 0);
+            _btnCredit.Margin = new Padding(0, 0, 4, 4);
+            _btnCredit.Name = "_btnCredit";
+            _btnCredit.Size = new Size(105, 40);
+            _btnCredit.Solid = false;
+            _btnCredit.TabIndex = 1;
+            _btnCredit.Text = "  Credit";
+            _btnCredit.TextImageRelation = TextImageRelation.ImageBeforeText;
+            _btnCredit.Tone = WinForms.Controls.ButtonTone.Neutral;
+            _btnCredit.UseVisualStyleBackColor = false;
+            _btnCredit.Click += OnCreditClick;
+            // 
+            // _btnHold
+            // 
+            _btnHold.BackColor = SystemColors.Control;
+            _btnHold.Cursor = Cursors.Hand;
+            _btnHold.Dock = DockStyle.Fill;
+            _btnHold.FlatAppearance.BorderColor = SystemColors.ControlDark;
+            _btnHold.FlatStyle = FlatStyle.Flat;
+            _btnHold.Font = new Font("Segoe UI Semibold", 9F);
+            _btnHold.ForeColor = SystemColors.ControlText;
+            _btnHold.IconChar = FontAwesome.Sharp.IconChar.Pause;
+            _btnHold.IconColor = SystemColors.ControlText;
+            _btnHold.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            _btnHold.IconSize = 15;
+            _btnHold.Location = new Point(218, 0);
+            _btnHold.Margin = new Padding(0, 0, 4, 4);
+            _btnHold.Name = "_btnHold";
+            _btnHold.Size = new Size(105, 40);
+            _btnHold.Solid = false;
+            _btnHold.TabIndex = 2;
+            _btnHold.Text = "  Hold";
+            _btnHold.TextImageRelation = TextImageRelation.ImageBeforeText;
+            _btnHold.Tone = WinForms.Controls.ButtonTone.Neutral;
+            _btnHold.UseVisualStyleBackColor = false;
+            _btnHold.Click += OnHoldClick;
+            // 
+            // _btnCancelSale
+            // 
+            _btnCancelSale.BackColor = SystemColors.Control;
+            _btnCancelSale.Cursor = Cursors.Hand;
+            _btnCancelSale.Dock = DockStyle.Fill;
+            _btnCancelSale.FlatAppearance.BorderColor = SystemColors.ControlDark;
+            _btnCancelSale.FlatStyle = FlatStyle.Flat;
+            _btnCancelSale.Font = new Font("Segoe UI Semibold", 9F);
+            _btnCancelSale.ForeColor = SystemColors.ControlText;
+            _btnCancelSale.IconChar = FontAwesome.Sharp.IconChar.Close;
+            _btnCancelSale.IconColor = SystemColors.ControlText;
+            _btnCancelSale.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            _btnCancelSale.IconSize = 15;
+            _btnCancelSale.Location = new Point(327, 0);
+            _btnCancelSale.Margin = new Padding(0, 0, 0, 4);
+            _btnCancelSale.Name = "_btnCancelSale";
+            _btnCancelSale.Size = new Size(109, 40);
+            _btnCancelSale.Solid = false;
+            _btnCancelSale.TabIndex = 3;
+            _btnCancelSale.Text = "  Cancel";
+            _btnCancelSale.TextImageRelation = TextImageRelation.ImageBeforeText;
+            _btnCancelSale.Tone = WinForms.Controls.ButtonTone.Danger;
+            _btnCancelSale.UseVisualStyleBackColor = false;
+            _btnCancelSale.Click += OnCancelSaleClick;
+            // 
+            // _utilityRow
+            // 
+            _utilityRow.ColumnCount = 2;
+            _utilityRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            _utilityRow.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            _utilityRow.Controls.Add(_btnPrintLast, 0, 0);
+            _utilityRow.Controls.Add(_btnCalculator, 1, 0);
+            _utilityRow.Dock = DockStyle.Fill;
+            _utilityRow.Location = new Point(0, 96);
+            _utilityRow.Margin = new Padding(0);
+            _utilityRow.Name = "_utilityRow";
+            _utilityRow.RowCount = 1;
+            _utilityRow.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            _utilityRow.Size = new Size(436, 40);
+            _utilityRow.TabIndex = 4;
             // 
             // _btnPrintLast
             // 
-            this._btnPrintLast.BackColor = System.Drawing.SystemColors.Control;
-            this._btnPrintLast.Cursor = System.Windows.Forms.Cursors.Hand;
-            this._btnPrintLast.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._btnPrintLast.FlatAppearance.BorderColor = System.Drawing.SystemColors.ControlDark;
-            this._btnPrintLast.FlatAppearance.BorderSize = 1;
-            this._btnPrintLast.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this._btnPrintLast.Font = new System.Drawing.Font("Segoe UI Semibold", 9.5F);
-            this._btnPrintLast.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._btnPrintLast.IconChar = FontAwesome.Sharp.IconChar.Print;
-            this._btnPrintLast.IconColor = System.Drawing.SystemColors.ControlText;
-            this._btnPrintLast.IconSize = 16;
-            this._btnPrintLast.Location = new System.Drawing.Point(130, 6);
-            this._btnPrintLast.Margin = new System.Windows.Forms.Padding(0, 0, 6, 0);
-            this._btnPrintLast.Name = "_btnPrintLast";
-            this._btnPrintLast.Size = new System.Drawing.Size(125, 56);
-            this._btnPrintLast.TabIndex = 1;
-            this._btnPrintLast.Text = "  Print";
-            this._btnPrintLast.Tone = DzentoPOS2.WinForms.Controls.ButtonTone.Neutral;
-            this._btnPrintLast.Enabled = false;
-            this._btnPrintLast.Click += new System.EventHandler(this.OnPrintLastClick);
+            _btnPrintLast.BackColor = SystemColors.Control;
+            _btnPrintLast.Cursor = Cursors.Hand;
+            _btnPrintLast.Dock = DockStyle.Fill;
+            _btnPrintLast.Enabled = false;
+            _btnPrintLast.FlatAppearance.BorderColor = SystemColors.ControlDark;
+            _btnPrintLast.FlatStyle = FlatStyle.Flat;
+            _btnPrintLast.Font = new Font("Segoe UI Semibold", 9F);
+            _btnPrintLast.ForeColor = SystemColors.ControlText;
+            _btnPrintLast.IconChar = FontAwesome.Sharp.IconChar.Print;
+            _btnPrintLast.IconColor = SystemColors.ControlText;
+            _btnPrintLast.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            _btnPrintLast.IconSize = 14;
+            _btnPrintLast.Location = new Point(0, 0);
+            _btnPrintLast.Margin = new Padding(0, 0, 4, 0);
+            _btnPrintLast.Name = "_btnPrintLast";
+            _btnPrintLast.Size = new Size(214, 40);
+            _btnPrintLast.Solid = false;
+            _btnPrintLast.TabIndex = 0;
+            _btnPrintLast.Text = "  Print";
+            _btnPrintLast.TextImageRelation = TextImageRelation.ImageBeforeText;
+            _btnPrintLast.Tone = WinForms.Controls.ButtonTone.Neutral;
+            _btnPrintLast.UseVisualStyleBackColor = false;
+            _btnPrintLast.Click += OnPrintLastClick;
             // 
             // _btnCalculator
             // 
-            this._btnCalculator.BackColor = System.Drawing.SystemColors.Control;
-            this._btnCalculator.Cursor = System.Windows.Forms.Cursors.Hand;
-            this._btnCalculator.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._btnCalculator.FlatAppearance.BorderColor = System.Drawing.SystemColors.ControlDark;
-            this._btnCalculator.FlatAppearance.BorderSize = 1;
-            this._btnCalculator.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this._btnCalculator.Font = new System.Drawing.Font("Segoe UI Semibold", 9.5F);
-            this._btnCalculator.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._btnCalculator.IconChar = FontAwesome.Sharp.IconChar.Calculator;
-            this._btnCalculator.IconColor = System.Drawing.SystemColors.ControlText;
-            this._btnCalculator.IconSize = 16;
-            this._btnCalculator.Location = new System.Drawing.Point(0, 6);
-            this._btnCalculator.Margin = new System.Windows.Forms.Padding(0, 0, 6, 0);
-            this._btnCalculator.Name = "_btnCalculator";
-            this._btnCalculator.Size = new System.Drawing.Size(124, 56);
-            this._btnCalculator.TabIndex = 0;
-            this._btnCalculator.Text = "  Calculator";
-            this._btnCalculator.Tone = DzentoPOS2.WinForms.Controls.ButtonTone.Primary;
-            this._btnCalculator.Click += new System.EventHandler(this.OnCalculatorClick);
+            _btnCalculator.BackColor = SystemColors.Control;
+            _btnCalculator.Cursor = Cursors.Hand;
+            _btnCalculator.Dock = DockStyle.Fill;
+            _btnCalculator.FlatAppearance.BorderColor = SystemColors.ControlDark;
+            _btnCalculator.FlatStyle = FlatStyle.Flat;
+            _btnCalculator.Font = new Font("Segoe UI Semibold", 9F);
+            _btnCalculator.ForeColor = SystemColors.ControlText;
+            _btnCalculator.IconChar = FontAwesome.Sharp.IconChar.Calculator;
+            _btnCalculator.IconColor = SystemColors.ControlText;
+            _btnCalculator.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            _btnCalculator.IconSize = 14;
+            _btnCalculator.Location = new Point(218, 0);
+            _btnCalculator.Margin = new Padding(0);
+            _btnCalculator.Name = "_btnCalculator";
+            _btnCalculator.Size = new Size(218, 40);
+            _btnCalculator.Solid = false;
+            _btnCalculator.TabIndex = 1;
+            _btnCalculator.Text = "  Calculator";
+            _btnCalculator.TextImageRelation = TextImageRelation.ImageBeforeText;
+            _btnCalculator.Tone = WinForms.Controls.ButtonTone.Neutral;
+            _btnCalculator.UseVisualStyleBackColor = false;
+            _btnCalculator.Click += OnCalculatorClick;
             // 
             // _tabInvoices
             // 
-            this._tabInvoices.BackColor = System.Drawing.SystemColors.Control;
-            this._tabInvoices.Controls.Add(this._invoiceGrid);
-            this._tabInvoices.Controls.Add(this._invoiceToolbar);
-            this._tabInvoices.Location = new System.Drawing.Point(4, 36);
-            this._tabInvoices.Name = "_tabInvoices";
-            this._tabInvoices.Padding = new System.Windows.Forms.Padding(3);
-            this._tabInvoices.Size = new System.Drawing.Size(1432, 780);
-            this._tabInvoices.TabIndex = 1;
-            this._tabInvoices.Text = "Sales";
+            _tabInvoices.BackColor = SystemColors.Control;
+            _tabInvoices.Controls.Add(_invoiceGrid);
+            _tabInvoices.Controls.Add(_lblNoInvoices);
+            _tabInvoices.Controls.Add(_invoiceToolbar);
+            _tabInvoices.Location = new Point(4, 36);
+            _tabInvoices.Name = "_tabInvoices";
+            _tabInvoices.Padding = new Padding(3);
+            _tabInvoices.Size = new Size(1432, 780);
+            _tabInvoices.TabIndex = 1;
+            _tabInvoices.Text = "Sales";
             // 
             // _invoiceGrid
             // 
-            this._invoiceGrid.AllowUserToAddRows = false;
-            this._invoiceGrid.AllowUserToDeleteRows = false;
-            this._invoiceGrid.BackgroundColor = System.Drawing.SystemColors.Window;
-            this._invoiceGrid.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this._invoiceGrid.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this._invoiceGrid.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._invoiceGrid.Location = new System.Drawing.Point(3, 61);
-            this._invoiceGrid.MultiSelect = false;
-            this._invoiceGrid.Name = "_invoiceGrid";
-            this._invoiceGrid.ReadOnly = true;
-            this._invoiceGrid.RowHeadersVisible = false;
-            this._invoiceGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this._invoiceGrid.Size = new System.Drawing.Size(1426, 716);
-            this._invoiceGrid.TabIndex = 1;
+            _invoiceGrid.AllowUserToAddRows = false;
+            _invoiceGrid.AllowUserToDeleteRows = false;
+            _invoiceGrid.BackgroundColor = SystemColors.Window;
+            _invoiceGrid.BorderStyle = BorderStyle.None;
+            _invoiceGrid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            _invoiceGrid.Dock = DockStyle.Fill;
+            _invoiceGrid.Location = new Point(3, 61);
+            _invoiceGrid.MultiSelect = false;
+            _invoiceGrid.Name = "_invoiceGrid";
+            _invoiceGrid.ReadOnly = true;
+            _invoiceGrid.RowHeadersVisible = false;
+            _invoiceGrid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            _invoiceGrid.Size = new Size(1426, 716);
+            _invoiceGrid.TabIndex = 1;
+            // 
+            // _lblNoInvoices
+            // 
+            _lblNoInvoices.Dock = DockStyle.Fill;
+            _lblNoInvoices.Font = new Font("Segoe UI", 12F);
+            _lblNoInvoices.ForeColor = SystemColors.GrayText;
+            _lblNoInvoices.Location = new Point(3, 61);
+            _lblNoInvoices.Name = "_lblNoInvoices";
+            _lblNoInvoices.Size = new Size(1426, 716);
+            _lblNoInvoices.TabIndex = 2;
+            _lblNoInvoices.Text = "No invoices yet.";
+            _lblNoInvoices.TextAlign = ContentAlignment.MiddleCenter;
+            _lblNoInvoices.Visible = false;
             // 
             // _invoiceToolbar
             // 
-            this._invoiceToolbar.ColumnCount = 3;
-            this._invoiceToolbar.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this._invoiceToolbar.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 150F));
-            this._invoiceToolbar.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 130F));
-            this._invoiceToolbar.Controls.Add(this._btnDeleteInvoice, 2, 0);
-            this._invoiceToolbar.Controls.Add(this._btnNewSale, 1, 0);
-            this._invoiceToolbar.Controls.Add(this._invoiceSearch, 0, 0);
-            this._invoiceToolbar.Dock = System.Windows.Forms.DockStyle.Top;
-            this._invoiceToolbar.Location = new System.Drawing.Point(3, 3);
-            this._invoiceToolbar.Name = "_invoiceToolbar";
-            this._invoiceToolbar.Padding = new System.Windows.Forms.Padding(12, 10, 12, 10);
-            this._invoiceToolbar.RowCount = 1;
-            this._invoiceToolbar.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this._invoiceToolbar.Size = new System.Drawing.Size(1426, 58);
-            this._invoiceToolbar.TabIndex = 0;
-            // 
-            // _btnDeleteInvoice
-            // 
-            this._btnDeleteInvoice.BackColor = System.Drawing.SystemColors.Control;
-            this._btnDeleteInvoice.Cursor = System.Windows.Forms.Cursors.Hand;
-            this._btnDeleteInvoice.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._btnDeleteInvoice.FlatAppearance.BorderColor = System.Drawing.SystemColors.ControlDark;
-            this._btnDeleteInvoice.FlatAppearance.BorderSize = 1;
-            this._btnDeleteInvoice.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this._btnDeleteInvoice.Font = new System.Drawing.Font("Segoe UI Semibold", 9.5F);
-            this._btnDeleteInvoice.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._btnDeleteInvoice.IconChar = FontAwesome.Sharp.IconChar.Trash;
-            this._btnDeleteInvoice.IconColor = System.Drawing.SystemColors.ControlText;
-            this._btnDeleteInvoice.IconSize = 16;
-            this._btnDeleteInvoice.Location = new System.Drawing.Point(1284, 10);
-            this._btnDeleteInvoice.Margin = new System.Windows.Forms.Padding(0);
-            this._btnDeleteInvoice.Name = "_btnDeleteInvoice";
-            this._btnDeleteInvoice.Size = new System.Drawing.Size(130, 38);
-            this._btnDeleteInvoice.TabIndex = 2;
-            this._btnDeleteInvoice.Text = "  Delete";
-            this._btnDeleteInvoice.Tone = DzentoPOS2.WinForms.Controls.ButtonTone.Danger;
-            this._btnDeleteInvoice.Click += new System.EventHandler(this.OnDeleteInvoiceClick);
-            // 
-            // _btnNewSale
-            // 
-            this._btnNewSale.BackColor = System.Drawing.SystemColors.Control;
-            this._btnNewSale.Cursor = System.Windows.Forms.Cursors.Hand;
-            this._btnNewSale.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._btnNewSale.FlatAppearance.BorderColor = System.Drawing.SystemColors.ControlDark;
-            this._btnNewSale.FlatAppearance.BorderSize = 1;
-            this._btnNewSale.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this._btnNewSale.Font = new System.Drawing.Font("Segoe UI Semibold", 9.5F);
-            this._btnNewSale.ForeColor = System.Drawing.SystemColors.ControlText;
-            this._btnNewSale.IconChar = FontAwesome.Sharp.IconChar.Plus;
-            this._btnNewSale.IconColor = System.Drawing.SystemColors.ControlText;
-            this._btnNewSale.IconSize = 16;
-            this._btnNewSale.Location = new System.Drawing.Point(1144, 10);
-            this._btnNewSale.Margin = new System.Windows.Forms.Padding(0, 0, 8, 0);
-            this._btnNewSale.Name = "_btnNewSale";
-            this._btnNewSale.Size = new System.Drawing.Size(132, 38);
-            this._btnNewSale.TabIndex = 1;
-            this._btnNewSale.Text = "  New sale";
-            this._btnNewSale.Tone = DzentoPOS2.WinForms.Controls.ButtonTone.Primary;
-            this._btnNewSale.Click += new System.EventHandler(this.OnNewSaleClick);
+            _invoiceToolbar.ColumnCount = 3;
+            _invoiceToolbar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            _invoiceToolbar.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
+            _invoiceToolbar.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130F));
+            _invoiceToolbar.Controls.Add(_invoiceSearch, 0, 0);
+            _invoiceToolbar.Controls.Add(_btnNewSale, 1, 0);
+            _invoiceToolbar.Controls.Add(_btnDeleteInvoice, 2, 0);
+            _invoiceToolbar.Dock = DockStyle.Top;
+            _invoiceToolbar.Location = new Point(3, 3);
+            _invoiceToolbar.Name = "_invoiceToolbar";
+            _invoiceToolbar.Padding = new Padding(12, 10, 12, 10);
+            _invoiceToolbar.RowCount = 1;
+            _invoiceToolbar.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            _invoiceToolbar.Size = new Size(1426, 58);
+            _invoiceToolbar.TabIndex = 0;
             // 
             // _invoiceSearch
             // 
-            this._invoiceSearch.BackColor = System.Drawing.SystemColors.Window;
-            this._invoiceSearch.BorderColor = System.Drawing.SystemColors.ControlDark;
-            this._invoiceSearch.BorderFocusColor = System.Drawing.SystemColors.Highlight;
-            this._invoiceSearch.Dock = System.Windows.Forms.DockStyle.Fill;
-            this._invoiceSearch.Font = new System.Drawing.Font("Segoe UI", 11F);
-            this._invoiceSearch.ForeColor = System.Drawing.SystemColors.WindowText;
-            this._invoiceSearch.Location = new System.Drawing.Point(12, 10);
-            this._invoiceSearch.Margin = new System.Windows.Forms.Padding(0, 0, 8, 0);
-            this._invoiceSearch.Name = "_invoiceSearch";
-            this._invoiceSearch.PlaceholderColor = System.Drawing.SystemColors.GrayText;
-            this._invoiceSearch.PlaceholderText = "Search invoices";
-            this._invoiceSearch.Size = new System.Drawing.Size(1124, 38);
-            this._invoiceSearch.TabIndex = 0;
-            this._invoiceSearch.TextChanged += new System.EventHandler(this.OnInvoiceSearchTextChanged);
+            _invoiceSearch.BackColor = SystemColors.Window;
+            _invoiceSearch.BorderColor = SystemColors.ControlDark;
+            _invoiceSearch.BorderErrorColor = Color.Firebrick;
+            _invoiceSearch.BorderFocusColor = SystemColors.Highlight;
+            _invoiceSearch.BorderRadius = 10;
+            _invoiceSearch.BorderSize = 2;
+            _invoiceSearch.Dock = DockStyle.Fill;
+            _invoiceSearch.Font = new Font("Segoe UI", 11F);
+            _invoiceSearch.ForeColor = SystemColors.WindowText;
+            _invoiceSearch.Location = new Point(12, 10);
+            _invoiceSearch.Margin = new Padding(0, 0, 8, 0);
+            _invoiceSearch.Name = "_invoiceSearch";
+            _invoiceSearch.Padding = new Padding(10, 6, 10, 6);
+            _invoiceSearch.PlaceholderColor = SystemColors.GrayText;
+            _invoiceSearch.PlaceholderText = "Search invoices";
+            _invoiceSearch.Size = new Size(1114, 38);
+            _invoiceSearch.TabIndex = 0;
+            _invoiceSearch.TextChanged += OnInvoiceSearchTextChanged;
+            // 
+            // _btnNewSale
+            // 
+            _btnNewSale.BackColor = SystemColors.Control;
+            _btnNewSale.Cursor = Cursors.Hand;
+            _btnNewSale.Dock = DockStyle.Fill;
+            _btnNewSale.FlatAppearance.BorderColor = SystemColors.ControlDark;
+            _btnNewSale.FlatStyle = FlatStyle.Flat;
+            _btnNewSale.Font = new Font("Segoe UI Semibold", 9.5F);
+            _btnNewSale.ForeColor = SystemColors.ControlText;
+            _btnNewSale.IconChar = FontAwesome.Sharp.IconChar.Add;
+            _btnNewSale.IconColor = SystemColors.ControlText;
+            _btnNewSale.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            _btnNewSale.IconSize = 16;
+            _btnNewSale.Location = new Point(1134, 10);
+            _btnNewSale.Margin = new Padding(0, 0, 8, 0);
+            _btnNewSale.Name = "_btnNewSale";
+            _btnNewSale.Size = new Size(142, 38);
+            _btnNewSale.Solid = false;
+            _btnNewSale.TabIndex = 1;
+            _btnNewSale.Text = "  New sale";
+            _btnNewSale.TextImageRelation = TextImageRelation.ImageBeforeText;
+            _btnNewSale.Tone = WinForms.Controls.ButtonTone.Primary;
+            _btnNewSale.UseVisualStyleBackColor = false;
+            _btnNewSale.Click += OnNewSaleClick;
+            // 
+            // _btnDeleteInvoice
+            // 
+            _btnDeleteInvoice.BackColor = SystemColors.Control;
+            _btnDeleteInvoice.Cursor = Cursors.Hand;
+            _btnDeleteInvoice.Dock = DockStyle.Fill;
+            _btnDeleteInvoice.FlatAppearance.BorderColor = SystemColors.ControlDark;
+            _btnDeleteInvoice.FlatStyle = FlatStyle.Flat;
+            _btnDeleteInvoice.Font = new Font("Segoe UI Semibold", 9.5F);
+            _btnDeleteInvoice.ForeColor = SystemColors.ControlText;
+            _btnDeleteInvoice.IconChar = FontAwesome.Sharp.IconChar.Trash;
+            _btnDeleteInvoice.IconColor = SystemColors.ControlText;
+            _btnDeleteInvoice.IconFont = FontAwesome.Sharp.IconFont.Auto;
+            _btnDeleteInvoice.IconSize = 16;
+            _btnDeleteInvoice.Location = new Point(1284, 10);
+            _btnDeleteInvoice.Margin = new Padding(0);
+            _btnDeleteInvoice.Name = "_btnDeleteInvoice";
+            _btnDeleteInvoice.Size = new Size(130, 38);
+            _btnDeleteInvoice.Solid = false;
+            _btnDeleteInvoice.TabIndex = 2;
+            _btnDeleteInvoice.Text = "  Delete";
+            _btnDeleteInvoice.TextImageRelation = TextImageRelation.ImageBeforeText;
+            _btnDeleteInvoice.Tone = WinForms.Controls.ButtonTone.Danger;
+            _btnDeleteInvoice.UseVisualStyleBackColor = false;
+            _btnDeleteInvoice.Click += OnDeleteInvoiceClick;
             // 
             // _toolTip
             // 
-            this._toolTip.ShowAlways = true;
+            _toolTip.ShowAlways = true;
             // 
             // SalesForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(1440, 820);
-            this.Controls.Add(this._tabs);
-            this.MinimumSize = new System.Drawing.Size(360, 600);
-            this.Name = "SalesForm";
-            this.Text = "Sales";
-            this._tabs.ResumeLayout(false);
-            this._tabNewSale.ResumeLayout(false);
-            this._saleLayout.ResumeLayout(false);
-            this._leftPanel.ResumeLayout(false);
-            this._productColumn.ResumeLayout(false);
-            this._productColumn.PerformLayout();
-            this._searchBar.ResumeLayout(false);
-            this._rightPanel.ResumeLayout(false);
-            this._basketRoot.ResumeLayout(false);
-            this._basketRoot.PerformLayout();
-            this._basketScroll.ResumeLayout(false);
-            this._basketScroll.PerformLayout();
-            this._basketLayout.ResumeLayout(false);
-            this._basketLayout.PerformLayout();
-            this._totalsLayout.ResumeLayout(false);
-            this._totalsLayout.PerformLayout();
-            this._heroTotalPanel.ResumeLayout(false);
-            this._heroTotalPanel.PerformLayout();
-            this._paidEditorPanel.ResumeLayout(false);
-            this._paidEditorPanel.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this._numPaid)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._numFees)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._numTax)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this._numDiscount)).EndInit();
-            this._cartHeader.ResumeLayout(false);
-            this._customerRow.ResumeLayout(false);
-            this._actions.ResumeLayout(false);
-            this._tabInvoices.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this._invoiceGrid)).EndInit();
-            this._invoiceToolbar.ResumeLayout(false);
-            this.ResumeLayout(false);
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            BackColor = SystemColors.Control;
+            ClientSize = new Size(1440, 820);
+            Controls.Add(_tabs);
+            MinimumSize = new Size(360, 600);
+            Name = "SalesForm";
+            Text = "Sales";
+            _tabs.ResumeLayout(false);
+            _tabNewSale.ResumeLayout(false);
+            _pageLayout.ResumeLayout(false);
+            _heroStrip.ResumeLayout(false);
+            _heroTotalCard.ResumeLayout(false);
+            _discountCard.ResumeLayout(false);
+            _statsCard.ResumeLayout(false);
+            _saleLayout.ResumeLayout(false);
+            _leftPanel.ResumeLayout(false);
+            _productColumn.ResumeLayout(false);
+            _productHeader.ResumeLayout(false);
+            _searchBar.ResumeLayout(false);
+            _rightPanel.ResumeLayout(false);
+            _basketRoot.ResumeLayout(false);
+            _basketScroll.ResumeLayout(false);
+            _basketScroll.PerformLayout();
+            _basketLayout.ResumeLayout(false);
+            _basketLayout.PerformLayout();
+            _customerRow.ResumeLayout(false);
+            _cartHeader.ResumeLayout(false);
+            _cartLines.ResumeLayout(false);
+            _totalsLayout.ResumeLayout(false);
+            _discountEditorPanel.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)_numDiscount).EndInit();
+            ((System.ComponentModel.ISupportInitialize)_numTax).EndInit();
+            ((System.ComponentModel.ISupportInitialize)_numFees).EndInit();
+            _paidEditorPanel.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)_numPaid).EndInit();
+            _actions.ResumeLayout(false);
+            _actionRow.ResumeLayout(false);
+            _utilityRow.ResumeLayout(false);
+            _tabInvoices.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)_invoiceGrid).EndInit();
+            _invoiceToolbar.ResumeLayout(false);
+            ResumeLayout(false);
         }
 
         #endregion
 
         private System.Windows.Forms.TabControl _tabs;
         private System.Windows.Forms.TabPage _tabNewSale;
-        private System.Windows.Forms.TabPage _tabInvoices;
+        private System.Windows.Forms.TableLayoutPanel _pageLayout;
+        private System.Windows.Forms.TableLayoutPanel _heroStrip;
+        private System.Windows.Forms.Panel _heroTotalCard;
+        private System.Windows.Forms.Label _lblHeroTotal;
+        private System.Windows.Forms.Label _lblHeroTotalCaption;
+        private System.Windows.Forms.Panel _discountCard;
+        private System.Windows.Forms.Label _lblHeroDiscount;
+        private System.Windows.Forms.Label _lblHeroDiscountCaption;
+        private System.Windows.Forms.Panel _statsCard;
+        private System.Windows.Forms.Label _lblHeroStats;
         private System.Windows.Forms.TableLayoutPanel _saleLayout;
         private System.Windows.Forms.Panel _leftPanel;
         private System.Windows.Forms.TableLayoutPanel _productColumn;
-        private DzentoPOS2.WinForms.Controls.Pos.PosProductList _productList;
-        private DzentoPOS2.WinForms.Controls.Pos.ScanConfirmationStrip _scanStrip;
-        private DzentoPOS2.WinForms.Controls.Pos.CategoryChipBar _categoryBar;
+        private System.Windows.Forms.TableLayoutPanel _productHeader;
+        private System.Windows.Forms.Label _lblProductCount;
+        private DzentoPOS2.WinForms.Controls.ThemedIconButton _btnViewToggle;
         private System.Windows.Forms.TableLayoutPanel _searchBar;
-        private DzentoPOS2.WinForms.Controls.ThemedIconButton _btnScanBarcode;
         private EZControls.Controls.Inputs.EZTextBox _productSearch;
+        private DzentoPOS2.WinForms.Controls.ThemedIconButton _btnScanBarcode;
+        private DzentoPOS2.WinForms.Controls.Pos.CategoryChipBar _categoryBar;
+        private DzentoPOS2.WinForms.Controls.Pos.ScanConfirmationStrip _scanStrip;
+        private DzentoPOS2.WinForms.Controls.Pos.PosProductList _productList;
         private System.Windows.Forms.Panel _rightPanel;
         private System.Windows.Forms.TableLayoutPanel _basketRoot;
         private DzentoPOS2.WinForms.Controls.Pos.SessionStatusChip _sessionChip;
         private System.Windows.Forms.Panel _basketScroll;
         private System.Windows.Forms.TableLayoutPanel _basketLayout;
-        private System.Windows.Forms.TableLayoutPanel _totalsLayout;
-        private System.Windows.Forms.TableLayoutPanel _heroTotalPanel;
-        private System.Windows.Forms.Label _lblTotalValue;
-        private System.Windows.Forms.Label _lblTotal;
-        private System.Windows.Forms.TableLayoutPanel _paidEditorPanel;
-        private DzentoPOS2.WinForms.Controls.ThemedIconButton _btnPayInFull;
-        private System.Windows.Forms.NumericUpDown _numPaid;
-        private System.Windows.Forms.Label _lblBalanceValue;
-        private System.Windows.Forms.Label _lblBalance;
-        private System.Windows.Forms.Label _lblPaid;
-    private System.Windows.Forms.Label _lblPaymentMethod;
-    private System.Windows.Forms.ComboBox _cmbPaymentMethod;
-        private System.Windows.Forms.NumericUpDown _numFees;
-        private System.Windows.Forms.Label _lblFees;
-        private System.Windows.Forms.Label _lblTaxAmountValue;
-        private System.Windows.Forms.Label _lblTaxAmount;
-        private System.Windows.Forms.NumericUpDown _numTax;
-        private System.Windows.Forms.Label _lblTax;
-        private System.Windows.Forms.Label _lblAfterDiscountValue;
-        private System.Windows.Forms.Label _lblAfterDiscount;
-        private System.Windows.Forms.TableLayoutPanel _discountEditorPanel;
-        private System.Windows.Forms.ComboBox _cmbDiscountMode;
-        private System.Windows.Forms.NumericUpDown _numDiscount;
-        private System.Windows.Forms.Label _lblDiscountValue;
-        private System.Windows.Forms.Label _lblDiscount;
-        private System.Windows.Forms.Label _lblSubtotalValue;
-        private System.Windows.Forms.Label _lblSubtotal;
+        private System.Windows.Forms.TableLayoutPanel _customerRow;
+        private System.Windows.Forms.Label _lblCustomer;
+        private System.Windows.Forms.ComboBox _cmbCustomer;
+        private DzentoPOS2.WinForms.Controls.ThemedIconButton _btnAddCustomer;
+        private System.Windows.Forms.TableLayoutPanel _cartHeader;
+        private System.Windows.Forms.Label _lblCart;
+        private DzentoPOS2.WinForms.Controls.ThemedIconButton _btnClearCart;
         private System.Windows.Forms.FlowLayoutPanel _cartLines;
         private System.Windows.Forms.Label _lblEmptyCart;
-        private System.Windows.Forms.Panel _cartHeader;
-        private DzentoPOS2.WinForms.Controls.ThemedIconButton _btnClearCart;
-        private System.Windows.Forms.Label _lblCart;
-        private System.Windows.Forms.TableLayoutPanel _customerRow;
-        private DzentoPOS2.WinForms.Controls.ThemedIconButton _btnAddCustomer;
-        private System.Windows.Forms.ComboBox _cmbCustomer;
-        private System.Windows.Forms.Label _lblCustomer;
+        private System.Windows.Forms.TableLayoutPanel _totalsLayout;
+        private System.Windows.Forms.Label _lblDiscount;
+        private System.Windows.Forms.Label _lblDiscountValue;
+        private System.Windows.Forms.TableLayoutPanel _discountEditorPanel;
+        private System.Windows.Forms.NumericUpDown _numDiscount;
+        private System.Windows.Forms.ComboBox _cmbDiscountMode;
+        private System.Windows.Forms.Label _lblSubtotal;
+        private System.Windows.Forms.Label _lblSubtotalValue;
+        private System.Windows.Forms.Label _lblAfterDiscount;
+        private System.Windows.Forms.Label _lblAfterDiscountValue;
+        private System.Windows.Forms.Label _lblTax;
+        private System.Windows.Forms.NumericUpDown _numTax;
+        private System.Windows.Forms.Label _lblTaxAmount;
+        private System.Windows.Forms.Label _lblTaxAmountValue;
+        private System.Windows.Forms.Label _lblFees;
+        private System.Windows.Forms.NumericUpDown _numFees;
+        private System.Windows.Forms.Label _lblTotal;
+        private System.Windows.Forms.Label _lblTotalValue;
+        private System.Windows.Forms.Label _lblPaid;
+        private System.Windows.Forms.TableLayoutPanel _paidEditorPanel;
+        private System.Windows.Forms.NumericUpDown _numPaid;
+        private DzentoPOS2.WinForms.Controls.ThemedIconButton _btnPayInFull;
+        private System.Windows.Forms.Label _lblBalance;
+        private System.Windows.Forms.Label _lblBalanceValue;
         private System.Windows.Forms.TableLayoutPanel _actions;
         private DzentoPOS2.WinForms.Controls.ThemedIconButton _btnCompleteSale;
+        private System.Windows.Forms.TableLayoutPanel _actionRow;
+        private DzentoPOS2.WinForms.Controls.ThemedIconButton _btnCard;
+        private DzentoPOS2.WinForms.Controls.ThemedIconButton _btnCredit;
+        private DzentoPOS2.WinForms.Controls.ThemedIconButton _btnHold;
+        private DzentoPOS2.WinForms.Controls.ThemedIconButton _btnCancelSale;
+        private System.Windows.Forms.TableLayoutPanel _utilityRow;
         private DzentoPOS2.WinForms.Controls.ThemedIconButton _btnPrintLast;
         private DzentoPOS2.WinForms.Controls.ThemedIconButton _btnCalculator;
+        private System.Windows.Forms.TabPage _tabInvoices;
         private System.Windows.Forms.DataGridView _invoiceGrid;
+        private System.Windows.Forms.Label _lblNoInvoices;
         private System.Windows.Forms.TableLayoutPanel _invoiceToolbar;
         private DzentoPOS2.WinForms.Controls.ThemedIconButton _btnDeleteInvoice;
         private DzentoPOS2.WinForms.Controls.ThemedIconButton _btnNewSale;

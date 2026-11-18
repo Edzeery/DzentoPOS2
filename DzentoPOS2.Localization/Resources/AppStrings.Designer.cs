@@ -2053,6 +2053,15 @@ namespace DzentoPOS2.Localization.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No invoices yet..
+        /// </summary>
+        public static string NoInvoices {
+            get {
+                return ResourceManager.GetString("NoInvoices", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Card / Other.
         /// </summary>
         public static string NonCashSales {
@@ -2418,6 +2427,24 @@ namespace DzentoPOS2.Localization.Resources {
         public static string Card {
             get {
                 return ResourceManager.GetString("Card", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Credit.
+        /// </summary>
+        public static string Credit {
+            get {
+                return ResourceManager.GetString("Credit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hold.
+        /// </summary>
+        public static string Hold {
+            get {
+                return ResourceManager.GetString("Hold", resourceCulture);
             }
         }
         

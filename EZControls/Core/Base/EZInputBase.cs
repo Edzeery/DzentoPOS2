@@ -326,7 +326,7 @@ public abstract class EZInputBase : EZControlBase, IEZValidatable
             // Mask the 1 px outer edge with the parent color so the rounded
             // corners blend correctly over any parent background.
             Color parentColor = Parent?.BackColor ?? BackColor;
-            using Pen maskPen = new(parentColor, 2);
+            using Pen maskPen = new(parentColor, 1);
             g.DrawPath(maskPen, surfacePath);
 
             // Draw the rounded border.

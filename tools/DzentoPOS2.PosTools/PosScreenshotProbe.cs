@@ -162,6 +162,67 @@ internal static class PosScreenshotProbe
                             $"total='{ReadText(form, "_lblTotalValue")}' " +
                             $"discountWidth={ReadSize(form, "_lblDiscountValue")}");
 
+                        // POS tab: the invoice toolbar and grid must be hidden and
+                        // the POS page tree must be the only visible page body.
+                        bool posLayoutOnPos = ReadVisibility(form, "_pageLayout");
+                        bool invoiceGridOnPos = ReadVisibility(form, "_invoiceGrid");
+                        bool invoiceToolbarOnPos = ReadVisibility(form, "_invoiceToolbar");
+
+                        if (!posLayoutOnPos || invoiceGridOnPos || invoiceToolbarOnPos)
+                            throw new InvalidOperationException(
+                                "POS tab isolation check failed: POS page or invoice controls leaked into the New Sale tab.");
+
+                        // Invoices tab: the two pages must be independent. The
+                        // capture proves the invoice grid is on screen and the
+                        // POS page tree is not visible.
+                        if (ReadField(form, "_tabs") is TabControl tabs)
+                        {
+                            tabs.SelectedIndex = 1;
+                            WaitFor(
+                                () => ReadInt(form, "_invoiceGrid", "Columns", "Count") > 0,
+                                timeoutMs: 5000);
+                            Pump(350);
+
+                            string invoiceFile = $"pos-invoices-{device}-{width}x{height}-{theme.ToString().ToLowerInvariant()}-{(culture == "ar" ? "rtl" : "ltr")}.png";
+                            Save(form, Path.Combine(outputDir, invoiceFile));
+
+                            bool posVisible = ReadVisibility(form, "_pageLayout");
+                            bool posHeroVisible = ReadVisibility(form, "_heroStrip");
+                            bool gridVisible = ReadVisibility(form, "_invoiceGrid");
+                            bool toolbarVisible = ReadVisibility(form, "_invoiceToolbar");
+                            bool emptyVisible = ReadVisibility(form, "_lblNoInvoices");
+                            int rows = ReadInt(form, "_invoiceGrid", "Rows", "Count");
+                            int tabStrip = tabs.DisplayRectangle.Y;
+
+                            Console.WriteLine(
+                                $"  {invoiceFile}: posVisible={posVisible} heroVisible={posHeroVisible} " +
+                                $"gridVisible={gridVisible} toolbarVisible={toolbarVisible} rows={rows} " +
+                                $"emptyState={emptyVisible} tabs={tabs.TabCount} tabStrip={tabStrip}px");
+
+                            if (posVisible || posHeroVisible || !gridVisible || !toolbarVisible)
+                                throw new InvalidOperationException(
+                                    "Invoice tab isolation check failed: the POS page leaked into the invoices tab.");
+
+                            if (tabs.TabCount != 2 || tabStrip <= 0 || tabStrip >= 90)
+                                throw new InvalidOperationException(
+                                    $"Tab header check failed: tabs={tabs.TabCount} tabStrip={tabStrip}px at {width}px.");
+
+                            if ((rows == 0) != emptyVisible)
+                                throw new InvalidOperationException(
+                                    $"Invoice empty-state check failed: rows={rows} emptyState={emptyVisible}.");
+
+                            tabs.SelectedIndex = 0;
+                            Pump(150);
+
+                            // Returning to the POS tab must restore the POS body
+                            // and hide the invoice controls again.
+                            if (!ReadVisibility(form, "_pageLayout")
+                                || ReadVisibility(form, "_invoiceGrid")
+                                || ReadVisibility(form, "_invoiceToolbar"))
+                                throw new InvalidOperationException(
+                                    "Return-to-POS check failed: page visibility did not switch back.");
+                        }
+
                         form.Close();
                         Pump(100);
                     }
@@ -654,6 +715,9 @@ internal static class PosScreenshotProbe
 
     private static int ReadSize(object target, string name) =>
         ReadField(target, name) is Control control ? control.Width : 0;
+
+    private static bool ReadVisibility(object target, string name) =>
+        ReadField(target, name) is Control control && control.Visible;
 
     private static int ReadInt(object target, string field, string property, string nested)
     {

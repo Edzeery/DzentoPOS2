@@ -432,6 +432,9 @@
   <data name="SearchInvoices" xml:space="preserve">
     <value>بحث في الفواتير...</value>
   </data>
+  <data name="NoInvoices" xml:space="preserve">
+    <value>لا توجد فواتير بعد.</value>
+  </data>
   <data name="AddProduct" xml:space="preserve">
     <value>إضافة منتج</value>
   </data>
@@ -782,6 +785,12 @@
   </data>
   <data name="Card" xml:space="preserve">
     <value>بطاقة</value>
+  </data>
+  <data name="Credit" xml:space="preserve">
+    <value>آجل</value>
+  </data>
+  <data name="Hold" xml:space="preserve">
+    <value>تعليق</value>
   </data>
   <data name="Address" xml:space="preserve">
     <value>العنوان</value>

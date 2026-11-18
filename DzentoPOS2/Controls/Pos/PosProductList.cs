@@ -34,8 +34,6 @@ public class PosProductList : Control
     private static readonly Font BadgeFont = new("Segoe UI", 8F, FontStyle.Bold);
     private static readonly Font BarcodeFont = new("Segoe UI", 7.5F, FontStyle.Bold);
     private static readonly Font AddFont = new("Segoe UI", 12F, FontStyle.Bold);
-    private static readonly Font InitialFont = new("Segoe UI", 16F, FontStyle.Bold);
-
     private readonly VScrollBar _vScroll = new() { Width = 16, TabStop = false, Visible = false };
     private readonly Dictionary<string, Image> _imageCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _imageLoads = new(StringComparer.OrdinalIgnoreCase);
@@ -349,19 +347,50 @@ public class PosProductList : Control
         }
 
         g.FillRectangle(_surfaceAltBrush, rect);
+        DrawImagePlaceholder(g, rect);
+    }
 
-        // Unified fallback: the product's initial, never an empty box.
-        string initial = string.IsNullOrWhiteSpace(item.Name)
-            ? "?"
-            : item.Name.Trim()[0].ToString();
+    /// <summary>
+    /// Neutral placeholder for products without a photo: a framed picture
+    /// glyph. It carries no language or initial, so it reads the same in LTR
+    /// and RTL and never leaks a product name into the image slot.
+    /// </summary>
+    private static void DrawImagePlaceholder(Graphics g, Rectangle rect)
+    {
+        int size = Math.Min(rect.Width, rect.Height) - 16;
+        if (size < 22) return;
 
-        TextRenderer.DrawText(
-            g,
-            initial,
-            InitialFont,
-            rect,
-            AppColors.InkMuted,
-            TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+        var frame = new Rectangle(
+            rect.X + (rect.Width - size) / 2,
+            rect.Y + (rect.Height - size) / 2,
+            size,
+            size);
+
+        using GraphicsPath framePath = PosDrawing.RoundedRect(frame, 6);
+        using var placeholderPen = new Pen(Color.FromArgb(120, AppColors.InkMuted), 1.4F);
+
+        g.DrawPath(placeholderPen, framePath);
+
+        int cx = frame.X + frame.Width / 2;
+        int cy = frame.Y + frame.Height / 2;
+        int radius = Math.Max(2, size / 14);
+
+        // Sun.
+        g.DrawEllipse(
+            placeholderPen,
+            cx - radius,
+            cy - radius - size / 5,
+            radius * 2,
+            radius * 2);
+
+        // Two mountain peaks along the lower third of the frame.
+        int baseY = frame.Bottom - size / 5;
+        using var mountains = new GraphicsPath();
+        mountains.AddLine(frame.X + size / 5, baseY, frame.X + size * 2 / 5, baseY - size / 3);
+        mountains.AddLine(frame.X + size * 2 / 5, baseY - size / 3, frame.X + size * 3 / 5, baseY);
+        mountains.AddLine(frame.X + size * 3 / 5, baseY, frame.X + size * 4 / 5, baseY - size / 4);
+        mountains.AddLine(frame.X + size * 4 / 5, baseY - size / 4, frame.Right - size / 5, baseY);
+        g.DrawPath(placeholderPen, mountains);
     }
 
     private void DrawName(Graphics g, PosProductItem item, Rectangle rect, bool rtl)

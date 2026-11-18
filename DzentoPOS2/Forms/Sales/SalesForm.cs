@@ -42,6 +42,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
     private readonly ISaleService _saleService = null!;
     private readonly IProductService _productService = null!;
     private readonly IPosProductStore _posProductStore = null!;
+    private readonly IPosHoldService _holdService = null!;
     private readonly ICustomerService _customerService = null!;
     private readonly ICurrentSettingsService _currentSettings = null!;
     private readonly ICashSessionService _cashSessionService = null!;
@@ -76,6 +77,10 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
     private bool _saleCompact;
     private int _saleCartSize;
     private int _saleCartHeight;
+
+    /// <summary>Card sales settle the exact total; cash sales keep the typed paid amount.</summary>
+    private PosPaymentMethod _paymentMethod = PosPaymentMethod.Cash;
+
     private bool _layoutPending;
     private bool _resizingCartRows;
     private SaleDto? _lastInvoice;
@@ -98,6 +103,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         ISaleService saleService,
         IProductService productService,
         IPosProductStore posProductStore,
+        IPosHoldService holdService,
         ICustomerService customerService,
         ICurrentSettingsService currentSettings,
         ICashSessionService cashSessionService,
@@ -113,6 +119,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         _saleService = saleService;
         _productService = productService;
         _posProductStore = posProductStore;
+        _holdService = holdService;
         _customerService = customerService;
         _currentSettings = currentSettings;
         _cashSessionService = cashSessionService;
@@ -146,31 +153,78 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
     /// <summary>
     /// F2 focuses the barcode/search box from anywhere, F12 sends the sale.
     /// ProcessCmdKey runs before the focused control, so a text box or the
-    /// product list cannot swallow either key.
+    /// product list cannot swallow either key.  Both keys are gated by the
+    /// selected tab: on the invoices tab F2 focuses the invoice search and
+    /// F12 never completes a sale.
     /// </summary>
     protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
     {
+        bool posTab = _tabs.SelectedIndex == 0;
+
         if (keyData == Keys.F2)
         {
-            if (!IsDisposedOrDisposing)
+            if (IsDisposedOrDisposing) return true;
+
+            if (!posTab)
             {
-                _productSearch.Focus();
-                _productSearch.SelectAllText();
+                _invoiceSearch.Focus();
+                _invoiceSearch.SelectAllText();
+                return true;
             }
+
+            _productSearch.Focus();
+            _productSearch.SelectAllText();
             return true;
         }
 
         if (keyData == Keys.F12)
         {
             // The button is the single source of truth: it already reflects the
-            // cart and the cash session, so F12 cannot bypass either rule.
-            if (!IsDisposedOrDisposing && _btnCompleteSale.Enabled)
+            // cart and the cash session, so F12 cannot bypass either rule.  It
+            // is also inert outside the POS tab.
+            if (posTab && !IsDisposedOrDisposing && _btnCompleteSale.Enabled)
                 RunSafe(CompleteSaleAsync);
 
             return true;
         }
 
         return base.ProcessCmdKey(ref msg, keyData);
+    }
+
+    /// <summary>
+    /// Keeps the two pages strictly isolated.  The POS tree only exists on the
+    /// "New Sale" tab; the invoice toolbar, grid and empty-state only exist on
+    /// the "Sales" tab.  Forcing the flags on every switch also clears any
+    /// stale paint left behind by a previous layout pass.
+    /// </summary>
+    private void OnTabSelected(object? sender, EventArgs e)
+    {
+        if (DesignTime.IsActive(this)) return;
+
+        bool posTab = _tabs.SelectedIndex == 0;
+
+        _tabNewSale.SuspendLayout();
+        try
+        {
+            _pageLayout.Visible = posTab;
+            _invoiceToolbar.Visible = !posTab;
+            _invoiceGrid.Visible = !posTab;
+        }
+        finally
+        {
+            _tabNewSale.ResumeLayout(true);
+        }
+
+        if (posTab)
+        {
+            ApplySaleLayout();
+        }
+        else
+        {
+            FilterInvoices();
+            _invoiceGrid.Invalidate();
+            _tabInvoices.Invalidate(true);
+        }
     }
 
     protected override void OnLoad(EventArgs e)
@@ -283,6 +337,69 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         return dialog.OpenedSession != null;
     }
 
+    private void OnCardPaymentClick(object? sender, EventArgs e)
+    {
+        _paymentMethod = PosPaymentMethod.Card;
+        _numPaid.Enabled = false;
+        _btnPayInFull.Enabled = false;
+        UpdatePaymentButtons();
+        UpdateTotals();
+    }
+
+    /// <summary>
+    /// Credit keeps the sale on cash but leaves the paid amount at zero so the
+    /// remaining balance is stored against the customer.
+    /// </summary>
+    private void OnCreditClick(object? sender, EventArgs e)
+    {
+        _paymentMethod = PosPaymentMethod.Cash;
+        _numPaid.Enabled = true;
+        _btnPayInFull.Enabled = true;
+        _paidMode = PaidMode.Custom;
+        _updatingTotals = true;
+        try { _numPaid.Value = 0; }
+        finally { _updatingTotals = false; }
+        UpdatePaymentButtons();
+        UpdateTotals();
+    }
+
+    private void UpdatePaymentButtons()
+    {
+        bool card = _paymentMethod == PosPaymentMethod.Card;
+        _btnCard.Tone = card ? ButtonTone.Primary : ButtonTone.Neutral;
+        _btnCard.Solid = card;
+        _btnCard.ApplyTheme();
+        _btnPayInFull.Enabled = !card;
+    }
+
+    private void OnHoldClick(object? sender, EventArgs e)
+    {
+        if (_cart.Count == 0) return;
+        var selectedCustomer = _cmbCustomer.SelectedItem as CustomerItem;
+        _holdService.Hold(_cart, selectedCustomer?.Id ?? Guid.Empty);
+        _cart.Clear();
+        RefreshCart();
+        UpdateTotals();
+        AppMessageBox.Success("Held");
+    }
+
+    private void OnCancelSaleClick(object? sender, EventArgs e)
+    {
+        if (_cart.Count == 0) return;
+        if (!AppMessageBox.Confirm(AppStrings.Delete, AppStrings.CompleteSale)) return;
+        _cart.Clear();
+        _numDiscount.Value = 0;
+        _numTax.Value = 0;
+        _numFees.Value = 0;
+        _numPaid.Value = 0;
+        _cmbDiscountMode.SelectedIndex = 0;
+        _paymentMethod = PosPaymentMethod.Cash;
+        _paidMode = PaidMode.FullPayment;
+        UpdatePaymentButtons();
+        RefreshCart();
+        UpdateTotals();
+    }
+
     /// <summary>
     /// Places the product column and the basket next to each other, and stacks
     /// them when the page gets too narrow. The card width itself is decided by
@@ -298,9 +415,14 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         bool compact = available < 640;
         int cartSize = Math.Clamp((int)(available * 0.38), 340, 480);
         int cartHeight = stacked
-            ? Math.Min(
-                Math.Clamp((int)(height * 0.62), 340, 560),
-                Math.Max(260, height - 160))
+            ? compact
+                // On a phone the catalog must keep at least three rows of
+                // chrome plus one card row. The basket gives up height instead
+                // and scrolls its own lines and totals above the pinned actions.
+                ? Math.Min(420, Math.Max(280, height - 180 - 300))
+                : Math.Min(
+                    Math.Clamp((int)(height * 0.62), 340, 560),
+                    Math.Max(260, height - 160))
             : 0;
 
         if (stacked == _saleStacked
@@ -317,8 +439,9 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         _saleCartSize = cartSize;
         _saleCartHeight = cartHeight;
 
+        ApplyHeroLayout(compact);
         ApplyProductChrome(compact);
-        ApplyCartLayout(stacked);
+        ApplyCartLayout(compact);
 
         _saleLayout.SuspendLayout();
         _saleLayout.Controls.Clear();
@@ -351,10 +474,66 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
     }
 
     /// <summary>
+    /// The hero strip sits above both columns. On wide screens the total keeps
+    /// the full height at the start, with the discount and the cart count
+    /// stacked beside it; on phones the three cards stack so the 38 pt total
+    /// keeps its line height on a 375 px viewport.
+    /// </summary>
+    private void ApplyHeroLayout(bool compact)
+    {
+        _pageLayout.RowStyles[0] = new RowStyle(SizeType.Absolute, compact ? 180F : 110F);
+
+        _heroStrip.SuspendLayout();
+        _heroStrip.ColumnStyles.Clear();
+        _heroStrip.RowStyles.Clear();
+
+        if (compact)
+        {
+            _heroStrip.ColumnCount = 1;
+            _heroStrip.RowCount = 3;
+            _heroStrip.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            _heroStrip.RowStyles.Add(new RowStyle(SizeType.Absolute, 86F));
+            _heroStrip.RowStyles.Add(new RowStyle(SizeType.Absolute, 58F));
+            _heroStrip.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
+
+            _heroStrip.SetCellPosition(_heroTotalCard, new TableLayoutPanelCellPosition(0, 0));
+            _heroStrip.SetRowSpan(_heroTotalCard, 1);
+            _heroStrip.SetCellPosition(_discountCard, new TableLayoutPanelCellPosition(0, 1));
+            _heroStrip.SetCellPosition(_statsCard, new TableLayoutPanelCellPosition(0, 2));
+
+            _heroTotalCard.Margin = new Padding(0, 0, 0, 4);
+            _discountCard.Margin = new Padding(0, 0, 0, 4);
+            _statsCard.Margin = new Padding(0);
+            _lblHeroStats.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+        }
+        else
+        {
+            _heroStrip.ColumnCount = 2;
+            _heroStrip.RowCount = 2;
+            _heroStrip.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 55F));
+            _heroStrip.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 45F));
+            _heroStrip.RowStyles.Add(new RowStyle(SizeType.Absolute, 66F));
+            _heroStrip.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
+
+            _heroStrip.SetCellPosition(_heroTotalCard, new TableLayoutPanelCellPosition(0, 0));
+            _heroStrip.SetRowSpan(_heroTotalCard, 2);
+            _heroStrip.SetCellPosition(_discountCard, new TableLayoutPanelCellPosition(1, 0));
+            _heroStrip.SetCellPosition(_statsCard, new TableLayoutPanelCellPosition(1, 1));
+
+            _heroTotalCard.Margin = new Padding(0, 0, 8, 0);
+            _discountCard.Margin = new Padding(8, 0, 0, 0);
+            _statsCard.Margin = new Padding(8, 0, 0, 0);
+            _lblHeroStats.Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+        }
+
+        _heroStrip.ResumeLayout(true);
+        _heroStrip.Invalidate(true);
+    }
+
+    /// <summary>
     /// Phone-width chrome. The scan button loses its label so the search field
-    /// keeps a usable width, the category strip gets room for its horizontal
-    /// scrollbar, and the complete-sale column grows so its label stops
-    /// wrapping.
+    /// keeps a usable width and the category strip gets room for its horizontal
+    /// scrollbar.
     /// </summary>
     private void ApplyProductChrome(bool compact)
     {
@@ -366,32 +545,34 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         _btnScanBarcode.Text = compact ? string.Empty : "  " + AppStrings.ScanBarcode;
         _toolTip.SetToolTip(_btnScanBarcode, AppStrings.ScanBarcode);
 
+        // Row 2 of the product column is the category strip; row 1 is the
+        // search bar. Keep the phone strip taller for its scrollbar.
         float categoryHeight = compact ? 56F : 44F;
-        if (_productColumn.RowStyles[1].Height != categoryHeight)
-            _productColumn.RowStyles[1] = new RowStyle(SizeType.Absolute, categoryHeight);
-
-        _actions.ColumnStyles[0] = new ColumnStyle(SizeType.Percent, compact ? 22F : 30F);
-        _actions.ColumnStyles[1] = new ColumnStyle(SizeType.Percent, compact ? 22F : 30F);
-        _actions.ColumnStyles[2] = new ColumnStyle(SizeType.Percent, compact ? 56F : 40F);
+        if (_productColumn.RowStyles[2].Height != categoryHeight)
+            _productColumn.RowStyles[2] = new RowStyle(SizeType.Absolute, categoryHeight);
     }
 
     /// <summary>
-    /// At tablet and phone widths the action row keeps its height but the
-    /// calculator and print buttons become icon-only so the complete-sale
-    /// button keeps a readable label.
+    /// At tablet and phone widths the calculator and print buttons become
+    /// icon-only; the four payment actions and the big checkout button keep
+    /// their labels.
     /// </summary>
     private void ApplyCartLayout(bool compact)
     {
-        _basketRoot.RowStyles[2] = new RowStyle(SizeType.Absolute, compact ? 56F : 62F);
+        // The hero already shows the item count on phones, so the cart header
+        // is dropped there to keep one full cart line visible above the pinned
+        // actions; desktop and tablet keep it for the clear-cart action.
+        _cartHeader.Visible = !compact;
+        _basketLayout.RowStyles[0] = new RowStyle(SizeType.Absolute, compact ? 40F : 44F);
+        _basketLayout.RowStyles[1] = new RowStyle(SizeType.Absolute, compact ? 0F : 36F);
 
-        // The 26 pt discount value needs more than 44 % of a phone-width
-        // basket. The labels stay short, so the value column takes the room.
-        float labelShare = _saleCompact ? 32F : 52F;
-        if ((int)_totalsLayout.ColumnStyles[0].Width != (int)labelShare)
-        {
-            _totalsLayout.ColumnStyles[0] = new ColumnStyle(SizeType.Percent, labelShare);
-            _totalsLayout.ColumnStyles[1] = new ColumnStyle(SizeType.Percent, 100F - labelShare);
-        }
+        // The "Customer name" caption wraps and clips in Arabic at phone width;
+        // the combo already says "Select customer", so the caption is dropped.
+        _lblCustomer.Visible = !compact;
+        _customerRow.ColumnStyles[0] = new ColumnStyle(
+            SizeType.Percent, compact ? 0F : 26F);
+        _customerRow.ColumnStyles[1] = new ColumnStyle(
+            SizeType.Percent, compact ? 100F : 74F);
 
         _btnCalculator.Text = compact ? string.Empty : "  " + AppStrings.Calculator;
         _btnPrintLast.Text = compact ? string.Empty : "  " + AppStrings.Print;
@@ -473,18 +654,31 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             _cartHeader.BackColor = AppColors.Surface;
             _customerRow.BackColor = AppColors.Surface;
             _totalsLayout.BackColor = AppColors.Surface;
-            _heroTotalPanel.BackColor = AppColors.Surface;
             _discountEditorPanel.BackColor = AppColors.Surface;
             _paidEditorPanel.BackColor = AppColors.Surface;
+            _productHeader.BackColor = AppColors.Background;
+            _heroStrip.BackColor = AppColors.Background;
+            _heroTotalCard.BackColor = AppColors.Surface;
+            _discountCard.BackColor = AppColors.Surface;
+            _statsCard.BackColor = AppColors.Surface;
 
+            _lblHeroTotal.ForeColor = AppColors.Primary;
+            _lblHeroDiscount.ForeColor = AppColors.Success;
+            _lblHeroStats.ForeColor = AppColors.Ink;
+            _lblHeroTotalCaption.ForeColor = AppColors.InkMuted;
+            _lblHeroDiscountCaption.ForeColor = AppColors.InkMuted;
+            _lblProductCount.ForeColor = AppColors.InkMuted;
             _lblTotalValue.ForeColor = AppColors.Primary;
             _lblDiscountValue.ForeColor = AppColors.InkMuted;
             _lblEmptyCart.ForeColor = AppColors.InkMuted;
+            _lblNoInvoices.ForeColor = AppColors.InkMuted;
+            _lblNoInvoices.BackColor = AppColors.Background;
 
             ApplyInputTheme(_productSearch);
             ApplyInputTheme(_invoiceSearch);
 
             _lblEmptyCart.Text = AppStrings.EmptyCart;
+            UpdatePaymentButtons();
         }
         finally
         {
@@ -540,11 +734,6 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         _lblFees.Text = AppStrings.Fees + ":";
         _lblTotal.Text = AppStrings.GrandTotal + ":";
         _lblPaid.Text = AppStrings.PaidAmount + ":";
-        _lblPaymentMethod.Text = AppStrings.PaymentMethod + ":";
-        int paymentMethodIndex = _cmbPaymentMethod.SelectedIndex;
-        _cmbPaymentMethod.Items.Clear();
-        _cmbPaymentMethod.Items.AddRange(new object[] { AppStrings.Cash, AppStrings.Card });
-        _cmbPaymentMethod.SelectedIndex = paymentMethodIndex < 0 ? 0 : paymentMethodIndex;
         _btnPayInFull.Text = string.Empty;
         _btnPayInFull.AccessibleDescription = AppStrings.PayInFull;
         _btnCompleteSale.Text = "  " + AppStrings.CompleteSale;
@@ -554,6 +743,16 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         _btnNewSale.Text = "  " + AppStrings.NewSale;
         _btnDeleteInvoice.Text = "  " + AppStrings.Delete;
         _lblEmptyCart.Text = AppStrings.EmptyCart;
+        _lblNoInvoices.Text = AppStrings.NoInvoices;
+
+        _lblHeroTotalCaption.Text = AppStrings.GrandTotal;
+        _lblHeroDiscountCaption.Text = AppStrings.Discount;
+        _lblBalance.Text = AppStrings.RemainingAmount + ":";
+        _btnCard.Text = "  " + AppStrings.Card;
+        _btnCredit.Text = "  " + AppStrings.Credit;
+        _btnHold.Text = "  " + AppStrings.Hold;
+        _btnCancelSale.Text = "  " + AppStrings.Cancel;
+        _btnViewToggle.AccessibleDescription = AppStrings.Products;
 
         _toolTip.SetToolTip(_btnAddCustomer, AppStrings.AddCustomer);
         _toolTip.SetToolTip(_btnPayInFull, AppStrings.PayInFull);
@@ -572,7 +771,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
 
         ApplySessionChipText();
         ApplyProductChrome(_saleCompact);
-        ApplyCartLayout(_saleStacked);
+        ApplyCartLayout(_saleCompact);
         RefreshCartRowTexts();
 
         // FormLocalizationHelper forces every FlowLayoutPanel to RightToLeft in
@@ -649,6 +848,9 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
 
         _filteredItems = filtered;
         _productList.Items = filtered;
+
+        if (_lblProductCount is not null)
+            _lblProductCount.Text = $"{filtered.Count} {AppStrings.Products}";
     }
 
     /// <summary>Reloads the catalog when products, variants or barcodes change.</summary>
@@ -1237,6 +1439,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
                 || i.CreatedAt.ToString("yyyy/MM/dd").Contains(term, StringComparison.OrdinalIgnoreCase)).ToList();
 
         _invoiceGrid.DataSource = filtered;
+        _lblNoInvoices.Visible = filtered.Count == 0;
     }
 
     // =========================
@@ -1307,6 +1510,14 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         _lblAfterDiscountValue.Text = FormatMoney(afterDiscount);
         _lblTaxAmountValue.Text = FormatMoney(taxAmount);
         _lblTotalValue.Text = FormatMoney(total);
+
+        if (_lblHeroTotal is not null)
+        {
+            _lblHeroTotal.Text = FormatMoney(total);
+            _lblHeroDiscount.Text = FormatMoney(discountAmount);
+            _lblHeroDiscount.ForeColor = discountAmount > 0 ? AppColors.Success : AppColors.InkMuted;
+            _lblHeroStats.Text = $"{_cart.Count} {AppStrings.Cart}";
+        }
 
         var percentMode = _cmbDiscountMode.SelectedIndex != 1;
         _lblDiscount.Text = discountAmount > 0 && percentMode && _numDiscount.Value > 0
@@ -1393,22 +1604,7 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
         UpdateTotals();
     }
 
-    private void OnPaymentMethodChanged(object? sender, EventArgs e)
-    {
-        if (_updatingTotals) return;
-
-        bool card = SelectedPaymentMethod == PosPaymentMethod.Card;
-        if (card)
-            _paidMode = PaidMode.FullPayment;
-
-        _numPaid.Enabled = !card;
-        _btnPayInFull.Enabled = !card;
-
-        UpdateTotals();
-    }
-
-    private PosPaymentMethod SelectedPaymentMethod =>
-        _cmbPaymentMethod.SelectedIndex == 1 ? PosPaymentMethod.Card : PosPaymentMethod.Cash;
+    private PosPaymentMethod SelectedPaymentMethod => _paymentMethod;
 
     private void OnCalculatorClick(object? sender, EventArgs e) => RunSafe(OpenCalculatorAsync);
 
@@ -1625,10 +1821,11 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
             _numFees.Value = 0;
             _numPaid.Value = 0;
             _cmbDiscountMode.SelectedIndex = 0;
-            _cmbPaymentMethod.SelectedIndex = 0;
+            _paymentMethod = PosPaymentMethod.Cash;
             _numPaid.Enabled = true;
             _btnPayInFull.Enabled = true;
             _paidMode = PaidMode.FullPayment;
+            UpdatePaymentButtons();
             RefreshCart();
             await LoadInvoicesAsync();
             _tabs.SelectedIndex = 1;
@@ -1662,6 +1859,17 @@ public partial class SalesForm : LocalizableFormBase, IBranchAware
     private void OnClearCartClick(object? sender, EventArgs e) => ClearCart();
 
     private void OnScanBarcodeClick(object? sender, EventArgs e) => ScanBarcode();
+
+    private void OnViewModeToggleClick(object? sender, EventArgs e)
+    {
+        _productList.ViewMode = _productList.ViewMode == PosViewMode.Cards
+            ? PosViewMode.List
+            : PosViewMode.Cards;
+
+        _btnViewToggle.IconChar = _productList.ViewMode == PosViewMode.Cards
+            ? FontAwesome.Sharp.IconChar.Th
+            : FontAwesome.Sharp.IconChar.List;
+    }
 
     private void OnSessionActionClicked(object? sender, EventArgs e) => RunSafe(OpenDrawerAsync);
 

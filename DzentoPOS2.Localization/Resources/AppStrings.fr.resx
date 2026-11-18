@@ -432,6 +432,9 @@
   <data name="SearchInvoices" xml:space="preserve">
     <value>Rechercher des factures...</value>
   </data>
+  <data name="NoInvoices" xml:space="preserve">
+    <value>Aucune facture pour le moment.</value>
+  </data>
   <data name="AddProduct" xml:space="preserve">
     <value>Ajouter un produit</value>
   </data>
@@ -782,6 +785,12 @@
   </data>
   <data name="Card" xml:space="preserve">
     <value>Carte</value>
+  </data>
+  <data name="Credit" xml:space="preserve">
+    <value>Crédit</value>
+  </data>
+  <data name="Hold" xml:space="preserve">
+    <value>En attente</value>
   </data>
   <data name="Address" xml:space="preserve">
     <value>Adresse</value>
